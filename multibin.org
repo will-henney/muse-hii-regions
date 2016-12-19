@@ -2,4 +2,389 @@
 #+options: ^:{} toc:nil num:nil
 Intelligent powers-of-two rebinning of maps, with weighting, masking, and sensible treatment of NaNs
 
+* Generic utility library for rebinning: =rebin_utils.py= 
+:LOGBOOK:
+- Note taken on [2016-12-19 Mon 18:29] \\
+  This had previously been in the =RubinWFC3/Tsquared= folder
+:END:
+
+#+BEGIN_SRC python :eval no :tangle rebin_utils.py
+  import numpy as np
+
+
+  def downsample(images, mask, weights=None, verbose=False, mingood=1):
+      """
+      Resample (average) a list of 2d images at 2x2, taking account of a logical mask
+
+      Now optionally use a weights array, and resample that too (adding, not averaging)
+      """
+      # Construct slices for even and odd elements, respectively
+      # e, o = np.s_[:,-1,2], np.s_[1,:,2] # Just learnt about the np.s_() function!
+      e, o = slice(None,-1,2), slice(1,None,2)
+
+      # Find the number of good sub-pixels in each new pixel
+      ngood = mask[e,e].astype(int) + mask[o,e].astype(int) \
+              + mask[e,o].astype(int) + mask[o,o].astype(int)
+
+      newmask = ngood >= mingood
+      # # Resample the mask
+      # # newmask is True if any of the 4 sub-pixels are true
+      # newmask = mask[e,e] | mask[o,e] | mask[e,o] | mask[o,o]
+
+      if weights is None:
+          # now resample the images
+          newimages = [
+              np.where(
+                  newmask,      # Check that we have at least 1 good pixel
+                  # Take the mean of all the good sub-pixels
+                  (image[e,e]*mask[e,e] + image[o,e]*mask[o,e]
+                   + image[e,o]*mask[e,o] + image[o,o]*mask[o,o]) / ngood,
+                  0.0                 # Avoid NaNs if we have no good pixels
+                  )
+              for image in images]
+      else:
+          newweights = (weights[e,e]*mask[e,e] + weights[o,e]*mask[o,e]
+			+ weights[e,o]*mask[e,o] + weights[o,o]*mask[o,o])
+          newimages = [
+              np.where(
+                  newweights > 0.0,      # Check that we have at least 1 good pixel
+                  # Take the mean of all the good sub-pixels
+                  (image[e,e]*mask[e,e]*weights[e,e] +
+                   image[o,e]*mask[o,e]*weights[o,e] +
+                   image[e,o]*mask[e,o]*weights[e,o] +
+                   image[o,o]*mask[o,o]*weights[o,o]
+                   ) / newweights,
+                  0.0                 # Avoid NaNs if we have no good pixels
+                  )
+              for image in images]
+
+      if verbose:
+          print("Fraction of good pixels: old = {:.2f}, new = {:.2f}".format(
+              float(mask.sum())/mask.size, float(newmask.sum())/newmask.size))
+      # Of course, we will get garbage where ngood=0, but that doesn't
+      # matter since newmask will be False for those pixels
+      if weights is None:
+          return newimages, newmask
+      else:
+          # New option to bin weights too
+          return newimages, newmask, newweights
+
+
+  def oversample(image, m):
+      "Oversample an image by factor m x m. Simply repeat the pixels"
+      # Check inputs
+      if np.isnan(image).any():
+          print("oversample: nan(s) found in input image")
+      result = np.kron(image, np.ones((m,m)))
+      # Check output
+      if np.isnan(result).any():
+          print("oversample: nan(s) found in output image")
+      return result
+
+#+END_SRC
+
+* Application to MUSE spectral maps
+
+** Grab of copy of continuum image to use as mask
++ I still haven't decided if I want to do the masking in the same way or not
++ But in the meantime I need this file 
+#+BEGIN_SRC bash
+cp -av ../OrionMuse/muse-hr-image-wfc3-f547m.fits .
+#+END_SRC
+
+#+RESULTS:
+: ../OrionMuse/muse-hr-image-wfc3-f547m.fits -> ./muse-hr-image-wfc3-f547m.fits
+
+** multibin-map.py - Perform binning of a line map
+:PROPERTIES:
+:ID:       D2B1D238-7058-406B-93FD-60AD6BACA97A
+:END:
++ [2015-11-08 Sun 17:27] Update to do dependency checking
++ [2016-05-17 Tue 22:25] Update to deal with mean velocities
++ [2016-12-19 Mon 18:33] Moved here from the OrionMuse project
+
+#+BEGIN_SRC python :tangle multibin-map.py
+  from __future__ import print_function
+  import sys
+  import os
+  from distutils.dep_util import newer, newer_group
+  import numpy as np
+  from rebin_utils import downsample, oversample
+  from astropy.io import fits
+
+  nlist = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+  mingoods = [2, 2, 2, 2, 2, 2, 2, 2, 2]
+
+  def pad_array(a, n):
+      """Pad 2d array `a` to nearest multiple of `n` in each dimension"""
+      newshape = n*np.ceil(np.array(a.shape).astype(float)/n)
+      b = np.zeros(newshape, dtype=a.dtype)
+      b[:a.shape[0], :a.shape[1]] = a
+      return b
+
+
+  try: 
+      infile = sys.argv[1]
+  except:
+      sys.exit('Usage: {} FITSFILE'.format(sys.argv[0]))
+
+
+  hdu = fits.open(infile)[0]
+  if hdu.data is None:
+      hdu = fits.open(infile)[1]
+  hdr = hdu.header
+  # Maximum binning
+  nmax = nlist[-1]
+
+  # Pad arrays to nearest multiple of nmax
+  im = pad_array(hdu.data, nmax)
+
+  basename = os.path.basename(infile)
+  map_type = basename.split('-')[0]
+
+  if map_type in ['mean', 'sigma']:
+      # For the mean velocity and sigma width maps, weight by brightness
+      wfile = infile.replace(map_type, 'linesum')
+      if infile.endswith('-patfixx.fits'):
+          # Strip off the pattern fix prefix if present
+          wfile = wfile.replace('-patfixx', '')
+      whdu = fits.open(wfile)[0]
+      if whdu.data is None:
+          # try second HDU if first has no data
+          whdu = fits.open(wfile)[1]
+      w = pad_array(whdu.data, nmax)
+  else:
+      # Otherwise, just natural weighting
+      w = np.ones_like(im)
+
+  continuum = fits.open('muse-hr-image-wfc3-f547m.fits')['DATA'].data
+  starmask = continuum > 30
+  m =  np.isfinite(hdu.data) & (~starmask)
+  m = pad_array(m, nmax)
+
+  for n, mingood in zip(nlist, mingoods):
+      im[~m] = 0.0
+      outfile = infile.replace('.fits', '-bin{:03d}.fits'.format(n))
+      if n == nlist[0]:
+          # Do dependency checking on the first iteration
+          if not newer(infile, outfile):
+              # Bail out if dependency not newer than target
+              sys.exit(outfile + ' is already up to date.')
+      print('Saving', outfile)
+      # Save both the scaled image and the weights, but at the full resolution
+      fits.HDUList([
+          fits.PrimaryHDU(),
+          fits.ImageHDU(data=oversample(im, n), header=hdr, name='scaled'),
+          fits.ImageHDU(data=oversample(w, n), header=hdr, name='weight'),
+      ]).writeto(outfile, clobber=True)
+      # Now do the rebinning by a factor of two
+      [im,], m, w = downsample([im,], m, weights=w, mingood=mingood)
+
+
+#+END_SRC
+
+#+BEGIN_SRC sh :results verbatim
+D=../OrionMuse/LineMaps
+python multibin-map.py $D/sigma-O_III-5007-patfixx.fits
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin001.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin002.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin004.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin008.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin016.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin032.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin064.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin128.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-O_III-5007-patfixx-bin256.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+#+end_example
+
+#+BEGIN_SRC sh :results verbatim
+D=../OrionMuse/LineMaps
+python multibin-map.py $D/sigma-N_II-6583-patfixx.fits
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin001.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin002.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin004.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin008.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin016.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin032.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin064.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin128.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+Saving ../OrionMuse/LineMaps/sigma-N_II-6583-patfixx-bin256.fits
+oversample: nan(s) found in input image
+oversample: nan(s) found in output image
+#+end_example
+
+** Shell scripts to do multibinning of observed and fuzzed maps
+:PROPERTIES:
+:ID:       8E91B82E-9A07-4DE7-8EDC-5157FB5EEA99
+:END:
+Do them all
+#+BEGIN_SRC sh :tangle all-lines-multibin.sh
+linelist=LineMaps/linesum-*[0-9][0-9][0-9][0-9].fits
+for line in $linelist; do
+    echo "Processing $line"
+    time python multibin-map.py $line > ${line}-multibin.log
+done
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle all-continuum-multibin.sh
+linelist=LineMaps/continuum-*[0-9][0-9][0-9][0-9].fits
+for line in $linelist; do
+    echo "Processing $line"
+    time python multibin-map.py $line > ${line}-multibin.log
+done
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Processing LineMaps/linesum-Ar_III-5192.fits
+Processing LineMaps/linesum-Ar_III-7136.fits
+Processing LineMaps/linesum-Ar_III-7751.fits
+Processing LineMaps/linesum-C_I-8727.fits
+Processing LineMaps/linesum-C_II-5890.fits
+Processing LineMaps/linesum-C_II-6578.fits
+Processing LineMaps/linesum-Ca_I-9052.fits
+Processing LineMaps/linesum-Ca_I-9095.fits
+Processing LineMaps/linesum-Cl_II-8579.fits
+Processing LineMaps/linesum-Cl_III-5518.fits
+Processing LineMaps/linesum-Cl_III-5538.fits
+Processing LineMaps/linesum-Cl_IV-8046.fits
+Processing LineMaps/linesum-Fe_II-5262.fits
+Processing LineMaps/linesum-Fe_II-6133.fits
+Processing LineMaps/linesum-Fe_II-7453.fits
+Processing LineMaps/linesum-Fe_II-8617.fits
+Processing LineMaps/linesum-Fe_III-4658.fits
+Processing LineMaps/linesum-Fe_III-4702.fits
+Processing LineMaps/linesum-Fe_III-5270.fits
+Processing LineMaps/linesum-H_I-4861.fits
+Processing LineMaps/linesum-H_I-6563.fits
+Processing LineMaps/linesum-H_I-8438.fits
+Processing LineMaps/linesum-H_I-8467.fits
+Processing LineMaps/linesum-H_I-8502.fits
+Processing LineMaps/linesum-H_I-8545.fits
+Processing LineMaps/linesum-H_I-8598.fits
+Processing LineMaps/linesum-H_I-8665.fits
+Processing LineMaps/linesum-H_I-8750.fits
+Processing LineMaps/linesum-H_I-8863.fits
+Processing LineMaps/linesum-H_I-9015.fits
+Processing LineMaps/linesum-H_I-9229.fits
+Processing LineMaps/linesum-He_I-5016.fits
+Processing LineMaps/linesum-He_I-5048.fits
+Processing LineMaps/linesum-He_I-5876.fits
+Processing LineMaps/linesum-He_I-6678.fits
+Processing LineMaps/linesum-He_I-7065.fits
+Processing LineMaps/linesum-N_I-5199.fits
+Processing LineMaps/linesum-N_I-8680.fits
+Processing LineMaps/linesum-N_II-5755.fits
+Processing LineMaps/linesum-N_II-5932.fits
+Processing LineMaps/linesum-N_II-5942.fits
+Processing LineMaps/linesum-N_II-5952.fits
+Processing LineMaps/linesum-N_II-6548.fits
+Processing LineMaps/linesum-N_II-6583.fits
+Processing LineMaps/linesum-O_I-5577.fits
+Processing LineMaps/linesum-O_I-6046.fits
+Processing LineMaps/linesum-O_I-6300.fits
+Processing LineMaps/linesum-O_I-6364.fits
+Processing LineMaps/linesum-O_I-7002.fits
+Processing LineMaps/linesum-O_I-8446.fits
+Processing LineMaps/linesum-O_II-4650.fits
+Processing LineMaps/linesum-O_II-7318.fits
+Processing LineMaps/linesum-O_II-7330.fits
+Processing LineMaps/linesum-O_III-4959.fits
+Processing LineMaps/linesum-O_III-5007.fits
+Processing LineMaps/linesum-S_II-6716.fits
+Processing LineMaps/linesum-S_II-6731.fits
+Processing LineMaps/linesum-S_III-6312.fits
+Processing LineMaps/linesum-S_III-9069.fits
+Processing LineMaps/linesum-Si_II-5041.fits
+Processing LineMaps/linesum-Si_II-5056.fits
+Processing LineMaps/linesum-Si_II-5958.fits
+Processing LineMaps/linesum-Si_II-5979.fits
+Processing LineMaps/linesum-Si_II-6347.fits
+Processing LineMaps/linesum-Si_II-6371.fits
+#+end_example
+
++ And do the fuzzed ones too (this takes ages, so run it in an interactive shell)
++ [2015-11-08 Sun] This does not have to be so careful now, since it will only rebuild files where needed
++ [ ] Actually it is still very slow, mainly because it takes over a second to start the python process and load libraries
+  + So I should re-write it to do the globbing in python instead of shell script
+  + That way, it only needs to start python once, so it will be much quicker
+#+BEGIN_SRC sh :eval no :tangle all-fuzz-multibin.sh
+linelist=LineMaps/linesum-*[0-9][0-9][0-9][0-9]-fuzz$1.fits
+for line in $linelist; do
+    echo "Processing $line"
+    time python multibin-map.py $line > ${line}-multibin.log 2>&1
+done
+#+END_SRC
+
+Usage example
+
+#+BEGIN_SRC sh :eval no
+nohup sh all-fuzz-multibin.sh 000 > all-fuzz-000-multibin.log &
+nohup sh all-fuzz-multibin.sh 001 > all-fuzz-001-multibin.log &
+nohup sh all-fuzz-multibin.sh 002 > all-fuzz-002-multibin.log &
+nohup sh all-fuzz-multibin.sh 003 > all-fuzz-003-multibin.log &
+nohup sh all-fuzz-multibin.sh 004 > all-fuzz-004-multibin.log &
+nohup sh all-fuzz-multibin.sh 005 > all-fuzz-005-multibin.log &
+nohup sh all-fuzz-multibin.sh 006 > all-fuzz-006-multibin.log &
+nohup sh all-fuzz-multibin.sh 007 > all-fuzz-007-multibin.log &
+nohup sh all-fuzz-multibin.sh 008 > all-fuzz-008-multibin.log &
+nohup sh all-fuzz-multibin.sh 009 > all-fuzz-009-multibin.log &
+#+END_SRC
+
+Note that I have now put it up to 10 fuzzes again to improve the noise estimates
+
+And one I forgot
+#+BEGIN_SRC sh :results verbatim
+linelist=LineMaps/linesum-Cl_IV-8046-fuzz???.fits
+for line in $linelist; do
+    echo "Processing $line"
+    time python multibin-map.py $line
+done
+#+END_SRC
+
+
+
+
 
