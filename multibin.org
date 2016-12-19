@@ -255,95 +255,30 @@ oversample: nan(s) found in input image
 oversample: nan(s) found in output image
 #+end_example
 
-** Shell scripts to do multibinning of observed and fuzzed maps
+** Shell scripts to do multibinning of all mean and sigma maps
 :PROPERTIES:
-:ID:       8E91B82E-9A07-4DE7-8EDC-5157FB5EEA99
+:ID:       32F0303B-61A5-4C52-93C6-2174185526A8
 :END:
-Do them all
-#+BEGIN_SRC sh :tangle all-lines-multibin.sh
-linelist=LineMaps/linesum-*[0-9][0-9][0-9][0-9].fits
+
+Do all the mean 
+#+BEGIN_SRC sh :eval no :tangle all-mean-maps-multibin.sh
+D=../OrionMuse/LineMaps
+linelist=$D/mean-*[0-9][0-9][0-9][0-9]-patfixx.fits
 for line in $linelist; do
     echo "Processing $line"
     time python multibin-map.py $line > ${line}-multibin.log
 done
 #+END_SRC
 
-#+BEGIN_SRC sh :tangle all-continuum-multibin.sh
-linelist=LineMaps/continuum-*[0-9][0-9][0-9][0-9].fits
+#+BEGIN_SRC sh :eval no :tangle all-sigma-maps-multibin.sh
+D=../OrionMuse/LineMaps
+linelist=$D/sigma-*[0-9][0-9][0-9][0-9]-patfixx.fits
 for line in $linelist; do
     echo "Processing $line"
     time python multibin-map.py $line > ${line}-multibin.log
 done
 #+END_SRC
 
-#+RESULTS:
-#+begin_example
-Processing LineMaps/linesum-Ar_III-5192.fits
-Processing LineMaps/linesum-Ar_III-7136.fits
-Processing LineMaps/linesum-Ar_III-7751.fits
-Processing LineMaps/linesum-C_I-8727.fits
-Processing LineMaps/linesum-C_II-5890.fits
-Processing LineMaps/linesum-C_II-6578.fits
-Processing LineMaps/linesum-Ca_I-9052.fits
-Processing LineMaps/linesum-Ca_I-9095.fits
-Processing LineMaps/linesum-Cl_II-8579.fits
-Processing LineMaps/linesum-Cl_III-5518.fits
-Processing LineMaps/linesum-Cl_III-5538.fits
-Processing LineMaps/linesum-Cl_IV-8046.fits
-Processing LineMaps/linesum-Fe_II-5262.fits
-Processing LineMaps/linesum-Fe_II-6133.fits
-Processing LineMaps/linesum-Fe_II-7453.fits
-Processing LineMaps/linesum-Fe_II-8617.fits
-Processing LineMaps/linesum-Fe_III-4658.fits
-Processing LineMaps/linesum-Fe_III-4702.fits
-Processing LineMaps/linesum-Fe_III-5270.fits
-Processing LineMaps/linesum-H_I-4861.fits
-Processing LineMaps/linesum-H_I-6563.fits
-Processing LineMaps/linesum-H_I-8438.fits
-Processing LineMaps/linesum-H_I-8467.fits
-Processing LineMaps/linesum-H_I-8502.fits
-Processing LineMaps/linesum-H_I-8545.fits
-Processing LineMaps/linesum-H_I-8598.fits
-Processing LineMaps/linesum-H_I-8665.fits
-Processing LineMaps/linesum-H_I-8750.fits
-Processing LineMaps/linesum-H_I-8863.fits
-Processing LineMaps/linesum-H_I-9015.fits
-Processing LineMaps/linesum-H_I-9229.fits
-Processing LineMaps/linesum-He_I-5016.fits
-Processing LineMaps/linesum-He_I-5048.fits
-Processing LineMaps/linesum-He_I-5876.fits
-Processing LineMaps/linesum-He_I-6678.fits
-Processing LineMaps/linesum-He_I-7065.fits
-Processing LineMaps/linesum-N_I-5199.fits
-Processing LineMaps/linesum-N_I-8680.fits
-Processing LineMaps/linesum-N_II-5755.fits
-Processing LineMaps/linesum-N_II-5932.fits
-Processing LineMaps/linesum-N_II-5942.fits
-Processing LineMaps/linesum-N_II-5952.fits
-Processing LineMaps/linesum-N_II-6548.fits
-Processing LineMaps/linesum-N_II-6583.fits
-Processing LineMaps/linesum-O_I-5577.fits
-Processing LineMaps/linesum-O_I-6046.fits
-Processing LineMaps/linesum-O_I-6300.fits
-Processing LineMaps/linesum-O_I-6364.fits
-Processing LineMaps/linesum-O_I-7002.fits
-Processing LineMaps/linesum-O_I-8446.fits
-Processing LineMaps/linesum-O_II-4650.fits
-Processing LineMaps/linesum-O_II-7318.fits
-Processing LineMaps/linesum-O_II-7330.fits
-Processing LineMaps/linesum-O_III-4959.fits
-Processing LineMaps/linesum-O_III-5007.fits
-Processing LineMaps/linesum-S_II-6716.fits
-Processing LineMaps/linesum-S_II-6731.fits
-Processing LineMaps/linesum-S_III-6312.fits
-Processing LineMaps/linesum-S_III-9069.fits
-Processing LineMaps/linesum-Si_II-5041.fits
-Processing LineMaps/linesum-Si_II-5056.fits
-Processing LineMaps/linesum-Si_II-5958.fits
-Processing LineMaps/linesum-Si_II-5979.fits
-Processing LineMaps/linesum-Si_II-6347.fits
-Processing LineMaps/linesum-Si_II-6371.fits
-#+end_example
 
 + And do the fuzzed ones too (this takes ages, so run it in an interactive shell)
 + [2015-11-08 Sun] This does not have to be so careful now, since it will only rebuild files where needed
