@@ -2,6 +2,15 @@
 #+options: ^:{} toc:nil num:nil
 Intelligent powers-of-two rebinning of maps, with weighting, masking, and sensible treatment of NaNs
 
+* [1/3] Plan of action [2016-12-20 Tue]
++ [X] Basic functionality is already here
++ [ ] Improve on the masking
+  + Use a per-line continuum mask
+  + This will help in the red (e.g. [S III] 9069) whee the stars are brighter
++ [ ] Port over more functionality from the MUSE project
+  + Fuzzing, maybe
+  + And constant S/N maps
+
 * Generic utility library for rebinning: =rebin_utils.py= 
 :LOGBOOK:
 - Note taken on [2016-12-19 Mon 18:29] \\
@@ -279,47 +288,4 @@ for line in $linelist; do
 done
 #+END_SRC
 
-
-+ And do the fuzzed ones too (this takes ages, so run it in an interactive shell)
-+ [2015-11-08 Sun] This does not have to be so careful now, since it will only rebuild files where needed
-+ [ ] Actually it is still very slow, mainly because it takes over a second to start the python process and load libraries
-  + So I should re-write it to do the globbing in python instead of shell script
-  + That way, it only needs to start python once, so it will be much quicker
-#+BEGIN_SRC sh :eval no :tangle all-fuzz-multibin.sh
-linelist=LineMaps/linesum-*[0-9][0-9][0-9][0-9]-fuzz$1.fits
-for line in $linelist; do
-    echo "Processing $line"
-    time python multibin-map.py $line > ${line}-multibin.log 2>&1
-done
-#+END_SRC
-
-Usage example
-
-#+BEGIN_SRC sh :eval no
-nohup sh all-fuzz-multibin.sh 000 > all-fuzz-000-multibin.log &
-nohup sh all-fuzz-multibin.sh 001 > all-fuzz-001-multibin.log &
-nohup sh all-fuzz-multibin.sh 002 > all-fuzz-002-multibin.log &
-nohup sh all-fuzz-multibin.sh 003 > all-fuzz-003-multibin.log &
-nohup sh all-fuzz-multibin.sh 004 > all-fuzz-004-multibin.log &
-nohup sh all-fuzz-multibin.sh 005 > all-fuzz-005-multibin.log &
-nohup sh all-fuzz-multibin.sh 006 > all-fuzz-006-multibin.log &
-nohup sh all-fuzz-multibin.sh 007 > all-fuzz-007-multibin.log &
-nohup sh all-fuzz-multibin.sh 008 > all-fuzz-008-multibin.log &
-nohup sh all-fuzz-multibin.sh 009 > all-fuzz-009-multibin.log &
-#+END_SRC
-
-Note that I have now put it up to 10 fuzzes again to improve the noise estimates
-
-And one I forgot
-#+BEGIN_SRC sh :results verbatim
-linelist=LineMaps/linesum-Cl_IV-8046-fuzz???.fits
-for line in $linelist; do
-    echo "Processing $line"
-    time python multibin-map.py $line
-done
-#+END_SRC
-
-
-
-
-
+For more examples, including fuzzed maps, see the [[id:8E91B82E-9A07-4DE7-8EDC-5157FB5EEA99][corresponding header]] of the main MUSE project
