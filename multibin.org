@@ -264,10 +264,12 @@ oversample: nan(s) found in input image
 oversample: nan(s) found in output image
 #+end_example
 
-** Shell scripts to do multibinning of all mean and sigma maps
+** Shell scripts to do multibinning of all linesum, mean and sigma maps
 :PROPERTIES:
 :ID:       32F0303B-61A5-4C52-93C6-2174185526A8
 :END:
+
++ [2016-12-26 Mon] Add version to work on the data in =~/tmp/musedata/=
 
 Do all the mean 
 #+BEGIN_SRC sh :eval no :tangle all-mean-maps-multibin.sh
@@ -287,5 +289,15 @@ for line in $linelist; do
     time python multibin-map.py $line > ${line}-multibin.log
 done
 #+END_SRC
+
+#+BEGIN_SRC sh :eval no :tangle all-musedata-maps-multibin.sh
+D=~/tmp/musedata
+for line in $D/{sigma,mean,linesum}-*-[0-9][0-9][0-9][0-9].fits; do
+    echo "Processing $line"
+    time python multibin-map.py $line > ${line}-multibin.log 2>&1
+done
+#+END_SRC
+
+
 
 For more examples, including fuzzed maps, see the [[id:8E91B82E-9A07-4DE7-8EDC-5157FB5EEA99][corresponding header]] of the main MUSE project
