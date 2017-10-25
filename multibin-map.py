@@ -11,7 +11,7 @@ mingoods = [2, 2, 2, 2, 2, 2, 2, 2, 2]
 
 def pad_array(a, n):
     """Pad 2d array `a` to nearest multiple of `n` in each dimension"""
-    newshape = n*np.ceil(np.array(a.shape).astype(float)/n)
+    newshape = (n*np.ceil(np.array(a.shape).astype(float)/n)).astype(int)
     b = np.zeros(newshape, dtype=a.dtype)
     b[:a.shape[0], :a.shape[1]] = a
     return b
