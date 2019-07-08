@@ -20,6 +20,13 @@ Intelligent powers-of-two rebinning of maps, with weighting, masking, and sensib
 #+BEGIN_SRC python :eval no :tangle rebin_utils.py
   import numpy as np
 
+  def pad_array(a, n):
+      """Pad 2d array `a` to nearest multiple of `n` in each dimension"""
+      newshape = (n*np.ceil(np.array(a.shape).astype(float)/n)).astype(int)
+      b = np.zeros(newshape, dtype=a.dtype)
+      b[:a.shape[0], :a.shape[1]] = a
+      return b
+
 
   def downsample(images, mask, weights=None, verbose=False, mingood=1):
       """
@@ -118,18 +125,11 @@ cp -av ../OrionMuse/muse-hr-image-wfc3-f547m.fits .
   import os
   from distutils.dep_util import newer, newer_group
   import numpy as np
-  from rebin_utils import downsample, oversample
+  from rebin_utils import downsample, oversample, pad_array
   from astropy.io import fits
 
   nlist = [1, 2, 4, 8, 16, 32, 64, 128, 256]
   mingoods = [2, 2, 2, 2, 2, 2, 2, 2, 2]
-
-  def pad_array(a, n):
-      """Pad 2d array `a` to nearest multiple of `n` in each dimension"""
-      newshape = (n*np.ceil(np.array(a.shape).astype(float)/n)).astype(int)
-      b = np.zeros(newshape, dtype=a.dtype)
-      b[:a.shape[0], :a.shape[1]] = a
-      return b
 
 
   try: 
