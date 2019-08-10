@@ -38,7 +38,7 @@ class CloudyModel(object):
                 # Assume all else are save files
                 try:
                     self.data[saveid] = Table.read(
-                        file_, delimiter="\t",
+                        file_, delimiter="\t", guess=False, fast_reader=False,
                         format="ascii.commented_header")
                 except UnicodeDecodeError:
                     # Binary files can raise this error - ignore them
