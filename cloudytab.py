@@ -1,4 +1,5 @@
 from astropy.table import Table
+from astropy.io.ascii import InconsistentTableError
 import glob
 
 # File extensions that might be present, but which are NOT Cloudy save files
@@ -42,4 +43,7 @@ class CloudyModel(object):
                         format="ascii.commented_header")
                 except UnicodeDecodeError:
                     # Binary files can raise this error - ignore them
+                    pass
+                except InconsistentTableError:
+                    # The "save heating" files can raise this error - skip them
                     pass
