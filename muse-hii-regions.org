@@ -2,7 +2,7 @@
 #+options: author:t broken-links:nil c:nil creator:nil
 #+options: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
 #+options: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
-#+options: timestamp:t title:t toc:t todo:t |:t
+#+options: timestamp:t title:t toc:nil todo:t |:t
 #+language: en
 #+select_tags: export
 #+exclude_tags: noexport
@@ -21,13 +21,13 @@
 I have made a series of notebooks
 
 *** 00 MPDAF simple demo
-+ Notebook: [[file:notebooks/00 MPDAF simple demo.ipynb][notebooks/00 MPDAF simple demo.ipynb]]
-+ Pure python: [[file:notebooks/00 MPDAF simple demo.py][notebooks/00 MPDAF simple demo.py]]
++ Notebook: [[file:notebooks/00-MPDAF-simple-demo.ipynb][00-MPDAF-simple-demo.ipynb]]
++ Pure python: [[file:notebooks/00-MPDAF-simple-demo.py][00-MPDAF-simple-demo.py]]
 + Reading in the data cube, summing all waves to get an image, summing all pixels to get a spectrum
 
 ** N66/NGC 346 in the SMC
 + N66 is the H II region, while NGC 346 is technically the star cluster, but the H II region is also sometimes referred to as this
-+ Data are at [[file:~/Work/Muse-Hii-Data/SMC-NGC-346/ADP.2017-10-16T11_04_19.247.fits]]
++ Data are at [[file:~/Work/Muse-Hii-Data/SMC-NGC-346/ADP.2017-10-16T11_04_19.247.fits][SMC-NGC-346/ADP.2017-10-16T11_04_19.247.fits]]
 + Papers on NGC 346
   + Valerdi:2019a Helium abundance
     + Measures physical conditions too:
@@ -39,4 +39,4 @@ I have made a series of notebooks
   + We can maybe fix this by adding on the spectrum seen in the darkest corner of the image
 
 * Export the README.md file                       :noexport:
-+ Type ~C-c C-e C-s g m~ in the first heading
++ Type ~C-c C-e C-s g g~ in the first heading
