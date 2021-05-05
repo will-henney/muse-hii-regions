@@ -1,4 +1,15 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+options: author:t broken-links:nil c:nil creator:nil
+#+options: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+options: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+options: timestamp:t title:t toc:t todo:t |:t
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
 * Emission line extraction and analysis from MUSE datasets of HII regions
+:PROPERTIES:
+:EXPORT_FILE_NAME: README
+:END:
 + New project [2021-05-04 Tue]
 + Two principal aims:
   1. Analyzing velocity statistics, such as structure functions
@@ -27,3 +38,5 @@ I have made a series of notebooks
 + There is a problem that seems to be an overzealous background subtraction, which means that some of the lines come out negative
   + We can maybe fix this by adding on the spectrum seen in the darkest corner of the image
 
+* Export the README.md file                       :noexport:
++ Type ~C-c C-e C-s g m~ in the first heading
