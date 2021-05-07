@@ -81,6 +81,8 @@ im_ha_bgsub.plot(
 #
 # The white dots are presumably from the underlying photospheric absorption from some of the stars.  Other stars are seen in emission.
 
+# *Note that the `Cube.get_image()` function can do the continuum subtraction semi-automatically, which may be more convenient in some instances.*
+
 # Strangely, though, the brightnesses go negative
 
 im_ha.data.min()
@@ -101,9 +103,11 @@ im_ha_ew.plot(
 
 #  ## Extracting spatial regions
 
+# ### Masking of 2D images
+#
 # We will go back to the ha+continuum image and try and plot it without the stars
 
-savemask = im_ha.mask
+savemask = im_ha.mask.copy()
 savemask
 
 # We mask out the bright continuum sources using `mask_selection`
@@ -111,15 +115,230 @@ savemask
 im_ha.mask_selection(np.where(im_mean_cont.data > 1000.0))
 
 fig, ax = plt.subplots(figsize=(10, 10))
-im_ha.plot(use_wcs=True, cmap="gray_r", scale="log", colorbar="v")
+im_ha.plot(use_wcs=True, cmap="viridis", scale="log", colorbar="v")
 
 # What this uses is an array of pixels, such as provided by `np.where`:
 
 bright_cont_selection = np.where(im_mean_cont.data > 1000.0)
 bright_cont_selection
 
-savecubemask = cube.mask
+# ### Masking of a 3D cube (small subcube version)
+#
+# My first attempts at doing this did not work as I expected, so I am going to extract a small sub-cube that will be easy to look at.  
 
-cube.mask_selection(bright_cont_selection)
+# There are at least three ways that look like they might be used to make a sub-cube:
+#
+# 1. `Cube.subcube(center=..., size=..., lbda=..., ...)` cuts out a rectangle.  It returns a view so we would have to do `.copy()`
+# 2. `Cube.truncate(coord=[w1, x1, y1, w2, x2, y2], ...)` does return a copy, and with a slightly different interface
+# 3. `Cube[k1:k2, j1:j2, i1:i2]` is the simplest approach using pixel slice notation, and should return a copy
+#
+# We will try the third way first, but just for the celestial coordinates, then use `.select_lambda()` to extract a small section of the wavelength axis:
+
+cc = cube[:, 5:15, 130:140].select_lambda(6554.0, 6581.0)
+
+cc.info()
+
+# We have a 10x10 pixel postage stamp, with 22 pixels in wavelength. Some of the pixels are from the image border and are masked, as we can see here:
+
+cc.sum(axis=0).plot(use_wcs=True)
+
+# I chose this region because it contains a star that we can try and mask out.  Here is the spectrum averaged over all pixels and plotted on a linear scale:
+
+fig, ax = plt.subplots(figsize=(10, 4))
+cc.mean(axis=(1, 2)).plot()
+ax.set(ylim=[0, None]);
+
+# So, we have roughly equal parts continuum and line emission.  
+#
+# Now, we look at the mask (steps by multiple pixels so we can see it better): 
+
+cc.mask[::5, ::2, ::2]
+
+# We see a stack of wavelength images. Each has y-axis inverted, so the `True` values in each top row are the bottom line of pixels in each image.  
+
+# I am going to try and mask the pixels that have relatively strong continuum, and then recalculate the average spectrum.  With luck, that will make the line stand out more.  First, save the original mask (I use copy here because otherwise they are just different views of the same object - we should also use copy to put the original mask back if we ever want to). 
+
+cc_mask_orig = cc.mask
+
+id(cc_mask_orig), id(cc.mask)
+
+cc_mask_orig = cc.mask.copy()
+
+id(cc_mask_orig), id(cc.mask)
+
+# #### Masking via simple slicing on the celestial pixel axes
+#
+# First, I try doing it by hand with pixel slicing of the mask.  I will attempt to mask out the bottom right of the cube (8x8 pixels), so we just leave a 2 pixel L-shaped strip:
+
+cc.mask[:, :8, -8:] = True
+
+cc.sum(axis=0).plot(use_wcs=True)
+
+# So that looks OK. Now I check if it has had any effect on the average spectrum:
+
+fig, ax = plt.subplots(figsize=(10, 4))
+cc.mean(axis=(1, 2)).plot()
+ax.set(ylim=[0, None]);
+
+# Yes, the continuum level is now much lower, although this is at a cost of removing most of the pixels. 
+#
+# #### Masking via logical operation to make a boolean array
+#
+# Now, we will see if we can use a logical condition to set the mask.  But first, restore the original
+
+cc.mask = cc_mask_orig.copy()
+
+# We can make a 2D mask, which is true for all pixels where the continuum intensity is more than half the average intensity in the passband:
+
+my_mask = cc[:6, :, :].mean(axis=0).data > 0.5*cc.mean(axis=0).data
+
+# Note that we had to extract the `.data` before comparing, otherwise we get something very strange.  Even so, the mask we get back is itself a masked array – so it is a masked mask!
+
+my_mask[::2, ::2]
+
+# The `.data` part has a logical array where our condition is true.  The `.mask` part is another logical array where the cube's mask is true.  We can simplify life by just ORing them together to make a simple array:
+
+my_mask = my_mask.mask | my_mask.data
+my_mask[::2, ::2]
+
+# In order to apply this mask to the cube, we need to make it 3-dimensional:
+
+my_mask_3d = np.repeat(my_mask[None, :, :], cc.shape[0], axis=0)
+
+my_mask_3d[::5, ::2, ::2]
+
+# Now directly set the cube's mask to be this boolean array.
+
+cc.mask = my_mask_3d.copy()
+
+# Have a look at the result. First collapse the spectral axis to make an image:
+
+cc.sum(axis=0).plot(use_wcs=True)
+
+# Looks good.  We see that the original border is still masked, plus a roughly circular patch around the star.
+#
+# Now collapse the celestial axes to get a spectrum, which should be of the unmasked pixels only:
+
+fig, ax = plt.subplots(figsize=(10, 4))
+cc.mean(axis=(1, 2)).plot()
+ax.set(ylim=[0, None]);
+
+# Yep. that looks fine.
+
+# ### Masking of a 3D cube (big cube version)
+#
+# Now that I have a method that seems to work, I will go back to the full cube and try things there.  Although, I will restrict it to the an extended wavelength range around H alpha. We will use the range 6200 to 6800 Å, which is the same as Fig 3 of my Raman paper.
+
+hacube = cube.select_lambda(6200.0, 6800.0)
+hacube.info()
+
+# Save a copy of the original mask again
+
+hacube_mask_orig = hacube.mask.copy()
+
+fig, ax = plt.subplots(figsize=(10, 10))
+hacube.sum(axis=0).plot(use_wcs=True, cmap="magma", scale="log", colorbar="v")
+
+fig, ax = plt.subplots(figsize=(10, 4))
+hacube.mean(axis=(1, 2)).plot()
+ax.set(ylim=[0, 400]);
+
+# There really is a lot of continuum here.  It would be good to get rid of some of it so we can see the lines better!
+#
+# Make a 3D mask for `hacube` where each image plane is the mask of the strong continuum sources from above.
+
+my_mask_3d = np.repeat(
+    im_ha.mask[None, :, :], 
+    hacube.shape[0], 
+    axis=0,
+)
+
+# Have a look at a sparse sample of the cube mask:
+
+my_mask_3d[:2, ::20, ::50]
+
+# Looks OK. Now we apply it to the cube.  We need to make sure we are also masking out the voxels that were originally masked, since some of them have invalid data, which can cause problems with the spectra.
+
+hacube.mask = my_mask_3d.copy() | hacube_mask_orig
+
+# And redo the summed image and average spectrum:
+
+fig, ax = plt.subplots(figsize=(10, 10))
+hacube.sum(axis=0).plot(use_wcs=True, cmap="magma", scale="log", colorbar="v")
+
+fig, ax = plt.subplots(figsize=(10, 4))
+hacube.mean(axis=(1, 2)).plot()
+ax.set(ylim=[0, 400]);
+
+# +
+#hacube.mask = (my_mask_3d) | hacube_mask_orig
+hacube.mask = hacube_mask_orig.copy()
+fig, ax = plt.subplots(figsize=(10, 4))
+spec_ha = hacube[:, 240:250, 230:250].mean(axis=(1, 2))
+spec2 = spec_ha.subspec(6400, 6650)
+spec2.mask_region(6500, 6600)
+cont = spec2.poly_spec(2)
+spec_ha.unmask()
+spec_ha.plot()
+cont.plot(color="m")
+ax.axvline(6578,c="r", lw=0.3)
+ax.axvline(6583, c="r", lw=0.3)
+ax.axvline(6591,c="r", lw=0.3)
+ax.axvline(6600, c="r", lw=0.3)
+ax.axvline(6620, c="r", lw=0.3)
+
+ax.axvline(6540, c="c", lw=0.3)
+ax.axvline(6549, c="c", lw=0.3)
+
+
+
+ax.set(ylim=[0, 100]);
+# -
+
+cont6600 = cube.select_lambda(6600.0, 6620.0).mean(axis=0)
+wing = (cube.select_lambda(6591.0, 6600.0) -  cont6600).sum(axis=0)
+fig, ax = plt.subplots(figsize=(10, 10))
+wing.mask = wing.mask | (cont6600.data > 70.0)
+wing.plot(
+    use_wcs=True, 
+    vmin=-10, vmax=50,
+    cmap="viridis", 
+    scale="linear", 
+    colorbar="v",
+)
+
+inwing = (cube.select_lambda(6578.0, 6583.0) -  cont6600).sum(axis=0)
+fig, ax = plt.subplots(figsize=(10, 10))
+inwing.mask = inwing.mask | (cont6600.data > 70.0)
+inwing.plot(
+    use_wcs=True, 
+    vmin=-10, vmax=50,
+    cmap="viridis", 
+    scale="linear", 
+    colorbar="v",
+)
+
+hacube.mask = hacube_mask_orig.copy() | wing.mask
+fig, ax = plt.subplots(figsize=(10, 10))
+hacube.sum(axis=0).plot()
+
+# +
+fig, ax = plt.subplots(figsize=(10, 4))
+hacube[:, 100:140, 15:40].mean(axis=(1, 2)).plot()
+hacube[:, 180:240, 240:300].mean(axis=(1, 2)).plot(c="r")
+hacube[:, 10:50, 100:150].mean(axis=(1, 2)).plot(c="m")
+hacube[:, 10:100, 200:300].mean(axis=(1, 2)).plot(c="g")
+
+ax.set(ylim=[0.0, 50])
+# -
+
+hacube.mask = hacube_mask_orig.copy()
+fig, ax = plt.subplots(figsize=(10, 4))
+hacube[:, -30:, 50:70].mean(axis=(1, 2)).plot()
+ax.set(ylim=[-100, 20])
+
+fig, ax = plt.subplots(figsize=(10, 4))
+cube[:, -30:, 50:70].mean(axis=(1, 2)).plot()
+ax.set(ylim=[-1000, 100])
 
 
