@@ -70,7 +70,7 @@ im_ha_bgsub = (cube.select_lambda(6560.0, 6575.0) - im_mean_cont).sum(axis=0)
 fig, ax = plt.subplots(figsize=(10, 10))
 im_ha_bgsub.plot(
     use_wcs=True,
-    vmin=-2.0e4,
+    vmin=-1.5e4,
     vmax=1.0e5,
     cmap="gray_r",
     scale="linear",
@@ -87,17 +87,39 @@ im_ha_bgsub.plot(
 
 im_ha.data.min()
 
-im_mean_cont.data.min()
+# Look at a restricted region at the top of the map to avoid most of the stars
 
-im_ha_ew = (im_ha_bgsub - im_ha.data.min()) / (im_mean_cont - im_mean_cont.data.min())
+im_ha_floor = np.min(im_ha[300:, 50:70].data)
+im_ha_floor
+
+im_cont_floor = np.min(im_mean_cont[-100:, 100:150].data)
+im_cont_floor
+
+# This seems to be due to over-subtraction of a sky spectrum.  We will try and deal with this properly later.
+
+# ### Calculate the H alpha equivalent width
+#
+# In wavelength units, the emission line EW is 
+# $$
+# W_\lambda = \int \frac{F_\lambda - F_c}{F_c} \, d\lambda
+# $$
+#
+
+wav_pix = cube.get_step()[0]
+im_ha_ew = wav_pix * (
+    (im_ha_bgsub - im_ha_floor) 
+    / (im_mean_cont - im_cont_floor)
+    - 1.0)
+
+# To deal with the negative pixels, we just add on the estimated floow value of both the line map and the continuum map.  
 
 fig, ax = plt.subplots(figsize=(10, 10))
 im_ha_ew.plot(
-    vmin=-10.0,
-    vmax=10.0,
+    vmin=0.0,
+    vmax=1500.0,
     use_wcs=True,
-    cmap="gray_r",
-    scale="linear",
+    cmap="magma",
+    scale="sqrt",
     colorbar="v",
 )
 
@@ -115,7 +137,9 @@ savemask
 im_ha.mask_selection(np.where(im_mean_cont.data > 1000.0))
 
 fig, ax = plt.subplots(figsize=(10, 10))
-im_ha.plot(use_wcs=True, cmap="viridis", scale="log", colorbar="v")
+im_ha.plot(use_wcs=True, 
+           cmap="viridis", 
+           scale="log", colorbar="v")
 
 # What this uses is an array of pixels, such as provided by `np.where`:
 
@@ -240,15 +264,27 @@ fig, ax = plt.subplots(figsize=(10, 10))
 hacube.sum(axis=0).plot(use_wcs=True, cmap="magma", scale="log", colorbar="v")
 
 fig, ax = plt.subplots(figsize=(10, 4))
-hacube.mean(axis=(1, 2)).plot()
+haspec_allpix = hacube.mean(axis=(1, 2))
+haspec_allpix.plot()
 ax.set(ylim=[0, 400]);
 
 # There really is a lot of continuum here.  It would be good to get rid of some of it so we can see the lines better!
 #
-# Make a 3D mask for `hacube` where each image plane is the mask of the strong continuum sources from above.
+#
+# We will take an aggressive approach to try and mask out all the stars by taking an EW threshold of 750 Å. 
+
+ew_mask = (im_ha_ew.data < 750.0) | im_ha.mask
+nmask = ew_mask.data.sum()
+npix = np.prod(ew_mask.shape)
+print("Number of masked pixels:", nmask)
+print("Fraction of masked pixels:", nmask/npix)
+
+# So that has eliminated more than half of the pixels. Let's see if it was worth it.
+#
+# Make a 3D mask for `hacube` by repeating multiple copies of this 2D mask along the wavelength axis:
 
 my_mask_3d = np.repeat(
-    im_ha.mask[None, :, :], 
+    ew_mask.data[None, :, :],
     hacube.shape[0], 
     axis=0,
 )
@@ -264,11 +300,19 @@ hacube.mask = my_mask_3d.copy() | hacube_mask_orig
 # And redo the summed image and average spectrum:
 
 fig, ax = plt.subplots(figsize=(10, 10))
-hacube.sum(axis=0).plot(use_wcs=True, cmap="magma", scale="log", colorbar="v")
+hacube.sum(axis=0).plot(use_wcs=True, cmap="plasma", scale="linear", colorbar="v")
+
+# There are lots of white patches there, where we have eliminated the broad PSFs of the bright stars.  What remains should be mostly nebulosity.
+#
+# Now we can compare the total spectrum with what we had earlier:
 
 fig, ax = plt.subplots(figsize=(10, 4))
-hacube.mean(axis=(1, 2)).plot()
-ax.set(ylim=[0, 400]);
+hacube.mean(axis=(1, 2)).plot(label="Pixels with EW(Ha) > 750  Å")
+haspec_allpix.plot(c="r", label="All pixels")
+ax.legend()
+ax.set(ylim=[0, 200]);
+
+# Comparing the red line (all pixels) and the blue line (unmasked pixels only), we can see that we have eliminate 90% of the continuum by masking out the stars.  We have also managed to remove most of the underlying photospheric absorption lines.  This is most obvious in the He I 6678 line, but can also be seen in H alpha. 
 
 # +
 #hacube.mask = (my_mask_3d) | hacube_mask_orig
@@ -337,8 +381,19 @@ fig, ax = plt.subplots(figsize=(10, 4))
 hacube[:, -30:, 50:70].mean(axis=(1, 2)).plot()
 ax.set(ylim=[-100, 20])
 
-fig, ax = plt.subplots(figsize=(10, 4))
-cube[:, -30:, 50:70].mean(axis=(1, 2)).plot()
-ax.set(ylim=[-1000, 100])
+nspec=20
+wavmin, _, _, wavmax, _, _ = cube.get_range()
+dwav = (wavmax - wavmin)/nspec
+fig, axes = plt.subplots(nspec, 1, figsize=(10, 1.0*nspec))
+wav1 = wavmin - dwav
+wav2 = wavmin
+for ax in axes:
+    wav1 += dwav
+    wav2 += dwav
+    spec = cube[:, -30:, 50:70].select_lambda(wav1, wav2).mean(axis=(1, 2))
+    spec.plot(ax=ax, linewidth=2)
+    ax.set(ylim=[-200, 40], ylabel="", xlabel="")
+axes[-1].set(xlabel=r"$\lambda$, Angstrom")
+fig.tight_layout()
 
 
