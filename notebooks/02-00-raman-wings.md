@@ -14,7 +14,7 @@ jupyter:
     name: python3
 ---
 
-# Looking for the H alpha Raman wings in SMC-N60
+# Looking for the H alpha Raman wings in SMC-N66 (NGC 346)
 
 
 Start off the same as the other notebooks - import the libraries and load the data

@@ -20,10 +20,37 @@
 ** Learning to use MPDAF
 I have made a series of notebooks
 
-*** 00 MPDAF simple demo
-+ Notebook: [[file:notebooks/00-MPDAF-simple-demo.ipynb][00-MPDAF-simple-demo.ipynb]]
-+ Pure python: [[file:notebooks/00-MPDAF-simple-demo.py][00-MPDAF-simple-demo.py]]
+*** 00 Series: short demos of MPDAF functionality
+**** 00 00 MPDAF simple demo
++ Notebook: [[file:notebooks/00-00-MPDAF-simple-demo.ipynb][00-00-MPDAF-simple-demo.ipynb]]
++ Pure python: [[file:notebooks/00-00-MPDAF-simple-demo.py][00-00-MPDAF-simple-demo.py]]
 + Reading in the data cube, summing all waves to get an image, summing all pixels to get a spectrum
+**** 00 01 Extract sub-regions
++ Notebook: [[file:notebooks/00-01-extract-subregions.ipynb][00-01-extract-subregions.ipynb]]
++ Pure python: [[file:notebooks/00-01-extract-subregions.py][00-01-extract-subregions.py]]
++ Extract spectral ranges and spatial regions of the data cube
+  + Use of masks in 2D and 3D
+
+*** 01 Series: longer exercises in extracting line ratio diagnostics
+
+**** 01 00 Line Ratios
++ Notebook: [[file:notebooks/01-00-line-ratios.ipynb][01-00-line-ratios.ipynb]]
++ Pure python: [[file:notebooks/01-00-line-ratios.py][01-00-line-ratios.py]]
++ Mainly concentrating on the [S II] 6716,31 lines for now
+  + Demonstrates a novel (I believe) technique of compensating for uncertainties in the zero-point, which makes use of the known line ratio in the low-density limit
+  + Makes use of ~pandas~ and ~seaborn~ libraries to plot joint distributions of extracted line intensities
+
+
+*** 02 Series: extraction of the Raman-scattered wings to Balmer lines
+
+**** 02 00 Line Ratios
++ Notebook: [[file:notebooks/02-00-raman-wings.ipynb][02-00-raman-wings.ipynb]]
++ Pure python: [[file:notebooks/02-00-raman-wings.py][02-00-raman-wings.py]]
++ Yes, we find the wings in NGC 346
+  + We have to mask out about 60% of the spatial pixels that are contaminated with stars in order to see it properly
+  + Makes use of ~regions~ library to select boxes in the image
+    
+*** TODO 03 Series: exercises with velocity moments
 
 ** N66/NGC 346 in the SMC
 + N66 is the H II region, while NGC 346 is technically the star cluster, but the H II region is also sometimes referred to as this
