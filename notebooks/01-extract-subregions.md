@@ -223,7 +223,7 @@ ax.set(ylim=[0, None])
 
 So, we have roughly equal parts continuum and line emission.
 
-Now, we look at the mask (steps by multiple pixels so we can see it better):
+Now, we look at the mask (stepping by multiple pixels so it fits on the screen better):
 
 ```python
 cc.mask[::5, ::2, ::2]
@@ -299,7 +299,7 @@ my_mask = my_mask.mask | my_mask.data
 my_mask[::2, ::2]
 ```
 
-In order to apply this mask to the cube, we need to make it 3-dimensional:
+In order to apply this mask to the cube, we first make it 3-dimensional. **Note: This is not strictly necessary.  There is an easier way of doing it, which I demonstrate in the following section**
 
 ```python
 my_mask_3d = np.repeat(my_mask[None, :, :], cc.shape[0], axis=0)
@@ -309,10 +309,10 @@ my_mask_3d = np.repeat(my_mask[None, :, :], cc.shape[0], axis=0)
 my_mask_3d[::5, ::2, ::2]
 ```
 
-Now directly set the cube's mask to be this boolean array.
+Now combine the cube's mask with this boolean array.
 
 ```python
-cc.mask = my_mask_3d.copy()
+cc.mask = my_mask_3d | cc.mask
 ```
 
 Have a look at the result. First collapse the spectral axis to make an image:
@@ -378,26 +378,13 @@ print("Fraction of masked pixels:", nmask / npix)
 
 So that has eliminated more than half of the pixels. Let's see if it was worth it.
 
-Make a 3D mask for `hacube` by repeating multiple copies of this 2D mask along the wavelength axis:
+
+The best way to apply this 2D mask to the cube is to combine it with the existing 3D mask.  This has two advantages:
+1. It ensures that we are also masking out the voxels that were originally masked, since some of them have invalid data, which can cause problems with the spectra.
+2. We can easily extend the 2D image mask to 3D by adding a new empty axis and relying on numpy's broadcast rules to expand that axis along the wavelength direction.  This is a lot simpler than explicitly constructing a 3D mask from scratch.
 
 ```python
-my_mask_3d = np.repeat(
-    ew_mask.data[None, :, :],
-    hacube.shape[0],
-    axis=0,
-)
-```
-
-Have a look at a sparse sample of the cube mask:
-
-```python
-my_mask_3d[:2, ::20, ::50]
-```
-
-Looks OK. Now we apply it to the cube.  We need to make sure we are also masking out the voxels that were originally masked, since some of them have invalid data, which can cause problems with the spectra.
-
-```python
-hacube.mask = my_mask_3d.copy() | hacube_mask_orig
+hacube.mask = ew_mask[None, :, :] | hacube.mask
 ```
 
 And redo the summed image and average spectrum:
@@ -425,7 +412,9 @@ Comparing the red line (all pixels) and the blue line (unmasked pixels only), we
 
 ### Investigating the over-subtracted sky
 
-I consentrate on the slice `[-30:, 50:70]` since that seems to be one of the worst-affected regions.
+*I ought to move this section somewhere else.*
+
+I concentrate on the slice `[-30:, 50:70]` since that seems to be one of the worst-affected regions.
 
 ```python
 hacube.mask = hacube_mask_orig.copy()
@@ -449,4 +438,8 @@ for ax in axes:
     ax.set(ylim=[-200, 40], ylabel="", xlabel="")
 axes[-1].set(xlabel=r"$\lambda$, Angstrom")
 fig.tight_layout()
+```
+
+```python
+
 ```
