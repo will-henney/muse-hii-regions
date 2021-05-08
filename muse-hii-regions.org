@@ -65,5 +65,14 @@ I have made a series of notebooks
 + There is a problem that seems to be an overzealous background subtraction, which means that some of the lines come out negative
   + We can maybe fix this by adding on the spectrum seen in the darkest corner of the image
 
-* Export the README.md file                       :noexport:
-+ Type ~C-c C-e C-s g g~ in the first heading
+** Problems with the sky subtraction
++ With the NGC 346 cube, it looks like the pipeline sky subtraction tried to use the science image itself to determine the sky
+  + But this is a bad idea since the H II region fills the FOV of the instrument
++ General discussion of sky subtraction in pipeline:
+  + Sec 3.9.3 of Weilbacher:2020a
+  + [[file:reference-material/muse-pipeline-manual-2.8.3.pdf][MUSE Pipeline Manual]]
+  + External tool to fix up sky subtraction on pipeline-reduced cube
+    + ZAP – the Zurich Atmosphere Purge
+      + Soto:2016n
+      + https://github.com/musevlt/zap
+    + Unfortunately, this seems to require the use of a blank exposure of adjacent sky in cases like ours, and I don't think that is available
