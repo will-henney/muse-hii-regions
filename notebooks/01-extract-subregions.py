@@ -99,7 +99,7 @@ im_cont_floor
 
 # ### Calculate the H alpha equivalent width
 #
-# In wavelength units, the emission line EW is 
+# In wavelength units, the emission line EW is
 # $$
 # W_\lambda = \int \frac{F_\lambda - F_c}{F_c} \, d\lambda
 # $$
@@ -107,11 +107,10 @@ im_cont_floor
 
 wav_pix = cube.get_step()[0]
 im_ha_ew = wav_pix * (
-    (im_ha_bgsub - im_ha_floor) 
-    / (im_mean_cont - im_cont_floor)
-    - 1.0)
+    (im_ha_bgsub - im_ha_floor) / (im_mean_cont - im_cont_floor) - 1.0
+)
 
-# To deal with the negative pixels, we just add on the estimated floow value of both the line map and the continuum map.  
+# To deal with the negative pixels, we just add on the estimated floow value of both the line map and the continuum map.
 
 fig, ax = plt.subplots(figsize=(10, 10))
 im_ha_ew.plot(
@@ -137,9 +136,7 @@ savemask
 im_ha.mask_selection(np.where(im_mean_cont.data > 1000.0))
 
 fig, ax = plt.subplots(figsize=(10, 10))
-im_ha.plot(use_wcs=True, 
-           cmap="viridis", 
-           scale="log", colorbar="v")
+im_ha.plot(use_wcs=True, cmap="viridis", scale="log", colorbar="v")
 
 # What this uses is an array of pixels, such as provided by `np.where`:
 
@@ -148,7 +145,7 @@ bright_cont_selection
 
 # ### Masking of a 3D cube (small subcube version)
 #
-# My first attempts at doing this did not work as I expected, so I am going to extract a small sub-cube that will be easy to look at.  
+# My first attempts at doing this did not work as I expected, so I am going to extract a small sub-cube that will be easy to look at.
 
 # There are at least three ways that look like they might be used to make a sub-cube:
 #
@@ -170,17 +167,17 @@ cc.sum(axis=0).plot(use_wcs=True)
 
 fig, ax = plt.subplots(figsize=(10, 4))
 cc.mean(axis=(1, 2)).plot()
-ax.set(ylim=[0, None]);
+ax.set(ylim=[0, None])
 
-# So, we have roughly equal parts continuum and line emission.  
+# So, we have roughly equal parts continuum and line emission.
 #
-# Now, we look at the mask (steps by multiple pixels so we can see it better): 
+# Now, we look at the mask (steps by multiple pixels so we can see it better):
 
 cc.mask[::5, ::2, ::2]
 
-# We see a stack of wavelength images. Each has y-axis inverted, so the `True` values in each top row are the bottom line of pixels in each image.  
+# We see a stack of wavelength images. Each has y-axis inverted, so the `True` values in each top row are the bottom line of pixels in each image.
 
-# I am going to try and mask the pixels that have relatively strong continuum, and then recalculate the average spectrum.  With luck, that will make the line stand out more.  First, save the original mask (I use copy here because otherwise they are just different views of the same object - we should also use copy to put the original mask back if we ever want to). 
+# I am going to try and mask the pixels that have relatively strong continuum, and then recalculate the average spectrum.  With luck, that will make the line stand out more.  First, save the original mask (I use copy here because otherwise they are just different views of the same object - we should also use copy to put the original mask back if we ever want to).
 
 cc_mask_orig = cc.mask
 
@@ -202,9 +199,9 @@ cc.sum(axis=0).plot(use_wcs=True)
 
 fig, ax = plt.subplots(figsize=(10, 4))
 cc.mean(axis=(1, 2)).plot()
-ax.set(ylim=[0, None]);
+ax.set(ylim=[0, None])
 
-# Yes, the continuum level is now much lower, although this is at a cost of removing most of the pixels. 
+# Yes, the continuum level is now much lower, although this is at a cost of removing most of the pixels.
 #
 # #### Masking via logical operation to make a boolean array
 #
@@ -214,7 +211,7 @@ cc.mask = cc_mask_orig.copy()
 
 # We can make a 2D mask, which is true for all pixels where the continuum intensity is more than half the average intensity in the passband:
 
-my_mask = cc[:6, :, :].mean(axis=0).data > 0.5*cc.mean(axis=0).data
+my_mask = cc[:6, :, :].mean(axis=0).data > 0.5 * cc.mean(axis=0).data
 
 # Note that we had to extract the `.data` before comparing, otherwise we get something very strange.  Even so, the mask we get back is itself a masked array – so it is a masked mask!
 
@@ -245,7 +242,7 @@ cc.sum(axis=0).plot(use_wcs=True)
 
 fig, ax = plt.subplots(figsize=(10, 4))
 cc.mean(axis=(1, 2)).plot()
-ax.set(ylim=[0, None]);
+ax.set(ylim=[0, None])
 
 # Yep. that looks fine.
 
@@ -266,18 +263,18 @@ hacube.sum(axis=0).plot(use_wcs=True, cmap="magma", scale="log", colorbar="v")
 fig, ax = plt.subplots(figsize=(10, 4))
 haspec_allpix = hacube.mean(axis=(1, 2))
 haspec_allpix.plot()
-ax.set(ylim=[0, 400]);
+ax.set(ylim=[0, 400])
 
 # There really is a lot of continuum here.  It would be good to get rid of some of it so we can see the lines better!
 #
 #
-# We will take an aggressive approach to try and mask out all the stars by taking an EW threshold of 750 Å. 
+# We will take an aggressive approach to try and mask out all the stars by taking an EW threshold of 750 Å.
 
 ew_mask = (im_ha_ew.data < 750.0) | im_ha.mask
 nmask = ew_mask.data.sum()
 npix = np.prod(ew_mask.shape)
 print("Number of masked pixels:", nmask)
-print("Fraction of masked pixels:", nmask/npix)
+print("Fraction of masked pixels:", nmask / npix)
 
 # So that has eliminated more than half of the pixels. Let's see if it was worth it.
 #
@@ -285,7 +282,7 @@ print("Fraction of masked pixels:", nmask/npix)
 
 my_mask_3d = np.repeat(
     ew_mask.data[None, :, :],
-    hacube.shape[0], 
+    hacube.shape[0],
     axis=0,
 )
 
@@ -310,81 +307,24 @@ fig, ax = plt.subplots(figsize=(10, 4))
 hacube.mean(axis=(1, 2)).plot(label="Pixels with EW(Ha) > 750  Å")
 haspec_allpix.plot(c="r", label="All pixels")
 ax.legend()
-ax.set(ylim=[0, 200]);
+ax.set(ylim=[0, 200])
 
-# Comparing the red line (all pixels) and the blue line (unmasked pixels only), we can see that we have eliminate 90% of the continuum by masking out the stars.  We have also managed to remove most of the underlying photospheric absorption lines.  This is most obvious in the He I 6678 line, but can also be seen in H alpha. 
-
-# +
-#hacube.mask = (my_mask_3d) | hacube_mask_orig
-hacube.mask = hacube_mask_orig.copy()
-fig, ax = plt.subplots(figsize=(10, 4))
-spec_ha = hacube[:, 240:250, 230:250].mean(axis=(1, 2))
-spec2 = spec_ha.subspec(6400, 6650)
-spec2.mask_region(6500, 6600)
-cont = spec2.poly_spec(2)
-spec_ha.unmask()
-spec_ha.plot()
-cont.plot(color="m")
-ax.axvline(6578,c="r", lw=0.3)
-ax.axvline(6583, c="r", lw=0.3)
-ax.axvline(6591,c="r", lw=0.3)
-ax.axvline(6600, c="r", lw=0.3)
-ax.axvline(6620, c="r", lw=0.3)
-
-ax.axvline(6540, c="c", lw=0.3)
-ax.axvline(6549, c="c", lw=0.3)
+# Comparing the red line (all pixels) and the blue line (unmasked pixels only), we can see that we have eliminate 90% of the continuum by masking out the stars.  We have also managed to remove most of the underlying photospheric absorption lines.  This is most obvious in the He I 6678 line, but can also be seen in H alpha.
 
 
-
-ax.set(ylim=[0, 100]);
-# -
-
-cont6600 = cube.select_lambda(6600.0, 6620.0).mean(axis=0)
-wing = (cube.select_lambda(6591.0, 6600.0) -  cont6600).sum(axis=0)
-fig, ax = plt.subplots(figsize=(10, 10))
-wing.mask = wing.mask | (cont6600.data > 70.0)
-wing.plot(
-    use_wcs=True, 
-    vmin=-10, vmax=50,
-    cmap="viridis", 
-    scale="linear", 
-    colorbar="v",
-)
-
-inwing = (cube.select_lambda(6578.0, 6583.0) -  cont6600).sum(axis=0)
-fig, ax = plt.subplots(figsize=(10, 10))
-inwing.mask = inwing.mask | (cont6600.data > 70.0)
-inwing.plot(
-    use_wcs=True, 
-    vmin=-10, vmax=50,
-    cmap="viridis", 
-    scale="linear", 
-    colorbar="v",
-)
-
-hacube.mask = hacube_mask_orig.copy() | wing.mask
-fig, ax = plt.subplots(figsize=(10, 10))
-hacube.sum(axis=0).plot()
-
-# +
-fig, ax = plt.subplots(figsize=(10, 4))
-hacube[:, 100:140, 15:40].mean(axis=(1, 2)).plot()
-hacube[:, 180:240, 240:300].mean(axis=(1, 2)).plot(c="r")
-hacube[:, 10:50, 100:150].mean(axis=(1, 2)).plot(c="m")
-hacube[:, 10:100, 200:300].mean(axis=(1, 2)).plot(c="g")
-
-ax.set(ylim=[0.0, 50])
-# -
+# ### Investigating the over-subtracted sky
+#
+# I consentrate on the slice `[-30:, 50:70]` since that seems to be one of the worst-affected regions.
 
 hacube.mask = hacube_mask_orig.copy()
 fig, ax = plt.subplots(figsize=(10, 4))
 hacube[:, -30:, 50:70].mean(axis=(1, 2)).plot()
 ax.set(ylim=[-100, 20])
 
-nspec=20
+nspec = 20
 wavmin, _, _, wavmax, _, _ = cube.get_range()
-dwav = (wavmax - wavmin)/nspec
-fig, axes = plt.subplots(nspec, 1, figsize=(10, 1.0*nspec))
+dwav = (wavmax - wavmin) / nspec
+fig, axes = plt.subplots(nspec, 1, figsize=(10, 1.0 * nspec))
 wav1 = wavmin - dwav
 wav2 = wavmin
 for ax in axes:
@@ -395,5 +335,3 @@ for ax in axes:
     ax.set(ylim=[-200, 40], ylabel="", xlabel="")
 axes[-1].set(xlabel=r"$\lambda$, Angstrom")
 fig.tight_layout()
-
-
