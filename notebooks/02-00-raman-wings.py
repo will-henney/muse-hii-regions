@@ -65,7 +65,7 @@ ax.set(ylim=[0, 100])
 cont6600 = cube.select_lambda(6600.0, 6620.0).mean(axis=0)
 wing = (cube.select_lambda(6591.0, 6600.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
-wing.mask = wing.mask | (cont6600.data > 100.0)
+wing.mask = wing.mask | (cont6600.data > 400.0)
 wing.plot(
     use_wcs=True,
     vmin=-10,
@@ -91,7 +91,7 @@ wing.mask[:margin, :] = True
 wing.mask[-margin:, :] = True
 wing.mask[:, :margin] = True
 wing.mask[:, -margin:] = True
-wing.rebin(8).plot(
+wing.rebin(4).plot(
     use_wcs=True,
     vmin=-10,
     vmax=50,
@@ -100,7 +100,7 @@ wing.rebin(8).plot(
     colorbar="v",
 )
 fig.axes[0].set_title(
-    r"Hα far red wing: $8\times8$ binning",
+    r"Hα far red wing: $4\times4$ binning",
     fontsize="large",
     pad=25,
 );
@@ -109,34 +109,34 @@ fig.axes[0].set_title(
 
 inwing = (cube.select_lambda(6578.0, 6583.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
-inwing.mask = inwing.mask | (cont6600.data > 70.0)
+inwing.mask = inwing.mask | (cont6600.data > 400.0)
 margin = 10
 inwing.mask[:margin, :] = True
 inwing.mask[-margin:, :] = True
 inwing.mask[:, :margin] = True
 inwing.mask[:, -margin:] = True
-inwing.rebin(8).plot(
+inwing.rebin(4).plot(
     use_wcs=True,
-    vmin=-10,
+    vmin=-20,
     vmax=50,
     cmap="viridis",
     scale="linear",
     colorbar="v",
 )
 fig.axes[0].set_title(
-    r"Hα near red wing: $8\times8$ binning",
+    r"Hα near red wing: $4\times4$ binning",
     fontsize="large",
     pad=25,
 );
 
 bluewing = (cube.select_lambda(6540.0, 6549.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
-bluewing.mask = bluewing.mask | (cont6600.data > 70.0)
+bluewing.mask = bluewing.mask | (cont6600.data > 100.0)
 bluewing.mask[:margin, :] = True
 bluewing.mask[-margin:, :] = True
 bluewing.mask[:, :margin] = True
 bluewing.mask[:, -margin:] = True
-bluewing.rebin(8).plot(
+bluewing.rebin(4).plot(
     use_wcs=True,
     vmin=-10,
     vmax=50,
@@ -145,7 +145,7 @@ bluewing.rebin(8).plot(
     colorbar="v",
 )
 fig.axes[0].set_title(
-    r"Hα blue wing: $8\times8$ binning",
+    r"Hα blue wing: $4\times4$ binning",
     fontsize="large",
     pad=25,
 );
@@ -180,6 +180,7 @@ boxes = [
     regions.BoundingBox(iymin=200, iymax=250, ixmin=210, ixmax=300),
     regions.BoundingBox(iymin=10, iymax=50, ixmin=100, ixmax=150),
     regions.BoundingBox(iymin=10, iymax=100, ixmin=200, ixmax=300),
+    regions.BoundingBox(iymin=170, iymax=210, ixmin=90, ixmax=120),
 ]
 
 # Plot an image of the entire bandbass in pixel coordinates and plot the boxes on top of it:
@@ -190,7 +191,7 @@ wing.rebin(1).plot(
     vmax=50,
     scale="linear",
 )
-for box, c in zip(boxes, "brmg"):
+for box, c in zip(boxes, "brmgc"):
     box.plot( 
         ax=ax, 
         lw=3, 
@@ -214,7 +215,7 @@ hacube.sum(axis=0).plot()
 # +
 fig, ax = plt.subplots(figsize=(10, 6))
 offset = 0.0
-for box, c in zip(boxes, "brmg"):
+for box, c in zip(boxes, "brmgc"):
     yslice, xslice = box.slices
     spec = hacube[:, yslice, xslice].mean(axis=(1, 2))
     spec /= spec[-1]
