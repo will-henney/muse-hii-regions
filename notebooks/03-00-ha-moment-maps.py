@@ -342,16 +342,7 @@ df2 = pd.DataFrame({
 })
 df2.describe()
 
-g = sns.pairplot(
-    df2,
-    kind="hist",
-    height=4,
-    corner=True,
-    plot_kws=dict(color="r"),
-    diag_kws=dict(color="r"),
-)
-g.fig.suptitle("Final corrected, normalized moments")
-g.tight_layout(pad=0);
+            
 
 fig, ax = plt.subplots(figsize=(8, 8))
 _mom2.mask = _mom2.mask | m

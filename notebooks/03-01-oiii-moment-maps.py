@@ -183,7 +183,7 @@ def find_moments(cube):
         axis=0
     ) / mom0
     mom2.data = np.sqrt(mom2.data)
-    mom2.data = u.angstrom
+    mom2.unit = u.angstrom
     return mom0, mom1, mom2
 
 

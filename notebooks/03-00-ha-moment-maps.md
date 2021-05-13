@@ -414,16 +414,7 @@ df2.describe()
 ```
 
 ```python
-g = sns.pairplot(
-    df2,
-    kind="hist",
-    height=4,
-    corner=True,
-    plot_kws=dict(color="r"),
-    diag_kws=dict(color="r"),
-)
-g.fig.suptitle("Final corrected, normalized moments")
-g.tight_layout(pad=0);
+            
 ```
 
 ```python

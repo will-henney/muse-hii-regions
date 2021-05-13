@@ -148,7 +148,7 @@ im_sii31_bgsub += 120 / 1.45 + 165
 fig = plt.figure(figsize=(10, 10))
 (im_sii16_bgsub / im_sii31_bgsub).plot(
     vmin=0.8,
-    vmax=1.5,
+    vmax=1.55,
     use_wcs=True,
     cmap="rocket",
     scale="linear",
@@ -446,20 +446,20 @@ im_siii9069_bgsub.plot(
 fig, ax = plt.subplots(figsize=(10, 10))
 (im_siii6312_bgsub / im_siii9069_bgsub).plot(
     vmin=0.0,
-    vmax=0.1,
+    vmax=0.095,
     use_wcs=True,
-    cmap="gray_r",
+    cmap="gist_heat",
     scale="linear",
     colorbar="v",
 )
 
 fig = plt.figure(figsize=(10, 10))
 (im_siii9069_bgsub / im_sii31_bgsub).plot(
-    vmin=0.0,
-    vmax=12.0,
+    vmin=0.8,
+    vmax=70.0,
     use_wcs=True,
-    cmap="gray_r",
-    scale="linear",
+    cmap="magma",
+    scale="log",
     colorbar="v",
 )
 ax = fig.axes[0]
