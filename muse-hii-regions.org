@@ -76,3 +76,28 @@ I have made a series of notebooks
       + Soto:2016n
       + https://github.com/musevlt/zap
     + Unfortunately, this seems to require the use of a blank exposure of adjacent sky in cases like ours, and I don't think that is available
+
+
+
+** File maintenance
++ I use jupytext to automatically save ~.py~ and ~.md~ versions of the notebooks
+  + Any of the versions can be edited, and then the others can be synced to the last-modified one:
+    #+begin_src sh
+      jupytext --sync FILE
+    #+end_src
+    Extract from jupytext help screen:
+    :  --sync, -s            Synchronize the content of the paired representations
+    :                        of the given notebook. Input cells are taken from the
+    :                        file that was last modified, and outputs are read from
+    :                        the ipynb file, if present. (default: False)
+  + According to the [[https://jupytext.readthedocs.io/en/latest/faq.html][jupytext FAQ]], I can just edit the ~.md~ or ~.py~ version while the notebook is still open in the browser.  It will notice that something has changes and offer me the chance to reload it
+    + [X] I need to try this out
+      + Yes, it actually works.  It is better to just force-reload with ~Cmd-R~ immediately that you switch back to the browser window
++ We can further convert to a ~.org~ file using pandoc. For instance:
+  #+begin_src sh
+    pandoc -o 01-extract-subregions.org 01-extract-subregions.md
+  #+end_src
+  + In principle, we could edit the org file and then use pandoc to send it back to md, and then jupytext again to sync up the ipynb version.
+    + /But I haven't tried this yet/
+    + I don't know whether the jupytext metadata will survive
+      + A quick test shows that this metadata doesn't get written to the ~.org~ file by pandoc
