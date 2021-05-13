@@ -47,6 +47,10 @@ fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
+## Choose the wavelength range
+
+### Broad overview
+
 First we inspect the spectrum in 6 broad horizontal strips across the image, from south to north. 
 
 ```python
@@ -70,6 +74,8 @@ sns.despine();
 
 So, this makes it look like all the lines are positive (but this is unfortunately not the case!).  The other weak lines that we see are He I 4922 and 5016 Å.
 
+
+### Narrow in on the [O III] doublet
 
 Set some limits for the continuum and line extraction:
 
@@ -114,6 +120,8 @@ sns.despine();
 
 That seems to look fine.  Note that the red continuum band for 5007 is separated a bit from the core to allow space for the He I line (although it is so weak that this probably doesn't matter).
 
+### Do continuum subtraction
+
 Now, we can use the same `wlim` data to extract the line and continuum:
 
 ```python
@@ -154,7 +162,12 @@ axes[1, 1].contour(cont4959.data, levels=[0.0], colors="r")
 fig.tight_layout(pad=0);
 ```
 
-The red contours shoow the zero level.  Both lines pass through zero in exactly the same place.  The two continuum maps also have negative regions, but they are completely unrelated to in the line maps (although very similar between themsleves).
+The red contours show the zero level.  Both lines pass through zero in exactly the same place.  The two continuum maps also have negative regions, but they are completely unrelated to in the line maps (although very similar between themsleves).
+
+
+## Wavelength moments
+
+Define a function to calculate the normalized moments:
 
 ```python
 def find_moments(cube):
@@ -165,23 +178,33 @@ def find_moments(cube):
     mom1 is mean wavelength
     mom2 is rms wavelength width
     """
+    # TODO: calculate variance arrays
     wavcube = cube.clone(np.ones, np.zeros)
     wavcube.data *= cube.wave.coord()[:, None, None]
     wavcube.unit = u.angstrom
+    # zeroth moment: sum
     mom0 = cube.sum(axis=0)
+    # first moment: mean
     mom1 = mom0.copy()
     mom1.data = np.sum(
         cube.data * wavcube.data, 
         axis=0
     ) / mom0
+    mom1.unit = u.angstrom
+    # second moment: sigma
     mom2 = mom0.copy()
     mom2.data = np.sum(
         cube.data * (wavcube.data - mom1.data)**2, 
         axis=0
     ) / mom0
     mom2.data = np.sqrt(mom2.data)
+    mom2.data = u.angstrom
     return mom0, mom1, mom2
 ```
+
+### First look without having fixed the sky
+
+This come out bad because of the zero crossing of the intensity
 
 ```python
 mom5007 = find_moments(core5007)
@@ -196,25 +219,45 @@ mom5007[1].plot(
 
 This looks remarkably similar to the Ha moment map before correction
 
+
+### Make the correction for the bad sky subtraction
+
+We will first assume that we can correct with exactly the same 3 pixels as we used for H alpha:
+
 ```python
 skyspec5007 = core5007[:, 8:9, 103:106].mean(axis=(1, 2))
 skyspec4959 = core4959[:, 8:9, 103:106].mean(axis=(1, 2))
 ```
 
+Inspect the profile in the sky pixels:
+
 ```python
 fig, ax = plt.subplots(figsize=(8,4))
-skyspec4959.plot(ax=ax, label="4959", linestyle=":")
+skyspec4959.plot(ax=ax, label="4959", linewidth=2)
+ax.plot(
+    skyspec5007.wave.coord() + (4958.91 - 5006.84), 
+    skyspec5007.data / 3.0,
+    label="5007", linestyle="--", marker=".",
+    drawstyle="steps-mid",
+)
 #skyspec5007.plot(ax=ax, label="5007", linestyle="--")
 ax.legend()
 fig.tight_layout()
 sns.despine()
 ```
 
+Note that I have shifted the 5007 line to match up the rest wavelengths and divided the intensity by 3.  The lines agree very well. 
+
+Note also the displacement in wavelength bin centers in their respective rest wavelength frame.  In principle, we could take advantage of this to more finely sample the line profile.
+
+
+Now look at the effect of the sky correction on a similar sample of pixels as those that we used for H alpha.  I have changed the bottom row ones, in order to find pixels that were truly bright in [O III]:
+
 ```python
 testpixels = [
     [250, 160], [150, 150], [10, 300],
     [70, 250], [75, 200], [310, 225],
-    [100, 30], [50, 120], [140, 110], #[180, 290],
+    [75, 75], [30, 120], [150, 115], #[180, 290],
 ]
 fig, axes = plt.subplots(
     3, 3, 
@@ -233,6 +276,13 @@ fig.suptitle(
 sns.despine()
 fig.tight_layout();
 ```
+
+Apart from the brightest pixels (bottom row), the correction is very substantial.
+
+
+### Recalculate the moments after correcting the sky
+
+Side-by-side comparison of the first moment for 5007 and 4959:
 
 ```python
 mom5007 = find_moments(core5007 - skyspec5007)
@@ -255,14 +305,68 @@ mom4959[1].plot(
 fig.tight_layout(h_pad=10);
 ```
 
+These look very similar to the H alpha map in general.  They are also extremely similar to one another.  Both of these facts are reassuring.  
+
+On the negative side, there do be some artefacts, particularly horizontal stripes. These tend to occur at "significant" j values, such as 80, 160, 240, which correspond to different IFUs I think.
+
 ```python
-fig, ax = plt.subplots(figsize=(8, 8))
+fig, axes = plt.subplots(
+    1, 2, 
+    figsize=(10, 5),
+    sharey=True,
+)
 mom5007[2].plot(
     cmap="gray",
     vmin=0.5, 
     vmax=1.5,
     colorbar="v",
+    ax=axes[0],
 );
+mom4959[2].plot(
+    cmap="gray",
+    vmin=0.5, 
+    vmax=1.5,
+    colorbar="v",
+    ax=axes[1],
+);
+fig.tight_layout();
+```
+
+```python
+fig, ax = plt.subplots()
+wav5007 = np.median(mom5007[1].data.data)
+wav4959 = np.median(mom4959[1].data.data)
+#ax.plot(mom5007[1].data.mean(axis=1) - wav5007)
+#ax.plot(mom4959[1].data.mean(axis=1) - wav4959)
+ax.plot(
+    np.median(mom5007[1].data.data, axis=1)
+    - wav5007
+)
+ax.plot(
+    np.median(mom4959[1].data.data, axis=1)
+    - wav4959
+)
+ax.set(ylim=[-0.12, 0.12])
+for i0 in [80, 160, 240]:
+    ax.axvline(i0, lw=0.5, color="k", alpha=0.2)
+wav5007, wav4959
+```
+
+```python
+fig, ax = plt.subplots()
+ax.plot(
+    np.median(mom5007[1].data.data, axis=0)
+    - wav5007
+)
+ax.plot(
+    np.median(mom4959[1].data.data, axis=0)
+    - wav4959
+)
+#ax.plot(mom5007[1].data.mean(axis=0) - wav5007)
+#ax.plot(mom4959[1].data.mean(axis=0) - wav4959)
+ax.set(ylim=[-0.12, 0.12]);
+#for i0 in [80, 160, 240]:
+#    ax.axvline(i0, lw=0.5, color="k", alpha=0.2)
 ```
 
 ```python
@@ -327,11 +431,96 @@ g.fig.suptitle("[O III] 4959 corrected, normalized moments")
 g.tight_layout(pad=0);
 ```
 
-The distributions are very consistent between the teo [O III] lines.  They are also quite similar to H alpha, especially in the mid-range of intensity.
+The distributions are very consistent between the two [O III] lines.  They are also quite similar to H alpha, especially in the mid-range of intensity.
 
-There is clear evidence for a bimodal distribution of velocities, separated by about 10 km/s. A narrow component at 164 km/s and a broader component at 158 km/s. Then there is a third, weaker component at 166 km/s.  These are all from 5007 - the same is seen for 4959, but with a shift of -2 km/s.  Width is also higher for 4959 - could this be due to a blend with something?
+There is clear evidence for a bimodal distribution of velocities, separated by about 6 km/s. A narrow component at 164 km/s and a broader component at 158 km/s. Then there is a third, weaker component at 166 km/s.  These are all from 5007 - the same is seen for 4959, but with a shift of -2 km/s.  Width is also higher for 4959 - could this be due to a blend with something?
 
 There is a very slight reduction in line width with velocity, which is seen in all the lines.
+
+
+Now look at the cross-correlations between the two lines:
+
+```python
+m = (mom5007[0].mask 
+     | (mom5007[0].data < 2e4)
+     | (mom5007[1].data < 5009.2) 
+     | (mom5007[1].data > 5009.8)
+     | (mom5007[2].data < 0.8)
+     | (mom5007[2].data > 1.5)
+     | mom4959[0].mask 
+     | (mom4959[0].data < 0.67e4)
+     | (mom4959[1].data < 4961.2) 
+     | (mom4959[1].data > 4961.8)
+     | (mom4959[2].data < 0.8)
+     | (mom4959[2].data > 1.5)
+    )
+df2 = pd.DataFrame({
+    "log10 I(5007)": np.log10(mom5007[0].data[~m]),
+    "V(5007)": 3e5 * (mom5007[1].data[~m] - 5006.84) / 5006.84,
+    "sig(5007)": 3e5 * mom5007[2].data[~m] / 5006.84,
+    "log10 I(4959)": np.log10(mom4959[0].data[~m]),
+    "V(4959)": 3e5 * (mom4959[1].data[~m] - 4958.91) / 4958.91,
+    "sig(4959)": 3e5 * mom4959[2].data[~m] / 4958.91,
+})
+df2.corr()
+```
+
+```python
+xvars = [_ for _ in df2.columns if "5007" in _]
+yvars = [_ for _ in df2.columns if "4959" in _]
+xvars, yvars
+```
+
+```python
+g = sns.pairplot(
+    df2,
+    kind="hist",
+    height=4,
+    x_vars=xvars,
+    y_vars=yvars,
+    plot_kws=dict(color="b"),
+)
+g.fig.suptitle("Correlations between 5007 and 4959")
+g.tight_layout(pad=0);
+```
+
+```python
+df3 = df2[["log10 I(5007)"]].copy()
+df3["5007 / 4959"] = 10**(df2["log10 I(5007)"] - df2["log10 I(4959)"])
+df3["dV"] = df2["V(5007)"] - df2["V(4959)"]
+df3["sig ratio"] = df2["sig(5007)"] / df2["sig(4959)"]
+df3.describe()
+```
+
+```python
+m = (
+    (df3["5007 / 4959"] < 2.9)
+    | (df3["5007 / 4959"] > 3.1)
+    | (np.abs(df3["dV"]) > 5.0)
+    | (df3["sig ratio"] < 0.8)
+    | (df3["sig ratio"] > 1.1)
+)
+
+df3 = df3[~m]
+df3.corr()
+```
+
+```python
+g = sns.pairplot(
+    df3,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(color="r"),
+    diag_kws=dict(color="r"),
+)
+g.fig.suptitle("[O III] 5007 vs 4959 ratios and differences")
+g.tight_layout(pad=0);
+```
+
+```python
+df3.loc?
+```
 
 ```python
 
