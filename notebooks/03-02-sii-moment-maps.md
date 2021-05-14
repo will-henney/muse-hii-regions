@@ -38,6 +38,13 @@ fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
+Add folder paths for saving figures and saving FITS images:
+
+```python
+figpath = Path("../figs")
+savepath = Path("../data")
+```
+
 We mainly follow the same steps in the [O III] notebook, which is much better documented.
 
 ## Separate line from continuum
@@ -337,112 +344,153 @@ fig.tight_layout()
 ```
 
 ```python
-mom0 = mom6716[0]
-mom1 = mom6716[1]
-mom2 = mom6716[2]
-rest6716 = 6716.44
-m = (
-    mom6716[0].mask
-    | (mom0.data < 60)
-    | (mom1.data < wav6716 - 0.6)
-    | (mom1.data > wav6716 + 0.6)
-    | (mom2.data < 0.8)
-    | (mom2.data > 1.5)
-)
-df = pd.DataFrame(
-    {
-        "log10 I(6716)": np.log10(mom0.data[~m]),
-        "V(6716)": 3e5 * (mom1.data[~m] - rest6716) / rest6716,
-        "sig(6716)": 3e5 * mom2.data[~m] / rest6716,
-    }
-)
-df.describe()
+LIGHT_SPEED_KMS = 2.99792458e5
+
+def save_moments_to_fits(
+        moments, *,
+        rebin=1, flabel="ion", label="0000", restwav,
+):
+    """Write FITS files of velocity moment maps"""
+
+    mom0 = moments[0].rebin(rebin)
+    mom1 = moments[1].rebin(rebin)
+    mom2 = moments[2].rebin(rebin)
+    vmean = LIGHT_SPEED_KMS * (mom1 - restwav) / restwav
+    sigma = LIGHT_SPEED_KMS * mom2 / restwav
+
+    prefix = f"{flabel}-{label}-bin{rebin:02d}"
+    mom0.write(savepath / f"{prefix}-sum.fits", savemask="nan", checksum=True)
+    vmean.write(savepath / f"{prefix}-vmean.fits", savemask="nan", checksum=True)
+    sigma.write(savepath / f"{prefix}-sigma.fits", savemask="nan", checksum=True)
+    
+    
+def moments_corner_plot(
+        moments, *,
+        rebin=1, ilabel="ION", flabel="ion", label="0000", restwav,
+        irange, vrange, srange,
+        hist_bins=100, image_bins=50,
+        hist_color="r", image_cmap="rocket_r",
+):
+    """Make corner plot of velocity moments of emission line
+    """
+    
+    mom0 = moments[0].rebin(rebin)
+    mom1 = moments[1].rebin(rebin)
+    mom2 = moments[2].rebin(rebin)
+
+    vmean = LIGHT_SPEED_KMS * (mom1.data - restwav) / restwav
+    sigma = LIGHT_SPEED_KMS * mom2.data / restwav
+
+    m = (
+        mom0.mask
+        | (mom0.data < irange[0])
+        | (mom0.data > irange[1])
+        | (vmean < vrange[0])
+        | (vmean > vrange[1])
+        | (sigma < srange[0])
+        | (sigma > srange[1])
+    )
+    df = pd.DataFrame(
+        {
+            f"log10 I({label})": np.log10(mom0.data[~m]),
+            f"V({label})": vmean[~m],
+            f"sig({label})": sigma[~m],
+        }
+    )
+    # Add in the min/max values so plot limits are reproducible
+    df0 = pd.DataFrame(
+        {
+            f"log10 I({label})": np.log10(irange),
+            f"V({label})": np.array(vrange),
+            f"sig({label})": np.array(srange),
+        }
+    )
+    df = df.append(df0)
+    g = sns.pairplot(
+        df,
+        kind="hist",
+        height=4,
+        corner=True,
+        plot_kws=dict(cmap=image_cmap, bins=image_bins),
+        diag_kws=dict(
+            color=hist_color, 
+            bins=hist_bins, 
+            stat="count",
+            common_norm=False,
+        ),
+    )
+#    g.axes[0, 0].set_ylim(0., None)
+    g.fig.suptitle(
+        f"{ilabel} {label} velocity moments ({rebin} x {rebin} binning)"
+    )
+    g.tight_layout(pad=0)
+    g.fig.savefig(
+        figpath / f"{flabel}-{label}-moments-corner-bin{rebin:02d}.pdf"
+    )
+    return g
 ```
 
 ```python
-g = sns.pairplot(
-    df,
-    kind="hist",
-    height=4,
-    corner=True,
-    plot_kws=dict(color="r"),
-    diag_kws=dict(color="r"),
+save_moments_to_fits(
+    mom6716,
+    label="6716",
+    flabel="ngc346-sii",
+    restwav=6716.44,
 )
-g.fig.suptitle("[S II] 6716 corrected, normalized moments")
-g.tight_layout(pad=0)
+```
+
+```python
+plot_pars_6716=dict(
+    ilabel="[S II]",
+    label="6716",
+    flabel="sii",
+    restwav=6716.44,
+    irange=[60, 4.0e4],
+    vrange=[135, 195],
+    srange=[30, 70],
+)
+g = moments_corner_plot(
+    mom6716, rebin=1, **plot_pars_6716
+)
 ```
 
 This shows some interesting structure in the I-V distribution. We see the same two velocity components of [O III] (158 and 164), plus an additional one at 150 (which is very weak in [O III])
 
 ```python
-mom0 = mom6716[0].rebin(2)
-mom1 = mom6716[1].rebin(2)
-mom2 = mom6716[2].rebin(2)
-rest6716 = 6716.44
-m = (
-    mom0.mask
-    | (mom0.data < 60)
-    | (mom1.data < wav6716 - 0.6)
-    | (mom1.data > wav6716 + 0.6)
-    | (mom2.data < 0.8)
-    | (mom2.data > 1.5)
-)
-df = pd.DataFrame(
-    {
-        "log10 I(6716)": np.log10(mom0.data[~m]),
-        "V(6716)": 3e5 * (mom1.data[~m] - rest6716) / rest6716,
-        "sig(6716)": 3e5 * mom2.data[~m] / rest6716,
-    }
-)
-df.describe()
-```
-
-```python
-g = sns.pairplot(
-    df,
-    kind="hist",
-    height=4,
-    corner=True,
-    plot_kws=dict(color="r"),
-    diag_kws=dict(color="r"),
-)
-g.fig.suptitle("[S II] 6716 corrected, normalized moments (2x2 rebin)")
-g.tight_layout(pad=0)
+g = moments_corner_plot(
+    mom6716, rebin=2, **plot_pars_6716
+);
 ```
 
 Rebinning doesn't help as much as I had hoped.  But it does reduce the spread in the sigma for the lower intensities.
 
 ```python
-mom0 = mom6716[0].rebin(8)
-mom1 = mom6716[1].rebin(8)
-mom2 = mom6716[2].rebin(8)
-rest6716 = 6716.44
-m = (
-    mom0.mask
-    | (mom0.data < 60)
-    | (mom1.data < wav6716 - 0.6)
-    | (mom1.data > wav6716 + 0.6)
-    | (mom2.data < 0.8)
-    | (mom2.data > 1.5)
-)
-df = pd.DataFrame(
-    {
-        "log10 I(6716)": np.log10(mom0.data[~m]),
-        "V(6716)": 3e5 * (mom1.data[~m] - rest6716) / rest6716,
-        "sig(6716)": 3e5 * mom2.data[~m] / rest6716,
-    }
-)
-g = sns.pairplot(
-    df,
-    kind="hist",
-    height=4,
-    corner=True,
-    plot_kws=dict(color="r"),
-    diag_kws=dict(color="r"),
-)
-g.fig.suptitle("[S II] 6716 corrected, normalized moments (8 x 8 rebin)")
-g.tight_layout(pad=0)
-df.describe()
+g = moments_corner_plot(
+    mom6716, rebin=4, **plot_pars_6716
+);
+```
+
+```python
+g = moments_corner_plot(
+    mom6716, rebin=8, **plot_pars_6716
+);
+```
+
+As we increase the binning, the sig distribution becomes narrower, but the V and I remain almost unchanged.  This is a sign that th scale of significant variations is large (steep spatial power law)
+
+```python
+g = moments_corner_plot(
+    mom6716, rebin=16, **plot_pars_6716,
+    hist_bins=40,
+    image_bins=20,
+);
+```
+
+```python
+g = moments_corner_plot(
+    mom6716, rebin=32, **plot_pars_6716,
+    hist_bins=40, image_bins=20,
+);
 ```
 
 ```python

@@ -43,6 +43,9 @@ datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
 fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 
+figpath = Path("../figs")
+savepath = Path("../data")
+
 # ## Choose the wavelength range
 #
 # ### Broad overview
@@ -336,6 +339,125 @@ ax.set(ylim=[-0.12, 0.12]);
 #    ax.axvline(i0, lw=0.5, color="k", alpha=0.2)
 
 import pandas as pd
+
+# +
+LIGHT_SPEED_KMS = 2.99792458e5
+
+def save_moments_to_fits(
+        moments, *,
+        rebin=1, flabel="ion", label="0000", restwav,
+):
+    """Write FITS files of velocity moment maps"""
+
+    mom0 = moments[0].rebin(rebin)
+    mom1 = moments[1].rebin(rebin)
+    mom2 = moments[2].rebin(rebin)
+    vmean = LIGHT_SPEED_KMS * (mom1 - restwav) / restwav
+    sigma = LIGHT_SPEED_KMS * mom2 / restwav
+
+    prefix = f"{flabel}-{label}-bin{rebin:02d}"
+    mom0.write(savepath / f"{prefix}-sum.fits", savemask="nan", checksum=True)
+    vmean.write(savepath / f"{prefix}-vmean.fits", savemask="nan", checksum=True)
+    sigma.write(savepath / f"{prefix}-sigma.fits", savemask="nan", checksum=True)
+    
+    
+def moments_corner_plot(
+        moments, *,
+        rebin=1, ilabel="ION", flabel="ion", label="0000", restwav,
+        irange, vrange, srange,
+        hist_bins=100, image_bins=50,
+        hist_color="r", image_cmap="rocket_r",
+):
+    """Make corner plot of velocity moments of emission line
+    """
+    
+    mom0 = moments[0].rebin(rebin)
+    mom1 = moments[1].rebin(rebin)
+    mom2 = moments[2].rebin(rebin)
+
+    vmean = LIGHT_SPEED_KMS * (mom1.data - restwav) / restwav
+    sigma = LIGHT_SPEED_KMS * mom2.data / restwav
+
+    m = (
+        mom0.mask
+        | (mom0.data < irange[0])
+        | (mom0.data > irange[1])
+        | (vmean < vrange[0])
+        | (vmean > vrange[1])
+        | (sigma < srange[0])
+        | (sigma > srange[1])
+    )
+    df = pd.DataFrame(
+        {
+            f"log10 I({label})": np.log10(mom0.data[~m]),
+            f"V({label})": vmean[~m],
+            f"sig({label})": sigma[~m],
+        }
+    )
+    # Add in the min/max values so plot limits are reproducible
+    df0 = pd.DataFrame(
+        {
+            f"log10 I({label})": np.log10(irange),
+            f"V({label})": np.array(vrange),
+            f"sig({label})": np.array(srange),
+        }
+    )
+    df = df.append(df0)
+    g = sns.pairplot(
+        df,
+        kind="hist",
+        height=4,
+        corner=True,
+        plot_kws=dict(cmap=image_cmap, bins=image_bins),
+        diag_kws=dict(
+            color=hist_color, 
+            bins=hist_bins, 
+            stat="count",
+            common_norm=False,
+        ),
+    )
+#    g.axes[0, 0].set_ylim(0., None)
+    g.fig.suptitle(
+        f"{ilabel} {label} velocity moments ({rebin} x {rebin} binning)"
+    )
+    g.tight_layout(pad=0)
+    g.fig.savefig(
+        figpath / f"{flabel}-{label}-moments-corner-bin{rebin:02d}.pdf"
+    )
+    return g
+
+
+# -
+
+save_moments_to_fits(
+    mom5007,
+    label="5007",
+    flabel="ngc346-oiii",
+    restwav=5006.84,
+)
+
+plot_pars_5007=dict(
+    ilabel="[O III]",
+    label="5007",
+    flabel="ngc346-oiii",
+    restwav=5006.84,
+    irange=[1.0e4, 3.0e5],
+    vrange=[135, 195],
+    srange=[50, 90],
+)
+g = moments_corner_plot(
+    mom5007, rebin=1, **plot_pars_5007
+)
+
+g = moments_corner_plot(
+    mom5007, rebin=4, **plot_pars_5007
+)
+
+g = moments_corner_plot(
+    mom5007, rebin=16, **plot_pars_5007,
+    hist_bins=40,
+    image_bins=20,    
+)
 
 m = (mom5007[0].mask 
      | (mom5007[0].data < 2e4)

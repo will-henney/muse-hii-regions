@@ -90,7 +90,7 @@ I have made a series of notebooks
     :                        of the given notebook. Input cells are taken from the
     :                        file that was last modified, and outputs are read from
     :                        the ipynb file, if present. (default: False)
-  + According to the [[https://jupytext.readthedocs.io/en/latest/faq.html][jupytext FAQ]], I can just edit the ~.md~ or ~.py~ version while the notebook is still open in the browser.  It will notice that something has changes and offer me the chance to reload it
+  + According to the [[https://jupytext.readthedocs.io/en/latest/faq.html][jupytext FAQ]], I can just edit the ~.md~ or ~.py~ version while the notebook is still open in the browser.  It will notice that something has changed and offer me the chance to reload it
     + [X] I need to try this out
       + Yes, it actually works.  It is better to just force-reload with ~Cmd-R~ immediately that you switch back to the browser window
 + We can further convert to a ~.org~ file using pandoc. For instance:
