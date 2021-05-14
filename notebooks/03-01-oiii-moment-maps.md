@@ -48,11 +48,15 @@ fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
+I have now moved functions for dealing with the velocity moments to a separate library:
+
 ```python
 import sys
 sys.path.append("../lib")
 import moments
 ```
+
+Where to save figures and FITS images:
 
 ```python
 moments.FIGPATH = Path("../figs")

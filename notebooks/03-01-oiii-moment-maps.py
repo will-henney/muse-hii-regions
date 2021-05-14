@@ -43,9 +43,13 @@ datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
 fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 
+# I have now moved functions for dealing with the velocity moments to a separate library:
+
 import sys
 sys.path.append("../lib")
 import moments
+
+# Where to save figures and FITS images:
 
 moments.FIGPATH = Path("../figs")
 moments.SAVEPATH = Path("../data")
