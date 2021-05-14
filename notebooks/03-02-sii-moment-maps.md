@@ -38,11 +38,17 @@ fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
+```python
+import sys
+sys.path.append("../lib")
+import moments
+```
+
 Add folder paths for saving figures and saving FITS images:
 
 ```python
-figpath = Path("../figs")
-savepath = Path("../data")
+moments.FIGPATH = Path("../figs")
+moments.SAVEPATH = Path("../data")
 ```
 
 We mainly follow the same steps in the [O III] notebook, which is much better documented.
@@ -261,35 +267,8 @@ fig.tight_layout()
 ```
 
 ```python
-def find_moments(cube):
-    """
-    Returns the normalized wavelength moments: mom0, mom1, mom2
-
-    mom0 is sum over wavelength
-    mom1 is mean wavelength
-    mom2 is rms wavelength width
-    """
-    # TODO: calculate variance arrays
-    wavcube = cube.clone(np.ones, np.zeros)
-    wavcube.data *= cube.wave.coord()[:, None, None]
-    wavcube.unit = u.angstrom
-    # zeroth moment: sum
-    mom0 = cube.sum(axis=0)
-    # first moment: mean
-    mom1 = mom0.copy()
-    mom1.data = np.sum(cube.data * wavcube.data, axis=0) / mom0
-    mom1.unit = u.angstrom
-    # second moment: sigma
-    mom2 = mom0.copy()
-    mom2.data = np.sum(cube.data * (wavcube.data - mom1.data) ** 2, axis=0) / mom0
-    mom2.data = np.sqrt(mom2.data)
-    mom2.unit = u.angstrom
-    return mom0, mom1, mom2
-```
-
-```python
-mom6716 = find_moments(core6716 - skyspec6716)
-mom6731 = find_moments(core6731 - skyspec6731)
+mom6716 = moments.find_moments(core6716 - skyspec6716)
+mom6731 = moments.find_moments(core6731 - skyspec6731)
 wav6716 = np.median(mom6716[1].data.data)
 wav6731 = np.median(mom6731[1].data.data)
 fig, axes = plt.subplots(
@@ -344,98 +323,17 @@ fig.tight_layout()
 ```
 
 ```python
-LIGHT_SPEED_KMS = 2.99792458e5
-
-def save_moments_to_fits(
-        moments, *,
-        rebin=1, flabel="ion", label="0000", restwav,
-):
-    """Write FITS files of velocity moment maps"""
-
-    mom0 = moments[0].rebin(rebin)
-    mom1 = moments[1].rebin(rebin)
-    mom2 = moments[2].rebin(rebin)
-    vmean = LIGHT_SPEED_KMS * (mom1 - restwav) / restwav
-    sigma = LIGHT_SPEED_KMS * mom2 / restwav
-
-    prefix = f"{flabel}-{label}-bin{rebin:02d}"
-    mom0.write(savepath / f"{prefix}-sum.fits", savemask="nan", checksum=True)
-    vmean.write(savepath / f"{prefix}-vmean.fits", savemask="nan", checksum=True)
-    sigma.write(savepath / f"{prefix}-sigma.fits", savemask="nan", checksum=True)
-    
-    
-def moments_corner_plot(
-        moments, *,
-        rebin=1, ilabel="ION", flabel="ion", label="0000", restwav,
-        irange, vrange, srange,
-        hist_bins=100, image_bins=50,
-        hist_color="r", image_cmap="rocket_r",
-):
-    """Make corner plot of velocity moments of emission line
-    """
-    
-    mom0 = moments[0].rebin(rebin)
-    mom1 = moments[1].rebin(rebin)
-    mom2 = moments[2].rebin(rebin)
-
-    vmean = LIGHT_SPEED_KMS * (mom1.data - restwav) / restwav
-    sigma = LIGHT_SPEED_KMS * mom2.data / restwav
-
-    m = (
-        mom0.mask
-        | (mom0.data < irange[0])
-        | (mom0.data > irange[1])
-        | (vmean < vrange[0])
-        | (vmean > vrange[1])
-        | (sigma < srange[0])
-        | (sigma > srange[1])
-    )
-    df = pd.DataFrame(
-        {
-            f"log10 I({label})": np.log10(mom0.data[~m]),
-            f"V({label})": vmean[~m],
-            f"sig({label})": sigma[~m],
-        }
-    )
-    # Add in the min/max values so plot limits are reproducible
-    df0 = pd.DataFrame(
-        {
-            f"log10 I({label})": np.log10(irange),
-            f"V({label})": np.array(vrange),
-            f"sig({label})": np.array(srange),
-        }
-    )
-    df = df.append(df0)
-    g = sns.pairplot(
-        df,
-        kind="hist",
-        height=4,
-        corner=True,
-        plot_kws=dict(cmap=image_cmap, bins=image_bins),
-        diag_kws=dict(
-            color=hist_color, 
-            bins=hist_bins, 
-            stat="count",
-            common_norm=False,
-        ),
-    )
-#    g.axes[0, 0].set_ylim(0., None)
-    g.fig.suptitle(
-        f"{ilabel} {label} velocity moments ({rebin} x {rebin} binning)"
-    )
-    g.tight_layout(pad=0)
-    g.fig.savefig(
-        figpath / f"{flabel}-{label}-moments-corner-bin{rebin:02d}.pdf"
-    )
-    return g
-```
-
-```python
-save_moments_to_fits(
+mom_pars_6716 = dict(
+    restwav=6716.44,
+    irange=[60, 4.0e4],
+    vrange=[135, 195],
+    srange=[30, 70],
+)
+moments.save_moments_to_fits(
     mom6716,
     label="6716",
     flabel="ngc346-sii",
-    restwav=6716.44,
+    **mom_pars_6716,
 )
 ```
 
@@ -443,13 +341,10 @@ save_moments_to_fits(
 plot_pars_6716=dict(
     ilabel="[S II]",
     label="6716",
-    flabel="sii",
-    restwav=6716.44,
-    irange=[60, 4.0e4],
-    vrange=[135, 195],
-    srange=[30, 70],
+    flabel="ngc346-sii",
+    **mom_pars_6716,
 )
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=1, **plot_pars_6716
 )
 ```
@@ -457,7 +352,7 @@ g = moments_corner_plot(
 This shows some interesting structure in the I-V distribution. We see the same two velocity components of [O III] (158 and 164), plus an additional one at 150 (which is very weak in [O III])
 
 ```python
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=2, **plot_pars_6716
 );
 ```
@@ -465,13 +360,13 @@ g = moments_corner_plot(
 Rebinning doesn't help as much as I had hoped.  But it does reduce the spread in the sigma for the lower intensities.
 
 ```python
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=4, **plot_pars_6716
 );
 ```
 
 ```python
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=8, **plot_pars_6716
 );
 ```
@@ -479,7 +374,7 @@ g = moments_corner_plot(
 As we increase the binning, the sig distribution becomes narrower, but the V and I remain almost unchanged.  This is a sign that th scale of significant variations is large (steep spatial power law)
 
 ```python
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=16, **plot_pars_6716,
     hist_bins=40,
     image_bins=20,
@@ -487,7 +382,7 @@ g = moments_corner_plot(
 ```
 
 ```python
-g = moments_corner_plot(
+g = moments.moments_corner_plot(
     mom6716, rebin=32, **plot_pars_6716,
     hist_bins=40, image_bins=20,
 );
@@ -509,7 +404,7 @@ m = (
 df = pd.DataFrame(
     {
         "log10 I(6731)": np.log10(mom0.data[~m]),
-        "V(6731)": 3e5 * (mom1.data[~m] - rest6731) / rest6716,
+        "V(6731)": 3e5 * (mom1.data[~m] - rest6731) / rest6731,
         "sig(6731)": 3e5 * mom2.data[~m] / rest6731,
     }
 )
@@ -545,7 +440,7 @@ m = (
 df = pd.DataFrame(
     {
         "log10 I(6731)": np.log10(mom0.data[~m]),
-        "V(6731)": 3e5 * (mom1.data[~m] - rest6731) / rest6716,
+        "V(6731)": 3e5 * (mom1.data[~m] - rest6731) / rest6731,
         "sig(6731)": 3e5 * mom2.data[~m] / rest6731,
     }
 )
@@ -570,6 +465,8 @@ More importantly, the upturn in V(6731) at low intensity ~does not go away~ (**t
 I fixed this by using a slightly different rectangle for estimating the bad sky: see `skyoptions["taller"]` above.
 
 ```python
+rest6716 = 6716.44
+
 mom0_A = mom6716[0]
 mom1_A = mom6716[1]
 mom2_A = mom6716[2]
