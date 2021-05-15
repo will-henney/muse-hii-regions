@@ -289,7 +289,7 @@ fig.tight_layout()
 
 mom_pars_6716 = dict(
     restwav=6716.44,
-    irange=[60, 4.0e4],
+    irange=[10, 4.0e4],
     vrange=[135, 195],
     srange=[30, 70],
 )

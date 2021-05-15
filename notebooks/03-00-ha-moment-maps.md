@@ -458,7 +458,7 @@ mom6563[0].info()
 ```python
 mom_pars_6563 = dict(
     restwav=6562.79,
-    irange=[3.0e3, 3.0e5],
+    irange=[3.0e3, 1.0e6],
     vrange=[135, 195],
     srange=[30, 70],    
 )
