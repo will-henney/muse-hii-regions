@@ -32,6 +32,25 @@ hacube = cube.select_lambda(6200.0, 6800.0)
 cube_mask_orig = cube.mask.copy()
 hacube_mask_orig = hacube.mask.copy()
 
+# ## Deal with the sky correction
+#
+# *This is a step that is particular to the NGC 346 dataset, and hopefully will not be necessary for other regions.*
+#
+# I cannot use the same procedure developed in the `03-00-ha-moment-maps` notebook of subtracting off the spectrum from a region where the sky oversubtraction is most apparent. When I tried it, it just increased the noise too much in the wings.
+#
+# What I will try instead is to simply mask out regions where the Ha line goes negative. 
+
+cont6600 = hacube.select_lambda(6600.0, 6620.0).mean(axis=0)
+hacore = (hacube.select_lambda(6560.0, 6572.0) - cont6600).sum(axis=0)
+fig = plt.figure(figsize=(10, 10))
+negmask = (hacore.data < 0.0)
+hacore.mask = hacore.mask | negmask
+hacore.plot(scale="sqrt", vmax=1e5)
+
+hacube.mask = hacube.mask | negmask[None, :, :]
+
+# ## Inspect the data cube
+#
 # The full data cube is in `cube`, while `hacube` is a 600 Å window around Hα.
 #
 # Looking at the data cube in DS9 I found a region that looks promising fro the Raman wings, so we will look at that first:
@@ -55,20 +74,23 @@ ax.axvline(6540, c="c", lw=0.3)
 ax.axvline(6549, c="c", lw=0.3)
 
 
+
 ax.set(ylim=[0, 100])
 # -
 
+# ## Images of different wavelength ranges
+#
 # So the red wing and blue wing look like they are definitely there. The red wing can be seen on both sides of the [N II] λ6583 line. In Orion, we only see it clearly for $\lambda > 6600$.  Perhaps this is because the C II λ6578 line is weaker in the LMC. 
 
 # First, make an image of the outer red wing:
 
-cont6600 = cube.select_lambda(6600.0, 6620.0).mean(axis=0)
-wing = (cube.select_lambda(6591.0, 6600.0) - cont6600).sum(axis=0)
+cont6600 = hacube.select_lambda(6600.0, 6620.0).mean(axis=0)
+wing = (hacube.select_lambda(6591.0, 6600.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
 wing.mask = wing.mask | (cont6600.data > 400.0)
 wing.plot(
     use_wcs=True,
-    vmin=-10,
+    vmin=0,
     vmax=50,
     cmap="viridis",
     scale="linear",
@@ -93,7 +115,7 @@ wing.mask[:, :margin] = True
 wing.mask[:, -margin:] = True
 wing.rebin(4).plot(
     use_wcs=True,
-    vmin=-10,
+    vmin=0,
     vmax=50,
     cmap="viridis",
     scale="linear",
@@ -107,7 +129,7 @@ fig.axes[0].set_title(
 
 # This looks a lot better.  We can see the central filament a lot more clearly. 
 
-inwing = (cube.select_lambda(6578.0, 6583.0) - cont6600).sum(axis=0)
+inwing = (hacube.select_lambda(6578.0, 6583.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
 inwing.mask = inwing.mask | (cont6600.data > 400.0)
 margin = 10
@@ -117,7 +139,7 @@ inwing.mask[:, :margin] = True
 inwing.mask[:, -margin:] = True
 inwing.rebin(4).plot(
     use_wcs=True,
-    vmin=-20,
+    vmin=0,
     vmax=50,
     cmap="viridis",
     scale="linear",
@@ -129,7 +151,7 @@ fig.axes[0].set_title(
     pad=25,
 );
 
-bluewing = (cube.select_lambda(6540.0, 6549.0) - cont6600).sum(axis=0)
+bluewing = (hacube.select_lambda(6540.0, 6549.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
 bluewing.mask = bluewing.mask | (cont6600.data > 100.0)
 bluewing.mask[:margin, :] = True
@@ -138,8 +160,8 @@ bluewing.mask[:, :margin] = True
 bluewing.mask[:, -margin:] = True
 bluewing.rebin(4).plot(
     use_wcs=True,
-    vmin=-10,
-    vmax=50,
+    vmin=0,
+    vmax=40,
     cmap="viridis",
     scale="linear",
     colorbar="v",
@@ -150,12 +172,12 @@ fig.axes[0].set_title(
     pad=25,
 );
 
-hacore = (cube.select_lambda(6555.0, 6578.0) - cont6600).sum(axis=0)
+hacore = (hacube.select_lambda(6555.0, 6578.0) - cont6600).sum(axis=0)
 fig = plt.figure(figsize=(10, 10))
 hacore.mask = hacore.mask | (cont6600.data > 3000.0)
 hacore.rebin(1).plot(
     use_wcs=True,
-    vmin=-1.8e4,
+    vmin=-10000,
     vmax=1e5,
     cmap="magma",
     scale="linear",
@@ -167,6 +189,8 @@ fig.axes[0].set_title(
     pad=25,
 );
 
+# ## Extract spectrum for rectangular regions
+#
 # Make some box regions for extracting the spectra.  I use the astropy affiliated `regions` package (see [docs](https://astropy-regions.readthedocs.io/en/latest/))
 
 import regions
@@ -187,7 +211,7 @@ boxes = [
 
 fig, ax = plt.subplots(figsize=(10, 10))
 wing.rebin(1).plot(
-    vmin=-10,
+    vmin=0,
     vmax=50,
     scale="linear",
 )
@@ -222,15 +246,23 @@ for box, c in zip(boxes, "brmgc"):
     spec += offset
     spec.plot(c=c, linewidth=1.5, label=f"box {c}")
     spec2 = spec.copy()
-    spec2.mask_region(6290, 6400)
-    spec2.mask_region(6490, 6695)
+    #spec2.mask_region(6200, 6320)
+    spec2.mask_region(6270, 6320)
+    spec2.mask_region(6350, 6390)
+    spec2.mask_region(6450, 6695)
     spec2.mask_region(6712, 6740)
     cont = spec2.poly_spec(4)
     cont.plot(c="k", linewidth=0.5)
+    spec2.plot(c="y", linewidth=10, alpha=0.7, zorder=-100)
     offset += 0.1
 
-ax.axvline(6633.0 * (1.0 + 200/3e5), color="k", lw=0.5)
-ax.axvline(6664.0 * (1.0 + 200/3e5), color="k", lw=0.5)
+ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+
+ax.axvspan(6594.20, 6611.20, color="r", alpha=0.3, zorder=-100)
+ax.axvspan(6612.05, 6628.20, color="r", alpha=0.2, zorder=-100)
+ax.axvspan(6638.40, 6660.5, color="r", alpha=0.1, zorder=-100)
+
 ax.legend()
 ax.set(ylim=[0.9,2.0], ylabel=r"$F_\lambda / F_{6800}$ + offset")
 sns.despine()
@@ -240,6 +272,192 @@ sns.despine()
 #
 # The other two boxes, which are off the filament (magenta and green) show no Raman wings at all.
 #
-# I have put vertical lines at the wavelengths of the 6633 and 6664 features, assuming redshift of 200 km/s.  The 6633 feature is in the middle of two emission lines. What are they? **Could be night sky airglow lines**
+# The thick yellow lines show the wavelength sections that are used for fitting the continuum (3rd-order polynomial).
+#
+# I have put vertical lines at the wavelengths of the 6633 and 6664 features, assuming redshift of 160 km/s.  The 6633 feature is in the middle of two emission lines. What are they? **Could be night sky airglow lines**
+
+# ## Choose suitable bands to measure the Raman wings
+#
+# In the Orion paper, we have the 3 closest bands in the red wing: R040, R058, R087.  These are marked by pink boxes in the previous figure. 
+#
+# In order to stand a chance of getting good maps, we need to get a better estimate of the continuum than the cont6600 that we used above, since this includes part of the Raman wing that we want to measure.
+#
+# On the other hand, fitting a 3rd of 4th order polynomial, like we just did for the rectangular boxes is not practical since the individual pixels are too noisy. 
+#
+# A compromise would be to fit a linear trend between the continuum around 6400 and the continuum around 6700.   
+
+# +
+spec4fit = hacube.copy().select_lambda(6390, 6760)
+
+testpixels = [
+    [25, 250],
+    [50, 80],
+    [310, 225],
+    [70, 250],
+    [75, 200],
+    [220, 250],
+    [200, 100],
+    [20, 230],
+    [110, 26],  
+]
+fig, axes = plt.subplots(
+    3,
+    3,
+    figsize=(10, 8),
+    sharex=True,
+    sharey="row",
+)
+for (j, i), ax in zip(testpixels, axes.flat):
+    spec1d = spec4fit.copy()[:, j, i]
+    spec1d.mask_region(6445, 6690)
+    spec1d.mask_region(6710, 6745)
+    cont = spec1d.poly_spec(1)
+    spec4fit[:, j, i].plot(ax=ax)
+    cont.plot(ax=ax, linewidth=0.5, c="k")
+    spec1d.plot(ax=ax, c="y", linewidth=10, alpha=0.7, zorder=-100)
+    ax.set(xlabel="", ylabel="")
+    ax.set_title(f"[{j}, {i}]")
+axes[0, 0].set(ylim=[-10, 50])
+axes[1, 0].set(ylim=[-10, 50])
+axes[2, 0].set(ylim=[-10, 50])
+fig.suptitle("Test of continuum fitting for selected pixels")
+sns.despine()
+fig.tight_layout()
+# -
+
+# That seems to have worked OK.  Now we need to do this for every pixel. 
+
+# ## Fit the continuum pixel-by-pixel to the whole cube
+
+# +
+from mpdaf.obj import iter_spe
+
+spec4fit = hacube.copy().select_lambda(6390, 6760)
+spec4fit.mask = spec4fit.mask | spec1d.mask[:, None, None]
+cont_cube = spec4fit.clone(data_init=np.empty, var_init=np.zeros)
+
+# +
+# TOO SLOW - DO NOT RUN!
+#
+#for sp, co in zip(iter_spe(spec4fit), iter_spe(cont_cube)):
+#    if not np.alltrue(sp.mask):
+#        co[:] = sp.poly_spec(1)
+# -
+
+# This is ridiculously slow.  I need to rewrite it to do my own continuum fitting.  It turns out that the problem is that iterating over the individual `Spectrum` objects in a `Cube` is very inefficient.  So I have to make sure to iterate over just the `.data` components, which are numpy arrays. 
+
+from numpy.polynomial import Chebyshev as T
+import itertools
+
+nv, ny, nx = spec4fit.shape
+wavs = spec4fit.wave.coord()
+
+# +
+spec1d = spec4fit.mean(axis=(1, 2))
+spec1d.mask_region(6445, 6690)
+spec1d.mask_region(6710, 6745)
+
+m = ~spec1d.mask
+m.sum(), m.shape
+# -
+
+for j, i in itertools.product(range(ny), range(nx)):
+    spec1d = spec4fit.data[:, j, i]
+    if i == 100 and j % 10 == 0:
+        print(j, m.sum())
+    try:
+        p = T.fit(wavs[m], spec1d[m], deg=1)
+        cont_cube.data[:, j, i] = p(wavs)
+    except:
+        pass
+
+cont_cube.sum(axis=0).plot(scale="log")
+
+(spec4fit - cont_cube).sum(axis=0).plot(vmin=0, vmax=1e5)
+
+spec4fit.mask = spec4fit.mask | negmask[None, :, :]
+cont_cube.mask = cont_cube.mask | negmask[None, :, :]
+
+# +
+fig, ax = plt.subplots(figsize=(10, 6))
+offset = 0.0
+for box, c in zip(boxes, "brmgc"):
+    yslice, xslice = box.slices
+    spec = spec4fit[:, yslice, xslice].mean(axis=(1, 2))
+    spec /= spec[-1]
+    spec += offset
+    cont = cont_cube[:, yslice, xslice].mean(axis=(1, 2))
+    cont /= cont[-1]
+    cont += offset
+    spec.plot(c=c, linewidth=1.5, label=f"box {c}")
+    cont.plot(c="k", linewidth=0.5)
+    offset += 0.1
+
+ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+
+ax.axvspan(6594.20, 6611.20, color="r", alpha=0.3, zorder=-100)
+ax.axvspan(6612.05, 6628.20, color="r", alpha=0.2, zorder=-100)
+ax.axvspan(6638.40, 6660.5, color="r", alpha=0.1, zorder=-100)
+
+ax.legend()
+ax.set(ylim=[0.9,2.0], ylabel=r"$F_\lambda / F_{6800}$ + offset")
+sns.despine()
+# -
+
+# Copy the limits of the Raman bands from the Orion project:
+
+bands = {
+    "B133": [6414.85, 6445.45],
+    "B080": [6469.25, 6496.45],
+    "B054": [6499.85, 6517.7],
+    "B033": [6518.55, 6540.65],
+    "R040": [6594.2, 6611.2],
+    "R058": [6612.05, 6628.2],
+    "R087": [6638.4, 6660.5],
+    "R136": [6688.55, 6708.95],
+}
+
+
+bandcubes = {}
+for band in bands:
+    lam1, lam2 = bands[band]
+    bandcubes[band] = (spec4fit - cont_cube).select_lambda(lam1, lam2)
+
+# ## Continuum-subtracted images of the red bands
+
+bandcubes["R040"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["R058"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["R087"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["R136"].sum(axis=0).rebin(4).plot(vmin=0, vmax=10)
+
+# So, we can se *something* in all the bands, but the first two are best.
+
+# ## Continuum-subtracted images of the blue bands
+
+bandcubes["B033"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["B054"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["B080"].sum(axis=0).plot(vmin=0, vmax=100)
+
+bandcubes["B133"].sum(axis=0).rebin(4).plot(vmin=0, vmax=10)
+
+# The last band does not show anything, but the other three do.
+
+# ## Ratio of wing to core
+
+hacore = (spec4fit - cont_cube).select_lambda(6560.0, 6572.0)
+
+r = ((bandcubes["R040"].sum(axis=0) +  bandcubes["R058"].sum(axis=0)) / hacore.sum(axis=0))
+
+r.rebin(2).plot(vmin=0, vmax=0.005)
+
+hacore.sum(axis=0).plot(vmin=0, vmax=1e5)
+
+# This shows a clear difference in distribution between the wings and the core.
 
 
