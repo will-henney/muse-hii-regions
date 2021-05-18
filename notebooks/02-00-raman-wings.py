@@ -364,6 +364,7 @@ m.sum(), m.shape
 for j, i in itertools.product(range(ny), range(nx)):
     spec1d = spec4fit.data[:, j, i]
     if i == 100 and j % 10 == 0:
+        # Give an indication of progress every 10th row
         print(j, m.sum())
     try:
         p = T.fit(wavs[m], spec1d[m], deg=1)
@@ -426,25 +427,37 @@ for band in bands:
 
 # ## Continuum-subtracted images of the red bands
 
-bandcubes["R040"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["R058"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["R087"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["R136"].sum(axis=0).rebin(4).plot(vmin=0, vmax=10)
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(10, 10),
+    sharex=True, sharey=True,
+)
+rbands = list(bands)[4:]
+for band, ax in zip(rbands, axes.flat):
+    bandcubes[band].sum(axis=0).plot(
+        ax=ax, vmin=0, vmax=50,
+    )
+    ax.set_title(band)
+fig.tight_layout()
 
 # So, we can se *something* in all the bands, but the first two are best.
+#
+# I am in two minds whether to mask out the point sources or not
 
 # ## Continuum-subtracted images of the blue bands
 
-bandcubes["B033"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["B054"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["B080"].sum(axis=0).plot(vmin=0, vmax=100)
-
-bandcubes["B133"].sum(axis=0).rebin(4).plot(vmin=0, vmax=10)
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(10, 10),
+    sharex=True, sharey=True,
+)
+bbands = reversed(list(bands)[:4])
+for band, ax in zip(bbands, axes.flat):
+    bandcubes[band].sum(axis=0).plot(
+        ax=ax, vmin=0, vmax=50,
+    )
+    ax.set_title(band)
+fig.tight_layout();
 
 # The last band does not show anything, but the other three do.
 
@@ -459,5 +472,88 @@ r.rebin(2).plot(vmin=0, vmax=0.005)
 hacore.sum(axis=0).plot(vmin=0, vmax=1e5)
 
 # This shows a clear difference in distribution between the wings and the core.
+
+# ## Look at the very brightest Raman pixels
+#
+# These are all close to stars, but they are not actually stellar emission.
+
+# +
+cube_select = spec4fit - cont_cube
+brightest_wing = bandcubes["R040"].sum(axis=0).data > 75.0
+cube_select.mask = cube_select.mask | ~brightest_wing
+
+cont_cube_select = cont_cube.copy()
+cont_cube_select.mask = cube_select.mask
+
+lam1, lam2 = bands["R040"][0], bands["R058"][1]
+
+fig, ax = plt.subplots(figsize=(10, 10))
+(cube_select
+ .select_lambda(lam1, lam2)
+ .sum(axis=0)
+ .plot(vmin=0, vmax=10000, scale="sqrt")
+);
+# -
+
+fig, ax = plt.subplots(figsize=(10, 5))
+cube_select.sum(axis=(1, 2)).plot(
+    label="continuum-subtracted",
+)
+(0.1*cont_cube_select.sum(axis=(1, 2))).plot(
+    label="0.1 x continuum",
+)
+ax.legend()
+ax.axhline(0.0, c="k", linewidth=1)
+ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.set(ylim=[-1e5, 5e5]);
+
+# ***We see the Raman absorption lines!!***
+#
+# Note that this spectrum is dominated by the bright knot seen in the emission line maps, which seems to be associated with a young high-mass star.
+#
+# There are two other bright knots too.
+#
+# The total brightness of the Raman wings from these knots is higher than that of the diffuse emission from the entire rest of the nebula (see below).
+
+# *Note that multiplying a `Cube` by a constant destroys the mask, so we need to do the sum before multiplying*
+
+# ## Look at the diffuse but still bright Raman pixels
+
+# +
+cube_select2 = spec4fit - cont_cube
+redwing = (
+    bandcubes["R040"].sum(axis=0).data 
+    + bandcubes["R058"].sum(axis=0).data
+)
+
+good_wing = (redwing > 40.0) & (redwing < 200.0)
+cube_select2.mask = cube_select2.mask | brightest_wing | ~good_wing
+
+cont_cube_select2 = cont_cube.copy()
+cont_cube_select2.mask = cube_select2.mask
+
+lam1, lam2 = bands["R040"][0], bands["R058"][1]
+
+fig, ax = plt.subplots(figsize=(10, 10))
+(cube_select2
+ .select_lambda(lam1, lam2)
+ .sum(axis=0).rebin(4)
+ .plot(vmin=0, vmax=100)
+);
+# -
+
+fig, ax = plt.subplots(figsize=(10, 5))
+cube_select2.sum(axis=(1, 2)).plot(
+    label="continuum-subtracted",
+)
+(0.1*cont_cube_select2.sum(axis=(1, 2))).plot(
+    label="0.1 x continuum",
+)
+ax.legend()
+ax.axhline(0.0, c="k", linewidth=1)
+ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
+ax.set(ylim=[-1e5, 5e5]);
 
 
