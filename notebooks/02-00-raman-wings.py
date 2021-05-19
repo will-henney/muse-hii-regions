@@ -32,6 +32,8 @@ hacube = cube.select_lambda(6200.0, 6800.0)
 cube_mask_orig = cube.mask.copy()
 hacube_mask_orig = hacube.mask.copy()
 
+savepath = Path("../data")
+
 # ## Deal with the sky correction
 #
 # *This is a step that is particular to the NGC 346 dataset, and hopefully will not be necessary for other regions.*
@@ -284,7 +286,9 @@ sns.despine()
 #
 # On the other hand, fitting a 3rd of 4th order polynomial, like we just did for the rectangular boxes is not practical since the individual pixels are too noisy. 
 #
-# A compromise would be to fit a linear trend between the continuum around 6400 and the continuum around 6700.   
+# A compromise would be to fit a linear trend between the continuum around 6400 and the continuum around 6700.  
+#
+# The above figure shows that the continuum is approximately linear over this range. *We should check if there are any absorption edges that might cause discontinuities in the continuum*
 
 # +
 spec4fit = hacube.copy().select_lambda(6390, 6760)
@@ -371,6 +375,10 @@ for j, i in itertools.product(range(ny), range(nx)):
         cont_cube.data[:, j, i] = p(wavs)
     except:
         pass
+
+spec4fit.unmask()
+
+spec4fit[:, 100, 100].mask
 
 cont_cube.sum(axis=0).plot(scale="log")
 
@@ -461,17 +469,40 @@ fig.tight_layout();
 
 # The last band does not show anything, but the other three do.
 
+for band in bandcubes:
+    savefile = savepath / f"ngc346-raman-{band}.fits"
+    bandcubes[band].sum(axis=0).write(
+        savefile, 
+        savemask="nan",
+        checksum=True,
+    )
+
 # ## Ratio of wing to core
 
 hacore = (spec4fit - cont_cube).select_lambda(6560.0, 6572.0)
 
-r = ((bandcubes["R040"].sum(axis=0) +  bandcubes["R058"].sum(axis=0)) / hacore.sum(axis=0))
+redsum = (bandcubes["R040"].sum(axis=0) +  bandcubes["R058"].sum(axis=0))
+r = redsum / hacore.sum(axis=0)
+starmask = cont_cube.sum(axis=0).data > 10*hacore.sum(axis=0).data
+faintmask = hacore.sum(axis=0).data < 5e3
+r.mask = r.mask | (r.data < 0.0) | starmask | (redsum.data < 10.0) | faintmask
 
-r.rebin(2).plot(vmin=0, vmax=0.005)
+# +
+fig, ax = plt.subplots(figsize=(10, 10))
+
+r.rebin(2).plot(vmin=0, vmax=0.01, cmap="gray_r", scale="sqrt")
+ax.contour(
+    hacore.sum(axis=0).rebin(2).data,
+    levels=[5e3, 1e4, 2e4, 4e4, 8e4, 16e4],
+    cmap="YlOrRd_r",
+)
+# -
 
 hacore.sum(axis=0).plot(vmin=0, vmax=1e5)
 
 # This shows a clear difference in distribution between the wings and the core.
+#
+# - [ ] **TODO** I should compare with the [S II]/Ha ratio
 
 # ## Look at the very brightest Raman pixels
 #
@@ -479,8 +510,14 @@ hacore.sum(axis=0).plot(vmin=0, vmax=1e5)
 
 # +
 cube_select = spec4fit - cont_cube
-brightest_wing = bandcubes["R040"].sum(axis=0).data > 75.0
+brightest_wing = redsum.data > 200.0
 cube_select.mask = cube_select.mask | ~brightest_wing
+
+# Trim off noisy bands close to edges
+cube_select.mask[:, :, 310:] = True
+#cube_select.mask[:, :10, :] = True
+#cube_select.mask[:, :, :15] = True
+cube_select.mask[:, -15:, :] = True
 
 cont_cube_select = cont_cube.copy()
 cont_cube_select.mask = cube_select.mask
@@ -504,6 +541,7 @@ cube_select.sum(axis=(1, 2)).plot(
 )
 ax.legend()
 ax.axhline(0.0, c="k", linewidth=1)
+ax.axhline(5e4, c="k", linewidth=0.5, linestyle="dashed")
 ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
 ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
 ax.set(ylim=[-1e5, 5e5]);
@@ -518,17 +556,23 @@ ax.set(ylim=[-1e5, 5e5]);
 
 # *Note that multiplying a `Cube` by a constant destroys the mask, so we need to do the sum before multiplying*
 
+# Another thing – some of this flux comes from some very bright pixels towards the edge of the map.  I had originally masked them all out (see the comment `# Trim off noisy bands close to edges` above), but I have reinstated the bottom and left edges, since they made quite a difference.  
+#
+# - [ ] **TODO:** investigate this further
+
 # ## Look at the diffuse but still bright Raman pixels
 
 # +
 cube_select2 = spec4fit - cont_cube
-redwing = (
-    bandcubes["R040"].sum(axis=0).data 
-    + bandcubes["R058"].sum(axis=0).data
-)
 
-good_wing = (redwing > 40.0) & (redwing < 200.0)
-cube_select2.mask = cube_select2.mask | brightest_wing | ~good_wing
+good_wing = (redsum.data > 20.0) 
+cube_select2.mask = cube_select2.mask | brightest_wing | ~good_wing | starmask
+
+# Trim off noisy bands close to edges
+cube_select2.mask[:, :, 310:] = True
+cube_select2.mask[:, :10, :] = True
+cube_select2.mask[:, :, :15] = True
+cube_select2.mask[:, -15:, :] = True
 
 cont_cube_select2 = cont_cube.copy()
 cont_cube_select2.mask = cube_select2.mask
@@ -538,22 +582,42 @@ lam1, lam2 = bands["R040"][0], bands["R058"][1]
 fig, ax = plt.subplots(figsize=(10, 10))
 (cube_select2
  .select_lambda(lam1, lam2)
- .sum(axis=0).rebin(4)
- .plot(vmin=0, vmax=100)
+ .sum(axis=0).rebin(1)
+ .plot(vmin=0, vmax=150, cmap="magma_r")
 );
 # -
 
 fig, ax = plt.subplots(figsize=(10, 5))
 cube_select2.sum(axis=(1, 2)).plot(
-    label="continuum-subtracted",
+    label="diffuse Raman wings",
 )
 (0.1*cont_cube_select2.sum(axis=(1, 2))).plot(
-    label="0.1 x continuum",
+    label="0.1 x continuum (diffuse)",
+)
+cube_select.sum(axis=(1, 2)).plot(
+    label="compact Raman wings",
+    linewidth=0.5, alpha=0.6,
 )
 ax.legend()
 ax.axhline(0.0, c="k", linewidth=1)
 ax.axvline(6633.0 * (1.0 + 160/3e5), color="k", lw=0.5)
 ax.axvline(6664.0 * (1.0 + 160/3e5), color="k", lw=0.5)
 ax.set(ylim=[-1e5, 5e5]);
+
+# ## Sources of interest
+#
+# 1. The bright knot (j, i, = 147, 122)
+# 2. The cometary globule (j, i = 180, 109)
+# 3. The corner globule (j, i = 40, 40) – has a faint embedded Hα point source with high linewidth, but the Ramn scattering is more extended. 
+# 4. The blue ball (j, i = 99, 59).  Much brighter in the innermost bands.  Perhaps it is not Raman scattering at all, but is a fast outflow?
+#
+# Actually, I will come back to this later. It would be easier to take notes in the org file.
+
+cube_save = spec4fit - cont_cube
+cube_save.write(
+    savepath / "ngc346-ha-plus-wings-cube.fits",
+    savemask="nan",
+    checksum=True,
+)
 
 
