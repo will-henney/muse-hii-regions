@@ -19,7 +19,68 @@
   + O I 8446
   + [Cl IV] 8045
   + [C I] 8727
-** Analysis of Raman wings of N66 mYSO C
+  + [Fe III]
+** General thoughts
++ Properties of N66 from Lopez:2014a
+  + Q(H) = 4e50 /s = 40 x Orion
+  + n = 100 pcc = 0.03 x Orion
+    + In both cases there are large variations, however
+  + R = 64 pc = 30 x Orion
+  + *therefore* (n R) and (Q n) are both similar to Orion, so ionization parameter is similar too
+*** Comparison of size scales between Orion and SMC
++ SMC distance: 61.7 kpc
++ Orion
+  + Distance: 410 pc => 150 times closer
+  + Size of Orion S region: R = 30 arcsec = 0.06 pc
+    + 0.2 arcsec @ SMC = *1 MUSE pixel !!!*
+  + Separation between Trapezium stars: about 5 arcsec = 0.01 pc
+    + 0.03 arcsec @ SMC
+  + Separation of Orion S from theta 1 C: R = 55 arcsec = 0.1 pc
+    + 0.4 arcsec @ SMC = 2 pixels
+  + Separation of th2A from th1C: R = 140 arcsec = 0.28 pc
+    + 0.93 arcsec @ SMC = 5 pixels
+  + Entire region studied in Orion paper: 360 x 270 arcsec
+    + 2.4 x 1.8 arcsec @ SMC
+*** Observations of the filaments and star forming regions in N66
++ HST observations of pre-MS population
+  + These find several sub-clusters of pre-MS stars
+  + Gouliermis:2006h
+  + Nota
++ ISO observations
+  + Contursi:2000f
+  + Find several clumps of PAH emission:
+    + 
++ CO observations
+  + Rubio:2000k
+
+** Analysis of Raman wings of SMC N66 mYSO C
 + Optically thick out past 100 \AA
   + Must have column of > 1e22 H^0 / cm^2
   + Suggests low dust cross section
+*** What we need for a paper
++ Spectrum of Raman wings
+  + Obviously Ha
+  + But also look at Hb too
++ Deal with the sky problems
+  + Nebular over-subtraction
+    + Puts the emission lines in absorption in the faint regions
+  + Telluric over-division
+    + Puts telluric absorption bands in emission in spectra of bright stars
++ Spatial profiles in wings, continuum, Ha, [S II], [O III]
+  + When is it spatially resolved and when not?
++ Look at more lines
+  + [S III] and [Ar III] to see if they look more like Ha (central peak) or like [O III] (hole in middle)
+  + Extinction from Ha/Hb - does the core of the line have nebular extinction (very small) or stellar extinction (A_V = 2.5)?
++ Density/temperature diagnostics
+  + We have an [S II] density, but in the presence of gradients/inhomogeneities that will be biased towards low densities
+  + Can we get any [Fe III] densities?
+    + Mabel used 4986 / 4658
++ Kinematics
+  + Local maximum in sigma(Ha) - but is that the line core, or the effect of the Raman wings?
++ Analysis
+  + Optical depth of Raman scattering
+    + Does it require dust destruction?
+  + General thoughts on the young cluster
+    + many of the stars seem to be aligned in chains
+    + there is a 3-pronged "bird foot" pattern coming out of the brightest compact sub-cluster
+    + the chains are approximately aligned with the filaments seen in the gas
