@@ -52,7 +52,11 @@ cb = fig.colorbar(scat, ax=ax)
 
 # ## Load an HST image
 #
-# We will start off with the UV one.
+# We will start off with the UV 2200 Å broad-band image.  
+#
+# Originally I had downloaded the data in a strange format, where 3 different filter images were stacked in a cube.  But I have now gone back and grabbed the individual filters as separate files, since this is easier to work with. 
+#
+# All the HST data files are listed at this DOI [10.17909/t9-vtw1-c475](https://doi.org/10.17909/t9-vtw1-c475)
 
 import numpy as np
 
@@ -61,17 +65,16 @@ from astropy.wcs import WCS
 
 bigdatapath = Path("../big-data")
 
-hdulist = fits.open(
-    bigdatapath / 
-    "HST-NGC346/hst_10248_03_acs_hrc_f330w_f220w/hst_10248_03_acs_hrc_f330w_f220w_sci.fits")
+dataset = "hst_10248_03_acs_hrc_f220w"
+hdulist = fits.open(bigdatapath / f"HST-NGC346/{dataset}/{dataset}_drz.fits")
 
 hdulist.info()
 
 # ## Plot the image in celestial coordinates with Gais sources overlaid
 
-w = WCS(hdulist[0].header).celestial
+w = WCS(hdulist["SCI"].header)
 
-imdata = hdulist[0].data[0, :, :]
+imdata = hdulist["SCI"].data
 
 fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(1, 1, 1, projection=w)
@@ -84,7 +87,7 @@ scat = ax.scatter(
     transform=ax.get_transform('world'),
 )
 
-# This shows that the HST coordinates are cbot quite right – there is an offset from the Gaia coordinates.
+# This shows that the HST coordinates are not quite right – there is an offset from the Gaia coordinates.
 #
 # We will zoom in on the central cluster to have a closer look.
 
@@ -108,7 +111,7 @@ ax.set(
 
 # Now, try giving an offset to fix this.  We could either change `CRPIX` or the `CRVAL`, but the first seems simpler to reason about.  We want to move the HST stars to the right and down, so do the opposite to the reference pixel:
 
-ww = WCS(hdulist[0].header).celestial
+ww = WCS(hdulist["SCI"].header)
 ww.wcs.crpix
 
 ww.wcs.crpix -= np.array([19, -7])
@@ -133,19 +136,17 @@ ax.set(
 
 # ## Repeat for the Hα image
 
-acspath = bigdatapath / "HST-NGC346/hst_10248_a3_acs_wfc_f658n"
-hdulist_acs = fits.open(
-    acspath / "hst_10248_a3_acs_wfc_f658n_drz.fits"
-)
+dataset_ha = "hst_10248_a3_acs_wfc_f658n"
+hdulist_ha = fits.open(bigdatapath / f"HST-NGC346/{dataset_ha}/{dataset_ha}_drz.fits")
 
-hdulist_acs.info()
+hdulist_ha.info()
 
-wacs = WCS(hdulist_acs["SCI"].header)
-imdata_acs = hdulist_acs["SCI"].data.astype("float")
+w_ha = WCS(hdulist_ha["SCI"].header)
+imdata_ha = hdulist_ha["SCI"].data
 
 fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(1, 1, 1, projection=wacs)
-ax.imshow(imdata_acs, vmin=0.0, vmax=1.0, cmap="gray_r")
+ax = fig.add_subplot(1, 1, 1, projection=w_ha)
+ax.imshow(imdata_ha, vmin=0.0, vmax=1.0, cmap="gray_r")
 scat = ax.scatter(
     x="ra", y="dec", edgecolors="r", 
     data=df,
@@ -162,9 +163,9 @@ ax.set(
 # Zoom in some more and switch to a logarithmic brightness scaling:
 
 fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(1, 1, 1, projection=wacs)
+ax = fig.add_subplot(1, 1, 1, projection=w_ha)
 ax.imshow(
-    np.log10(imdata_acs), 
+    np.log10(imdata_ha), 
     vmin=-1.0, vmax=3.0, 
     cmap="gray_r",
 )
@@ -183,14 +184,15 @@ ax.set(
 
 # This time, the whift is up and to the right. Let's try and fix it:
 
-wacs_fix = WCS(hdulist_acs["SCI"].header)
-wacs_fix.wcs.crpix += np.array([6, 7.5])
+w_ha_fix = WCS(hdulist_ha["SCI"].header)
+w_ha_fix.wcs.crpix += np.array([6, 7.5])
+w_ha_fix.wcs.crpix
 
 fig = plt.figure(figsize=(10, 10))
-ax = fig.add_subplot(1, 1, 1, projection=wacs_fix)
+ax = fig.add_subplot(1, 1, 1, projection=w_ha_fix)
 ax.imshow(
-    np.log10(imdata_acs), 
-    vmin=-1.0, vmax=3.0, 
+    np.log10(imdata_ha), 
+    vmin=-0.7, vmax=0.7, 
     cmap="gray_r",
 )
 scat = ax.scatter(
@@ -206,26 +208,114 @@ ax.set(
     ylim=[2000, 2400],
 );
 
+# ## Save the corrected versions as FITS files
+#
+# First the Hα image:
 
+for hdu in hdulist_ha:
+    if hdu.is_image:
+        hdu.header.update(w_ha_fix.to_header())
 
+hdulist_ha.writeto(
+    bigdatapath / "ngc346-hst-acs-f658n-wcsgaia.fits",
+    overwrite=True,
+)
 
+# Now the UV continuum image
+
+for hdu in hdulist:
+    if hdu.is_image:
+        hdu.header.update(ww.to_header())
+
+hdulist.writeto(
+    bigdatapath / "ngc346-hst-acs-f220w-wcsgaia.fits",
+    overwrite=True,
+)
 
 # ### Load the DAOPHOT source list
 #
-# The HST data came with some data tables that seem to
+# The HST data came with some data tables that seem to be the results of point source extraction.
+#
+# First look at the Hα ones. 
 
 from astropy.io import ascii
 
 stars = ascii.read(
-    str(acspath / "hst_10248_a3_acs_wfc_f658n_daophot_trm.cat"),
+    str(bigdatapath / f"HST-NGC346/{dataset_ha}/{dataset_ha}_daophot_trm.cat"),
     format="commented_header",
     header_start=56,
 )
 
 stars
 
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(1, 1, 1, projection=w_ha_fix)
+ax.imshow(
+    np.log10(imdata_ha), 
+    vmin=-1.0, vmax=3.0, 
+    cmap="gray_r",
+)
+scat = ax.scatter(
+    x="c1", y="c2", edgecolors="r", 
+    data=stars,
+    s=50, 
+    alpha=1.0,
+    facecolor="none",
+    transform=ax.get_transform('pixel'),
+)
+ax.set(
+    xlim=[2400, 2800],
+    ylim=[2000, 2400],
+);
+
+# Hmm, lots of stars are missing.  It seems to be avoiding regions with diffuse Hα emission.  We will zoom out to check.
+
+fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(1, 1, 1, projection=w_ha_fix)
+ax.imshow(
+    np.log10(imdata_ha), 
+    vmin=-0.7, vmax=0.7, 
+    cmap="gray_r",
+)
+scat = ax.scatter(
+    x="c1", y="c2", edgecolors="r", 
+    data=stars,
+    s=50, 
+    alpha=1.0,
+    facecolor="none",
+    transform=ax.get_transform('pixel'),
+)
+ax.set(
+    xlim=[1600, 3600],
+    ylim=[1200, 3200],
+#    xlim=[2400, 2800],
+#    ylim=[2000, 2400],
+);
+
+# Yes, this confirms that the source extraction avoids regions where the nebula is bright.
+#
+# We will look at the results from the broad-band filters instead, starting with the UV. *Cancel that – I can't make sense of the source list file*
+
 # +
-# ascii.read?
+#uvstars = ascii.read(
+#    str(bigdatapath / f"HST-NGC346/{dataset}/{dataset}_daophot_trm.cat"),
+#    format="fixed_width_no_header",
+#    data_start=409,
+#)        
 # -
+
+# ## Try getting stars from Hubble Source Catalog instead
+#
+# This is based off the notebook example at https://archive.stsci.edu/hst/hsc/help/api/hscv3_smc_api.html
+#
+# But I have taken the HSC API routines and put them in a file.  I had to do a `conda install requests`. 
+
+import sys
+sys.path.append("../lib")
+import hubble_source_catalog as hsc
+
+target = 'NGC 346'
+ra, dec = hsc.resolve(target)
+print(target, ra, dec)
 
 
