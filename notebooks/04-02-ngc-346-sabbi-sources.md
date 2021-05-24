@@ -861,6 +861,343 @@ ax.set(
 fig.tight_layout();
 ```
 
+## Better cuts in the CMD
+
+Actually, it turns out that Gouliermis:2006h already have the regions defined for UMS, LMS, PMS, and RGB.  So we should use those. 
+
+First, let's plot the CMD to look at it.
+
+```python
+mag0 = 22.1
+mUMS = (stars["F555W"] < mag0) & (stars["F555W"] < 29 - 15 * stars["V-I"])
+mRGB = (stars["F555W"] < mag0) & (stars["F555W"] >= 29 - 15 * stars["V-I"])
+mLMS = (stars["F555W"] >= mag0) & (stars["F555W"] > 18.5 + 5.5 * stars["V-I"])
+mPMS = (stars["F555W"] >= mag0) & (stars["F555W"] <= 18.5 + 5.5 * stars["V-I"])
+
+
+stars['reg'] = 0.0
+stars['reg'][mUMS] = 1.0
+stars['reg'][mRGB] = 2.0
+stars['reg'][mLMS] = 3.0
+stars['reg'][mPMS] = 4.0
+
+
+fig, ax = plt.subplots(figsize=(15, 15))
+ax.scatter(
+    stars["V-I"],
+    stars["F555W"],
+    marker=".",
+    s=1,
+    c=stars['reg'],
+    alpha=0.15,
+    cmap="hsv",
+)
+ax.set(
+    xlim=[-1.5, 3.0],
+    ylim=[27.0, 13.0],
+)
+```
+
+```python
+ystars = stars[mPMS | mUMS][::-1]
+ystars
+```
+
+```python
+lmsstars = stars[mLMS]
+rgbstars = stars[mRGB]
+```
+
+```python
+
+```
+
+```python
+dx, dy = 2000, 2000
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    np.log10(imha), 
+    vmin=-1.0, vmax=0.3, 
+    cmap="gray_r",
+)
+points = ax.scatter(
+    ystars['ra'].data, 
+    ystars['dec'].data, 
+    c=ystars["V-I"].data,
+    s=10.0/(ystars["F555W"] - 12.0),
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+#fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+#gpoints = ax.scatter(
+#    x="ra", y="dec", 
+#    edgecolors="w", 
+#    data=dfgaia,
+#    s=120/(dfgaia["phot_g_mean_mag"] - 13), 
+#    alpha=1.0,
+#    linewidth=1.5,
+#    facecolor="none",
+#    transform=ax.get_transform('world'),
+#)
+#ax.plot(ra0, dec0, 'kx', markersize=20, transform=ax.get_transform('world'),)
+
+for data in subclusters:
+    circ = SphericalCircle(
+        (data["ra"]*u.deg, data["dec"]*u.deg), 
+        data["R"]*u.arcsec,
+        edgecolor='w', facecolor='none', 
+        linestyle="dotted",
+        linewidth=4,
+        transform=ax.get_transform("world"),
+    )
+    ax.add_patch(circ)
+    ax.text(
+        data["ra"], data["dec"], data["__SSN2007_"].split()[-1],
+        ha="center", va="center", color="w",
+        fontweight="black",
+        clip_on=True,
+        transform=ax.get_transform("world"),
+    )
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+#fig.tight_layout();
+fig.savefig("../figs/ngc-346-star-map-zoom-A.pdf");
+```
+
+```python
+dx, dy = 500, 500
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    imha, 
+    vmin=0.2, vmax=1.0, 
+    cmap="gray_r",
+)
+points = ax.scatter(
+    ystars['ra'].data, 
+    ystars['dec'].data, 
+    c=ystars["V-I"].data,
+    s=100.0/(ystars["F555W"] - 12.0),
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+
+for data in subclusters[[0, 1, 2, 6, 7]]:
+    circ = SphericalCircle(
+        (data["ra"]*u.deg, data["dec"]*u.deg), 
+        data["R"]*u.arcsec,
+        edgecolor='k', facecolor='none', 
+        linestyle="dashed",
+        linewidth=4,
+        clip_on=True,
+        transform=ax.get_transform("world"),
+    )
+    ax.add_patch(circ)
+    ax.text(
+        data["ra"], data["dec"], data["__SSN2007_"],
+        ha="center", va="center", color="k",
+        fontweight="black", fontsize="x-large",
+        transform=ax.get_transform("world"),
+    )
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+fig.savefig("../figs/ngc-346-star-map-zoom-B.pdf")
+```
+
+```python
+dx, dy = 100, 100
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    np.log10(imha), 
+    vmin=-0.5, vmax=1.0, 
+    cmap="gray_r",
+)
+points = ax.scatter(
+    ystars['ra'].data, 
+    ystars['dec'].data, 
+    c=ystars["V-I"].data,
+    s=400.0/(ystars["F555W"] - 13.0),
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+
+points2 = ax.scatter(
+    lmsstars['ra'].data, 
+    lmsstars['dec'].data, 
+    edgecolors="w",
+    facecolor="none",
+    s=400.0/(lmsstars["F555W"] - 13.0),
+    alpha=1.0,
+    linewidth=3,
+    transform=ax.get_transform('world'),    
+)
+
+points3 = ax.scatter(
+    rgbstars['ra'].data, 
+    rgbstars['dec'].data, 
+    edgecolors="r",
+    facecolor="none",
+    s=400.0/(rgbstars["F555W"] - 13.0),
+    linewidth=3,
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+fig.savefig("../figs/ngc-346-star-map-zoom-C.pdf");
+```
+
+```python
+dx, dy = 30, 30
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+#    np.log10(imha), 
+#    vmin=-0.5, vmax=2.0, 
+    np.sqrt(imha), 
+    vmin=0.0, vmax=8.0, 
+    cmap="gray_r",
+)
+points = ax.scatter(
+    ystars['ra'].data, 
+    ystars['dec'].data, 
+    c=ystars["V-I"].data,
+    s=4*400.0/(ystars["F555W"] - 13.0),
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+
+points2 = ax.scatter(
+    lmsstars['ra'].data, 
+    lmsstars['dec'].data, 
+    edgecolors="y",
+    facecolor="none",
+    s=4*400.0/(lmsstars["F555W"] - 13.0),
+    linewidth=3,
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+points3 = ax.scatter(
+    rgbstars['ra'].data, 
+    rgbstars['dec'].data, 
+    edgecolors="r",
+    facecolor="none",
+    s=4*400.0/(rgbstars["F555W"] - 13.0),
+    linewidth=3,
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+
+
+
+ax.set(
+    xlim=[x0 + 50 - dx, x0 + 50 + dx],
+    ylim=[y0 - 40 - dy, y0 - 40 + dy],
+)
+fig.tight_layout();
+```
+
+So, it doesn't make much difference really, but it is good to do the cuts properly.  We do see quite a lot of the RGB-area sources, but these might not be RGB, but instead could be intermediate-mass young stars
+
+
+## Look at CMD of the central cluster
+
+We can take a cut in RA and Dec. 
+
+```python
+x0, y0
+```
+
+```python
+w.pixel_to_world_values(x0, y0)
+```
+
+```python
+dx, dy = 100, 100
+ra1, dec1 = w.pixel_to_world_values(x0 + dx, y0 - dy)
+ra2, dec2 = w.pixel_to_world_values(x0 - dx, y0 + dy)
+
+mbox = (
+    (stars["ra"] >= ra1)
+    & (stars["ra"] <= ra2)
+    & (stars["dec"] >= dec1)
+    & (stars["dec"] <= dec2)
+)
+boxstars = stars[mbox]
+boxstars
+```
+
+```python
+fig, ax = plt.subplots(figsize=(15, 15))
+ax.scatter(
+    stars["V-I"],
+    stars["F555W"],
+    marker=".",
+    s=1,
+    c="k",
+    alpha=0.15,
+    cmap="hsv",
+)
+
+ax.scatter(
+    boxstars["V-I"],
+    boxstars["F555W"],
+    marker="o",
+    s=20,
+    c="r",
+    alpha=0.5,
+)
+
+
+ax.set(
+    xlim=[-1.5, 3.0],
+    ylim=[27.0, 13.0],
+)
+```
+
+```python
+mYSO = (
+    (stars["F555W"] < 17) 
+    & (stars["V-I"] > 0.5)
+    & (stars["V-I"] < 1.0)
+)
+stars[mYSO]
+```
+
+Looks like ID152, which is MPG454 is our star!
+
 ```python
 
 ```

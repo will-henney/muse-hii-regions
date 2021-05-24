@@ -27,41 +27,141 @@
     + In both cases there are large variations, however
   + R = 64 pc = 30 x Orion
   + *therefore* (n R) and (Q n) are both similar to Orion, so ionization parameter is similar too
-*** Comparison of size scales between Orion and SMC
+*** Comparison of size scales and luminosities between Orion and SMC
 + SMC distance: 61.7 kpc
+  + Distance modulus: 5 log10(D/10 pc) = 18.95 
 + Orion
   + Distance: 410 pc => 150 times closer
+    + Distance modulus: 5 log10(D/10 pc) = 8.06
   + Size of Orion S region: R = 30 arcsec = 0.06 pc
     + 0.2 arcsec @ SMC = *1 MUSE pixel !!!*
   + Separation between Trapezium stars: about 5 arcsec = 0.01 pc
     + 0.03 arcsec @ SMC
   + Separation of Orion S from theta 1 C: R = 55 arcsec = 0.1 pc
     + 0.4 arcsec @ SMC = 2 pixels
-  + Separation of th2A from th1C: R = 140 arcsec = 0.28 pc
+  + Separation of Orion-BNKL from theta 1 C = 75 arcsec = 0.15 pc
+    + 0.5 arcsec @ SMS = 2.5 pixels
+    + BN and Src I are high-mass protostars in the BNKL region
+12.05  + Separation of th2A from th1C: R = 140 arcsec = 0.28 pc
     + 0.93 arcsec @ SMC = 5 pixels
   + Entire region studied in Orion paper: 360 x 270 arcsec
     + 2.4 x 1.8 arcsec @ SMC
++ Orion star magnitudes
+  + th1C:
+    + V = 5.13
+      + A_V = 1.5 approx
+      + M_V = 5.13 - 1.5 - 8.06 = -4.43
+    + I = 4.73
+    + K = 4.57
+      + A_K = 0.15 approx
+      + M_K = 4.57 - 0.15 - 8.06 = -3.64
++ NGC 346 star magnitudes:
+
 *** Observations of the filaments and star forming regions in N66
 + HST observations of pre-MS population
   + These find several sub-clusters of pre-MS stars
   + Gouliermis:2006h
-  + Nota
-+ ISO observations
+  + Nota:2006x
+  + Sabbi:2007h
+    + This has the sub-clusters that I am currently plotting in the figures
+    + But it might be better to use the ones from Schmeja instead
+    + Or even the ones from IR studies
++ near-IR observations
+  + Rubio:2000k present 2.12 H_2 and 2.14 micron continuum
+  + They find several "embedded sources"
+  + Numbered 1-5 and associated with mid-IR peaks as follows:
+    1. Tip of plume
+    2. I
+    3. D
+    4. E
+    5. C
++ mid-IR observations
   + Contursi:2000f
-  + Find several clumps of PAH emission:
-    + 
-+ CO observations
+    + Find several clumps of PAH emission:
+      + labelled A-H
+  + Simon:2007r
+    + Spitzer
+  + Whelan:2013d
+    + More Spitzer
++ CO/C I/C II observations
   + Rubio:2000k
-
-**** Analysis of clustering/sub-clustering
-+ Schmeja:2009q
-  + Quote from abstract
-    : Several PMS clusters are aligned along filaments of higher stellar density pointing away from the central part of the region.
-    + This is exactly what I had spotted in the star distribution
+    + CO
+  + Requena-Torres:2016g
+    + Mainly C II but also C I and CO
++ Analysis of clustering/sub-clustering
+  + Schmeja:2009q
+    + Quote from abstract
+      : Several PMS clusters are aligned along filaments of higher stellar density pointing away from the central part of the region.
+      + This is exactly what I had spotted in the star distribution
++ Optical UBV observations
   + 
 *** Different components of mYSO C
 + There are two continuum sources, presumably stars
-  + Separated by 
+  + Separated by about 0.5 arcsec
++ The NE source
+  + This is MPG454
++ Other correspondences
+  + SSTS3MC 14.7725-72.1766 from Simon:2007r
+    + They estimate 3.4e4 Lsun and 15 Msun
+    + Their source includes both stars
+  + Contursi:2000f give spectrum (their Peak C in Fig 6)
+    + They estimate G_0 = 8.7e5
+    + [ ] *We can use this to get a distance from the star maybe*
+  + Whelan:2013d source PS 9
+    + Spectrum is different from other sources
+    + Prominent Silicate emission
+    + Strangely low PAH 7.7/11.3 ratio although normal 6.2/11.3 ratio
+*** Massive YSOs in other regions
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ van-Gelder:2020z do X-shooter spectroscopy of sources in the LMC
+  + Their Fig 13 shows Br\gamma luminosity vs K-band magnitude for a whole bunch of sources from MW, SMC, and LMC: 
+    [[file:ngc-346_att/screenshot-20210524-110837.png]]
+  + The ones that are way above the trend line might be good candidates for looking for Raman scattering
+  + The SMC sources are in this category: relatively bright in Br\gamma
+    + For Source C, observed K_S = 12.05, meaning M_K = 12.05 - 18.95 = -6.9
+    + This means it must be the rightmost orange square, so L(Br\gamma) = 30 L_\odot, which corresponds to Q(H) = 8.554e+48 /s (see conversion factor from below)
+    + So that would be like an O7V star if 100% covering factor
+    + [0/2] But some questions remain?
+      + [ ] How is Br\gamma flux apportioned between different components (two compact sources plus surrounding globule)?
+        + This could be addressed by using the H\alpha fluxes from HST and/or MUSE
+      + [ ] How feasible is external, rather than internal illumination?
+        + For the globule it must be external because of the ionization gradient (seen in [O III] compared with H\alpha for instance)
+  + Conversion of Br\gamma to other measures:
+    + Br\gamma is 7 \to 4 transition
+    + Equivalent H\beta
+      + Table 4.2 of Osterbrock book has j(Br\gamma) / j(H\beta) = 0.0281
+        + For T = 1e4 K in low-density limit
+      + So 1 L_\odot of Br\gamma means 35.6 L_\odot of H\beta
+    + Equivalent H\alpha
+      + j(H\alpha) / j(H\beta) = 2.87
+      + => 1 L_\odot of Br\gamma = 102.1 L_\odot of H\alpha
+      + That is worth remembering: *H\alpha / Br\gamma = 100* more or less
+    + Equivalent Q(H)
+      + L(H\beta) = e(H\beta) \alpha(H\beta) VEM
+      + Q(H) = \alpha_B VEM
+      + => Q(H) = [\alpha_B / e(H\beta) \alpha(H\beta)] L(H\beta)
+      + \alpha_B = 2.6e-13 cm^3/s
+      + e(H\beta) \alpha(H\beta) = 1.24e-25 erg cm^3/s
+        + (This is 4\pi j(H\beta) / n_e n_p in the Osterbrock table)
+      + => Q(H) = (2.6e-13 / 1.24e-25) 35.6 3.82e33 [L(Br\gamma) / L_\odot]
+      + => Q(H) = 2.85e+47 [L(Br\gamma) / L_\odot]
+      + Remember, this is assuming 100% area covering fraction of ionization-bounded matter (no escape) and no EUV absorbed by dust.
+        + So it is a lower limit on Q(H)
+    + So th1C would be way above the line, at M_K, L(Br\gamma) = -3.6, 30
+      + *but* that is assuming all ionizing photons trapped nearby
+      + In reality, Orion S has much lower flux than this would imply
+      + [ ] /need to calculate H\alpha flux from Orion S/
+*** Jets in the core of NGC 346                   :ATTACH:
+:PROPERTIES:
+:DIR:      /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att/
+:END:
++ [[attachment:CleanShot 2021-05-24 at 13.51.30@2x.png][Possible jets seen in H alpha ACS image]]
+  + Note: I used the standard org-attach method to attach this screenshot, which I made with CleanShot because I wanted to annotate it
+  + This has the disadvantage that the link is not a normal image link
++ [ ] Look at evidence from the MUSE spectra for high-velocity H\alpha
+  + I think there was some indication to the N of the embedded sources
 ** Analysis of Raman wings of SMC N66 mYSO C
 + Optically thick out past 100 \AA
   + Must have column of > 1e22 H^0 / cm^2
