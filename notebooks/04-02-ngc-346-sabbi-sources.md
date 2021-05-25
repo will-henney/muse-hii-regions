@@ -1198,6 +1198,95 @@ stars[mYSO]
 
 Looks like ID152, which is MPG454 is our star!
 
+To be more objective, we will use the coordinates of Source C from Table 1 of Rubio:2018f, which come from near-IR imaging.
+
+```python
+c0 = SkyCoord(
+    "00 59 05.43",
+    "-72 10 35.5",
+    unit=(u.hourangle, u.deg),
+)
+```
+
+```python
+c0
+```
+
+And find the separation of each other star from that point.
+
+```python
+boxstars["sep"] = SkyCoord(
+    boxstars["ra"], boxstars["dec"], unit=u.deg
+).separation(c0).to(u.arcsec)
+boxstars["sep"].format = "{:.2f}"
+```
+
+Now put them in order of that separation:
+
+```python
+boxstars.sort("sep")
+boxstars
+```
+
+This shows that the "other" star is ID168, which doesn't have an MPG number.
+
+Now, we can redo the CMD, but showing the separation with symbol color.
+
+```python
+fig, ax = plt.subplots(figsize=(10, 10))
+ax.scatter(
+    stars["V-I"],
+    stars["F555W"],
+    marker=".",
+    s=1,
+    c="k",
+    alpha=0.15,
+    cmap="hsv",
+)
+
+points = ax.scatter(
+    boxstars["V-I"],
+    boxstars["F555W"],
+    marker="o",
+    s=200/(0.15 + boxstars["sep"]),
+    c=boxstars["sep"],
+    cmap="plasma",
+    vmin=0.0,
+    vmax=8.0,
+    alpha=1.0,
+)
+fig.colorbar(
+    points, ax=ax,
+    orientation="horizontal",
+    label="Separation from IR source, arcsec"
+)
+
+ax.set(
+    xlim=[-1.5, 3.0],
+    ylim=[27.0, 13.0],
+    xlabel="$V - I$",
+    ylabel="$V$",
+)
+fig.tight_layout()
+fig.savefig("../figs/ngc-346-cmd-zoom.pdf");
+```
+
+It is clear that the the closer stars to the IR source tend to be younger – they are further from the main sequence line.
+
+Note that the Sun would have $V = 24$ at the distance of the SMC.
+
+The reddest stars on MS have $V - I = 1.4$, which corresponds to $T_\mathrm{eff} \approx 4800$ K (see Fig 8 of Da-Rio:2010a). 
+
+The reddest PMS stars in this area have $V - I = 2.2$, which corresponds to $T_\mathrm{eff} \approx 3800$ K.  
+
+This could be a 0.5 Msun PMS stars (see tracks in Fig 16 of Da-Rio:2010a)
+
+One of the young-looking stars has $V = 24$, $V - I = 2$. So, a bit more than $1\,L_\odot$ (because BC is bigger for cooler stars), and probably $T_\mathrm{eff} \approx 4100$ K. This could be a 0.6 Msun star that is less than 1 Myr old. 
+
+```python
+
+```
+
 ```python
 
 ```
