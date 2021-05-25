@@ -914,7 +914,7 @@ rgbstars = stars[mRGB]
 
 ```python
 dx, dy = 2000, 2000
-fig = plt.figure(figsize=(15, 15))
+fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(1, 1, 1, projection=w)
 ax.imshow(
     np.log10(imha), 
@@ -925,7 +925,9 @@ points = ax.scatter(
     ystars['ra'].data, 
     ystars['dec'].data, 
     c=ystars["V-I"].data,
-    s=10.0/(ystars["F555W"] - 12.0),
+    s=10.0/(ystars["F555W"] - 13.0),
+    edgecolors="k",
+    lw=0.05,
     vmin=-0.7 + 0.3,
     vmax=1.0 + 0.3,
     cmap="rainbow",
@@ -951,7 +953,7 @@ for data in subclusters:
         data["R"]*u.arcsec,
         edgecolor='w', facecolor='none', 
         linestyle="dotted",
-        linewidth=4,
+        linewidth=2,
         transform=ax.get_transform("world"),
     )
     ax.add_patch(circ)
@@ -969,31 +971,58 @@ ax.set(
     xlim=[x0 - dx, x0 + dx],
     ylim=[y0 - dy, y0 + dy],
 )
-#fig.tight_layout();
+fig.tight_layout();
 fig.savefig("../figs/ngc-346-star-map-zoom-A.pdf");
+```
+
+Also indicate the coordinates of Source C from Table 1 of Rubio:2018f, which come from near-IR imaging.
+
+```python
+c0 = SkyCoord(
+    "00 59 05.43",
+    "-72 10 35.5",
+    unit=(u.hourangle, u.deg),
+)
+```
+
+```python
+c0
 ```
 
 ```python
 dx, dy = 500, 500
-fig = plt.figure(figsize=(15, 15))
+fig = plt.figure(figsize=(11, 8))
 ax = fig.add_subplot(1, 1, 1, projection=w)
 ax.imshow(
     imha, 
     vmin=0.2, vmax=1.0, 
     cmap="gray_r",
 )
+
+irpoint = ax.scatter(
+    c0.ra.deg,
+    c0.dec.deg,
+    marker="+",
+    s=200,
+    c="w",
+    linewidth=3,
+    transform=ax.get_transform('world'), 
+)
+
 points = ax.scatter(
     ystars['ra'].data, 
     ystars['dec'].data, 
     c=ystars["V-I"].data,
-    s=100.0/(ystars["F555W"] - 12.0),
+    s=30.0/(ystars["F555W"] - 13.0),
     vmin=-0.7 + 0.3,
     vmax=1.0 + 0.3,
     cmap="rainbow",
+    edgecolors="k",
+    linewidth=0.1,
     alpha=1.0,
     transform=ax.get_transform('world'),    
 )
-fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+fig.colorbar(points, ax=ax, label="$V - I$", shrink=1.0)
 
 for data in subclusters[[0, 1, 2, 6, 7]]:
     circ = SphericalCircle(
@@ -1001,7 +1030,7 @@ for data in subclusters[[0, 1, 2, 6, 7]]:
         data["R"]*u.arcsec,
         edgecolor='k', facecolor='none', 
         linestyle="dashed",
-        linewidth=4,
+        linewidth=2,
         clip_on=True,
         transform=ax.get_transform("world"),
     )
@@ -1019,39 +1048,58 @@ ax.set(
     xlim=[x0 - dx, x0 + dx],
     ylim=[y0 - dy, y0 + dy],
 )
+fig.tight_layout()
 fig.savefig("../figs/ngc-346-star-map-zoom-B.pdf")
 ```
 
 ```python
+
+```
+
+```python
 dx, dy = 100, 100
-fig = plt.figure(figsize=(15, 15))
+fig = plt.figure(figsize=(11, 8))
 ax = fig.add_subplot(1, 1, 1, projection=w)
 ax.imshow(
     np.log10(imha), 
     vmin=-0.5, vmax=1.0, 
     cmap="gray_r",
 )
+
+
+irpoint = ax.scatter(
+    c0.ra.deg,
+    c0.dec.deg,
+    marker="+",
+    s=1000,
+    c="w",
+    linewidth=3,
+    transform=ax.get_transform('world'), 
+)
+
 points = ax.scatter(
     ystars['ra'].data, 
     ystars['dec'].data, 
     c=ystars["V-I"].data,
-    s=400.0/(ystars["F555W"] - 13.0),
+    s=200.0/(ystars["F555W"] - 13.5),
     vmin=-0.7 + 0.3,
     vmax=1.0 + 0.3,
     cmap="rainbow",
+    edgecolors="k",
+    linewidth=0.3,
     alpha=1.0,
     transform=ax.get_transform('world'),    
 )
-fig.colorbar(points, ax=ax, label="$V - I$", shrink=0.8)
+fig.colorbar(points, ax=ax, label="$V - I$", shrink=1.0)
 
 points2 = ax.scatter(
     lmsstars['ra'].data, 
     lmsstars['dec'].data, 
     edgecolors="w",
     facecolor="none",
-    s=400.0/(lmsstars["F555W"] - 13.0),
+    s=200.0/(lmsstars["F555W"] - 13.5),
     alpha=1.0,
-    linewidth=3,
+    linewidth=1,
     transform=ax.get_transform('world'),    
 )
 
@@ -1060,18 +1108,17 @@ points3 = ax.scatter(
     rgbstars['dec'].data, 
     edgecolors="r",
     facecolor="none",
-    s=400.0/(rgbstars["F555W"] - 13.0),
-    linewidth=3,
+    s=200.0/(rgbstars["F555W"] - 13.5),
+    linewidth=1,
     alpha=1.0,
     transform=ax.get_transform('world'),    
 )
-
-
 
 ax.set(
     xlim=[x0 - dx, x0 + dx],
     ylim=[y0 - dy, y0 + dy],
 )
+fig.tight_layout()
 fig.savefig("../figs/ngc-346-star-map-zoom-C.pdf");
 ```
 
@@ -1086,6 +1133,18 @@ ax.imshow(
     vmin=0.0, vmax=8.0, 
     cmap="gray_r",
 )
+
+irpoint = ax.scatter(
+    c0.ra.deg,
+    c0.dec.deg,
+    marker="+",
+    s=4*1000,
+    c="r",
+    linewidth=10,
+    transform=ax.get_transform('world'), 
+)
+
+
 points = ax.scatter(
     ystars['ra'].data, 
     ystars['dec'].data, 
@@ -1198,21 +1257,8 @@ stars[mYSO]
 
 Looks like ID152, which is MPG454 is our star!
 
-To be more objective, we will use the coordinates of Source C from Table 1 of Rubio:2018f, which come from near-IR imaging.
 
-```python
-c0 = SkyCoord(
-    "00 59 05.43",
-    "-72 10 35.5",
-    unit=(u.hourangle, u.deg),
-)
-```
-
-```python
-c0
-```
-
-And find the separation of each other star from that point.
+And find the separation of each other star from infrared source C, which we calculated earlier.
 
 ```python
 boxstars["sep"] = SkyCoord(
@@ -1228,16 +1274,19 @@ boxstars.sort("sep")
 boxstars
 ```
 
-This shows that the "other" star is ID168, which doesn't have an MPG number.
+This shows that the "other" star is ID168, which doesn't have an MPG number.  Although MPG did not have the resolution to distinguish between the two sources, which are separated by 0.3 arcsec. 
+
+The NE star (we could call it MPG454-NE) is within 0.02 arcsec of the IR source, which is coincident within the astrometric precision.
 
 Now, we can redo the CMD, but showing the separation with symbol color.
 
 ```python
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(6, 6))
 ax.scatter(
     stars["V-I"],
     stars["F555W"],
     marker=".",
+    edgecolors="none",
     s=1,
     c="k",
     alpha=0.15,
@@ -1248,7 +1297,7 @@ points = ax.scatter(
     boxstars["V-I"],
     boxstars["F555W"],
     marker="o",
-    s=200/(0.15 + boxstars["sep"]),
+    s=50/(0.15 + boxstars["sep"]),
     c=boxstars["sep"],
     cmap="plasma",
     vmin=0.0,
