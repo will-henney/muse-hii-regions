@@ -978,16 +978,28 @@ fig.savefig("../figs/ngc-346-star-map-zoom-A.pdf");
 Also indicate the coordinates of Source C from Table 1 of Rubio:2018f, which come from near-IR imaging.
 
 ```python
-c0 = SkyCoord(
+c0_fk5 = SkyCoord(
     "00 59 05.43",
     "-72 10 35.5",
     unit=(u.hourangle, u.deg),
+    frame="fk5",
 )
 ```
 
 ```python
+c0_fk5
+```
+
+```python
+c0 = c0_fk5.icrs
 c0
 ```
+
+```python
+c0.ra.to_string(u.hourangle), c0.dec.to_string(u.deg)
+```
+
+Note that I have converted the coordinates from J2000 (as stated in Rubio:2018f) to ICRS for consistency with the Gaia frame.  But this makes a difference of only 0.01 arcsec, whereas the precision of the data is only 0.1 arcsec (based on significant figures given, who knows wjat the accuracy is).
 
 ```python
 dx, dy = 500, 500
@@ -1013,7 +1025,7 @@ points = ax.scatter(
     ystars['ra'].data, 
     ystars['dec'].data, 
     c=ystars["V-I"].data,
-    s=30.0/(ystars["F555W"] - 13.0),
+    s=30.0/(ystars["F555W"] - 12.0),
     vmin=-0.7 + 0.3,
     vmax=1.0 + 0.3,
     cmap="rainbow",
@@ -1276,6 +1288,8 @@ boxstars
 
 This shows that the "other" star is ID168, which doesn't have an MPG number.  Although MPG did not have the resolution to distinguish between the two sources, which are separated by 0.3 arcsec. 
 
+Note that the identification of these two stars (152 and 168) was already mentioned in Sec 2.3, para 1 of Rubio:2018f
+
 The NE star (we could call it MPG454-NE) is within 0.02 arcsec of the IR source, which is coincident within the astrometric precision.
 
 Now, we can redo the CMD, but showing the separation with symbol color.
@@ -1320,6 +1334,7 @@ fig.tight_layout()
 fig.savefig("../figs/ngc-346-cmd-zoom.pdf");
 ```
 
+<!-- #region -->
 It is clear that the the closer stars to the IR source tend to be younger – they are further from the main sequence line.
 
 Note that the Sun would have $V = 24$ at the distance of the SMC.
@@ -1328,12 +1343,40 @@ The reddest stars on MS have $V - I = 1.4$, which corresponds to $T_\mathrm{eff}
 
 The reddest PMS stars in this area have $V - I = 2.2$, which corresponds to $T_\mathrm{eff} \approx 3800$ K.  
 
-This could be a 0.5 Msun PMS stars (see tracks in Fig 16 of Da-Rio:2010a)
+
 
 One of the young-looking stars has $V = 24$, $V - I = 2$. So, a bit more than $1\,L_\odot$ (because BC is bigger for cooler stars), and probably $T_\mathrm{eff} \approx 4100$ K. This could be a 0.6 Msun star that is less than 1 Myr old. 
+<!-- #endregion -->
+
+## Look at the brightest stars
+
+At the separation column in to the full table:
 
 ```python
+stars["sep"] = SkyCoord(
+    stars["ra"], stars["dec"], unit=u.deg
+).separation(c0).to(u.arcsec)
+stars["sep"].format = "{:.2f}"
+```
 
+```python
+mbright = stars["F555W"] < 17.0
+mbright = mbright & mUMS
+mbright.sum(), (~mbright).sum()
+```
+
+```python
+mblue = stars["V-I"] < 0.0
+(mblue & mbright).sum()
+```
+
+```python
+obstars = stars[mbright & mblue]
+obstars
+```
+
+```python
+obstars[obstars["sep"] < 40.0]
 ```
 
 ```python

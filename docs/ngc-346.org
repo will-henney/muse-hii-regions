@@ -61,16 +61,26 @@
       + A_K = 0.15 approx
       + M_K = 4.57 - 0.15 - 8.06 = -3.64
 + NGC 346 star magnitudes:
-
 *** Observations of the filaments and star forming regions in N66
 + HST observations of pre-MS population
   + These find several sub-clusters of pre-MS stars
-  + Gouliermis:2006h
+  + Gouliermis:2006h (Paper I)
   + Nota:2006x
   + Sabbi:2007h
     + This has the sub-clusters that I am currently plotting in the figures
     + But it might be better to use the ones from Schmeja instead
     + Or even the ones from IR studies
+  + Hennekemper:2008u (Paper III) - not sure what Paper II is
+    + Detailed analysis of
+      1. OB stars
+      2. Upper main sequence (A-F)
+      3. Pre-main ssequence
+    + Find that OB stars are less reddened than other upper MS stars
+  + Gouliermis:2014a
+    + Detailed analysis of clustering properties, using autocorrelation function
+      + Find a broken power-law behavior, which they model as a two-component system
+        1. Central cluster with core radius of 2.5 pc
+        2. Extended fractal component
 + near-IR observations
   + Rubio:2000k present 2.12 H_2 and 2.14 micron continuum
   + They find several "embedded sources"
@@ -88,6 +98,16 @@
     + Spitzer
   + Whelan:2013d
     + More Spitzer
+  + Sewio:2013f
+    + Spitzer photometry of entire SMC
+    + Their Fig 12 compares ACS H alpha with Spitzer 3.6 micron for all their sources in NGC 346
+    + Most of them are inside globules
+      + We need to decide what term to use for the globules:
+        + PIGs
+        + Globules
+        + EIYSOs
+        + "Dusty columns" is what Sewio:2013f calls them
+        + EGGs (Evaporating gaseous globules)
 + CO/C I/C II observations
   + Rubio:2000k
     + CO
@@ -99,12 +119,94 @@
       : Several PMS clusters are aligned along filaments of higher stellar density pointing away from the central part of the region.
       + This is exactly what I had spotted in the star distribution
 + Optical UBV observations
-  + 
+  + See below [[id:7BBE33E5-18E9-47EE-B714-F23162D605BD][Papers on the O stars]]
+
+*** Ionizing stars in N66
+
+**** Notable stars by luminosity
++ SSN 7, MPG 435, DEHLS 1001, Walborn 1
+  + O4If+O5-6
+  + r = 11.6 arcsec
+  + V = 12.6
++ Evans 001, SSN 5, Sk 80, AzV 232, MPG 789
+  + O7 Iaf+
+  + V = 12.31
+  + Why does this have V-I = +0.154?
+    + It has B-V = -0.19
+  + 00 59 31.94  -72 10 46.05
+    + Way off to the East, off my maps
+    + r \approx 180 arcsec
++ Av 229, SSN 1?, MPG 755
++ Av 214
++ SSN 11, MPG 342, Dufton 1010
+  + O5-6 V((f))
+  + V = 13.6
+  + Just to W of red box
+  + r = 24.85
+  + *could be important, marginally*
++ SSN 15, MPG 368, Dufton 1012
+  + O6: V((f))
+  + V = 14.1
+  + Quite close, in Sc 2
+  + r = 17.15 arcsec
+  + *could be important, marginally*
++ Av 234
+  + B3 Iab
+  + V = 12.80
+  + Way off to north
+  + r = 360 arcsec
+  + Too far away
++ Av 210, Sk73
+  + B1.5 Ia
+  + V = 12.8
+  + Way off to the West
+  + Too far away
++ Av 226
+  + O7 IIIn((f))
+  + V = 14.37
+  + Way to South
+  + 00 59 20.70 -72 17 10.52
+  + r = 600 arcsec - too far!
+
+**** Notable stars by proximity to SSN 152
++ SSN 168, MPG 454
++ SSN 14
+  + V = 14.1
+
+
+**** Papers on the O stars
+:PROPERTIES:
+:ID:       7BBE33E5-18E9-47EE-B714-F23162D605BD
+:END:
++ Walborn:1978k
+  + Brightest star is NGC 346 No. 1, O4 III (n)(f)
+    + This is SSN 7 and it is now classified as O4If+O5-6 (Dufton:2019n)
+    + Also MPG 435
++ Evans:2006z
+  + FLAMES/GIRAFFE spectroscopy
+  + They use their own numbering system:
+    + For instance, NGC 346-001 is Sk 80 and MPG 789
+  + 19 O stars and 84 early B (not complete)
++ Dufton:2019n
+  + Extend the Evans:2006z by adding new targets
+  + 47 O-type and 287 B-type spectra (still not complete?)
+  + Their NGC 346-1001 is SSN 7/MPG 435 - the big one
+
+*** What to call the stars?
++ My current plan is just to use the Sabbi ID numbers, which are in order of V brightness
+  + SIMBAD says:
+    : dic: Table 2: <Cl* NGC 346 SSN NNNNNN> N=79960 among (Nos 1-132733). Table 3: <[SSN2007] Sc NN> (Nos 1-16).
+  + So I can just abbreviate it as SSN 152, SSN 168, etc
++ Alternative lists:
+  + MPG gets used a lot
+
 *** Different components of mYSO C
 + There are two continuum sources, presumably stars
-  + Separated by about 0.5 arcsec
-+ The NE source
-  + This is MPG454
+  + Separated by about 0.3 arcsec
+  + Sabbi ID 152 and 168
+    + MPG 454 corresponds to both of them
+  + The NE source 
+    + Sabbi ID 152
 + Other correspondences
   + SSTS3MC 14.7725-72.1766 from Simon:2007r
     + They estimate 3.4e4 Lsun and 15 Msun
@@ -116,6 +218,14 @@
     + Spectrum is different from other sources
     + Prominent Silicate emission
     + Strangely low PAH 7.7/11.3 ratio although normal 6.2/11.3 ratio
+  + Sewio:2013f
+    + Source Y535
+  + Rubio:2018f have the most comprehensive study
+    + They have near-IR imaging and spectra
+    + And they compare with the literature measurements 
+*** SED modelling of the YSOs
++ Robitaille:2006f is what everyone uses
++ Although Zhang:2018k claim their models are more physically consistent
 *** Massive YSOs in other regions
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
@@ -167,6 +277,44 @@
   + This has the disadvantage that the link is not a normal image link
 + [ ] Look at evidence from the MUSE spectra for high-velocity H\alpha
   + I think there was some indication to the N of the embedded sources
++ [ ] Do a cross-reference with the V and I-band images to check they aren't just stars
++ These are smaller than the jet in McLeod:2018a from LMC N180
+  + That has total length of 11 pc (46 arcsec)
+  + Ours have lengths of about 0.3 arcsec if they are real
+*** Comparison of globules with those in other regions
++ Compare sizes, densities, etc. with other samples such as
+  + NGC 436 globules
+    + Small one around source E
+      + R \approx 0.3 pc
+    + Larger ones have R up to about 0.5 pc, but there are many smaller ones too
+    + How close are they to the core of the cluster?
+      + [ ] Estimate incident flux from density and size
+  + Orion
+    + Orion proplyds
+    + Orion globules
+      + (the far out ones)
+      + and the ones in the Dark Bay
+    + Orion bar - not really the same,
+    + Orion S considered as a globule
+      + SW minibar has R = 0.03 pc taking the long axis (much smaller if we take the short axis)
+  + Eagle Nebula EGGs
+    + McCaughrean:2002a
+    + Hester:1996w
+      + R = 300 to 1000 AU = 1.5 to 5 mpc
+      + Much smaller than in other regions
+  + Carina
+    + Sahai:2012b - coins frEGG term
+    + Menon:2021j
+    + Hartigan:2015a
+      + Southern pillars typical size = 0.1 pc
+      + Some larger globules, for instance Figs 14, 15: Western Wall, with R = 0.4 pc
+      + Some much smaller ones, especially in Tr 14 region
+    + McLeod:2016a
+      + MUSE maps of many globules in multiple emission lines
+    + Reiter:2019a
+      + Tadpole - small: 0.01 pc
+  + frEGGS in Cygnus OB2
+    + R = 0.05 to 0.1 pc
 ** Analysis of Raman wings of SMC N66 mYSO C
 + Optically thick out past 100 \AA
   + Must have column of > 1e22 H^0 / cm^2
