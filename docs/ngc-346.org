@@ -98,6 +98,9 @@
     + Spitzer
   + Whelan:2013d
     + More Spitzer
+  + Ruffle:2015h
+    + color-color classification of point sources in the entire SMC
+    + overlap between YSOs and H II regions
   + Sewio:2013f
     + Spitzer photometry of entire SMC
     + Their Fig 12 compares ACS H alpha with Spitzer 3.6 micron for all their sources in NGC 346
@@ -135,7 +138,7 @@
     + It has B-V = -0.19
   + 00 59 31.94  -72 10 46.05
     + Way off to the East, off my maps
-    + r \approx 110 arcsec
+    + r \approx 120 arcsec
   + UV spectrum studied in detail in Bouret:2021h
 + SSN 4, MPG 185
 + HD 5980, MPG 755 (not in SSN)
@@ -146,7 +149,7 @@
   + V = 11.31
   + M = 60 Msun + 60 Msun
   + 00 59 26.5847969465 -72 09 53.927725716
-  + r = 100 arcsec
+  + r = 105.7 arcsec
 + Av 229, SSN 1?, MPG 755
 + Av 214
 + SSN 11, MPG 342, Dufton 1010
@@ -181,11 +184,15 @@
 
 **** Notable stars by proximity to SSN 152
 + SSN 168, MPG 454
-+ SSN 9, MPG 355
++ SSN 9, MPG 355, W 3
   + V = 13.45
   + O2III(f)
   + r = 22.68 arcsec = 6.8 pc
     + 7.55 times farther than SSN 14 => 57 times smaller flux per Q(H)
+  + This was first discussed by Walborn & Blades (Walborn:1986y)
+    + They classified it as
+      : spectrum of type O3 III(f*), identical to that of HDE 269810 in the Large Magellanic Cloud
+  + Current classification from Heydari-Malayeri:2010a
 + SSN 14
   + 00 59 05.972 -72 10 33.85
   + V = 14.1
@@ -205,12 +212,29 @@
 + SSN 22, MPG 476
   + V = 14.562
   + r = 4.06 arcsec
+  + /No spectral classification!/
+  + Just to side of SSN 9/W2
++ SSN 40, MPG 451
+  + V = 15.1
+  + B0V
+  + r = 3.17 arcsec but to south
++ SSN 43, MPG 481
+  + V = 15.08
+  + B - V = -0.23
+  + r = 5 arcsec
 **** [#A] Reminder on distances: 1 arcsec = 0.3 pc
-**** Other interresting stars
+**** Other interesting stars and objects
 + SSN 50, MPG 508
   + This is the one that shows the broad Ha line
   + It is in Sc 8
   + There is no spectral classificaction
++ N66A Compact H II region
+  + Studied in depth by Heydari-Malayeri:2010i
+  + First line of their discussion:
+    : N66A is clearly the most compact Hii region of the N66 complex in the optical.
+    So that is clearly untrue, if we count the region around IR Source C, which is far more compact
+  + Exciting star is N66-A
+    + Spectral type: O8 V
 **** The twins of SSN 14
 + Since SSN 14 does not seem to have any spectroscopy, we need to compare it with stars that do in order to estimate its spectral type.
 + I found all the ones within 0.3 mag of V and V-I
@@ -249,6 +273,33 @@
   + Extend the Evans:2006z by adding new targets
   + 47 O-type and 287 B-type spectra (still not complete?)
   + Their NGC 346-1001 is SSN 7/MPG 435 - the big one
++ Niemela:1986k
+  + Spectroscopy of the brighter stars
++ 
+**** [#A] Ionizing luminosities and fluxes
+***** TODO Which are the most important stars?
+| Name    | SSN | MPG | Sp. Type    | Q_1 | R (") |
+|---------+-----+-----+-------------+----+-------|
+| W 1     |   7 | 435 | O4If+O5-6   |    | 11.56 |
+| W 2     | 14* | 470 | O8.5 III    |    |  3.04 |
+| W 3     |   9 | 355 | O2 III(f)   |    | 22.68 |
+|---------+-----+-----+-------------+----+-------|
+| SSN 168 | 168 |     | B0?         |    |   0.2 |
+|---------+-----+-----+-------------+----+-------|
+| Sk 80   |   5 | 789 | O7 Iaf+     |    | 122.4 |
+| HD 5980 |     | 755 | WR+WR+O     |    | 105.7 |
+|---------+-----+-----+-------------+----+-------|
+| W 4     |  11 | 342 | O5-6 V((f)) |    | 24.85 |
+| SSN 13  |  13 | 324 | O4 V((f+))  |    | 36.99 |
+| SSN 15  |  15 | 368 | O6: V((f))  |    | 17.15 |
+| SSN 17  |  17 | 396 | O7V         |    | 11.53 |
+| SSN 18  |  18 | 487 | O8V         |    |  8.37 |
+| SSN 46  |  46 | 500 | O6V:        |    | 16.39 |
+| SSN 22  |  22 | 476 | O7?V?       |    |  4.06 |
+|         |     |     |             |    |       |
+***** Conversion of spectral type to ionizing luminosity
+***** TODO What is this "excitation parameter" that the early papers mention?
++ It has units of pc cm^-2, which is length
 
 *** What to call the stars?
 + My current plan is just to use the Sabbi ID numbers, which are in order of V brightness

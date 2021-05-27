@@ -1348,6 +1348,12 @@ The reddest PMS stars in this area have $V - I = 2.2$, which corresponds to $T_\
 One of the young-looking stars has $V = 24$, $V - I = 2$. So, a bit more than $1\,L_\odot$ (because BC is bigger for cooler stars), and probably $T_\mathrm{eff} \approx 4100$ K. This could be a 0.6 Msun star that is less than 1 Myr old. 
 <!-- #endregion -->
 
+Stars in the box that are also in the MPG catalog
+
+```python
+boxstars[~boxstars["MPG"].mask]
+```
+
 ## Look at the brightest stars
 
 At the separation column in to the full table:
@@ -1614,6 +1620,25 @@ ax.set(
 )
 fig.tight_layout();
 fig.savefig("../figs/ngc-346-star-map-bright-C.pdf");
+```
+
+The WR binary HD 59080 is not in catalog, so I calaculate its distance by hand:
+
+```python
+c0
+```
+
+```python
+c_hd5980 = SkyCoord("00 59 26.5847969465 -72 09 53.927725716", unit=(u.hourangle, u.deg))
+c_hd5980
+```
+
+```python
+c0.separation(c_hd5980).arcsec
+```
+
+```python
+stars[stars["ID"] == 46]
 ```
 
 ```python
