@@ -1379,6 +1379,243 @@ obstars
 obstars[obstars["sep"] < 40.0]
 ```
 
+## Look at stars that are similar to SSN 14
+
+
+
+```python
+stars[stars["ID"] == 14]
+```
+
+Look at difference in V and V-I
+
+```python
+stars["diff SSN14"] = np.hypot(
+    stars["F555W"] - 14.09,
+    stars["V-I"] - (-0.228),
+)
+m14 = stars["diff SSN14"] <= 0.5
+```
+
+```python
+stars[m14]
+```
+
+Kind of unsurprising that they are the consecurtive ones on the list!
+
+
+## Plot the positions of the 150 brightest stars
+
+
+
+```python
+dx, dy = 3000, 3000
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    np.log10(imha), 
+    vmin=-1.0, vmax=0.3, 
+    cmap="gray_r",
+)
+bbstars = stars[:150]
+points = ax.scatter(
+    bbstars['ra'].data, 
+    bbstars['dec'].data, 
+    c=bbstars["V-I"].data,
+    s=10**(4.5-0.2*bbstars["F555W"]),
+    edgecolors="k",
+    lw=0.2,
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+
+for i, star in enumerate(bbstars):
+    xpos = ["left", "right"][i % 2]
+    ypos = ["top", "center", "bottom"][i % 3]
+    tcol = "cmbrg"[i % 5]
+    ax.text(
+        star["ra"], star["dec"],
+        f"{star['ID']:03d}", 
+        fontsize="xx-small",
+        ha=xpos,
+        va=ypos,
+        color=tcol,
+        fontweight="black",
+        clip_on=False,
+        transform=ax.get_transform('world'),   
+    )
+
+for data in subclusters:
+    circ = SphericalCircle(
+        (data["ra"]*u.deg, data["dec"]*u.deg), 
+        data["R"]*u.arcsec,
+        edgecolor='w', facecolor='none', 
+        linestyle="dotted",
+        linewidth=2,
+        transform=ax.get_transform("world"),
+    )
+    ax.add_patch(circ)
+#    ax.text(
+#        data["ra"], data["dec"], data["__SSN2007_"].split()[-1],
+#        ha="center", va="center", color="w",
+#        fontweight="black",
+#        clip_on=True,
+#        transform=ax.get_transform("world"),
+#    )
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+fig.tight_layout();
+fig.savefig("../figs/ngc-346-star-map-bright-A.pdf");
+```
+
+```python
+bbstars
+```
+
+```python
+dx, dy = 500, 500
+fig = plt.figure(figsize=(8, 8))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    np.log10(imha), 
+    vmin=-0.7, vmax=0.6, 
+    cmap="gray_r",
+)
+bbstars = stars[:150]
+points = ax.scatter(
+    bbstars['ra'].data, 
+    bbstars['dec'].data, 
+    c=bbstars["V-I"].data,
+    s=10**(5.0-0.2*bbstars["F555W"]),
+    edgecolors="k",
+    lw=0.2,
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+
+for i, star in enumerate(bbstars):
+    xpos = ["left", "right"][i % 2]
+    ypos = ["top", "center", "bottom"][i % 3]
+    tcol = "cmbrg"[i % 5]
+    ax.text(
+        star["ra"], star["dec"],
+        f"{star['ID']:03d}", 
+        fontsize="small",
+        ha=xpos,
+        va=ypos,
+        color=tcol,
+        fontweight="black",
+        clip_on=True,
+        transform=ax.get_transform('world'),   
+    )
+
+for data in subclusters:
+    circ = SphericalCircle(
+        (data["ra"]*u.deg, data["dec"]*u.deg), 
+        data["R"]*u.arcsec,
+        edgecolor='w', facecolor='none', 
+        linestyle="dotted",
+        linewidth=2,
+        transform=ax.get_transform("world"),
+    )
+    ax.add_patch(circ)
+#    ax.text(
+#        data["ra"], data["dec"], data["__SSN2007_"].split()[-1],
+#        ha="center", va="center", color="w",
+#        fontweight="black",
+#        clip_on=True,
+#        transform=ax.get_transform("world"),
+#    )
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+fig.tight_layout();
+fig.savefig("../figs/ngc-346-star-map-bright-B.pdf");
+```
+
+```python
+dx, dy = 100, 100
+fig = plt.figure(figsize=(8, 8))
+ax = fig.add_subplot(1, 1, 1, projection=w)
+ax.imshow(
+    np.log10(imha), 
+    vmin=-0.4, vmax=1.0, 
+    cmap="gray_r",
+)
+bbstars = stars[:300]
+points = ax.scatter(
+    bbstars['ra'].data, 
+    bbstars['dec'].data, 
+    c=bbstars["V-I"].data,
+    s=10**(5.5-0.2*bbstars["F555W"]),
+    edgecolors="k",
+    lw=0.2,
+    vmin=-0.7 + 0.3,
+    vmax=1.0 + 0.3,
+    cmap="rainbow",
+    alpha=1.0,
+    transform=ax.get_transform('world'),    
+)
+
+for i, star in enumerate(bbstars):
+    xpos = ["left", "right"][i % 2]
+    ypos = ["top", "center", "bottom"][i % 3]
+    tcol = "cmbrg"[i % 5]
+    ax.text(
+        star["ra"], star["dec"],
+        f"{star['ID']:03d}", 
+        fontsize="small",
+        ha=xpos,
+        va=ypos,
+        color=tcol,
+        fontweight="black",
+        clip_on=True,
+        transform=ax.get_transform('world'),   
+    )
+
+for data in subclusters:
+    circ = SphericalCircle(
+        (data["ra"]*u.deg, data["dec"]*u.deg), 
+        data["R"]*u.arcsec,
+        edgecolor='w', facecolor='none', 
+        linestyle="dotted",
+        linewidth=2,
+        transform=ax.get_transform("world"),
+    )
+    ax.add_patch(circ)
+#    ax.text(
+#        data["ra"], data["dec"], data["__SSN2007_"].split()[-1],
+#        ha="center", va="center", color="w",
+#        fontweight="black",
+#        clip_on=True,
+#        transform=ax.get_transform("world"),
+#    )
+
+
+
+ax.set(
+    xlim=[x0 - dx, x0 + dx],
+    ylim=[y0 - dy, y0 + dy],
+)
+fig.tight_layout();
+fig.savefig("../figs/ngc-346-star-map-bright-C.pdf");
+```
+
 ```python
 
 ```
