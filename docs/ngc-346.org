@@ -278,26 +278,110 @@
 + 
 **** [#A] Ionizing luminosities and fluxes
 ***** TODO Which are the most important stars?
-| Name    | SSN | MPG | Sp. Type    | Q_1 | R (") |
-|---------+-----+-----+-------------+----+-------|
-| W 1     |   7 | 435 | O4If+O5-6   |    | 11.56 |
-| W 2     | 14* | 470 | O8.5 III    |    |  3.04 |
-| W 3     |   9 | 355 | O2 III(f)   |    | 22.68 |
-|---------+-----+-----+-------------+----+-------|
-| SSN 168 | 168 |     | B0?         |    |   0.2 |
-|---------+-----+-----+-------------+----+-------|
-| Sk 80   |   5 | 789 | O7 Iaf+     |    | 122.4 |
-| HD 5980 |     | 755 | WR+WR+O     |    | 105.7 |
-|---------+-----+-----+-------------+----+-------|
-| W 4     |  11 | 342 | O5-6 V((f)) |    | 24.85 |
-| SSN 13  |  13 | 324 | O4 V((f+))  |    | 36.99 |
-| SSN 15  |  15 | 368 | O6: V((f))  |    | 17.15 |
-| SSN 17  |  17 | 396 | O7V         |    | 11.53 |
-| SSN 18  |  18 | 487 | O8V         |    |  8.37 |
-| SSN 46  |  46 | 500 | O6V:        |    | 16.39 |
-| SSN 22  |  22 | 476 | O7?V?       |    |  4.06 |
-|         |     |     |             |    |       |
+| Name    | SSN | MPG | Sp. Type    | T_eff, kK |        V |    BC |   M_bol | L/Lsun | R/Rsun | log q_0 |     Q_0 | d (") |   F_bol | L_glob/L_sun | Q_0(glob) |
+|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 1     |   7 | 435 | O4If+O5-6   |       43 |     12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |  24.46 | 8.0e49 | 11.56 |   3.72 |      2.6e3 |   1.5e47 |
+| W 2     | 14* | 470 | O8.5 III    |       36 |     14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |  24.04 | 9.2e48 |  3.04 |   8.06 |      5.7e3 |   2.5e47 |
+| W 3     |   9 | 355 | O2 III(f)   |     52.5 |    13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |   24.9 | 7.7e49 | 22.68 |   0.76 |      5.3e2 |   3.7e46 |
+|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| SSN 168 | 168 |     | B0?         |       30 | 16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |   23.2 | 4.0e47 |   0.2 | 266.05 |          0 |        0 |
+|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| Sk 80   |   5 | 789 | O7 Iaf+     |       36 |    12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |  24.07 | 5.2e49 | 122.4 |   0.03 |      1.8e1 |   8.7e44 |
+| HD 5980 |     | 755 | WR+WR+O     |       50 |    11.31 | -4.43 | -12.37 |  6.9e6 |  34.95 |   24.8 | 4.7e50 | 105.7 |   0.22 |      1.5e2 |   1.1e46 |
+|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 4     |  11 | 342 | O5-6 V((f)) |       43 |     13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |  24.47 | 3.2e49 | 24.85 |   0.32 |      2.2e2 |   1.3e46 |
+| SSN 13  |  13 | 324 | O4 V((f+))  |       48 |    14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |   24.8 | 3.7e49 | 36.99 |   0.12 |      8.4e1 |   6.8e45 |
+| SSN 15  |  15 | 368 | O6: V((f))  |     42.5 |     14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |   24.4 | 1.8e49 | 17.15 |   0.41 |      2.9e2 |   1.5e46 |
+| SSN 17  |  17 | 396 | O7V         |       38 |   14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |  24.15 | 8.7e48 | 11.53 |   0.51 |      3.6e2 |   1.6e46 |
+| SSN 18  |  18 | 487 | O8V         |       36 |    14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |  23.94 | 5.2e48 |  8.37 |   0.76 |      5.4e2 |   1.9e46 |
+| SSN 46  |  46 | 500 | O6V:        |     42.5 |   15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |   24.4 | 6.2e48 | 16.39 |   0.16 |      1.1e2 |   5.8e45 |
+| SSN 22  |  22 | 476 | O7?V?       |       38 |   14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |  24.15 | 7.3e48 |  4.06 |   3.44 |      2.4e3 |   1.1e47 |
+|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+|         |     |     |             |          |          |     X |      X |  1.3e7 |      X |      X | 8.0e50 |     X |      X |      1.3e4 |   6.3e47 |
+#+TBLFM: $7=-6.9 log10(1000 $5) + 27.99 ; f2::$8=$6 + $7 - 0.3 - 18.95;f2::$9=10**(-0.4 ($8 - 4.73));s2::$10=sqrt($9 $lsun / 4 $pi $sigma (1000 $5)**4) / $rsun ; f2::$12=4 $pi ($10 $rsun)**2 10**($11);s2::$14=$9 $lsun / 4 $pi (0.3 $pc $13)**2 ; f2::$15=$13 > 1 ? $9 (1 / 2 $13)**2 : 0 ;s2::$16=$13 > 1 ? $12 (1 / 2 $13)**2 : 0 ;s2::@15$7..@15$8=X::@15$9=vsum(@I..@IIIII);s2::@15$10..@15$11=X::@15$12=vsum(@I..@IIIII);s2::@15$13..@15$14=X::@15$15..@15$16=vsum(@I..@IIIII);s2
+
++ M_bol = V + BC - AV - DM
+  + DM = 18.95
+  + AV = 0.3 approx (assuming E(B-V) = 0.1)
+  + I have added an extra 1 mag extinction by hand to SSN 168
++ L/Lsun = 10**(0.4 (M_sun - M_bol))
+  + M_sun = 4.73
++ R = sqrt(L / 4 \pi \sigma T^4)
++ So in terms of bolometric flux, the nearby B star totally dominates
++ But we should work out the external luminosity incident on the globule
+  + And not include SSN 168 since that is on the inside
+  + Sum over stars of luminosity x area covering fraction: \sum_i L_i \Omega_i / 4\pi
+  + \Omega_i / 4\pi = A_glob / 4\pi d^2 = \pi r_glob^2 / 4\pi d^2 = r_glob^2 / 4 d^2
+  + Take r_glob = 1 arcsec
++ The result is a total of 1.3e4 Lsun, of which half comes from W 2
++ So this is less than the inner luminosity from SSN 168 (3e4), if that was all trapped
+  + Also, the external luminosities are upper limits, assuming that everything is in the plane of the sky
++ I have done the same for the ionizing luminosity
+  + I get a total external incident luminosity of Q_ext = 6.3e47 s^-1
+  + As opposed to an internal luminosity from the B0V star of 4e47 s^-1
+  + The external incident luminosity is split up as follows
+    + 40% from W 2
+    + 24% from W 1
+    + 17% from SSN 22
+    + 6% from W 3
+    + 13% from the rest (each 3% or less)
++ [ ] Now, we need to compare this with the Ha luminosity of the globule and of the inner sources
 ***** Conversion of spectral type to ionizing luminosity
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ Galactic case is done by Martins:2005a
+  + Application to Carina in Smith:2006a
+  + But what about the SMC abundances?
+****** Spectral type to effective temperature
++ Massey:2005z show the S. Type - T_eff relations for MW vs SMC
+  c[[file:ngc-346_att/screenshot-20210527-134032.png]]
+  + They find that SMC stars a bit hotter (green line) for both supergiants and dwarfs
+  + I have inserted these temperatures as a column in the above table
++ [ ] But what about bespoke stellar parameter determinations?
+  + Massey:2000l have
+    + Q = (U - B) - 0.72 (B - V)
+    + This is supposedly a reddening-free index
+    + Then 
+      - For Q < -0.6 and either (B - V)_0 < 0.0 or (U - B)_0 < -0.6,
+      - log Teff = 4.2622 + 0.64525 Q + 1.09174 Q^2, (V)
+      - log Teff = 5.2618 + 3.42004 Q + 2.93489 Q^2, (III)
+      - log Teff = -0.9894 - 22.767380 Q -  33.09637 Q^2 16.19307 Q^3 (I)
+  + However, I can't be bothered to look up all the UBV photometry necessary to do this
+****** Luminosities, radii
++ We need the gravity to get the q_1 ionizing flux from the stellar atmosphere
+  + function of T_eff, g, Z
++ But then we need the R to convert to luminosity Q_1
++ But we also have L_bol = 4 \pi R^2 T_eff^4
+  + And we can find L_bol from M_V and bolometric correction
+  + BC is known as a function of T_eff
+    + E.g., BC = -6.90 log Teff + 27.99
+    + Massey:2005z, equation (2)
+    + From this, we can calculate the radii from M_V
+      + If we know A_V
++ This is done in the table
+****** Masses, gravity
++ [ ] The gravity should have a calibration with luminosity class
+****** Ionizing fluxes
++ If the fluxes q_0 are not a strong function of g, then we don't need to find the gravity
++ We can use the same q_0 as in Martins:2005a, but using our T_eff, rather than their Galactic calibration
++ Apparently, the direct effect of metallicity on q_0 is small, but q_1 should be higher at lower metallicities
+  + Quote regarding this from Martins:2005a section 6:
+    : From the modelling side, Kudritzki (2002) and Mokiem et al. (2004)
+    : have investigated the effect of a change of the metal content on the
+    : spectral energy distribution of O dwarfs using CMFGEN models. They
+    : found that H ionising fluxes are essentially unchanged when Z is
+    : varied between twice and one tenth the solar content. They argue that
+    : the redistribution of the flux blocked by metals at short wavelengths
+    : takes place within the Lyman continuum, which explains the observed
+    : behaviour. However, they show that the SEDs are strongly modified
+    : below ~450 \AA, spectra being softer at higher metallicity (see also
+    : Sect. 5.3.1). Morisset et al. (2004) have computed various WM-BASIC
+    : models at different metallicities and showed how Z affected the
+    : strength of mid-IR nebular lines emitted in compact H I regions. The
+    : softening of the SEDs when metallicity increases is crucial to
+    : understand the behaviour of observed excitation sequences.
+
 ***** TODO What is this "excitation parameter" that the early papers mention?
 + It has units of pc cm^-2, which is length
 
