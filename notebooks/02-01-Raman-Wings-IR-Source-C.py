@@ -929,4 +929,215 @@ fig, axes = plt.subplots(
 fig.tight_layout();
 # -
 
+# ## Use moments library
+
+# Start with the [O I] 6300 line
+
+import sys
+sys.path.append("../lib")
+import moments
+
+w1, w2 = 6298, 6308
+mom6300 = moments.find_moments(
+    wide_6300.select_lambda(w1, w2)
+)
+
+mom_pars_6300 = dict(
+    restwav=6300.30,
+    irange=[-150, 4.0e4],
+    vrange=[85, 255],
+    srange=[30, 150],    
+)
+
+plot_pars_6300=dict(
+    ilabel="O I",
+    label="6300",
+    flabel="ngc346-oi",
+    **mom_pars_6300,
+)
+g = moments.moments_corner_plot(
+    mom6300, rebin=1, **plot_pars_6300
+)
+
+plot_pars_6300=dict(
+    ilabel="O I",
+    label="6300",
+    flabel="ngc346-oi",
+    **mom_pars_6300,
+)
+g = moments.moments_corner_plot(
+    mom6300, rebin=4, **plot_pars_6300
+)
+
+# It looks like the possible symptoms of oversubtracted sky.
+
+(3e5*(mom6300[1] / 6300.30 - 1.0)).rebin(1).plot(
+    vmin=100, vmax=220, 
+    cmap="seismic", 
+    colorbar="v",
+)
+
+# +
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(10, 10),
+    sharex=True, sharey=True,
+)
+
+imap = mom6300[0].copy()
+vmap = 3e5*(mom6300[1] / 6300.30 - 1.0)
+smap = 3e5*(mom6300[2] / 6300.30)
+
+m = imap.data > 100.
+
+vmap.mask = vmap.mask | (~m)
+smap.mask = smap.mask | (~m)
+
+imap.rebin(1).plot(
+    vmin=-500, vmax=1e4, 
+    cmap="turbo", 
+    ax=axes[0, 0],
+)
+
+vmap.rebin(1).plot(
+    vmin=100, vmax=220, 
+    cmap="seismic", 
+    ax=axes[0, 1],
+)
+
+smap.rebin(1).plot(
+    vmin=0, vmax=120, 
+    cmap="magma", 
+    ax=axes[1, 0],
+)
+
+imap.rebin(1).plot(
+    vmin=-350, vmax=-200, 
+    cmap="viridis", 
+    ax=axes[1, 1],
+)
+axes[1, 1].contour(
+    bg_6300.data,
+    levels=[300],
+    colors="r",
+)
+
+fig.tight_layout();
+# -
+
+msky = (imap.data < -100) & (imap.data > -200) & (bg_6300.data < 300)
+
+msky.sum(), np.where(msky)
+
+core_6300 = wide_6300.select_lambda(w1, w2)
+sky_6300 = core_6300.copy() 
+sky_6300.mask = sky_6300.mask | ~msky[None, : :]
+
+sky_6300.mean(axis=(1, 2)).plot()
+
+corr_6300 = core_6300 - sky_6300.mean(axis=(1, 2))
+
+testpixels = [
+    [250, 160], [150, 150], [160, 220],
+    [70, 250], [75, 200], [310, 225],
+    [25, 140], [250, 250], [140, 110], #[180, 290],
+]
+fig, axes = plt.subplots(
+    3, 3, 
+    figsize=(10, 8), 
+    sharex=True,
+    sharey="row",
+)
+for (j, i), ax in zip(testpixels, axes.flat):
+    core_6300[:, j, i].plot(ax=ax)
+    corr_6300[:, j, i].plot(ax=ax) 
+    ax.set(xlabel="", ylabel="")
+    ax.set_title(f"[{j}, {i}]")
+fig.suptitle(
+    "Before/after sky correction for faint/moderate/bright pixels"
+)
+sns.despine()
+fig.tight_layout();
+
+mom6300c = moments.find_moments(corr_6300)
+
+g = moments.moments_corner_plot(
+    mom6300c, rebin=1, **plot_pars_6300
+)
+
+g = moments.moments_corner_plot(
+    mom6300c, rebin=4, **plot_pars_6300
+)
+
+# +
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(10, 10),
+    sharex=True, sharey=True,
+)
+
+imap = mom6300c[0].copy()
+vmap = 3e5*(mom6300c[1] / 6300.30 - 1.0)
+smap = 3e5*(mom6300c[2] / 6300.30)
+
+m = imap.data > 150.
+
+vmap.mask = vmap.mask | (~m)
+smap.mask = smap.mask | (~m)
+
+vmap_old = 3e5*(mom6300[1] / 6300.30 - 1.0)
+vmap_old.mask = vmap_old.mask | (~m)
+
+
+imap.rebin(1).plot(
+    vmin=0, vmax=1e4, 
+    cmap="turbo", 
+    ax=axes[0, 0],
+)
+
+vmap.rebin(1).plot(
+    vmin=120, vmax=180, 
+    cmap="seismic", 
+    ax=axes[0, 1],
+)
+
+smap.rebin(1).plot(
+    vmin=40, vmax=120, 
+    cmap="magma", 
+    ax=axes[1, 0],
+)
+
+vmap_old.rebin(1).plot(
+    vmin=120, vmax=180, 
+    cmap="seismic", 
+    ax=axes[1, 1],
+)
+
+
+fig.tight_layout();
+# -
+
+vmap.rebin(4).plot(
+    vmin=120, vmax=180, 
+    cmap="seismic", 
+)
+
+g = moments.moments_corner_plot(
+    mom6300c, rebin=8, **plot_pars_6300,
+    hist_bins=40,
+    image_bins=20,    
+);
+
+# There is clearly a problem still with the fainter pixels.  Witness the trend of sig with intensity.  But theis is not so important for studying the brighter parts.
+
+moments.FIGPATH = Path("../figs")
+moments.SAVEPATH = Path("../data")
+
+moments.save_moments_to_fits(
+    mom6300c,
+    label="6300",
+    flabel="ngc346-sharp-oi",
+    **mom_pars_6300,
+)
+
 
