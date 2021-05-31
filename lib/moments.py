@@ -1,3 +1,9 @@
+"""Functions to work with velocity moments of emission lines from MUSE cubes
+
+The lines need to have been continuum-subtracted first - see extract.py
+
+Author: Will Henney, IRyA-UNAM, 2021
+"""
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
