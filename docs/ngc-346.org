@@ -543,8 +543,25 @@ CLOSED: [2021-05-29 Sat 00:16]
 *** Going through the lines we need
 + I am currently doing these for the sharper cube
   + ~ADP.2016-10-12T05_43_23.882.fits~
-**** Stars of marginal interest
+**** Stars of moderate interest
 This is a list of moderately interesting stars that are showing up in my line analysis
+***** SSN 258
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ This is the slightly fainter star below SSN 62 in the globule just N of our main source
++ It is not in SIMBAD but has V = 17.26 (M_V = -1.69) and V-I = 0.167
+  + That puts it around B4 spectral type according to Fig 5 of Martayan:2010j
+    [[file:ngc-346_att/screenshot-20210531-121509.png]]
++ It has strong [N I] 5200 line emission
+  + Possible spatially extended, but not much
++ Also shows Si II 5056
+***** SSN 552
++ This one is just outside the cluster box in the star figures
++ In a globule
++ It is quite faint and red
+  + V = 18.217, V-I = 0.616
++ Shows the Si II 5056, 5041 line but not much else
 ***** SSN 73
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
@@ -563,3 +580,12 @@ This is a list of moderately interesting stars that are showing up in my line an
 + This is done in [[file:~/Dropbox/muse-hii-regions/notebooks/03-03-oi-lines-sharp-cube.md][03-03-oi-lines-sharp-cube.md]]
 + As well as the [O I] lines, we have [S III] 6312 and Si II 6347 and 6371
   + The Si II lines come from compact sources only
+**** [Ar IV] 4711, 4740
++ The 4711 is blended with He I 4713, but we can see the effect of both
++ the 4740 line is great - it is very diffuse, but has an inner hole the same as [O III]
+  + This could correspond to the inner wind bubble
+**** He II 4686
++ Another great line - it shows a beautiful emission arc just inside the [Ar IV] emission
++ We can calculate the flux and then convert to a > 4 Ryd luminosity and see if this is consistent with expected stellar EUV
++ The arc shows no extinction by the globule filaments, and so must be foreground to them
++ *I need to do this for the summed cube too* to increase signal-noise

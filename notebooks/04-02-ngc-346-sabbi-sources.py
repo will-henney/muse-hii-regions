@@ -1287,11 +1287,13 @@ stars[m14]
 
 # Kind of unsurprising that they are the consecurtive ones on the list!
 
-# ## Plot the positions of the 150 brightest stars
+# ## Plot the positions of the 500 brightest stars
 #
 #
 
 # +
+from astropy.table import vstack
+
 dx, dy = 3000, 3000
 fig = plt.figure(figsize=(15, 15))
 ax = fig.add_subplot(1, 1, 1, projection=w)
@@ -1300,7 +1302,7 @@ ax.imshow(
     vmin=-1.0, vmax=0.3, 
     cmap="gray_r",
 )
-bbstars = stars[:150]
+bbstars = vstack([stars[:200], stars[500:600]])
 points = ax.scatter(
     bbstars['ra'].data, 
     bbstars['dec'].data, 
@@ -1506,5 +1508,9 @@ c_hd5980
 c0.separation(c_hd5980).arcsec
 
 stars[stars["ID"] == 46]
+
+stars[stars["ID"] == 258]
+
+stars[stars["ID"] == 552]
 
 

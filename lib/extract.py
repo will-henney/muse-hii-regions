@@ -59,8 +59,8 @@ def fit_continuum(cube, wav_ranges, deg=1, median=True, verbose=True):
                 y.append(np.median(spec[m]))
             else:
                 # Or all the unmasked points in the range
-                x += wavs[m]
-                y += spec[m]
+                x += list(wavs[m])
+                y += list(spec[m])
         try:
             p = T.fit(x, y, deg=deg)
             cont_cube.data[:, j, i] = p(wavs)
