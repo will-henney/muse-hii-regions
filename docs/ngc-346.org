@@ -540,3 +540,26 @@ CLOSED: [2021-05-29 Sat 00:16]
     + many of the stars seem to be aligned in chains
     + there is a 3-pronged "bird foot" pattern coming out of the brightest compact sub-cluster
     + the chains are approximately aligned with the filaments seen in the gas
+*** Going through the lines we need
++ I am currently doing these for the sharper cube
+  + ~ADP.2016-10-12T05_43_23.882.fits~
+**** Stars of marginal interest
+This is a list of moderately interesting stars that are showing up in my line analysis
+***** SSN 73
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ [[http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=0%3A59%3A01.8832+-72%3A11%3A02.100&CooFrame=FK5&CooEpoch=2000&CooEqui=2000&CooDefinedFrames=none&Radius=2&Radius.unit=arcsec&submit=submit+query][Simbad link]] shows it as "emission line star", B1
+  + Probably a Be star, although unclear whether pre-MS or post-MS
+  + See Martayan-2010j
+  + Also Paul:2017t
++ Has lots of lines that show up in the pass band around 6300 \AA
+  [[file:ngc-346_att/screenshot-20210531-084339.png]]
++ The above spectrum shows the globule close to our main source (SSN 152+168) in orange and SSN 73 in yellow
++ In addition to the usual [O I], [S III], Si II, we have lines emission lines at 6247, 6317, 6383
+  + Some of these are also seen weekly in our main compact source
+
+**** [O I] 6300, 6363 (+ [S III], Si II)
++ This is done in [[file:~/Dropbox/muse-hii-regions/notebooks/03-03-oi-lines-sharp-cube.md][03-03-oi-lines-sharp-cube.md]]
++ As well as the [O I] lines, we have [S III] 6312 and Si II 6347 and 6371
+  + The Si II lines come from compact sources only

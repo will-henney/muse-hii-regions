@@ -156,7 +156,26 @@ sns.despine();
 ```
 
 ```python
+wavmin, wavmax = wavranges[0][0], wavranges[-1][1]
+wavmin, wavmax
+prefix = f"../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
+prefix
+```
 
+```python
+wide_6300 = (oi6300cube - contcube).select_lambda(wavmin, wavmax)
+wide_cont = contcube.select_lambda(wavmin, wavmax)
+```
+
+```python
+wide_6300.write(
+    f"{prefix}-contsub.fits",
+    savemask="nan",
+    )
+wide_cont.write(
+    f"{prefix}-cont.fits",
+    savemask="nan",
+    )
 ```
 
 ```python
@@ -164,15 +183,6 @@ sns.despine();
 ```
 
 ```python
-
-```
-
-```python
-
-```
-
-```python
-wide_6300 = (oi6300cube - contcube).select_lambda(b1, r2)
 
 mom6300 = moments.find_moments(
     wide_6300.select_lambda(w1, w2)
@@ -755,7 +765,7 @@ moments.save_moments_to_fits(
 ```
 
 ```python
-core_6371 = (oi6300cube - contcube).select_lambda(6369, 6379)
+core_6371 = (oi6300cube - contcube).select_lambda(6371, 6381)
 mom6371 = moments.find_moments(core_6371)
 ```
 
@@ -763,8 +773,8 @@ mom6371 = moments.find_moments(core_6371)
 mom_pars_6371 = dict(
     restwav=6371.36,
     irange=[-150, 4e4],
-    vrange=[85, 255],
-    srange=[30, 150],    
+    vrange=[45, 305],
+    srange=[30, 200],    
 )
 ```
 
@@ -787,7 +797,7 @@ g = moments.moments_corner_plot(
 ```
 
 ```python
-(3e5*(mom6371[1] / 6371.36 - 1.0)).rebin(4).plot(
+(3e5*(mom6371[1] / 6371.36 - 1.0)).rebin(1).plot(
     vmin=120, vmax=180, 
     cmap="seismic", 
     colorbar="v",
@@ -803,7 +813,7 @@ moments.save_moments_to_fits(
 )
 ```
 
-Surprisingly, Si II 6371 has a diffuse component, but Si II 6347 does not
+~~Surprisingly, Si II 6371 has a diffuse component, but Si II 6347 does not~~  No, that was just because we were contaminated by [O I] 6363.  I have fixed that now.
 
 ```python
 
