@@ -20,6 +20,44 @@
   + [Cl IV] 8045
   + [C I] 8727
   + [Fe III]
+** A possible high-ionization bow shock around Walborn 3
++ Seen in He II 4686 and [Ar IV]
++ Also visible in [O III]
++ Radius is about 4 arcsec = 1 pc
+*** Stellar parameters of W 3
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ Rivero-Gonzalez:2012w
+  [[file:ngc-346_att/screenshot-20210531-223450.png]]
++ T_eff = 55000 K or 51000 K with an alternative solution
++ Wind parameters:
+  + Mdot = 2.5e-6 Msun/yr
+  + Vw = 2800 km/s
+  + Ram pressure at 1 pc
+    + \rho V^2 = Mdot V / 4 \pi R^2
+    + => = 3.687e-10 dyne / cm^2
+    + P_ram / k = 2.67e6
+  + Compare with thermal pressure of H II gas
+    + P_gas / k = 2 n T
+    + Assume T = 1e4 K => n = 135 pcc
+    + This is well in line with measurements
+  + We could also have a ram pressure component, so multiply by 1 + M^2
+    + We can't have M much larger than 1, otherwise the density would have to be too low
++ We can estimate the density from the surface brightness of He II
+  
+*** Relevant papers on bow shocks in SMC
++ Gvaramadze:2011b
+  - Massive runaway stars in the Small Magellanic Cloud
+  - Detects several bow shocks in 24 micron emission
+  - One is just SW of NGC 346, but it came from somewhere else
+  - Sizes are 3 to 30 arcsec
+    + 1 to 10 pc
++ Sheets:2013v
+  - DUSTY OB STARS IN THE SMALL MAGELLANIC CLOUD. I. OPTICAL SPECTROSCOPY REVEALS PREDOMINANTLY MAIN-SEQUENCE OB STARS
++ Adams:2013a
+  - DUSTY OB STARS IN THE SMALL MAGELLANIC CLOUD. II. EXTRAGALACTIC DISKS OR EXAMPLES OF THE PLEIADES PHENOMENON?
+  - Has an "interacting hotspot model" that seems to be very similar to a dust wave
 ** General thoughts
 + Properties of N66 from Lopez:2014a
   + Q(H) = 4e50 /s = 40 x Orion
@@ -61,6 +99,14 @@
       + A_K = 0.15 approx
       + M_K = 4.57 - 0.15 - 8.06 = -3.64
 + NGC 346 star magnitudes:
+*** The photospheric profiles around Ly\beta
++ I need to look at some more POWR models
++ Observationally it is impossible to tell because of all the ISM H_2 lines that get in the way.  These completely destroy the continuum near Ly\beta
+**** TODO POWR models
+**** FUV atlas
++ https://archive.stsci.edu/prepds/fuvostars/datalist.html
++ Example spectra are at [[file:../fuv-spectra/fuvostars/]]
+  + I got the spectrum of the O2 III star W3
 *** Observations of the filaments and star forming regions in N66
 + HST observations of pre-MS population
   + These find several sub-clusters of pre-MS stars
