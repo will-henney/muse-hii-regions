@@ -52,6 +52,13 @@
   - does not seem to show any peak at the bow shock
   - T indicator with red [Ar III] line
 + [X] H\alpha and H\beta to get reddening
+  + [X] Extract line maps
+  + [X] Fine correction for zero point offset
+  + [X] Calculate reddening
+    + We have a reddening map [[file:~/Dropbox/muse-hii-regions/data/ngc346-reddening-E_BV.fits][ngc346-reddening-E_BV.fits]]
+    + Average reddening of bow shock region is E(B-V) = 0.087
+    + We have a SMC reddening curve that we calculate from pyneb using parameters from Gordon:2003l
+    + I am ignoring the stellar absorption EW for now, but that needs to be dealt with if we ever look at more reddened regions. 
 **** Lines that that do NOT come from bow shock
 + [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
 + [Fe III] 4658.1 - weaker than 4987, but similar distribution
