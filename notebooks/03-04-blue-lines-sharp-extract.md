@@ -420,22 +420,46 @@ moments.save_moments_to_fits(
 )
 ```
 
-```python
+And the other [Ar IV] line.  This is contaminated by He I, which we will have to sort out at some point.
 
+```python
+mom4711 = moments.find_moments(
+    mcsubcube.select_lambda(4711, 4717)
+)
 ```
 
 ```python
-
+mom4711[0].plot(vmin=0.0, vmax=400.0)
 ```
 
 ```python
-
+(mom4711[0].rebin(2) / mom4740[0].rebin(2)).plot(
+    vmin=0., vmax=5, 
+    colorbar="v",
+    cmap="magma",
+)
 ```
+
+So depite the contamination, the ratio is roughly constant at around 1.5 in the bright parts. 
 
 ```python
-
+moments.save_moments_to_fits(
+    mom4711,
+    label="4711",
+    flabel="ngc346-ariv",
+    restwav=4711.37,
+)
 ```
 
+## Extract Hβ line
+
+```python
+mom4861 = moments.find_moments(
+    mcsubcube.select_lambda(4859, 4869)
+)
+```
+
+Overview before correcting the sky:
 
 ```python
 fig, axes = plt.subplots(
@@ -444,17 +468,17 @@ fig, axes = plt.subplots(
     sharex=True, sharey=True,
 )
 
-imap = mom6300[0].copy()
-vmap = 3e5*(mom6300[1] / 6300.30 - 1.0)
-smap = 3e5*(mom6300[2] / 6300.30)
+imap = mom4861[0].copy()
+vmap = 3e5*(mom4861[1] / 4861.32 - 1.0)
+smap = 3e5*(mom4861[2] / 4861.32)
 
-m = imap.data > 10.
+#m = imap.data > 10.
 
-vmap.mask = vmap.mask | (~m)
-smap.mask = smap.mask | (~m)
+#vmap.mask = vmap.mask | (~m)
+#smap.mask = smap.mask | (~m)
 
 imap.rebin(1).plot(
-    vmin=-500, vmax=3e4, 
+    vmin=-1e4, vmax=3e5, 
     cmap="turbo", 
     ax=axes[0, 0],
 )
@@ -472,42 +496,40 @@ smap.rebin(1).plot(
 )
 
 imap.rebin(1).plot(
-    vmin=-350, vmax=-200, 
+    vmin=-5000, vmax=0, 
     cmap="viridis", 
     ax=axes[1, 1],
 )
-bg_6300 = contcube.select_lambda(w1, w2).mean(axis=0)
+bg_4861 = mcontcube.select_lambda(4859, 4869).mean(axis=0)
 axes[1, 1].contour(
-    bg_6300.data,
-    levels=[300],
+    bg_4861.data,
+    levels=[1000],
     colors="r",
 )
 
 fig.tight_layout();
 ```
 
-```python
-fig, ax = plt.subplots(figsize=(12, 12))
-for box in boxes.values():
-    yslice, xslice = box.slices
-    spec = wide_6300[:, yslice, xslice].mean(axis=(1, 2))
-    (spec / spec.data.max()).plot()
-    
-sns.despine();
-```
-```python
+Make a 30 Å window:
 
+```python
+core_4861 = mcsubcube.select_lambda(4849, 4879)
 ```
 
-```python
+Look at some negative profiles.  These are the same pixels as used in the Hα case.  See 03-00-ha-moment-maps
 
+```python
+core_4861[:, 300, 60].plot()
+core_4861[:, 10, 300].plot()
+core_4861[:, 150, 150].plot()
+core_4861[:, 260, 160].plot()
 ```
-
+I am following the same procedure as with the [O I] lines, but with criteria similar to H alpha. 
 
 ```python
-msky = (imap.data < -100) & (imap.data > -200) & (bg_6300.data < 300)
+msky = (imap.data < -4000) & (imap.data > -5000) & (bg_4861.data < 1000)
 msky[310:, :] = False
-msky[:, 310:] = False
+msky[:, 320:] = False
 msky[:10, :] = False
 msky[:, :10] = False
 ```
@@ -516,18 +538,26 @@ msky[:, :10] = False
 msky.sum(), np.where(msky)
 ```
 
+No, that is too many. We will try the same 3 pixels as we used for Hα
+
 ```python
-core_6300 = wide_6300.select_lambda(w1, w2)
-sky_6300 = core_6300.copy() 
-sky_6300.mask = sky_6300.mask | ~msky[None, : :]
+msky = imap.mask.copy()
+msky[:, :] = False
+msky[8, 103:106] = True
+np.where(msky)
 ```
 
 ```python
-sky_6300.mean(axis=(1, 2)).plot()
+sky_4861 = core_4861.copy() 
+sky_4861.mask = sky_4861.mask | ~msky[None, : :]
 ```
 
 ```python
-corr_6300 = core_6300 - sky_6300.mean(axis=(1, 2))
+sky_4861.mean(axis=(1, 2)).plot()
+```
+
+```python
+corr_4861 = core_4861 - sky_4861.mean(axis=(1, 2))
 ```
 
 ```python
@@ -543,8 +573,8 @@ fig, axes = plt.subplots(
     sharey="row",
 )
 for (j, i), ax in zip(testpixels, axes.flat):
-    core_6300[:, j, i].plot(ax=ax)
-    corr_6300[:, j, i].plot(ax=ax) 
+    core_4861[:, j, i].plot(ax=ax)
+    corr_4861[:, j, i].plot(ax=ax) 
     ax.set(xlabel="", ylabel="")
     ax.set_title(f"[{j}, {i}]")
 fig.suptitle(
@@ -554,8 +584,95 @@ sns.despine()
 fig.tight_layout();
 ```
 
+That looks OK
+
 ```python
-mom6300c = moments.find_moments(corr_6300)
+mom4861c = moments.find_moments(corr_4861.select_lambda(4859, 4869))
+```
+
+```python
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(10, 10),
+    sharex=True, sharey=True,
+)
+
+imap = mom4861c[0].copy()
+vmap = 3e5*(mom4861c[1] / 4861.32 - 1.0)
+smap = 3e5*(mom4861c[2] / 4861.32)
+
+#m = imap.data > 10.
+
+#vmap.mask = vmap.mask | (~m)
+#smap.mask = smap.mask | (~m)
+
+imap.rebin(1).plot(
+    vmin=0, vmax=3e5, 
+    cmap="turbo", 
+    ax=axes[0, 0],
+)
+
+vmap.rebin(1).plot(
+    vmin=100, vmax=220, 
+    cmap="seismic", 
+    ax=axes[0, 1],
+)
+
+smap.rebin(1).plot(
+    vmin=0, vmax=120, 
+    cmap="magma", 
+    ax=axes[1, 0],
+)
+
+imap.rebin(1).plot(
+    vmin=-5000, vmax=0, 
+    cmap="viridis", 
+    ax=axes[1, 1],
+)
+bg_4861 = mcontcube.select_lambda(4859, 4869).mean(axis=0)
+axes[1, 1].contour(
+    bg_4861.data,
+    levels=[1000],
+    colors="r",
+)
+
+fig.tight_layout();
+```
+
+That is looking great now.  The first moment is very similat to Hα, which is encouraging. 
+
+```python
+mom_pars = dict(
+    restwav=4861.32,
+    irange=[1.0e3, 3.5e5],
+    vrange=[135, 195],
+    srange=[30, 150],    
+)
+```
+
+```python
+moments.save_moments_to_fits(
+    mom4861c,
+    label="4861",
+    flabel="ngc346-hi",
+    **mom_pars,
+)
+```
+
+```python
+plot_pars=dict(
+    ilabel="H I",
+    label="4861",
+    flabel="ngc346-hi",
+    **mom_pars,
+)
+g = moments.moments_corner_plot(
+    mom4861c, rebin=1, **plot_pars,
+)
+```
+
+```python
+
 ```
 
 ```python

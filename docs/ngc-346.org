@@ -21,9 +21,45 @@
   + [C I] 8727
   + [Fe III]
 ** A possible high-ionization bow shock around Walborn 3
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
 + Seen in He II 4686 and [Ar IV]
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
+  [[file:ngc-346_att/screenshot-20210602-085328.png]]
+*** Lines to use for the bow shock
++ [X] He II 4685.71
+  + 3-4 transition, so equivalent to Paschen \alpha
++ [X] [Ar IV] 4740
++ [-] [Ar IV] 4711
+  + Can give density diagnostic *but* it is blended with He I 4713
+  + We can try and de-blend it using other helium lines
+  + And it looks like the the He I contribution is small
++ He I 4713 - see above
++ [ ] Look for other He I lines
+  + He I 4921.93
+  + He I 5015.68 - on wing of 5007 but not excessively blended
+  + He I 5047.74 - weak
+  + Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
++ [ ] Look for other He II lines
+  + 4859.319 (4-8 Br \delta) - completely swamped by H\beta
+  + 5411.52 (4-7 Br \gamma), which coincides with [Fe III]. Although that should not be a problem because there is no [Fe III] from the bow shock region (see below)
+  + 6560.1 (4-6 Br \beta)
+    + Probably too blended with H\alpha
++ [Ar III] 5193.69
+  - very weak and diffuse
+  - does not seem to show any peak at the bow shock
+  - T indicator with red [Ar III] line
++ [X] H\alpha and H\beta to get reddening
+**** Lines that that do NOT come from bow shock
++ [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
++ [Fe III] 4658.1 - weaker than 4987, but similar distribution
+  + Except for the mYSO, where it is super-bright
++ Lots of other [Fe III] and [Fe II] lines that only show up in the mYSO
++ Si II 5041.03 - mYSO and SE clump (which may be another mYSO)
++ [N I] 5200 comes from filaments and clumps, but not from ionized gas
+
 *** Stellar parameters of W 3
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
