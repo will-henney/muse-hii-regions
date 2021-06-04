@@ -102,7 +102,7 @@ g.axes[1, 0].plot([0, imax], [0, 0.9*imax], "--", color="r")
 g.fig.suptitle("Correlation between Ha and Hb brightness");
 ```
 
-So, the slope is not unity, meaning the extinction is not zero.  But the intercept os not zero either. Clearly, we must fix that
+So, the slope is not unity, meaning the extinction is not zero.  But the intercept is not zero either. Clearly, we must fix that
 
 
 ### Correct zero point of Hβ map
