@@ -850,6 +850,12 @@ moments.save_moments_to_fits(
     **mom_pars_6312,
 )
 
+cont_6312 = mcontcube.select_lambda(6311, 6321).mean(axis=0)
+
+cont_6312.write("../data/ngc346-cont-6312-mean.fits")
+
+
+
 # ### The Si II lines
 #
 # I will not re-run these for now because there is nothing to be gained for doing the co-added cube, since there is no strong diffuse component to any of them.

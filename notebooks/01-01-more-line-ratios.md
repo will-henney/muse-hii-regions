@@ -358,7 +358,239 @@ sns.despine();
 ```python
 im6312 = Image("../data/ngc346-siii-6312-bin01-sum.fits")
 im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+cont6312 = Image("../data/ngc346-cont-6312-mean.fits")
 ```
+
+The raw ratio:
+
+```python
+fig, ax = plt.subplots(figsize=(12, 12))
+(im6312/im9069).plot(vmin=-0.2, vmax=0.2, cmap="gray", colorbar="v")
+```
+
+Oh dear, that is completely dominated by the zero-point error.  But we can fix it!
+
+```python
+imax = 5000
+slope = 0.1
+m = im9069.data < imax
+m = m & (im9069.data > -100)
+m = m & (im6312.data < slope*imax)
+m = m & ~im9069.mask & ~im6312.mask
+df = pd.DataFrame(
+    {
+        "9069": im9069.data[m],
+        "6312": im6312.data[m],
+    }
+)
+```
+
+```python
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.fig.suptitle("Correlation between [S III] 9069 and 6312 brightness");
+```
+
+So it is obvious that we need to add about 100 to the 6312 brightness.  But we can already see that the slope of the relation gets shallower for 9069 > 1000 – so fainter is hotter!
+
+```python
+imax = 2000
+slope = 0.1
+x = im9069.data
+y = im6312.data + 105.0
+m = x < imax
+m = m & (x > -100)
+m = m & (y < 1.2*slope*imax)
+m = m & ~im9069.mask & ~im6312.mask
+df = pd.DataFrame(
+    {
+        "9069": x[m],
+        "6312": y[m],
+    }
+)
+```
+
+```python
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.axes[1, 0].plot([0, imax], [0, 1.2*slope*imax], "--", color="r")
+g.fig.suptitle("CORRECTED Correlation between [S III] 9069 and 6312 brightness");
+```
+
+Now we need to correct for reddening.
+
+```python
+A9069 = rc.X(9069) * imEBV
+im9069c = im9069.copy()
+im9069c.data = im9069.data * 10**(0.4 * A9069.data)
+```
+
+```python
+A6312 = rc.X(6312) * imEBV
+im6312c = im6312.copy()
+im6312c.data = (im6312.data + 105) * 10**(0.4 * A6312.data)
+```
+
+```python
+n = 1
+fig, ax = plt.subplots(figsize=(12, 12))
+(im6312c.rebin(n) / im9069c.rebin(n)).plot(vmin=0.1, vmax=0.2, cmap="magma", colorbar="v")
+```
+
+```python
+n = 4
+x = np.log10(im9069c.rebin(n).data)
+y = np.log10(im6312c.rebin(n).data / im9069c.rebin(n).data)
+m = (x > 2.0) & (x < 5.0)
+m = m & (y > -1.1) & (y < -0.6)
+m = m & ~im9069c.rebin(n).mask & ~im6312c.rebin(n).mask
+df = pd.DataFrame(
+    {
+        "log10 9069": x[m],
+        "log 10 6312/9069": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+);
+```
+
+Now, make a mask of EW(6312).  But first, we need to correct the zero point of the continuum.
+
+```python
+im6312_zero = -105.0
+cont6312_zero = -15.0
+imax = 200
+x = im6312.data - im6312_zero
+y = cont6312.data - cont6312_zero
+m = x < imax
+m = m & (x > -10)
+m = m & (y < 50) & (y > -10)
+m = m & ~cont6312.mask & ~im6312.mask
+df = pd.DataFrame(
+    {
+        "6312": x[m],
+        "cont": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+```
+
+```python
+fig, ax = plt.subplots(figsize=(10, 10))
+ew6312 = 1.25*(im6312 - im6312_zero)/ (cont6312 - cont6312_zero)
+ew6312.plot(vmin=0.0, vmax=30.0, scale="sqrt")
+ax.contour(ew6312.data, levels=[0.5], colors="r", linewidths=3)
+ax.contour(im9069.data, levels=[500.0], colors="k", linewidths=1)
+```
+
+```python
+fixmask = (ew6312.data < 1.0) | (im9069.data < 500.0)
+fixmask = fixmask & (im6312c.data < 0.1 * im9069c.data)
+fixmask = fixmask & (im6312c.data > 0.2 * im9069c.data)
+iborder = 12
+fixmask[:iborder, :] = True
+fixmask[-iborder:, :] = True
+fixmask[:, :iborder] = True
+fixmask[:, -iborder:] = True
+```
+
+```python
+im6312c.mask = im6312c.mask | fixmask
+```
+
+```python
+n = 1
+fig, ax = plt.subplots(figsize=(12, 12))
+(im6312c.rebin(n) / im9069c.rebin(n)).plot(vmin=0.1, vmax=0.2, cmap="magma", colorbar="v")
+```
+
+```python
+n = 1
+x = np.log10(im9069c.rebin(n).data)
+y = np.log10(im6312c.rebin(n).data / im9069c.rebin(n).data)
+m = (x > 2.0) & (x < 5.0)
+m = m & (y > -1.1) & (y < -0.6)
+m = m & ~im9069c.rebin(n).mask & ~im6312c.rebin(n).mask
+df = pd.DataFrame(
+    {
+        "log10 9069": x[m],
+        "log 10 6312/9069": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+);
+```
+
+### Convert to actual temperatures with pyneb
+
+```python
+s3 = pn.Atom("S", 3)
+```
+
+```python
+s3.getTemDen([0.1, 0.2], den=100.0, wave1=6300, wave2=9069)
+```
+
+```python
+r_s3_grid = np.linspace(0.05, 0.25, 201)
+T_s3_grid = s3.getTemDen(r_s3_grid, den=100.0, wave1=6300, wave2=9069)
+```
+
+```python
+imT_siii = im6312c.clone(data_init=np.empty)
+imT_siii.data[~fixmask] = np.interp(
+    im6312c.data[~fixmask] / im9069c.data[~fixmask], 
+    r_s3_grid, T_s3_grid,
+    left=np.nan, right=np.nan,
+)
+#imT_siii.mask = imT_siii.mask | fixmask
+#imT_siii.data[imT_siii.mask] = np.nan
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 12))
+imT_siii.plot(colorbar="v", cmap="hot", vmin=11000, vmax=22000); 
+```
+
+```python
+imT_siii.write("../data/ngc346-T-siii.fits", savemask="nan")
+```
+
+The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there. 
+
+Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise contribution.  This implies $t^2 = 0.003$ in plane of sky, which is small.
 
 ```python
 
