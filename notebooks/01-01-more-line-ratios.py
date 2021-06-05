@@ -305,3 +305,11 @@ ax.set(
     title=f"Extinction curve for $E(B - V) = {rc.E_BV:.3f}$",
 )
 sns.despine();
+# -
+
+# ## Calculate the [S III] temperature
+
+im6312 = Image("../data/ngc346-siii-6312-bin01-sum.fits")
+im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+
+

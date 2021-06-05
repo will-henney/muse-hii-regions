@@ -80,7 +80,7 @@
     + Average reddening of bow shock region is E(B-V) = 0.087
     + We have a SMC reddening curve that we calculate from pyneb using parameters from Gordon:2003l
     + I am ignoring the stellar absorption EW for now, but that needs to be dealt with if we ever look at more reddened regions. 
-+ [ ] [S III] lines for temperature
++ [X] [S III] lines for temperature
 + [ ] [Cl III] lines for density  
 **** Lines that that do NOT come from bow shock
 + [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
@@ -90,6 +90,35 @@
 + Si II 5041.03 - mYSO and SE clump (which may be another mYSO)
 + [N I] 5200 comes from filaments and clumps, but not from ionized gas
 + 
+**** Ionization potentials
+|      |      eV |   Ryd |
+|------+---------+-------|
+| S^0   | 10.3600 | 0.762 |
+| Cl^0  | 12.9676 | 0.954 |
+|------+---------+-------|
+| H^0   | 13.5984 | 1.000 |
+| O^0   | 13.6181 | 1.001 |
+| N^0   | 14.5341 | 1.069 |
+| Ar^0  | 15.7596 | 1.159 |
+| S^{+}   |  23.338 | 1.716 |
+| Cl^{+}  |  23.814 | 1.751 |
+| C^{+}   |  24.385 | 1.793 |
+|------+---------+-------|
+| He^0  | 24.5874 | 1.808 |
+| Ar^{+}  |  27.630 | 2.032 |
+| N^{+}   |  29.601 | 2.177 |
+| S^{+2}  |   34.86 | 2.564 |
+| Ar^{+2} |  40.735 | 2.996 |
+| O^{+}   |  35.121 | 2.583 |
+| S^{+3}  |  47.222 | 3.473 |
+| Cl^{+2} |   39.80 | 2.927 |
+| Cl^{+3} |   53.24 | 3.915 |
+|------+---------+-------|
+| He^{+}  |  54.418 | 4.002 |
+| O^{+2}  |  54.936 | 4.040 |
+| Ar^{+3} |   59.58 | 4.381 |
+#+TBLFM: $3=$2 / 13.5984;f3
++ So this might explain why [O III] does not overlap with He II, but [Ar IV] does
 **** [Ar IV] density and T indicators
 :PROPERTIES:
 :ID:       8B4C1164-B47D-47BE-9012-7DD0B661E014

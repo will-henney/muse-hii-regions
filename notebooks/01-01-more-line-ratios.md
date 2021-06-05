@@ -352,3 +352,14 @@ ax.set(
 )
 sns.despine();
 ```
+
+## Calculate the [S III] temperature
+
+```python
+im6312 = Image("../data/ngc346-siii-6312-bin01-sum.fits")
+im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+```
+
+```python
+
+```
