@@ -260,6 +260,92 @@ mcontcube.write(
     )
 ```
 
+## Inspect the blue spectrum
+
+Compare bow shock to median of cube
+
+```python
+mboxes = {
+    "sw filament": regions.BoundingBox(
+        iymin=30, iymax=50, ixmin=300, ixmax=330,
+    ),
+    "bow shock": regions.BoundingBox(
+        iymin=165, iymax=205, ixmin=240, ixmax=290,
+    ),
+    "w filament": regions.BoundingBox(
+        iymin=100, iymax=130, ixmin=25, ixmax=55,
+    ),
+    "c filament": regions.BoundingBox(
+        iymin=195, iymax=210, ixmin=155, ixmax=195,
+    ),
+}
+
+```
+
+```python
+yslice, xslice = mboxes["bow shock"].slices
+bowspec_sub = mcsubcube[:, yslice, xslice].mean(axis=(1, 2))
+avspec_sub = mcsubcube.median(axis=(1, 2))
+medspec_sub = mcsubcube.median(axis=(1, 2))
+```
+
+```python
+hi_wavs = [4641.81, 4650.00, 4685.71, 4711.37, 4740.17]
+med_wavs = [4658.10, 4701.62, 4713.14, 4861.32, 4921.93, 4931.32]
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+wav1, wav2 = 4620, 4950
+(bowspec_sub).subspec(wav1, wav2).plot(linewidth=5, alpha=1.0, color="c")
+(medspec_sub).subspec(wav1, wav2).plot(color="k", linewidth=2)
+for wav in hi_wavs:
+    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.3, ymax=0.4, color="r", linewidth=3, alpha=1.0)
+for wav in med_wavs:
+    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.25, ymax=0.3, color="b", linewidth=3, alpha=1.0)
+ax.axhline(0.0, linestyle="dashed", color="r", linewidth=1)
+ax.set(
+    ylim=[-10, 100],
+)
+sns.despine()
+fig.savefig(f"../figs/ngc346-bow-shock-spec-{wav1}-{wav2}.pdf")
+```
+
+Left to right:
+
+* 4641, 4650: could be O II lines? seen from bow shock only, but weird if true
+* 4658 [Fe III] BG only
+* 4686 He II - bow shock only
+* 4713 [Fe III] BG only (very weak)
+* 4711+13 [Ar IV] + He I (and could also include [Ne IV] 4714, except that 4725 is not seen)
+* 4740 [Ar IV]
+* 4861 H beta
+* 4921.93 He I
+* 4931.32 [O III] - the very weak component of the triplet
+
+```python
+
+```
+
+The long wavelength side of the strong [O III] lines is less interesting:
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+wav1, wav2 = 5015, 5400
+(bowspec_sub).subspec(wav1, wav2).plot(linewidth=5, alpha=1.0, color="c")
+(medspec_sub).subspec(wav1, wav2).plot(color="k", linewidth=2)
+#for wav in ariv_lines:
+#    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.3, ymax=0.4, color="k", linewidth=3, alpha=0.5)
+ax.axhline(0.0, linestyle="dashed", color="r", linewidth=1)
+ax.set(
+    ylim=[-2, 20],
+)
+sns.despine();
+```
+
+He I line at 5047.74 and [Ar III] line at 5193.69
+
+
 ## Extract He II line
 
 ```python
@@ -449,6 +535,121 @@ moments.save_moments_to_fits(
     flabel="ngc346-ariv",
     restwav=4711.37,
 )
+```
+
+### Extract super-weak [Ar III] line
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+wav1, wav2 = 5170, 5220
+(bowspec_sub).subspec(wav1, wav2).plot(linewidth=5, alpha=1.0, color="c")
+(medspec_sub).subspec(wav1, wav2).plot(color="k", linewidth=2)
+#for wav in ariv_lines:
+#    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.3, ymax=0.4, color="k", linewidth=3, alpha=0.5)
+ax.axhline(0.0, linestyle="dashed", color="r", linewidth=1)
+ax.set(
+    ylim=[-2, 5],
+)
+sns.despine();
+```
+
+```python
+mom5192 = moments.find_moments(
+    mcsubcube.select_lambda(5191, 5198)
+)
+```
+
+```python
+mom5192[0].rebin(4).plot(vmin=-3.0, vmax=40.0)
+```
+
+```python
+moments.save_moments_to_fits(
+    mom5192,
+    label="5192",
+    flabel="ngc346-ariii",
+    restwav=5191.82,
+)
+```
+
+### Extract He I 4922
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+wav1, wav2 = 4900, 4940
+(bowspec_sub).subspec(wav1, wav2).plot(linewidth=5, alpha=1.0, color="c")
+(medspec_sub).subspec(wav1, wav2).plot(color="k", linewidth=2)
+#for wav in ariv_lines:
+#    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.3, ymax=0.4, color="k", linewidth=3, alpha=0.5)
+ax.axhline(0.0, linestyle="dashed", color="r", linewidth=1)
+ax.set(
+    ylim=[-2, 60],
+)
+sns.despine();
+```
+
+```python
+mom4922 = moments.find_moments(
+    mcsubcube.select_lambda(4921, 4929)
+)
+```
+
+```python
+mom4922[0].rebin(1).plot(vmin=-30.0, vmax=300.0)
+```
+
+This one is good enough signal to see the increase in brightness at the bow shock. 
+
+```python
+moments.save_moments_to_fits(
+    mom4922,
+    label="4922",
+    flabel="ngc346-hei",
+    restwav=4921.93,
+)
+```
+
+```python
+
+```
+
+### Extract He I 5048 line
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+wav1, wav2 = 5010, 5070
+(bowspec_sub).subspec(wav1, wav2).plot(linewidth=5, alpha=1.0, color="c")
+(medspec_sub).subspec(wav1, wav2).plot(color="k", linewidth=2)
+#for wav in ariv_lines:
+#    ax.axvline(wav*(1.0 + 160.0/3e5), ymin=0.3, ymax=0.4, color="k", linewidth=3, alpha=0.5)
+ax.axhline(0.0, linestyle="dashed", color="r", linewidth=1)
+ax.set(
+    ylim=[-2, 100],
+)
+sns.despine();
+```
+
+```python
+mom5048 = moments.find_moments(
+    mcsubcube.select_lambda(5047, 5055)
+)
+```
+
+```python
+mom5048[0].rebin(2).plot(vmin=-3.0, vmax=100.0)
+```
+
+```python
+moments.save_moments_to_fits(
+    mom5048,
+    label="5048",
+    flabel="ngc346-hei",
+    restwav=5047.74,
+)
+```
+
+```python
+
 ```
 
 ## Extract Hβ line

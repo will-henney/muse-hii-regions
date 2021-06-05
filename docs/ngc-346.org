@@ -37,30 +37,41 @@
     + Can give density diagnostic *but* it is blended with He I 4713
     + We can try and de-blend it using other helium lines
     + And it looks like the the He I contribution is small
-  + [ ] [Ar IV] red lines
+  + [X] [Ar IV] red lines
     + 7170.5 and 7262.7 are clearly detected
       + But not 7237.4 strangely
-      + Possibly because of contamination with a low-ionization line at around 7238
+      + Possibly because of contamination with C II
     + We can calculate a temperature from this!
+      + See [[id:8B4C1164-B47D-47BE-9012-7DD0B661E014][[Ar IV] density and T indicators]]
+    + Theory of [Ar IV] lines
+      + (Ne, Te) diagnostic diagrams given in 
 + [Cl IV] 7530.8 and 8046.3
   + Unfortunately, the ratio gives us nothing since they come from the same upper state (S/N is not good enough to give useful reddening)
   + The auroral line is 5322.99 but it is not detected
-  + 
+  + [X] 7530.8 done, but contaminated by C II 7530.57
+    + This is seen in the map, which shows emission from the filaments and clumps
+    + The C II emission seems to come from much closer to the ionization front than it does in Orion
+    + This is probably an ionization effect - the C^+ column in the ionized gas is much smaller because the spectrum is harder
+    + But may also be a contribution of the low metallicity
+  + [ ] 8046.3
 + He I 4713 - see above
-+ [ ] Look for other He I lines
-  + He I 4921.93
++ [-] Look for other He I lines
+  + [X] He I 4921.93
   + He I 5015.68 - on wing of 5007 but not excessively blended
-  + He I 5047.74 - weak
-  + Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
-+ [ ] Look for other He II lines
+  + [X] He I 5047.74 - weak
+  + [ ] Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
++ [X] Look for other He II lines
+  + *none are usable*
   + 4859.319 (4-8 Br \delta) - completely swamped by H\beta
   + 5411.52 (4-7 Br \gamma), which coincides with [Fe III]. Although that should not be a problem because there is no [Fe III] from the bow shock region (see below)
+    + But it shows no emission - just photospheric absorption 
   + 6560.1 (4-6 Br \beta)
     + Probably too blended with H\alpha
-+ [Ar III] 5193.69
++ [X] [Ar III] 5193.69
   - very weak and diffuse
   - does not seem to show any peak at the bow shock
   - T indicator with red [Ar III] line
++ [X] [Ar III] 7135.78
 + [X] H\alpha and H\beta to get reddening
   + [X] Extract line maps
   + [X] Fine correction for zero point offset
@@ -69,6 +80,8 @@
     + Average reddening of bow shock region is E(B-V) = 0.087
     + We have a SMC reddening curve that we calculate from pyneb using parameters from Gordon:2003l
     + I am ignoring the stellar absorption EW for now, but that needs to be dealt with if we ever look at more reddened regions. 
++ [ ] [S III] lines for temperature
++ [ ] [Cl III] lines for density  
 **** Lines that that do NOT come from bow shock
 + [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
 + [Fe III] 4658.1 - weaker than 4987, but similar distribution
@@ -77,6 +90,35 @@
 + Si II 5041.03 - mYSO and SE clump (which may be another mYSO)
 + [N I] 5200 comes from filaments and clumps, but not from ionized gas
 + 
+**** [Ar IV] density and T indicators
+:PROPERTIES:
+:ID:       8B4C1164-B47D-47BE-9012-7DD0B661E014
+:END:
++ From just visual inspection of the spectra I get
+  | 4711.37 |  85 |
+  | 4740.17 |  60 |
+  |  7170.5 |   3 |
+  |  7237.4 | 3.5 |
+  |  7262.7 | 2.5 |
++ According to ratios specified by Keenan:
+  + R_1 = 4711.37 /  4740.17 = 1.417 -> 0.1513 on log scale
+    + This is low-density limit
+    + In principle there may be some contamination by He I
+      + But even if the density is high as 200 or so, there is hardly any effect on the temperature diagnostics
+  + R_2 = 7238 / (4711 + 4730) = 3.5 / (60 + 85) = 0.02414 -> -1.617
+    + implies T a bit bigger than 20,000 K !!!
+    + *this one is bad* it is contaminated by C II 7236.19 or something
+      + The map shows that most of the emission comes from the filament not from the bow shock
+  + R_3 = 7263 / (4711 + 4730) =  2.5 / (60 + 85) = 0.01724 -> -1.763
+    + gives T = 17500 K, approx
+  + R_4 = 7171 / (4711 + 4730) = 3 / (60 + 85) = 0.02069 -> -1.684
+    + but theoretically R_4 / R_2 = 1.33
+    + We find R_4/R_2 = 7171 / 7238 = 3 / 3.5 = 0.8571, which must be due to contamination of 7238
+    + So assuming R_2 = R_4 / 1.33, then R_2 = 0.02069 / 1.33 = 0.01556 -> -1.808
+      + gives 17500 K, same as R_3
+  + *Conclusion* Both R_3 and R_4 imply 17,500 K, while R_2 is hopelessly contaminated
+
+  
 **** [Ar IV] and [Cl IV] from Atomic Line List
 : -LAB-WAVL-ANG-AIR-|--SPC--|TT|-CONFIGURATION-|-TERM--|-J_i-J_k-|--A_ki--|-TPF-|-LEVEL-ENERGY--EV--|-REF---|
 :    4711.37         [Ar IV] M1 3s2.3p3-3s2.3p3 4So-2Do 3/2 - 5/2 1.60e-03   ASD 0.000000 - 2.630860 058
