@@ -508,4 +508,352 @@ imT_siii.write("../data/ngc346-T-siii.fits", savemask="nan")
 #
 # Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise contribution.  This implies $t^2 = 0.003$ in plane of sky, which is small.
 
+# ## Calculate [O III]/[S III]
+
+im5007 = Image("../data/ngc346-oiii-5007-bin01-sum.fits")
+
+# Correct for extinction:
+
+A5007 = rc.X(5007) * imEBV
+im5007c = im5007.copy()
+im5007c.data = im5007.data * 10**(0.4 * A5007.data)
+
+median_EBV = np.median(imEBV[150:250, 200:300].data)
+median_EBV
+
+im5007cc = im5007.copy()
+im5007cc.data = im5007.data * 10**(0.4 * rc.X(5007) * median_EBV)
+im9069cc = im9069.copy()
+im9069cc.data = im9069.data * 10**(0.4 * rc.X(9069) * median_EBV)
+
+# Quick look:
+
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
+((im5007cc - 55000)/im9069cc).plot(
+    vmin=20, vmax=100, 
+    colorbar="v", scale="linear",
+    ax=axes[0],
+);
+((im5007c - 55000)/im9069c).plot(
+    vmin=20, vmax=100, 
+    colorbar="v", scale="linear",
+    ax=axes[1],
+);
+
+# Fix zero points:
+
+imax = 6000
+slope = 45
+slope2 = 35
+x = im9069c.data
+y = im5007c.data - 55000
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~im9069c.mask & ~im5007c.mask
+df = pd.DataFrame(
+    {
+        "9069": x[m],
+        "5007": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.axes[1, 0].plot([0, imax], [0, slope2*imax], "--", color="r")
+g.fig.suptitle("Correlation between [S III] 9069 and [O III] 5007 brightness");
+
+imax = 6000
+slope = 45
+slopw = 35
+x = im9069cc.data
+y = im5007cc.data - 55000
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~im9069cc.mask & ~im5007cc.mask
+df = pd.DataFrame(
+    {
+        "9069": x[m],
+        "5007": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.axes[1, 0].plot([0, imax], [0, slope2*imax], "--", color="r")
+g.fig.suptitle("Correlation between [S III] 9069 and [O III] 5007 brightness");
+
+slope = 45
+slope2 = 35
+x = im9069cc.data
+y = im5007cc.data - 55000
+m = (x > 100)
+m = m & (y > x) & (y < 100*x)
+m = m & ~im9069cc.mask & ~im5007cc.mask
+df = pd.DataFrame(
+    {
+        "log 9069": np.log10(x[m]),
+        "log 5007/9069": np.log10(y[m] / x[m]),
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.fig.suptitle("Correlation between [S III] 9069 and [O III] / [S III] ratio");
+
+imR_oiii_siii = (im5007cc - 55000)/im9069cc
+imR_oiii_siii.write("../data/ngc346-R-oiii-5007-siii-9069.fits", savemask="nan")
+
+# ## Calculate [O III] / Hβ
+#
+# This might be better since at least it is not affected by reddening. 
+
+imax = 10000
+slope = 5.
+x = imhb.data - hbfix
+y = im5007.data - 33000
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~imhb.mask & ~im5007.mask
+df = pd.DataFrame(
+    {
+        "4861": x[m],
+        "5007": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.fig.suptitle("Correlation between Hβ 4861 and [O III] 5007 brightness");
+
+imax = 50000
+slope = 5.
+x = imhb.data - hbfix
+y = im5007.data - 33000
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~imhb.mask & ~im5007.mask
+df = pd.DataFrame(
+    {
+        "4861": x[m],
+        "5007": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.fig.suptitle("Correlation between Hβ 4861 and [O III] 5007 brightness");
+
+n = 1
+x = imhb.rebin(n).data - hbfix
+y = im5007.rebin(n).data - 33000
+m = (x > 2000) & (y > x) & (y < 10 * x)
+m = m & ~imhb.rebin(n).mask & ~im5007.rebin(n).mask
+df = pd.DataFrame(
+    {
+        "log10(4861)": np.log10(x[m]),
+        "log10(5007 / 4861)": np.log10(y[m] / x[m]),
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.fig.suptitle("Correlation between Hβ 4861 and [O III] / Hβ ratio");
+
+imR_oiii_hb = (im5007 - 33000)/(imhb - hbfix)
+imR_oiii_hb.write("../data/ngc346-R-oiii-5007-hi-4861.fits", savemask="nan")
+
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
+imR_oiii_siii.plot(
+    vmin=20, vmax=100, 
+    colorbar="v", scale="linear",
+    ax=axes[0],
+);
+imR_oiii_hb.plot(
+    vmin=3, vmax=7, 
+    colorbar="v", scale="linear",
+    ax=axes[1],
+);
+
+# ## Calculate He I / Hβ
+#
+# Let us see if this has a hole in it where the He II is coming from.
+
+im5875 = Image("../data/ngc346-hei-5875-bin01-sum.fits")
+im4922 = Image("../data/ngc346-hei-4922-bin01-sum.fits")
+im5048 = Image("../data/ngc346-hei-5048-bin01-sum.fits")
+
+fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
+im5875.plot(ax=axes[0, 0], vmin=0, vmax=5000)
+im4922.plot(ax=axes[0, 1], vmin=0, vmax=300)
+(imhb - hbfix).plot(ax=axes[1, 0], vmin=0, vmax=40000)
+im5048.plot(ax=axes[1, 1], vmin=0, vmax=50)
+
+# So 5875 is 10 to 100 times brighter than the other two. And it is almost identical to Hβ! 
+
+imax = 10000
+slope = 0.12
+x = imhb.data - hbfix
+y = im5875.data
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~imhb.mask & ~im5875.mask
+df = pd.DataFrame(
+    {
+        "4861": x[m],
+        "5875": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(weights=x[m], bins=200),
+    diag_kws=dict(weights=x[m], bins=200),
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness");
+
+imax = 100000
+slope = 0.12
+x = imhb.data - hbfix
+y = im5875.data
+m = x < imax
+m = m & (x > -100)
+m = m & (y < slope*imax)
+m = m & (y > -100*slope)
+m = m & ~imhb.mask & ~im5875.mask
+df = pd.DataFrame(
+    {
+        "4861": x[m],
+        "5875": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(weights=x[m], bins=200),
+    diag_kws=dict(weights=x[m], bins=200),
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, imax], [0, slope*imax], "--", color="r")
+g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness");
+
+imR_hei_hb = im5875 / (imhb - hbfix)
+
+fig, ax = plt.subplots(figsize=(12, 12))
+imR_hei_hb.plot(colorbar="v", cmap="gray", vmin=0.11, vmax=0.14); 
+
+red_R_hei_hb = imR_hei_hb.copy()
+red_R_hei_hb.data = 10**(0.4*imEBV.data*(rc.X(4861) - rc.X(5875)))
+
+fig, ax = plt.subplots(figsize=(12, 12))
+(imR_5875_4861 / red_R_hei_hb).plot(colorbar="v", cmap="gray", vmin=0.1, vmax=0.115); 
+
+# So if we correct it for reddening, then lots of spurious structure disappears.  But we are left with very little variation at all, except for at the mYSO and the top right corner, which both show low He I.
+
+# ## Calculate He II / Hβ
+#
+#
+
+im4686 = Image("../data/ngc346-heii-4686-bin01-sum.fits")
+
+fig, ax = plt.subplots(figsize=(12, 12))
+im4686.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=300);
+
+# +
+imR_heii_hb = im4686 / (imhb - hbfix)
+
+fig, ax = plt.subplots(figsize=(12, 12))
+imR_heii_hb.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=0.02);
+# -
+
+n = 2
+xslice, yslice = slice(200, 300), slice(100, 250)
+x = imR_heii_hb[yslice, xslice].rebin(n).data
+y = imR_hei_hb[yslice, xslice].rebin(n).data / red_R_hei_hb[yslice, xslice].rebin(n).data
+z = im4686[yslice, xslice].rebin(n).data
+m = x < 0.03
+m = m & (x > 0)
+m = m & (y < 0.113)
+m = m & (y > 0.103)
+m = m & ~imR_heii_hb[yslice, xslice].rebin(n).mask & ~imR_hei_hb[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4686 / 4861": x[m],
+        "5875 / 4861": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(weights=z[m], bins=30),
+    diag_kws=dict(weights=z[m], bins=30),
+)
+g.fig.suptitle("Correlation between He II / Hβ and He I / Hβ ratios");
+
+# So there is a *tiny* change in 5875/4861 from 0.109 to 0.107 as 4686/4861 increases.
+
+df["high"] = df["4686 / 4861"] > 0.003
+df
+
+sns.histplot(
+    data=df, 
+    x="5875 / 4861", 
+    hue="high",
+    multiple="stack", 
+    shrink=1.0,
+    stat="probability",
+    common_norm=False,
+    bins=10,
+)
+
 
