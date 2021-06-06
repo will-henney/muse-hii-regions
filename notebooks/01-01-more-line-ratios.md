@@ -533,10 +533,11 @@ fig, ax = plt.subplots(figsize=(12, 12))
 ```
 
 ```python
-n = 1
+n = 4
 x = np.log10(im9069c.rebin(n).data)
 y = np.log10(im6312c.rebin(n).data / im9069c.rebin(n).data)
-m = (x > 2.0) & (x < 5.0)
+z = im9069c.rebin(n).data
+m = (x > 2.5) & (x < 5.5)
 m = m & (y > -1.1) & (y < -0.6)
 m = m & ~im9069c.rebin(n).mask & ~im6312c.rebin(n).mask
 df = pd.DataFrame(
@@ -545,11 +546,13 @@ df = pd.DataFrame(
         "log 10 6312/9069": y[m],
     }
 )
+kws = dict(weights=z[m], bins=30)
 g = sns.pairplot(
     df,
     kind="hist",
     height=4,
     corner=True,
+    plot_kws=kws, diag_kws=kws,
 );
 ```
 
@@ -995,6 +998,49 @@ sns.histplot(
     bins=10,
 )
 ```
+
+## Ratio of [Ar IV] / [Ar III]
+
+```python
+im4711 = Image("../data/ngc346-ariv-4711-bin01-sum.fits")
+im4740 = Image("../data/ngc346-ariv-4740-bin01-sum.fits")
+im7171 = Image("../data/ngc346-ariv-7171-bin01-sum.fits")
+im7263 = Image("../data/ngc346-ariv-7263-bin01-sum.fits")
+im7136 = Image("../data/ngc346-ariii-7136-bin01-sum.fits")
+```
+
+```python
+fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
+im4711.plot(ax=axes[0, 0], vmin=0, vmax=400)
+im4740.plot(ax=axes[0, 1], vmin=0, vmax=250)
+(im7171 + im7263).plot(ax=axes[1, 0], vmin=0, vmax=30)
+im7136.plot(ax=axes[1, 1], vmin=0, vmax=3500)
+```
+
+```python
+n = 8
+fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
+(im4711.rebin(n) / im4740.rebin(n)).plot(ax=axes[0, 0], vmin=0, vmax=4)
+(im4740.rebin(n) / im7136.rebin(n)).plot(ax=axes[0, 1], vmin=0, vmax=0.15)
+((im7171.rebin(n) + im7263.rebin(n)) / (im4740.rebin(n) + im4711.rebin(n))).plot(ax=axes[1, 0], vmin=0, vmax=0.08)
+im7136.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=3500)
+```
+
+Now we must subtract the He I line!
+
+```python
+hei = pn.RecAtom("He", 1)
+```
+
+```python
+dens = [50, 100, 200]
+tems = [13000, 18000]
+e4713 = hei.getEmissivity(tems, dens, wave=4713)
+e5876 = hei.getEmissivity(tems, dens, wave=5876)
+e4713 / e5876
+```
+
+There is a slight temperature dependence, but almost no density dependence.  
 
 ```python
 
