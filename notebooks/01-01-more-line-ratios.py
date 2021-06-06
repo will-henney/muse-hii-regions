@@ -284,7 +284,12 @@ for label, box in boxes.items():
     ebv = np.median(imEBV[yslice, xslice].data.data)
     print(f"{label}: {ebv:.3f}")
 
-# These seem the same as before.  Save it to a file:
+# These seem the same as before.  But we want to eliminate extreme values. 
+
+badpix = (imEBV.data > 1.0) | (imEBV.data < 0.0)
+imEBV.mask = imEBV.mask | badpix
+
+# Save it to a file:
 
 imEBV.write("../data/ngc346-reddening-E_BV.fits", savemask="nan")
 
@@ -505,6 +510,9 @@ imT_siii.data[~fixmask] = np.interp(
 fig, ax = plt.subplots(figsize=(12, 12))
 imT_siii.plot(colorbar="v", cmap="hot", vmin=11000, vmax=22000); 
 
+badpix = ~np.isfinite(imT_siii.data)
+imT_siii.mask = imT_siii.mask | badpix
+
 imT_siii.write("../data/ngc346-T-siii.fits", savemask="nan")
 
 # The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there. 
@@ -714,7 +722,9 @@ imR_oiii_hb.plot(
     vmin=3, vmax=7, 
     colorbar="v", scale="linear",
     ax=axes[1],
-);
+)
+axes[0].set_title("[O III] / [S III]")
+axes[1].set_title("[O III] / Hβ")
 
 # ## Calculate He I / Hβ
 #
@@ -729,6 +739,10 @@ im5875.plot(ax=axes[0, 0], vmin=0, vmax=5000)
 im4922.plot(ax=axes[0, 1], vmin=0, vmax=300)
 (imhb - hbfix).plot(ax=axes[1, 0], vmin=0, vmax=40000)
 im5048.plot(ax=axes[1, 1], vmin=0, vmax=50)
+axes[0, 0].set_title("He I 5875")
+axes[0, 1].set_title("He I 4922")
+axes[1, 0].set_title("H I 4861")
+axes[1, 1].set_title("He I 5048")
 
 # So 5875 is 10 to 100 times brighter than the other two. And it is almost identical to Hβ! 
 
@@ -872,6 +886,10 @@ im4711.plot(ax=axes[0, 0], vmin=0, vmax=400)
 im4740.plot(ax=axes[0, 1], vmin=0, vmax=250)
 (im7171 + im7263).plot(ax=axes[1, 0], vmin=0, vmax=30)
 im7136.plot(ax=axes[1, 1], vmin=0, vmax=3500)
+axes[0, 0].set_title("[Ar IV] 4711 + He I 4713")
+axes[0, 1].set_title("[Ar IV] 4740")
+axes[1, 0].set_title("[Ar IV] 7171 + 7263")
+axes[1, 1].set_title("[Ar III] 7136")
 
 n = 8
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
@@ -879,6 +897,10 @@ fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
 (im4740.rebin(n) / im7136.rebin(n)).plot(ax=axes[0, 1], vmin=0, vmax=0.15)
 ((im7171.rebin(n) + im7263.rebin(n)) / (im4740.rebin(n) + im4711.rebin(n))).plot(ax=axes[1, 0], vmin=0, vmax=0.08)
 im7136.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=3500)
+axes[0, 0].set_title("([Ar IV] 4711 + He I 4713) / [Ar IV] 4740")
+axes[0, 1].set_title("[Ar IV] 4740 / [Ar III] 7136")
+axes[1, 0].set_title("[Ar IV] (7171 + 7263) / (4711 + 4740)")
+axes[1, 1].set_title("[Ar III] 7136")
 
 # Now we must subtract the He I line!
 
@@ -890,6 +912,92 @@ e4713 = hei.getEmissivity(tems, dens, wave=4713)
 e5876 = hei.getEmissivity(tems, dens, wave=5876)
 e4713 / e5876
 
-# There is a slight temperature dependence, but almost no density dependence.  
+# There is a slight temperature dependence, but almost no density dependence if we use the 5876 line.  This is probably the best because it has good signal to noise.  
+#
+# We can assume that the He I temperature is the same as the [S III] temperature.
+#
+# But we will check the other lines as well. 
+
+e4922 = hei.getEmissivity(tems, dens, wave=4922)
+e5048 = hei.getEmissivity(tems, dens, wave=5048)
+e4713 / e4922, e4713 / e5048
+
+
+# The 4922 has the same T-dependence as 5876, just 10 times weaker. The 5048 has a constant ratio, but it is so weak that we cannot use it.  So 5876 it is ...
+
+# ### Average values of T and reddening to use in the corrections
+#
+# We would introduce too much noise by using the pixel-by-pixel values of $T$ and $E(B - V)$, so we will construct an average value by using the He I brightenss as a weight, but masking out the mYSO
+#
+
+def trim_edges(im, m):
+    """Trim m pixels of each edge of image in place by setting mask"""
+    im.mask[:m, :] = True
+    im.mask[-m:, :] = True
+    im.mask[:, :m] = True
+    im.mask[:, -m:] = True
+    return None
+
+
+im_hei_weight = im5875.copy()
+im_hei_weight.mask[140:157, 110:141] = True
+im_hei_weight.mask[94:104, 55:65] = True
+trim_edges(im_hei_weight, 10)
+im_hei_weight.data.mask = im_hei_weight.mask
+fig, ax = plt.subplots(figsize=(10, 10))
+im_hei_weight.plot(cmap="gray_r")
+ax.set_title("Weight mask for He I emission");
+
+# That looks OK. Now calculate some averages:
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
+im1 = im_hei_weight.copy()
+im1.data = im_hei_weight.data * imEBV.data
+im1.mask = im_hei_weight.mask | imEBV.mask
+im1.plot(ax=axes[0])
+im2 = im_hei_weight.copy()
+im2.data = im_hei_weight.data * imT_siii.data
+im2.mask = im_hei_weight.mask | imT_siii.mask
+im2.plot(ax=axes[1])
+
+avHe_EBV = np.average(imEBV.data, weights=im_hei_weight.data)
+avHe_Tsiii = np.average(imT_siii.data, weights=im_hei_weight.data)
+f"He I brightness-weighted averages: E(B-V) = {avHe_EBV:.2f}, T = {avHe_Tsiii/1000:.2f} kK"
+
+median_EBV
+
+# The `avHe_Tsiii` looks good. But to be honest, I am a bit suspicious of the `avHe_EBV` reddening, since there are lots of anomalous spots of high $E(B-V)$ that correspond to stars (presumably underlying stellar absorption affecting the Balmer decrement).  
+#
+# I couls use the median instead, but I have ended up using the weighted one after all, since we seem to be oversubtracting if anything.
+
+avHe_reddening_4713_5876 = 10**(0.4 * avHe_EBV * (rc.X(4713) - rc.X(5876)))
+median_reddening_4713_5876 = 10**(0.4 * median_EBV * (rc.X(4713) - rc.X(5876)))
+avHe_reddening_4713_5876, median_reddening_4713_5876
+
+dens = 100.0
+avHe_e4713_5876 = (
+    hei.getEmissivity(avHe_Tsiii, dens, wave=4713) 
+    / hei.getEmissivity(avHe_Tsiii, dens, wave=5876)
+)
+avHe_e4713_5876
+
+# Now do the correction by faking the 4713 line and subtracting it:
+
+im_fake_4713 = (avHe_e4713_5876 / avHe_reddening_4713_5876) * im5875
+im4711c = im4711 - im_fake_4713
+
+# Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
+
+
+
+fig, axes = plt.subplots(2, 2, figsize=(12, 12), sharex="row", sharey="row")
+im4711c.plot(ax=axes[0, 0], vmin=-20, vmax=250, colorbar="v")
+im4740.plot(ax=axes[0, 1], vmin=-20, vmax=250, colorbar="v")
+n = 4
+(im4711c.rebin(n) / im4740.rebin(n)).plot(ax=axes[1, 0], vmin=0, vmax=4, colorbar="v")
+(
+    (im7171.rebin(n) + im7263.rebin(n)) 
+     / (im4740.rebin(n) + im4711c.rebin(n))
+).plot(ax=axes[1, 1], vmin=0, vmax=0.08, colorbar="v")
 
 
