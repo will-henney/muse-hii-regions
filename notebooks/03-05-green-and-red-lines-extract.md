@@ -244,7 +244,7 @@ cdivcube.write(
 contcube.write(
     f"{prefix}-cont.fits",
     savemask="nan",
-    )
+)
 ```
 
 ```python

@@ -1153,26 +1153,302 @@ avHe_e4713_5876
 Now do the correction by faking the 4713 line and subtracting it:
 
 ```python
-im_fake_4713 = (avHe_e4713_5876 / avHe_reddening_4713_5876) * im5875
+#im_fake_4713 = (avHe_e4713_5876 / avHe_reddening_4713_5876) * im5875
+im_fake_4713 = 0.0255 * im5875
 im4711c = im4711 - im_fake_4713
 ```
 
 Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
 
 ```python
+cont4686 = Image("../data/ngc346-cont-4686-mean.fits")
+```
 
+I need to decide how bright a star needs to be before I mask out that bit of the image. 5000 in the `cont4686` image seems a reasonable value. 
+
+```python
+fig, ax = plt.subplots(figsize=(10, 10))
+cont4686.plot(colorbar="v", vmin=0, vmax=1e5, scale="sqrt")
+ax.contour(cont4686.data, levels=[5e3], colors="r")
+```
+
+```python
+im_ariv_sum = im4711c + im4740
+trim_edges(im_ariv_sum, 12)
+im_ariv_sum.mask[78:88, 190:199] = True
+im_ariv_sum.mask[234:236, 266:271] = True
+im_ariv_sum.mask[81:84, 52:55] = True
+im_ariv_sum.mask = im_ariv_sum.mask | (cont4686.data > 1.5e3)
+im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data > 650)
+im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data < -250)
+fig, ax = plt.subplots(figsize=(10, 10))
+im_ariv_sum.rebin(1).plot(
+    colorbar="v", 
+    vmin=-10, vmax=600, 
+    cmap="gray_r", 
+    scale="sqrt"
+);
+```
+
+That is looking good.  Apply the mask to all the other images
+
+```python
+for im in im4711c, im4740, im7171, im7263:
+    im.mask = im.mask | im_ariv_sum.mask
+```
+
+```python
+ariv_R1 = im4711c / im4740
+ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 250)
+ariv_R3_plus_R4 = (im7171 + im7263) / (im4740 + im4711c)
+ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 300)
 ```
 
 ```python
 fig, axes = plt.subplots(2, 2, figsize=(12, 12), sharex="row", sharey="row")
-im4711c.plot(ax=axes[0, 0], vmin=-20, vmax=250, colorbar="v")
-im4740.plot(ax=axes[0, 1], vmin=-20, vmax=250, colorbar="v")
+im4711c.plot(ax=axes[0, 0], vmin=-20, vmax=300, colorbar="v")
+im4740.plot(ax=axes[0, 1], vmin=-20, vmax=300/1.4, colorbar="v")
+n = 8
+#(im4711c.rebin(n) / im4740.rebin(n)).plot(ax=axes[1, 0], vmin=0, vmax=2, colorbar="v")
+#(
+#    (im7171.rebin(n) + im7263.rebin(n)) 
+#     / (im4740.rebin(n) + im4711c.rebin(n))
+#).plot(ax=axes[1, 1], vmin=0, vmax=0.08, colorbar="v")
+ariv_R1.rebin(n).plot(ax=axes[1, 0], vmin=0, vmax=2, cmap="mako_r", colorbar="v")
+ariv_R3_plus_R4.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=0.08, cmap="inferno", colorbar="v")
+```
+
+```python
 n = 4
-(im4711c.rebin(n) / im4740.rebin(n)).plot(ax=axes[1, 0], vmin=0, vmax=4, colorbar="v")
-(
-    (im7171.rebin(n) + im7263.rebin(n)) 
-     / (im4740.rebin(n) + im4711c.rebin(n))
-).plot(ax=axes[1, 1], vmin=0, vmax=0.08, colorbar="v")
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 1.4
+xmax = 250
+ymax = ratio*xmax
+x = im4740[yslice, xslice].rebin(n).data
+y = im4711c[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -100.0) & (y > -100.0) & (x < xmax) & (y < ymax)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im4740[yslice, xslice].rebin(n).mask & ~im4711[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4740": x[m],
+        "4711": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        #weights=z[m], 
+        bins=64//n),
+    diag_kws=dict(
+        #weights=z[m], 
+        bins=128//n),
+)
+g.axes[1, 0].plot([0, xmax], [0, ymax])
+g.fig.suptitle("Correlation between [Ar IV] 4711 and 4740");
+```
+
+```python
+n = 4
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 1.35
+xmax = 300
+ymax = ratio * xmax
+x = im4740[yslice, xslice].rebin(n).data
+y = im4711c[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -100.0) & (y > -100.0) & (x < xmax) & (y < ymax)
+y = y / x
+m = m & (y < 2.5*ratio) & (y > 0.0)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im4740[yslice, xslice].rebin(n).mask & ~im4711[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4740": x[m],
+        "4711 / 4740": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(weights=z[m], bins=200//n),
+    diag_kws=dict(weights=z[m], bins=100//int(np.sqrt(n))),
+)
+g.axes[1, 0].axhline(ratio, linestyle="dashed", color="k", linewidth=2)
+g.axes[1, 1].axvline(ratio, linestyle="dashed", color="k", linewidth=2)
+g.fig.suptitle("Correlation between [Ar IV] 4740 and 4711 / 4740");
+```
+
+<!-- #raw -->
+So the density-sensitive ratio is $R_1 = 1.35 \pm 0.1$ 
+<!-- #endraw -->
+
+```python
+ariv = pn.Atom("Ar", 4)
+```
+
+```python
+ariv.getTemDen([1.30, 1.35, 1.40], tem=17500, wave1=4711, wave2=4740)
+```
+
+```python
+ariv.getSources()
+```
+
+```python
+n = 4
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 0.025
+xmax = 600
+ymax = ratio*xmax
+x = im_ariv_sum[yslice, xslice].rebin(n).data
+y = im7171[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im_ariv_sum[yslice, xslice].rebin(n).mask & ~im7171[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4711 + 4740": x[m],
+        "7171": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+        bins=128//n),
+    diag_kws=dict(
+        weights=200 + z[m], 
+        bins=128//n),
+)
+g.axes[1, 0].plot([0, xmax], [0, ymax])
+g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171");
+```
+
+```python
+n = 4
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 0.025
+xmax = 600
+ymax = ratio*xmax
+x = im_ariv_sum[yslice, xslice].rebin(n).data
+y = im7263[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im_ariv_sum[yslice, xslice].rebin(n).mask & ~im7171[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4711 + 4740": x[m],
+        "7263": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+        bins=128//n),
+    diag_kws=dict(
+        weights=200 + z[m], 
+        bins=128//n),
+)
+g.axes[1, 0].plot([0, xmax], [0, ymax])
+g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263");
+```
+
+```python
+n = 4
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 0.025
+xmax = 600
+ymax = ratio*xmax
+x = im_ariv_sum[yslice, xslice].rebin(n).data
+y = im7171[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
+y = y / x
+m = m & (y > -ratio) & (y < 3*ratio)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im_ariv_sum[yslice, xslice].rebin(n).mask & ~im7171[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4711 + 4740": x[m],
+        "7171 / (4711 + 4740)": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+        bins=128//n),
+    diag_kws=dict(
+        weights=200 + z[m], 
+        bins=128//n),
+)
+g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171 / (4711 + 4740)");
+```
+
+```python
+n = 4
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 0.025
+xmax = 600
+ymax = ratio*xmax
+x = im_ariv_sum[yslice, xslice].rebin(n).data
+y = im7263[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
+y = y / x
+m = m & (y > -ratio) & (y < 3*ratio)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im_ariv_sum[yslice, xslice].rebin(n).mask & ~im7263[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4711 + 4740": x[m],
+        "7263 / (4711 + 4740)": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+        bins=128//n),
+    diag_kws=dict(
+        weights=200 + z[m], 
+        bins=128//n),
+)
+g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263 / (4711 + 4740)");
 ```
 
 ```python

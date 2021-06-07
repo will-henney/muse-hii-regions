@@ -363,6 +363,15 @@ ew4686 = (
 ```
 
 ```python
+cont4686.write?
+```
+
+```python
+cont4686.write("../data/ngc346-cont-4686-mean.fits", savemask="nan")
+ew4686.write("../data/ngc346-ew-4686-mean.fits", savemask="nan")
+```
+
+```python
 ew4686.plot(vmin=-0.5, vmax=10, colorbar="v")
 ```
 

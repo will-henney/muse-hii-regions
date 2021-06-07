@@ -223,7 +223,7 @@ cdivcube.write(
 contcube.write(
     f"{prefix}-cont.fits",
     savemask="nan",
-    )
+)
 
 prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = (mcube - mcontcube)

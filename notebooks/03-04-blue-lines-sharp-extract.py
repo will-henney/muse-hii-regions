@@ -309,6 +309,13 @@ ew4686 = (
     dlam * mom4686[0] / cont4686 
 )
 
+# +
+# cont4686.write?
+# -
+
+cont4686.write("../data/ngc346-cont-4686-mean.fits", savemask="nan")
+ew4686.write("../data/ngc346-ew-4686-mean.fits", savemask="nan")
+
 ew4686.plot(vmin=-0.5, vmax=10, colorbar="v")
 
 cont4686.plot(vmin=0, vmax=1000, colorbar="v")
