@@ -1,0 +1,2822 @@
+global ds9
+set vv 8.2
+# this is a check for to ensure a match between the
+# current ds9 version matches the prefs version
+switch -- [string compare $vv [lindex $ds9(version) 0]] {
+  -1 {
+    if {[tk_messageBox -type yesno -icon question -message [msgcat::mc {DS9 has detected an older backup file, do you wish to continue?}]] == {no}} {
+      return
+    }
+  }
+  0 {}
+  1 {
+    tk_messageBox -type ok -icon warning -message [msgcat::mc {DS9 has detected a newer version of a backup file and therefore will not process this file.}]
+    return
+  }
+}
+proc BackupFindFile {varname} {
+  upvar $varname var
+
+  set id [string first "\[" $var(file,name)]
+  if {$id > 0} {
+    set fn [string range $var(file,name) 0 [expr $id-1]]
+    set ext [string range $var(file,name) $id end]
+  } else {
+    set fn $var(file,name)
+    set ext {}
+  }
+
+  if {![file exists $fn]} {
+    Error "[msgcat::mc {Unable to load}] $fn"
+    global fitsfbox
+    set fn [OpenFileDialog fitsfbox]
+    if {$fn == {}} {
+      Error [msgcat::mc {An error has occurred during restore}]
+      return 0
+    }
+    if {![file exists $fn]} {
+      Error [msgcat::mc {An error has occurred during restore}]
+      return 0
+    }
+    set var(file,name) "$fn$ext"
+  }
+
+  return 1
+}
+panner compass 1
+colorbar configure -size 20
+colorbar configure -ticks 11
+colorbar configure -numerics 1
+colorbar configure -space 0
+colorbar configure -orientation 0
+colorbar configure -font helvetica
+colorbar configure -fontsize 9
+colorbar configure -fontweight normal
+colorbar configure -fontslant roman
+colorbar colorbar 1 0.5 1 0
+colorbar tag "{}"
+colorbarrgb configure -size 20
+colorbarrgb configure -ticks 11
+colorbarrgb configure -numerics 1
+colorbarrgb configure -space 0
+colorbarrgb configure -orientation 0
+colorbarrgb configure -font helvetica
+colorbarrgb configure -fontsize 9
+colorbarrgb configure -fontweight normal
+colorbarrgb configure -fontslant roman
+colorbarrgb colorbar rgb 0.5 0.5 0.5 1 1 1 0
+colorbarrgb tag "{}"
+CreateNameNumberFrame Frame4 base
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariv-4740-bin01-sum.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame4 magnifier graphics 1
+Frame4 magnifier cursor 1
+Frame4 magnifier zoom 4
+Frame4 magnifier color white
+Frame4 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 0
+Frame4 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame4 precision 8 7 4 3 8 7 5 3 8
+Frame4 bg color white
+Frame4 bg color 0
+Frame4 nan color #468
+Frame4 cube axes 123
+Frame4 rgb channel red
+Frame4 rgb view 1 1 1
+Frame4 rgb system image
+Frame4 bin factor to 1 1
+Frame4 bin depth 1
+Frame4 bin filter {""}
+Frame4 bin buffer size 1024
+Frame4 bin about 0 0
+Frame4 bin function sum
+Frame4 colorscale linear
+Frame4 colorscale log 1000
+Frame4 datasec 1
+Frame4 clip user 0 250
+Frame4 clip mode user
+Frame4 clip scope local
+Frame4 clip minmax mode scan
+Frame4 clip minmax sample 25
+Frame4 clip zscale contrast 0.25
+Frame4 clip zscale sample 600
+Frame4 clip zscale line 120
+Frame4 block to 1 1
+Frame4 wcs wcs fk5 sexagesimal
+Frame4 pan preserve 0
+Frame4 pan to physical 112.45637 140.42739
+Frame4 zoom to 0.446047 0.446047
+Frame4 rotate to 0
+Frame4 orient none
+Frame4 wcs align 1
+Frame4 zoom to 0.446047 0.446047
+Frame4 3d view 0 0
+Frame4 3d scale 1
+Frame4 3d method mip
+Frame4 3d highlite 1
+Frame4 3d border 1
+Frame4 3d background none
+Frame4 3d view point 0 0 0 0 0
+Frame4 crosshair physical 174 164
+Frame4 marker centroid radius 10
+Frame4 marker centroid iteration 30
+Frame4 mask transparency 0
+Frame4 mask system wcs
+Frame4 mask color red
+Frame4 mask mark nonzero
+Frame4 mask range 0 0
+CreateNameNumberFrame Frame3 base
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-heii-4686-bin01-sum.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame3 magnifier graphics 1
+Frame3 magnifier cursor 1
+Frame3 magnifier zoom 4
+Frame3 magnifier color white
+Frame3 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 0
+Frame3 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame3 precision 8 7 4 3 8 7 5 3 8
+Frame3 bg color white
+Frame3 bg color 0
+Frame3 nan color #468
+Frame3 cube axes 123
+Frame3 rgb channel red
+Frame3 rgb view 1 1 1
+Frame3 rgb system image
+Frame3 bin factor to 1 1
+Frame3 bin depth 1
+Frame3 bin filter {""}
+Frame3 bin buffer size 1024
+Frame3 bin about 0 0
+Frame3 bin function sum
+Frame3 colorscale linear
+Frame3 colorscale log 1000
+Frame3 datasec 1
+Frame3 clip user 0 350
+Frame3 clip mode user
+Frame3 clip scope local
+Frame3 clip minmax mode scan
+Frame3 clip minmax sample 25
+Frame3 clip zscale contrast 0.25
+Frame3 clip zscale sample 600
+Frame3 clip zscale line 120
+Frame3 block to 1 1
+Frame3 wcs wcs fk5 sexagesimal
+Frame3 pan preserve 0
+Frame3 pan to physical 112.45637 140.42739
+Frame3 zoom to 0.446047 0.446047
+Frame3 rotate to 0
+Frame3 orient none
+Frame3 wcs align 1
+Frame3 zoom to 0.446047 0.446047
+Frame3 3d view 0 0
+Frame3 3d scale 1
+Frame3 3d method mip
+Frame3 3d highlite 1
+Frame3 3d border 1
+Frame3 3d background none
+Frame3 3d view point 0 0 0 0 0
+Frame3 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame3/ds9.reg"}
+Frame3 crosshair physical 174 164
+Frame3 marker centroid radius 10
+Frame3 marker centroid iteration 30
+Frame3 mask transparency 0
+Frame3 mask system wcs
+Frame3 mask color red
+Frame3 mask mark nonzero
+Frame3 mask range 0 0
+CreateNameNumberFrame Frame5 rgb
+Frame5 rgb channel red
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-heii-4686-bin01-sum.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame5 rgb channel green
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariv-4740-bin01-sum.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame5 rgb channel blue
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-oiii-5007-bin01-sum.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame5 magnifier graphics 1
+Frame5 magnifier cursor 1
+Frame5 magnifier zoom 4
+Frame5 magnifier color white
+Frame5 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame5 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame5 precision 8 7 4 3 8 7 5 3 8
+Frame5 bg color white
+Frame5 bg color 0
+Frame5 nan color #468
+Frame5 rgb channel red
+Frame5 cube axes 123
+Frame5 rgb channel green
+Frame5 cube axes 123
+Frame5 rgb channel blue
+Frame5 cube axes 123
+Frame5 rgb channel green
+Frame5 rgb channel green
+Frame5 rgb view 1 1 1
+Frame5 rgb system wcs
+Frame5 rgb channel red
+Frame5 bin factor to 1 1
+Frame5 bin depth 1
+Frame5 bin filter {""}
+Frame5 bin buffer size 1024
+Frame5 bin about 0 0
+Frame5 bin function sum
+Frame5 rgb channel green
+Frame5 bin factor to 1 1
+Frame5 bin depth 1
+Frame5 bin filter {""}
+Frame5 bin buffer size 1024
+Frame5 bin about 0 0
+Frame5 bin function sum
+Frame5 rgb channel blue
+Frame5 bin factor to 1 1
+Frame5 bin depth 1
+Frame5 bin filter {""}
+Frame5 bin buffer size 1024
+Frame5 bin about 0 0
+Frame5 bin function sum
+Frame5 rgb channel green
+Frame5 rgb channel red
+Frame5 colorscale linear
+Frame5 colorscale log 1000
+Frame5 datasec 1
+Frame5 clip user 0 350
+Frame5 clip mode user
+Frame5 clip scope local
+Frame5 clip minmax mode scan
+Frame5 clip minmax sample 25
+Frame5 clip zscale contrast 0.25
+Frame5 clip zscale sample 600
+Frame5 clip zscale line 120
+Frame5 rgb channel green
+Frame5 colorscale linear
+Frame5 colorscale log 1000
+Frame5 datasec 1
+Frame5 clip user 0 280
+Frame5 clip mode user
+Frame5 clip scope local
+Frame5 clip minmax mode scan
+Frame5 clip minmax sample 25
+Frame5 clip zscale contrast 0.25
+Frame5 clip zscale sample 600
+Frame5 clip zscale line 120
+Frame5 rgb channel blue
+Frame5 colorscale linear
+Frame5 colorscale log 1000
+Frame5 datasec 1
+Frame5 clip user 0 194272
+Frame5 clip mode user
+Frame5 clip scope local
+Frame5 clip minmax mode scan
+Frame5 clip minmax sample 25
+Frame5 clip zscale contrast 0.25
+Frame5 clip zscale sample 600
+Frame5 clip zscale line 120
+Frame5 rgb channel green
+Frame5 rgb channel red
+Frame5 block to 1 1
+Frame5 rgb channel green
+Frame5 block to 1 1
+Frame5 rgb channel blue
+Frame5 block to 1 1
+Frame5 rgb channel green
+Frame5 wcs wcs fk5 sexagesimal
+Frame5 pan preserve 0
+Frame5 pan to physical 112.45637 140.42739
+Frame5 zoom to 0.446047 0.446047
+Frame5 rotate to 0
+Frame5 orient none
+Frame5 wcs align 1
+Frame5 rgb channel red
+Frame5 rgb channel green
+Frame5 rgb channel blue
+Frame5 rgb channel green
+Frame5 zoom to 0.446047 0.446047
+Frame5 3d view 0 0
+Frame5 3d scale 1
+Frame5 3d method mip
+Frame5 3d highlite 1
+Frame5 3d border 1
+Frame5 3d background none
+Frame5 3d view point 0 0 0 0 0
+Frame5 crosshair physical 174 164
+Frame5 marker centroid radius 10
+Frame5 marker centroid iteration 30
+Frame5 mask transparency 0
+Frame5 mask system physical
+Frame5 mask color red
+Frame5 mask mark nonzero
+Frame5 mask range 0 0
+Frame5 rgb channel red
+Frame5 rgb channel green
+Frame5 rgb channel blue
+Frame5 rgb channel green
+Frame5 rgb channel red
+Frame5 rgb channel green
+Frame5 rgb channel blue
+Frame5 rgb channel green
+CreateNameNumberFrame Frame6 base
+global loadParam
+array set loadParam [list file,mode {} file,name /Users/will/Dropbox/muse-hii-regions/big-data/ngc346-4600-5400-cube-contsub.fits load,layer {} file,type fits load,type mmapincr]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame6 magnifier graphics 1
+Frame6 magnifier cursor 1
+Frame6 magnifier zoom 4
+Frame6 magnifier color white
+Frame6 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 0
+Frame6 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame6 precision 8 7 4 3 8 7 5 3 8
+Frame6 bg color white
+Frame6 bg color 0
+Frame6 nan color #468
+Frame6 cube axes 123
+Frame6 update fits slice 72
+CubeDialog
+Frame6 rgb channel red
+Frame6 rgb view 1 1 1
+Frame6 rgb system image
+Frame6 bin factor to 1 1
+Frame6 bin depth 1
+Frame6 bin filter {""}
+Frame6 bin buffer size 1024
+Frame6 bin about 0 0
+Frame6 bin function sum
+Frame6 colorscale sqrt
+Frame6 colorscale log 1000
+Frame6 datasec 1
+Frame6 clip user 0 300
+Frame6 clip mode user
+Frame6 clip scope local
+Frame6 clip minmax mode scan
+Frame6 clip minmax sample 25
+Frame6 clip zscale contrast 0.25
+Frame6 clip zscale sample 600
+Frame6 clip zscale line 120
+Frame6 block to 1 1
+Frame6 wcs wcs fk5 sexagesimal
+Frame6 pan preserve 0
+Frame6 pan to physical 112.45637 140.42739
+Frame6 zoom to 0.446047 0.446047
+Frame6 rotate to 0
+Frame6 orient none
+Frame6 wcs align 1
+Frame6 zoom to 0.446047 0.446047
+Frame6 3d view 0 0
+Frame6 3d scale 1
+Frame6 3d method mip
+Frame6 3d highlite 1
+Frame6 3d border 1
+Frame6 3d background none
+Frame6 3d view point 0 0 0 0 0
+Frame6 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame6/ds9.reg"}
+Frame6 crosshair physical 174 164
+Frame6 marker centroid radius 10
+Frame6 marker centroid iteration 30
+Frame6 mask transparency 0
+Frame6 mask system wcs
+Frame6 mask color red
+Frame6 mask mark nonzero
+Frame6 mask range 0 0
+CreateNameNumberFrame Frame1 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/big-data/ngc346-8200-9400-cube-contsub.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame1 magnifier graphics 1
+Frame1 magnifier cursor 1
+Frame1 magnifier zoom 4
+Frame1 magnifier color white
+Frame1 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 0
+Frame1 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame1 precision 8 7 4 3 8 7 5 3 8
+Frame1 bg color white
+Frame1 bg color 0
+Frame1 nan color #468
+Frame1 cube axes 123
+Frame1 update fits slice 426
+CubeDialog
+Frame1 rgb channel red
+Frame1 rgb view 1 1 1
+Frame1 rgb system image
+Frame1 bin factor to 1 1
+Frame1 bin depth 1
+Frame1 bin filter {""}
+Frame1 bin buffer size 1024
+Frame1 bin about 0 0
+Frame1 bin function sum
+Frame1 colorscale linear
+Frame1 colorscale log 1000
+Frame1 datasec 1
+Frame1 clip user -2 20
+Frame1 clip mode user
+Frame1 clip scope local
+Frame1 clip minmax mode scan
+Frame1 clip minmax sample 25
+Frame1 clip zscale contrast 0.25
+Frame1 clip zscale sample 600
+Frame1 clip zscale line 120
+Frame1 block to 1 1
+Frame1 wcs wcs fk5 sexagesimal
+Frame1 pan preserve 0
+Frame1 pan to physical 112.45637 140.42739
+Frame1 zoom to 0.446047 0.446047
+Frame1 rotate to 0
+Frame1 orient none
+Frame1 wcs align 1
+Frame1 zoom to 0.446047 0.446047
+Frame1 3d view 0 0
+Frame1 3d scale 1
+Frame1 3d method mip
+Frame1 3d highlite 1
+Frame1 3d border 1
+Frame1 3d background none
+Frame1 3d view point 0 0 0 0 0
+Frame1 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame1/ds9.reg"}
+Frame1 crosshair physical 174 164
+Frame1 marker centroid radius 10
+Frame1 marker centroid iteration 30
+Frame1 mask transparency 0
+Frame1 mask system wcs
+Frame1 mask color red
+Frame1 mask mark nonzero
+Frame1 mask range 0 0
+CreateNameNumberFrame Frame2 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-siii-9069-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame2 magnifier graphics 1
+Frame2 magnifier cursor 1
+Frame2 magnifier zoom 4
+Frame2 magnifier color white
+Frame2 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 0
+Frame2 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame2 precision 8 7 4 3 8 7 5 3 8
+Frame2 bg color white
+Frame2 bg color 0
+Frame2 nan color #468
+Frame2 cube axes 123
+Frame2 rgb channel red
+Frame2 rgb view 1 1 1
+Frame2 rgb system image
+Frame2 bin factor to 1 1
+Frame2 bin depth 1
+Frame2 bin filter {""}
+Frame2 bin buffer size 1024
+Frame2 bin about 0 0
+Frame2 bin function sum
+Frame2 colorscale sqrt
+Frame2 colorscale log 1000
+Frame2 datasec 1
+Frame2 clip user 0 50000
+Frame2 clip mode user
+Frame2 clip scope local
+Frame2 clip minmax mode scan
+Frame2 clip minmax sample 25
+Frame2 clip zscale contrast 0.25
+Frame2 clip zscale sample 600
+Frame2 clip zscale line 120
+Frame2 block to 1 1
+Frame2 wcs wcs fk5 sexagesimal
+Frame2 pan preserve 0
+Frame2 pan to physical 112.45637 140.42739
+Frame2 zoom to 0.446047 0.446047
+Frame2 rotate to 0
+Frame2 orient none
+Frame2 wcs align 1
+Frame2 zoom to 0.446047 0.446047
+Frame2 3d view 0 0
+Frame2 3d scale 1
+Frame2 3d method mip
+Frame2 3d highlite 1
+Frame2 3d border 1
+Frame2 3d background none
+Frame2 3d view point 0 0 0 0 0
+Frame2 crosshair physical 174 164
+Frame2 marker centroid radius 10
+Frame2 marker centroid iteration 30
+Frame2 mask transparency 0
+Frame2 mask system wcs
+Frame2 mask color red
+Frame2 mask mark nonzero
+Frame2 mask range 0 0
+CreateNameNumberFrame Frame8 rgb
+Frame8 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-hei-5875-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame8 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-hi-4861-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame8 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-sii-6716-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame8 magnifier graphics 1
+Frame8 magnifier cursor 1
+Frame8 magnifier zoom 4
+Frame8 magnifier color white
+Frame8 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame8 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame8 precision 8 7 4 3 8 7 5 3 8
+Frame8 bg color white
+Frame8 bg color 0
+Frame8 nan color #468
+Frame8 rgb channel red
+Frame8 cube axes 123
+Frame8 rgb channel green
+Frame8 cube axes 123
+Frame8 rgb channel blue
+Frame8 cube axes 123
+Frame8 rgb channel red
+Frame8 rgb channel red
+Frame8 rgb view 1 1 1
+Frame8 rgb system wcs
+Frame8 rgb channel red
+Frame8 bin factor to 1 1
+Frame8 bin depth 1
+Frame8 bin filter {""}
+Frame8 bin buffer size 1024
+Frame8 bin about 0 0
+Frame8 bin function sum
+Frame8 rgb channel green
+Frame8 bin factor to 1 1
+Frame8 bin depth 1
+Frame8 bin filter {""}
+Frame8 bin buffer size 1024
+Frame8 bin about 0 0
+Frame8 bin function sum
+Frame8 rgb channel blue
+Frame8 bin factor to 1 1
+Frame8 bin depth 1
+Frame8 bin filter {""}
+Frame8 bin buffer size 1024
+Frame8 bin about 0 0
+Frame8 bin function sum
+Frame8 rgb channel red
+Frame8 rgb channel red
+Frame8 colorscale linear
+Frame8 colorscale log 1000
+Frame8 datasec 1
+Frame8 clip user 0 5000
+Frame8 clip mode user
+Frame8 clip scope local
+Frame8 clip minmax mode scan
+Frame8 clip minmax sample 25
+Frame8 clip zscale contrast 0.25
+Frame8 clip zscale sample 600
+Frame8 clip zscale line 120
+Frame8 rgb channel green
+Frame8 colorscale linear
+Frame8 colorscale log 1000
+Frame8 datasec 1
+Frame8 clip user 0 66448.8
+Frame8 clip mode user
+Frame8 clip scope local
+Frame8 clip minmax mode scan
+Frame8 clip minmax sample 25
+Frame8 clip zscale contrast 0.25
+Frame8 clip zscale sample 600
+Frame8 clip zscale line 120
+Frame8 rgb channel blue
+Frame8 colorscale linear
+Frame8 colorscale log 1000
+Frame8 datasec 1
+Frame8 clip user 0 5443
+Frame8 clip mode user
+Frame8 clip scope local
+Frame8 clip minmax mode scan
+Frame8 clip minmax sample 25
+Frame8 clip zscale contrast 0.25
+Frame8 clip zscale sample 600
+Frame8 clip zscale line 120
+Frame8 rgb channel red
+Frame8 rgb channel red
+Frame8 block to 1 1
+Frame8 rgb channel green
+Frame8 block to 1 1
+Frame8 rgb channel blue
+Frame8 block to 1 1
+Frame8 rgb channel red
+Frame8 wcs wcs fk5 sexagesimal
+Frame8 pan preserve 0
+Frame8 pan to physical 112.45637 140.42739
+Frame8 zoom to 0.446047 0.446047
+Frame8 rotate to 0
+Frame8 orient none
+Frame8 wcs align 1
+Frame8 rgb channel red
+Frame8 rgb channel green
+Frame8 rgb channel blue
+Frame8 rgb channel red
+Frame8 zoom to 0.446047 0.446047
+Frame8 3d view 0 0
+Frame8 3d scale 1
+Frame8 3d method mip
+Frame8 3d highlite 1
+Frame8 3d border 1
+Frame8 3d background none
+Frame8 3d view point 0 0 0 0 0
+Frame8 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame8/ds9.reg"}
+Frame8 crosshair physical 174 164
+Frame8 marker centroid radius 10
+Frame8 marker centroid iteration 30
+Frame8 mask transparency 0
+Frame8 mask system physical
+Frame8 mask color red
+Frame8 mask mark nonzero
+Frame8 mask range 0 0
+Frame8 rgb channel red
+Frame8 rgb channel green
+Frame8 rgb channel blue
+Frame8 rgb channel red
+Frame8 rgb channel red
+Frame8 rgb channel green
+Frame8 rgb channel blue
+Frame8 rgb channel red
+CreateNameNumberFrame Frame11 rgb
+Frame11 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-siii-6312-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame11 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-siii-9069-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame11 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-siii-9069-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame11 magnifier graphics 1
+Frame11 magnifier cursor 1
+Frame11 magnifier zoom 4
+Frame11 magnifier color white
+Frame11 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame11 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame11 precision 8 7 4 3 8 7 5 3 8
+Frame11 bg color white
+Frame11 bg color 0
+Frame11 nan color #468
+Frame11 rgb channel red
+Frame11 cube axes 123
+Frame11 rgb channel green
+Frame11 cube axes 123
+Frame11 rgb channel blue
+Frame11 cube axes 123
+Frame11 rgb channel blue
+Frame11 rgb channel blue
+Frame11 rgb view 1 1 1
+Frame11 rgb system wcs
+Frame11 rgb channel red
+Frame11 bin factor to 1 1
+Frame11 bin depth 1
+Frame11 bin filter {""}
+Frame11 bin buffer size 1024
+Frame11 bin about 0 0
+Frame11 bin function sum
+Frame11 rgb channel green
+Frame11 bin factor to 1 1
+Frame11 bin depth 1
+Frame11 bin filter {""}
+Frame11 bin buffer size 1024
+Frame11 bin about 0 0
+Frame11 bin function sum
+Frame11 rgb channel blue
+Frame11 bin factor to 1 1
+Frame11 bin depth 1
+Frame11 bin filter {""}
+Frame11 bin buffer size 1024
+Frame11 bin about 0 0
+Frame11 bin function sum
+Frame11 rgb channel blue
+Frame11 rgb channel red
+Frame11 colorscale sqrt
+Frame11 colorscale log 1000
+Frame11 datasec 1
+Frame11 clip user -120 800
+Frame11 clip mode user
+Frame11 clip scope local
+Frame11 clip minmax mode scan
+Frame11 clip minmax sample 25
+Frame11 clip zscale contrast 0.25
+Frame11 clip zscale sample 600
+Frame11 clip zscale line 120
+Frame11 rgb channel green
+Frame11 colorscale sqrt
+Frame11 colorscale log 1000
+Frame11 datasec 1
+Frame11 clip user 100 9000
+Frame11 clip mode user
+Frame11 clip scope local
+Frame11 clip minmax mode scan
+Frame11 clip minmax sample 25
+Frame11 clip zscale contrast 0.25
+Frame11 clip zscale sample 600
+Frame11 clip zscale line 120
+Frame11 rgb channel blue
+Frame11 colorscale sqrt
+Frame11 colorscale log 1000
+Frame11 datasec 1
+Frame11 clip user 100 9000
+Frame11 clip mode user
+Frame11 clip scope local
+Frame11 clip minmax mode scan
+Frame11 clip minmax sample 25
+Frame11 clip zscale contrast 0.25
+Frame11 clip zscale sample 600
+Frame11 clip zscale line 120
+Frame11 rgb channel blue
+Frame11 rgb channel red
+Frame11 block to 1 1
+Frame11 rgb channel green
+Frame11 block to 1 1
+Frame11 rgb channel blue
+Frame11 block to 1 1
+Frame11 rgb channel blue
+Frame11 wcs wcs fk5 sexagesimal
+Frame11 pan preserve 0
+Frame11 pan to physical 112.45637 140.42739
+Frame11 zoom to 0.446047 0.446047
+Frame11 rotate to 0
+Frame11 orient none
+Frame11 wcs align 1
+Frame11 rgb channel red
+Frame11 rgb channel green
+Frame11 rgb channel blue
+Frame11 rgb channel blue
+Frame11 zoom to 0.446047 0.446047
+Frame11 3d view 0 0
+Frame11 3d scale 1
+Frame11 3d method mip
+Frame11 3d highlite 1
+Frame11 3d border 1
+Frame11 3d background none
+Frame11 3d view point 0 0 0 0 0
+Frame11 crosshair physical 174 164
+Frame11 marker centroid radius 10
+Frame11 marker centroid iteration 30
+Frame11 mask transparency 0
+Frame11 mask system physical
+Frame11 mask color red
+Frame11 mask mark nonzero
+Frame11 mask range 0 0
+Frame11 rgb channel red
+Frame11 rgb channel green
+Frame11 rgb channel blue
+Frame11 rgb channel blue
+Frame11 rgb channel red
+Frame11 rgb channel green
+Frame11 rgb channel blue
+Frame11 rgb channel blue
+CreateNameNumberFrame Frame12 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-T-siii.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame12 magnifier graphics 1
+Frame12 magnifier cursor 1
+Frame12 magnifier zoom 4
+Frame12 magnifier color white
+Frame12 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 7 0.5 1 0
+Frame12 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame12 precision 8 7 4 3 8 7 5 3 8
+Frame12 bg color white
+Frame12 bg color 0
+Frame12 nan color #468
+Frame12 cube axes 123
+Frame12 rgb channel red
+Frame12 rgb view 1 1 1
+Frame12 rgb system image
+Frame12 bin factor to 1 1
+Frame12 bin depth 1
+Frame12 bin filter {""}
+Frame12 bin buffer size 1024
+Frame12 bin about 0 0
+Frame12 bin function sum
+Frame12 colorscale sqrt
+Frame12 colorscale log 1000
+Frame12 datasec 1
+Frame12 clip user 10000 21000
+Frame12 clip mode user
+Frame12 clip scope local
+Frame12 clip minmax mode scan
+Frame12 clip minmax sample 25
+Frame12 clip zscale contrast 0.25
+Frame12 clip zscale sample 600
+Frame12 clip zscale line 120
+Frame12 block to 1 1
+Frame12 wcs wcs fk5 sexagesimal
+Frame12 pan preserve 0
+Frame12 pan to physical 112.45637 140.42739
+Frame12 zoom to 0.446047 0.446047
+Frame12 rotate to 0
+Frame12 orient none
+Frame12 wcs align 1
+Frame12 zoom to 0.446047 0.446047
+Frame12 3d view 0 0
+Frame12 3d scale 1
+Frame12 3d method mip
+Frame12 3d highlite 1
+Frame12 3d border 1
+Frame12 3d background none
+Frame12 3d view point 0 0 0 0 0
+Frame12 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame12/ds9.reg"}
+Frame12 crosshair physical 174 164
+Frame12 marker centroid radius 10
+Frame12 marker centroid iteration 30
+Frame12 mask transparency 0
+Frame12 mask system wcs
+Frame12 mask color red
+Frame12 mask mark nonzero
+Frame12 mask range 0 0
+CreateNameNumberFrame Frame9 rgb
+Frame9 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-heii-4686-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame9 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariv-4740-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame9 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariv-4711-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame9 magnifier graphics 1
+Frame9 magnifier cursor 1
+Frame9 magnifier zoom 4
+Frame9 magnifier color white
+Frame9 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame9 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame9 precision 8 7 4 3 8 7 5 3 8
+Frame9 bg color white
+Frame9 bg color 0
+Frame9 nan color #468
+Frame9 rgb channel red
+Frame9 cube axes 123
+Frame9 rgb channel green
+Frame9 cube axes 123
+Frame9 rgb channel blue
+Frame9 cube axes 123
+Frame9 rgb channel green
+Frame9 rgb channel green
+Frame9 rgb view 1 1 1
+Frame9 rgb system wcs
+Frame9 rgb channel red
+Frame9 bin factor to 1 1
+Frame9 bin depth 1
+Frame9 bin filter {""}
+Frame9 bin buffer size 1024
+Frame9 bin about 0 0
+Frame9 bin function sum
+Frame9 rgb channel green
+Frame9 bin factor to 1 1
+Frame9 bin depth 1
+Frame9 bin filter {""}
+Frame9 bin buffer size 1024
+Frame9 bin about 0 0
+Frame9 bin function sum
+Frame9 rgb channel blue
+Frame9 bin factor to 1 1
+Frame9 bin depth 1
+Frame9 bin filter {""}
+Frame9 bin buffer size 1024
+Frame9 bin about 0 0
+Frame9 bin function sum
+Frame9 rgb channel green
+Frame9 rgb channel red
+Frame9 colorscale linear
+Frame9 colorscale log 1000
+Frame9 datasec 1
+Frame9 clip user 0 300
+Frame9 clip mode user
+Frame9 clip scope local
+Frame9 clip minmax mode scan
+Frame9 clip minmax sample 25
+Frame9 clip zscale contrast 0.25
+Frame9 clip zscale sample 600
+Frame9 clip zscale line 120
+Frame9 rgb channel green
+Frame9 colorscale linear
+Frame9 colorscale log 1000
+Frame9 datasec 1
+Frame9 clip user 0 300
+Frame9 clip mode user
+Frame9 clip scope local
+Frame9 clip minmax mode scan
+Frame9 clip minmax sample 25
+Frame9 clip zscale contrast 0.25
+Frame9 clip zscale sample 600
+Frame9 clip zscale line 120
+Frame9 rgb channel blue
+Frame9 colorscale linear
+Frame9 colorscale log 1000
+Frame9 datasec 1
+Frame9 clip user -5 300
+Frame9 clip mode user
+Frame9 clip scope local
+Frame9 clip minmax mode scan
+Frame9 clip minmax sample 25
+Frame9 clip zscale contrast 0.25
+Frame9 clip zscale sample 600
+Frame9 clip zscale line 120
+Frame9 rgb channel green
+Frame9 rgb channel red
+Frame9 block to 1 1
+Frame9 rgb channel green
+Frame9 block to 1 1
+Frame9 rgb channel blue
+Frame9 block to 1 1
+Frame9 rgb channel green
+Frame9 wcs wcs fk5 sexagesimal
+Frame9 pan preserve 0
+Frame9 pan to physical 112.45637 140.42739
+Frame9 zoom to 0.446047 0.446047
+Frame9 rotate to 0
+Frame9 orient none
+Frame9 wcs align 1
+Frame9 rgb channel red
+Frame9 rgb channel green
+Frame9 rgb channel blue
+Frame9 rgb channel green
+Frame9 zoom to 0.446047 0.446047
+Frame9 3d view 0 0
+Frame9 3d scale 1
+Frame9 3d method mip
+Frame9 3d highlite 1
+Frame9 3d border 1
+Frame9 3d background none
+Frame9 3d view point 0 0 0 0 0
+Frame9 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame9/ds9.reg"}
+Frame9 crosshair physical 174 164
+Frame9 marker centroid radius 10
+Frame9 marker centroid iteration 30
+Frame9 mask transparency 0
+Frame9 mask system physical
+Frame9 mask color red
+Frame9 mask mark nonzero
+Frame9 mask range 0 0
+Frame9 rgb channel red
+Frame9 rgb channel green
+Frame9 rgb channel blue
+Frame9 rgb channel green
+Frame9 rgb channel red
+Frame9 rgb channel green
+Frame9 rgb channel blue
+Frame9 rgb channel green
+CreateNameNumberFrame Frame10 rgb
+Frame10 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-oi-6300-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame10 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-sii-6716-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame10 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-nii-5755-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame10 magnifier graphics 1
+Frame10 magnifier cursor 1
+Frame10 magnifier zoom 4
+Frame10 magnifier color white
+Frame10 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame10 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame10 precision 8 7 4 3 8 7 5 3 8
+Frame10 bg color white
+Frame10 bg color 0
+Frame10 nan color #468
+Frame10 rgb channel red
+Frame10 cube axes 123
+Frame10 rgb channel green
+Frame10 cube axes 123
+Frame10 rgb channel blue
+Frame10 cube axes 123
+Frame10 rgb channel blue
+Frame10 rgb channel blue
+Frame10 rgb view 1 1 1
+Frame10 rgb system wcs
+Frame10 rgb channel red
+Frame10 bin factor to 1 1
+Frame10 bin depth 1
+Frame10 bin filter {""}
+Frame10 bin buffer size 1024
+Frame10 bin about 0 0
+Frame10 bin function sum
+Frame10 rgb channel green
+Frame10 bin factor to 1 1
+Frame10 bin depth 1
+Frame10 bin filter {""}
+Frame10 bin buffer size 1024
+Frame10 bin about 0 0
+Frame10 bin function sum
+Frame10 rgb channel blue
+Frame10 bin factor to 1 1
+Frame10 bin depth 1
+Frame10 bin filter {""}
+Frame10 bin buffer size 1024
+Frame10 bin about 0 0
+Frame10 bin function sum
+Frame10 rgb channel blue
+Frame10 rgb channel red
+Frame10 colorscale linear
+Frame10 colorscale log 1000
+Frame10 datasec 1
+Frame10 clip user -5 1500
+Frame10 clip mode user
+Frame10 clip scope local
+Frame10 clip minmax mode scan
+Frame10 clip minmax sample 25
+Frame10 clip zscale contrast 0.25
+Frame10 clip zscale sample 600
+Frame10 clip zscale line 120
+Frame10 rgb channel green
+Frame10 colorscale linear
+Frame10 colorscale log 1000
+Frame10 datasec 1
+Frame10 clip user -5 10000
+Frame10 clip mode user
+Frame10 clip scope local
+Frame10 clip minmax mode scan
+Frame10 clip minmax sample 25
+Frame10 clip zscale contrast 0.25
+Frame10 clip zscale sample 600
+Frame10 clip zscale line 120
+Frame10 rgb channel blue
+Frame10 colorscale linear
+Frame10 colorscale log 1000
+Frame10 datasec 1
+Frame10 clip user -5 100
+Frame10 clip mode user
+Frame10 clip scope local
+Frame10 clip minmax mode scan
+Frame10 clip minmax sample 25
+Frame10 clip zscale contrast 0.25
+Frame10 clip zscale sample 600
+Frame10 clip zscale line 120
+Frame10 rgb channel blue
+Frame10 rgb channel red
+Frame10 block to 1 1
+Frame10 rgb channel green
+Frame10 block to 1 1
+Frame10 rgb channel blue
+Frame10 block to 1 1
+Frame10 rgb channel blue
+Frame10 wcs wcs fk5 sexagesimal
+Frame10 pan preserve 0
+Frame10 pan to physical 112.45637 140.42739
+Frame10 zoom to 0.446047 0.446047
+Frame10 rotate to 0
+Frame10 orient none
+Frame10 wcs align 1
+Frame10 rgb channel red
+Frame10 rgb channel green
+Frame10 rgb channel blue
+Frame10 rgb channel blue
+Frame10 zoom to 0.446047 0.446047
+Frame10 3d view 0 0
+Frame10 3d scale 1
+Frame10 3d method mip
+Frame10 3d highlite 1
+Frame10 3d border 1
+Frame10 3d background none
+Frame10 3d view point 0 0 0 0 0
+Frame10 crosshair physical 174 164
+Frame10 marker centroid radius 10
+Frame10 marker centroid iteration 30
+Frame10 mask transparency 0
+Frame10 mask system physical
+Frame10 mask color red
+Frame10 mask mark nonzero
+Frame10 mask range 0 0
+Frame10 rgb channel red
+Frame10 rgb channel green
+Frame10 rgb channel blue
+Frame10 rgb channel blue
+Frame10 rgb channel red
+Frame10 rgb channel green
+Frame10 rgb channel blue
+Frame10 rgb channel blue
+CreateNameNumberFrame Frame13 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384512/ch1/pbcd/SPITZER_M1_4384512_0000_10_E6046561_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame13 magnifier graphics 1
+Frame13 magnifier cursor 1
+Frame13 magnifier zoom 4
+Frame13 magnifier color white
+Frame13 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 7 0.5 1 0
+Frame13 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame13 precision 8 7 4 3 8 7 5 3 8
+Frame13 bg color white
+Frame13 bg color 0
+Frame13 nan color #468
+Frame13 cube axes 123
+Frame13 rgb channel red
+Frame13 rgb view 1 1 1
+Frame13 rgb system image
+Frame13 bin factor to 1 1
+Frame13 bin depth 1
+Frame13 bin filter {""}
+Frame13 bin buffer size 1024
+Frame13 bin about 0 0
+Frame13 bin function sum
+Frame13 colorscale sqrt
+Frame13 colorscale log 1000
+Frame13 datasec 1
+Frame13 clip user 20.6737 1043.87
+Frame13 clip mode minmax
+Frame13 clip scope local
+Frame13 clip minmax mode scan
+Frame13 clip minmax sample 25
+Frame13 clip zscale contrast 0.25
+Frame13 clip zscale sample 600
+Frame13 clip zscale line 120
+Frame13 block to 1 1
+Frame13 wcs wcs fk5 sexagesimal
+Frame13 pan preserve 0
+Frame13 pan to physical 117.1596 226.80785
+Frame13 zoom to 5.4642 5.4642
+Frame13 rotate to 0
+Frame13 orient none
+Frame13 wcs align 1
+Frame13 zoom to 5.4642 5.4642
+Frame13 3d view 0 0
+Frame13 3d scale 1
+Frame13 3d method mip
+Frame13 3d highlite 1
+Frame13 3d border 1
+Frame13 3d background none
+Frame13 3d view point 0 0 0 0 0
+Frame13 crosshair physical 108 171
+Frame13 marker centroid radius 10
+Frame13 marker centroid iteration 30
+Frame13 mask transparency 0
+Frame13 mask system wcs
+Frame13 mask color red
+Frame13 mask mark nonzero
+Frame13 mask range 0 0
+CreateNameNumberFrame Frame15 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch4/pbcd/SPITZER_I4_4384256_0000_7_E8758329_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame15 magnifier graphics 1
+Frame15 magnifier cursor 1
+Frame15 magnifier zoom 4
+Frame15 magnifier color white
+Frame15 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 7 0.5 1 0
+Frame15 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame15 precision 8 7 4 3 8 7 5 3 8
+Frame15 bg color white
+Frame15 bg color 0
+Frame15 nan color #468
+Frame15 cube axes 123
+Frame15 rgb channel red
+Frame15 rgb view 1 1 1
+Frame15 rgb system image
+Frame15 bin factor to 1 1
+Frame15 bin depth 1
+Frame15 bin filter {""}
+Frame15 bin buffer size 1024
+Frame15 bin about 0 0
+Frame15 bin function sum
+Frame15 colorscale sqrt
+Frame15 colorscale log 1000
+Frame15 datasec 1
+Frame15 clip user 0 109.087
+Frame15 clip mode user
+Frame15 clip scope local
+Frame15 clip minmax mode scan
+Frame15 clip minmax sample 25
+Frame15 clip zscale contrast 0.25
+Frame15 clip zscale sample 600
+Frame15 clip zscale line 120
+Frame15 block to 1 1
+Frame15 wcs wcs fk5 sexagesimal
+Frame15 pan preserve 0
+Frame15 pan to physical 1193.8872 603.02517
+Frame15 zoom to 1.33813 1.33813
+Frame15 rotate to 0
+Frame15 orient none
+Frame15 wcs align 1
+Frame15 zoom to 1.33813 1.33813
+Frame15 3d view 0 0
+Frame15 3d scale 1
+Frame15 3d method mip
+Frame15 3d highlite 1
+Frame15 3d border 1
+Frame15 3d background none
+Frame15 3d view point 0 0 0 0 0
+Frame15 crosshair physical 1240 588
+Frame15 marker centroid radius 10
+Frame15 marker centroid iteration 30
+Frame15 mask transparency 0
+Frame15 mask system wcs
+Frame15 mask color red
+Frame15 mask mark nonzero
+Frame15 mask range 0 0
+CreateNameNumberFrame Frame14 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch2/pbcd/SPITZER_M2_10743808_0000_10_E6429330_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame14 magnifier graphics 1
+Frame14 magnifier cursor 1
+Frame14 magnifier zoom 4
+Frame14 magnifier color white
+Frame14 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 7 0.5 1 0
+Frame14 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame14 precision 8 7 4 3 8 7 5 3 8
+Frame14 bg color white
+Frame14 bg color 0
+Frame14 nan color #468
+Frame14 cube axes 123
+Frame14 rgb channel red
+Frame14 rgb view 1 1 1
+Frame14 rgb system image
+Frame14 bin factor to 1 1
+Frame14 bin depth 1
+Frame14 bin filter {""}
+Frame14 bin buffer size 1024
+Frame14 bin about 0 0
+Frame14 bin function sum
+Frame14 colorscale linear
+Frame14 colorscale log 1000
+Frame14 datasec 1
+Frame14 clip user 0 390.731
+Frame14 clip mode user
+Frame14 clip scope local
+Frame14 clip minmax mode scan
+Frame14 clip minmax sample 25
+Frame14 clip zscale contrast 0.25
+Frame14 clip zscale sample 600
+Frame14 clip zscale line 120
+Frame14 block to 1 1
+Frame14 wcs wcs fk5 sexagesimal
+Frame14 pan preserve 0
+Frame14 pan to physical 391.98874 549.90303
+Frame14 zoom to 8.92181 8.92181
+Frame14 rotate to 0
+Frame14 orient none
+Frame14 wcs align 1
+Frame14 zoom to 8.92181 8.92181
+Frame14 3d view 0 0
+Frame14 3d scale 1
+Frame14 3d method mip
+Frame14 3d highlite 1
+Frame14 3d border 1
+Frame14 3d background none
+Frame14 3d view point 0 0 0 0 0
+Frame14 crosshair physical 454 457
+Frame14 marker centroid radius 10
+Frame14 marker centroid iteration 30
+Frame14 mask transparency 0
+Frame14 mask system wcs
+Frame14 mask color red
+Frame14 mask mark nonzero
+Frame14 mask range 0 0
+CreateNameNumberFrame Frame20 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame20 magnifier graphics 1
+Frame20 magnifier cursor 1
+Frame20 magnifier zoom 4
+Frame20 magnifier color white
+Frame20 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 7 0.5 1 0
+Frame20 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame20 precision 8 7 4 3 8 7 5 3 8
+Frame20 bg color white
+Frame20 bg color 0
+Frame20 nan color #468
+Frame20 cube axes 123
+Frame20 rgb channel red
+Frame20 rgb view 1 1 1
+Frame20 rgb system image
+Frame20 bin factor to 1 1
+Frame20 bin depth 1
+Frame20 bin filter {""}
+Frame20 bin buffer size 1024
+Frame20 bin about 0 0
+Frame20 bin function sum
+Frame20 colorscale linear
+Frame20 colorscale log 1000
+Frame20 datasec 1
+Frame20 clip user -32.2546 1591.88
+Frame20 clip mode minmax
+Frame20 clip scope local
+Frame20 clip minmax mode scan
+Frame20 clip minmax sample 25
+Frame20 clip zscale contrast 0.25
+Frame20 clip zscale sample 600
+Frame20 clip zscale line 120
+Frame20 block to 1 1
+Frame20 wcs wcs fk5 sexagesimal
+Frame20 pan preserve 0
+Frame20 pan to physical 217.17607 224.62432
+Frame20 zoom to 4.45511 4.45511
+Frame20 rotate to 0
+Frame20 orient none
+Frame20 wcs align 1
+Frame20 zoom to 4.45511 4.45511
+Frame20 3d view 0 0
+Frame20 3d scale 1
+Frame20 3d method mip
+Frame20 3d highlite 1
+Frame20 3d border 1
+Frame20 3d background none
+Frame20 3d view point 0 0 0 0 0
+Frame20 crosshair physical 226 226
+Frame20 marker centroid radius 10
+Frame20 marker centroid iteration 30
+Frame20 mask transparency 0
+Frame20 mask system wcs
+Frame20 mask color red
+Frame20 mask mark nonzero
+Frame20 mask range 0 0
+CreateNameNumberFrame Frame21 rgb
+Frame21 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame21 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch1/pbcd/SPITZER_M1_10743808_0000_10_E6429183_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame21 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/WISE/0145m727_ac51-w3-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame21 magnifier graphics 1
+Frame21 magnifier cursor 1
+Frame21 magnifier zoom 4
+Frame21 magnifier color white
+Frame21 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame21 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame21 precision 8 7 4 3 8 7 5 3 8
+Frame21 bg color white
+Frame21 bg color 0
+Frame21 nan color #468
+Frame21 rgb channel red
+Frame21 cube axes 123
+Frame21 rgb channel green
+Frame21 cube axes 123
+Frame21 rgb channel blue
+Frame21 cube axes 123
+Frame21 rgb channel red
+Frame21 rgb channel red
+Frame21 rgb view 1 1 1
+Frame21 rgb system wcs
+Frame21 rgb channel red
+Frame21 bin factor to 1 1
+Frame21 bin depth 1
+Frame21 bin filter {""}
+Frame21 bin buffer size 1024
+Frame21 bin about 0 0
+Frame21 bin function sum
+Frame21 rgb channel green
+Frame21 bin factor to 1 1
+Frame21 bin depth 1
+Frame21 bin filter {""}
+Frame21 bin buffer size 1024
+Frame21 bin about 0 0
+Frame21 bin function sum
+Frame21 rgb channel blue
+Frame21 bin factor to 1 1
+Frame21 bin depth 1
+Frame21 bin filter {""}
+Frame21 bin buffer size 1024
+Frame21 bin about 0 0
+Frame21 bin function sum
+Frame21 rgb channel red
+Frame21 rgb channel red
+Frame21 colorscale linear
+Frame21 colorscale log 1000
+Frame21 datasec 1
+Frame21 clip user 20.5455 1000
+Frame21 clip mode user
+Frame21 clip scope local
+Frame21 clip minmax mode scan
+Frame21 clip minmax sample 25
+Frame21 clip zscale contrast 0.25
+Frame21 clip zscale sample 600
+Frame21 clip zscale line 120
+Frame21 rgb channel green
+Frame21 colorscale linear
+Frame21 colorscale log 1000
+Frame21 datasec 1
+Frame21 clip user 25 130
+Frame21 clip mode user
+Frame21 clip scope local
+Frame21 clip minmax mode scan
+Frame21 clip minmax sample 25
+Frame21 clip zscale contrast 0.25
+Frame21 clip zscale sample 600
+Frame21 clip zscale line 120
+Frame21 rgb channel blue
+Frame21 colorscale linear
+Frame21 colorscale log 1000
+Frame21 datasec 1
+Frame21 clip user 290 525
+Frame21 clip mode user
+Frame21 clip scope local
+Frame21 clip minmax mode scan
+Frame21 clip minmax sample 25
+Frame21 clip zscale contrast 0.25
+Frame21 clip zscale sample 600
+Frame21 clip zscale line 120
+Frame21 rgb channel red
+Frame21 rgb channel red
+Frame21 block to 1 1
+Frame21 rgb channel green
+Frame21 block to 1 1
+Frame21 rgb channel blue
+Frame21 block to 1 1
+Frame21 rgb channel red
+Frame21 wcs wcs fk5 sexagesimal
+Frame21 pan preserve 0
+Frame21 pan to physical 217.17607 224.62432
+Frame21 zoom to 4.45511 4.45511
+Frame21 rotate to 0
+Frame21 orient none
+Frame21 wcs align 1
+Frame21 rgb channel red
+Frame21 rgb channel green
+Frame21 rgb channel blue
+Frame21 rgb channel red
+Frame21 zoom to 4.45511 4.45511
+Frame21 3d view 0 0
+Frame21 3d scale 1
+Frame21 3d method mip
+Frame21 3d highlite 1
+Frame21 3d border 1
+Frame21 3d background none
+Frame21 3d view point 0 0 0 0 0
+Frame21 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame21/ds9.reg"}
+Frame21 crosshair physical -7 344
+Frame21 marker centroid radius 10
+Frame21 marker centroid iteration 30
+Frame21 mask transparency 0
+Frame21 mask system physical
+Frame21 mask color red
+Frame21 mask mark nonzero
+Frame21 mask range 0 0
+Frame21 rgb channel red
+Frame21 rgb channel green
+Frame21 rgb channel blue
+Frame21 rgb channel red
+Frame21 rgb channel red
+Frame21 rgb channel green
+Frame21 rgb channel blue
+Frame21 rgb channel red
+CreateNameNumberFrame Frame22 rgb
+Frame22 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch1/pbcd/SPITZER_M1_10743808_0000_10_E6429183_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame22 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch4/pbcd/SPITZER_I4_4384256_0000_7_E8758329_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame22 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch3/pbcd/SPITZER_I3_4384256_0000_7_E8758299_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame22 magnifier graphics 1
+Frame22 magnifier cursor 1
+Frame22 magnifier zoom 4
+Frame22 magnifier color white
+Frame22 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame22 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame22 precision 8 7 4 3 8 7 5 3 8
+Frame22 bg color white
+Frame22 bg color 0
+Frame22 nan color #468
+Frame22 rgb channel red
+Frame22 cube axes 123
+Frame22 rgb channel green
+Frame22 cube axes 123
+Frame22 rgb channel blue
+Frame22 cube axes 123
+Frame22 rgb channel blue
+Frame22 rgb channel blue
+Frame22 rgb view 1 1 1
+Frame22 rgb system wcs
+Frame22 rgb channel red
+Frame22 bin factor to 1 1
+Frame22 bin depth 1
+Frame22 bin filter {""}
+Frame22 bin buffer size 1024
+Frame22 bin about 0 0
+Frame22 bin function sum
+Frame22 rgb channel green
+Frame22 bin factor to 1 1
+Frame22 bin depth 1
+Frame22 bin filter {""}
+Frame22 bin buffer size 1024
+Frame22 bin about 0 0
+Frame22 bin function sum
+Frame22 rgb channel blue
+Frame22 bin factor to 1 1
+Frame22 bin depth 1
+Frame22 bin filter {""}
+Frame22 bin buffer size 1024
+Frame22 bin about 0 0
+Frame22 bin function sum
+Frame22 rgb channel blue
+Frame22 rgb channel red
+Frame22 colorscale linear
+Frame22 colorscale log 1000
+Frame22 datasec 1
+Frame22 clip user 24 174.538
+Frame22 clip mode user
+Frame22 clip scope local
+Frame22 clip minmax mode scan
+Frame22 clip minmax sample 25
+Frame22 clip zscale contrast 0.25
+Frame22 clip zscale sample 600
+Frame22 clip zscale line 120
+Frame22 rgb channel green
+Frame22 colorscale linear
+Frame22 colorscale log 1000
+Frame22 datasec 1
+Frame22 clip user -1 29.2414
+Frame22 clip mode user
+Frame22 clip scope local
+Frame22 clip minmax mode scan
+Frame22 clip minmax sample 25
+Frame22 clip zscale contrast 0.25
+Frame22 clip zscale sample 600
+Frame22 clip zscale line 120
+Frame22 rgb channel blue
+Frame22 colorscale linear
+Frame22 colorscale log 1000
+Frame22 datasec 1
+Frame22 clip user 0.5 10.4244
+Frame22 clip mode user
+Frame22 clip scope local
+Frame22 clip minmax mode scan
+Frame22 clip minmax sample 25
+Frame22 clip zscale contrast 0.25
+Frame22 clip zscale sample 600
+Frame22 clip zscale line 120
+Frame22 rgb channel blue
+Frame22 rgb channel red
+Frame22 block to 1 1
+Frame22 rgb channel green
+Frame22 block to 1 1
+Frame22 rgb channel blue
+Frame22 block to 1 1
+Frame22 rgb channel blue
+Frame22 wcs wcs fk5 sexagesimal
+Frame22 pan preserve 0
+Frame22 pan to physical 1193.8872 603.02517
+Frame22 zoom to 5.46344 5.46344
+Frame22 rotate to 0
+Frame22 orient none
+Frame22 wcs align 1
+Frame22 rgb channel red
+Frame22 rgb channel green
+Frame22 rgb channel blue
+Frame22 rgb channel blue
+Frame22 zoom to 5.46344 5.46344
+Frame22 3d view 0 0
+Frame22 3d scale 1
+Frame22 3d method mip
+Frame22 3d highlite 1
+Frame22 3d border 1
+Frame22 3d background none
+Frame22 3d view point 0 0 0 0 0
+Frame22 marker load ds9 {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame22/ds9.reg"}
+Frame22 crosshair physical 1923.4076 177.00459
+Frame22 marker centroid radius 10
+Frame22 marker centroid iteration 30
+Frame22 mask transparency 0
+Frame22 mask system physical
+Frame22 mask color red
+Frame22 mask mark nonzero
+Frame22 mask range 0 0
+Frame22 rgb channel red
+Frame22 rgb channel green
+Frame22 rgb channel blue
+Frame22 rgb channel blue
+Frame22 rgb channel red
+Frame22 contour load {"./ngc346-bow-shock-2021-06-09.bck.dir/Frame22/aux.ctr"}
+Frame22 rgb channel green
+Frame22 rgb channel blue
+Frame22 rgb channel blue
+CreateNameNumberFrame Frame7 rgb
+Frame7 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-oiii-5007-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame7 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariii-7136-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame7 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-siii-9069-bin01-sum.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame7 magnifier graphics 1
+Frame7 magnifier cursor 1
+Frame7 magnifier zoom 4
+Frame7 magnifier color white
+Frame7 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame7 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame7 precision 8 7 4 3 8 7 5 3 8
+Frame7 bg color white
+Frame7 bg color 0
+Frame7 nan color #468
+Frame7 rgb channel red
+Frame7 cube axes 123
+Frame7 rgb channel green
+Frame7 cube axes 123
+Frame7 rgb channel blue
+Frame7 cube axes 123
+Frame7 rgb channel blue
+Frame7 rgb channel blue
+Frame7 rgb view 1 1 1
+Frame7 rgb system wcs
+Frame7 rgb channel red
+Frame7 bin factor to 1 1
+Frame7 bin depth 1
+Frame7 bin filter {""}
+Frame7 bin buffer size 1024
+Frame7 bin about 0 0
+Frame7 bin function sum
+Frame7 rgb channel green
+Frame7 bin factor to 1 1
+Frame7 bin depth 1
+Frame7 bin filter {""}
+Frame7 bin buffer size 1024
+Frame7 bin about 0 0
+Frame7 bin function sum
+Frame7 rgb channel blue
+Frame7 bin factor to 1 1
+Frame7 bin depth 1
+Frame7 bin filter {""}
+Frame7 bin buffer size 1024
+Frame7 bin about 0 0
+Frame7 bin function sum
+Frame7 rgb channel blue
+Frame7 rgb channel red
+Frame7 colorscale linear
+Frame7 colorscale log 1000
+Frame7 datasec 1
+Frame7 clip user 0 189462
+Frame7 clip mode user
+Frame7 clip scope local
+Frame7 clip minmax mode scan
+Frame7 clip minmax sample 25
+Frame7 clip zscale contrast 0.25
+Frame7 clip zscale sample 600
+Frame7 clip zscale line 120
+Frame7 rgb channel green
+Frame7 colorscale linear
+Frame7 colorscale log 1000
+Frame7 datasec 1
+Frame7 clip user 0 3662.91
+Frame7 clip mode user
+Frame7 clip scope local
+Frame7 clip minmax mode scan
+Frame7 clip minmax sample 25
+Frame7 clip zscale contrast 0.25
+Frame7 clip zscale sample 600
+Frame7 clip zscale line 120
+Frame7 rgb channel blue
+Frame7 colorscale linear
+Frame7 colorscale log 1000
+Frame7 datasec 1
+Frame7 clip user 0 8000
+Frame7 clip mode user
+Frame7 clip scope local
+Frame7 clip minmax mode scan
+Frame7 clip minmax sample 25
+Frame7 clip zscale contrast 0.25
+Frame7 clip zscale sample 600
+Frame7 clip zscale line 120
+Frame7 rgb channel blue
+Frame7 rgb channel red
+Frame7 block to 1 1
+Frame7 rgb channel green
+Frame7 block to 1 1
+Frame7 rgb channel blue
+Frame7 block to 1 1
+Frame7 rgb channel blue
+Frame7 wcs wcs fk5 sexagesimal
+Frame7 pan preserve 0
+Frame7 pan to physical 112.45637 140.42739
+Frame7 zoom to 0.446047 0.446047
+Frame7 rotate to 0
+Frame7 orient none
+Frame7 wcs align 1
+Frame7 rgb channel red
+Frame7 rgb channel green
+Frame7 rgb channel blue
+Frame7 rgb channel blue
+Frame7 zoom to 0.446047 0.446047
+Frame7 3d view 0 0
+Frame7 3d scale 1
+Frame7 3d method mip
+Frame7 3d highlite 1
+Frame7 3d border 1
+Frame7 3d background none
+Frame7 3d view point 0 0 0 0 0
+Frame7 crosshair physical 174 164
+Frame7 marker centroid radius 10
+Frame7 marker centroid iteration 30
+Frame7 mask transparency 0
+Frame7 mask system physical
+Frame7 mask color red
+Frame7 mask mark nonzero
+Frame7 mask range 0 0
+Frame7 rgb channel red
+Frame7 rgb channel green
+Frame7 rgb channel blue
+Frame7 rgb channel blue
+Frame7 rgb channel red
+Frame7 rgb channel green
+Frame7 rgb channel blue
+Frame7 rgb channel blue
+CreateNameNumberFrame Frame23 rgb
+Frame23 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/WISE/0145m727_ac51-w4-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame23 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/WISE/0145m727_ac51-w3-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame23 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/WISE/0145m727_ac51-w1-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame23 magnifier graphics 1
+Frame23 magnifier cursor 1
+Frame23 magnifier zoom 4
+Frame23 magnifier color white
+Frame23 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame23 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame23 precision 8 7 4 3 8 7 5 3 8
+Frame23 bg color white
+Frame23 bg color 0
+Frame23 nan color #468
+Frame23 rgb channel red
+Frame23 cube axes 123
+Frame23 rgb channel green
+Frame23 cube axes 123
+Frame23 rgb channel blue
+Frame23 cube axes 123
+Frame23 rgb channel blue
+Frame23 rgb channel blue
+Frame23 rgb view 1 1 1
+Frame23 rgb system wcs
+Frame23 rgb channel red
+Frame23 bin factor to 1 1
+Frame23 bin depth 1
+Frame23 bin filter {""}
+Frame23 bin buffer size 1024
+Frame23 bin about 0 0
+Frame23 bin function sum
+Frame23 rgb channel green
+Frame23 bin factor to 1 1
+Frame23 bin depth 1
+Frame23 bin filter {""}
+Frame23 bin buffer size 1024
+Frame23 bin about 0 0
+Frame23 bin function sum
+Frame23 rgb channel blue
+Frame23 bin factor to 1 1
+Frame23 bin depth 1
+Frame23 bin filter {""}
+Frame23 bin buffer size 1024
+Frame23 bin about 0 0
+Frame23 bin function sum
+Frame23 rgb channel blue
+Frame23 rgb channel red
+Frame23 colorscale linear
+Frame23 colorscale log 1000
+Frame23 datasec 1
+Frame23 clip user 81 171.85
+Frame23 clip mode user
+Frame23 clip scope local
+Frame23 clip minmax mode scan
+Frame23 clip minmax sample 25
+Frame23 clip zscale contrast 0.25
+Frame23 clip zscale sample 600
+Frame23 clip zscale line 120
+Frame23 rgb channel green
+Frame23 colorscale linear
+Frame23 colorscale log 1000
+Frame23 datasec 1
+Frame23 clip user 290 603.68
+Frame23 clip mode user
+Frame23 clip scope local
+Frame23 clip minmax mode scan
+Frame23 clip minmax sample 25
+Frame23 clip zscale contrast 0.25
+Frame23 clip zscale sample 600
+Frame23 clip zscale line 120
+Frame23 rgb channel blue
+Frame23 colorscale linear
+Frame23 colorscale log 1000
+Frame23 datasec 1
+Frame23 clip user 6 34.4462
+Frame23 clip mode user
+Frame23 clip scope local
+Frame23 clip minmax mode scan
+Frame23 clip minmax sample 25
+Frame23 clip zscale contrast 0.25
+Frame23 clip zscale sample 600
+Frame23 clip zscale line 120
+Frame23 rgb channel blue
+Frame23 rgb channel red
+Frame23 block to 1 1
+Frame23 rgb channel green
+Frame23 block to 1 1
+Frame23 rgb channel blue
+Frame23 block to 1 1
+Frame23 rgb channel blue
+Frame23 wcs wcs fk5 sexagesimal
+Frame23 pan preserve 0
+Frame23 pan to physical 205.94246 215.15592
+Frame23 zoom to 3.06664 3.06664
+Frame23 rotate to 0
+Frame23 orient none
+Frame23 wcs align 1
+Frame23 rgb channel red
+Frame23 rgb channel green
+Frame23 rgb channel blue
+Frame23 rgb channel blue
+Frame23 zoom to 3.06664 3.06664
+Frame23 3d view 0 0
+Frame23 3d scale 1
+Frame23 3d method mip
+Frame23 3d highlite 1
+Frame23 3d border 1
+Frame23 3d background none
+Frame23 3d view point 0 0 0 0 0
+Frame23 crosshair physical 219 220
+Frame23 marker centroid radius 10
+Frame23 marker centroid iteration 30
+Frame23 mask transparency 0
+Frame23 mask system physical
+Frame23 mask color red
+Frame23 mask mark nonzero
+Frame23 mask range 0 0
+Frame23 rgb channel red
+Frame23 rgb channel green
+Frame23 rgb channel blue
+Frame23 rgb channel blue
+Frame23 rgb channel red
+Frame23 rgb channel green
+Frame23 rgb channel blue
+Frame23 rgb channel blue
+CreateNameNumberFrame Frame26 rgb
+Frame26 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE250.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame26 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS160.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame26 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame26 magnifier graphics 1
+Frame26 magnifier cursor 1
+Frame26 magnifier zoom 4
+Frame26 magnifier color white
+Frame26 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame26 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame26 precision 8 7 4 3 8 7 5 3 8
+Frame26 bg color white
+Frame26 bg color 0
+Frame26 nan color #468
+Frame26 rgb channel red
+Frame26 cube axes 123
+Frame26 rgb channel green
+Frame26 cube axes 123
+Frame26 rgb channel blue
+Frame26 cube axes 123
+Frame26 rgb channel blue
+Frame26 rgb channel blue
+Frame26 rgb view 1 1 1
+Frame26 rgb system wcs
+Frame26 rgb channel red
+Frame26 bin factor to 1 1
+Frame26 bin depth 1
+Frame26 bin filter {""}
+Frame26 bin buffer size 1024
+Frame26 bin about 0 0
+Frame26 bin function sum
+Frame26 rgb channel green
+Frame26 bin factor to 1 1
+Frame26 bin depth 1
+Frame26 bin filter {""}
+Frame26 bin buffer size 1024
+Frame26 bin about 0 0
+Frame26 bin function sum
+Frame26 rgb channel blue
+Frame26 bin factor to 1 1
+Frame26 bin depth 1
+Frame26 bin filter {""}
+Frame26 bin buffer size 1024
+Frame26 bin about 0 0
+Frame26 bin function sum
+Frame26 rgb channel blue
+Frame26 rgb channel red
+Frame26 colorscale linear
+Frame26 colorscale log 1000
+Frame26 datasec 1
+Frame26 clip user 5 210.805
+Frame26 clip mode user
+Frame26 clip scope local
+Frame26 clip minmax mode scan
+Frame26 clip minmax sample 25
+Frame26 clip zscale contrast 0.25
+Frame26 clip zscale sample 600
+Frame26 clip zscale line 120
+Frame26 rgb channel green
+Frame26 colorscale linear
+Frame26 colorscale log 1000
+Frame26 datasec 1
+Frame26 clip user 15 650
+Frame26 clip mode user
+Frame26 clip scope local
+Frame26 clip minmax mode scan
+Frame26 clip minmax sample 25
+Frame26 clip zscale contrast 0.25
+Frame26 clip zscale sample 600
+Frame26 clip zscale line 120
+Frame26 rgb channel blue
+Frame26 colorscale linear
+Frame26 colorscale log 1000
+Frame26 datasec 1
+Frame26 clip user 4 869.977
+Frame26 clip mode user
+Frame26 clip scope local
+Frame26 clip minmax mode scan
+Frame26 clip minmax sample 25
+Frame26 clip zscale contrast 0.25
+Frame26 clip zscale sample 600
+Frame26 clip zscale line 120
+Frame26 rgb channel blue
+Frame26 rgb channel red
+Frame26 block to 1 1
+Frame26 rgb channel green
+Frame26 block to 1 1
+Frame26 rgb channel blue
+Frame26 block to 1 1
+Frame26 rgb channel blue
+Frame26 wcs wcs fk5 sexagesimal
+Frame26 pan preserve 0
+Frame26 pan to physical 217.17607 224.62432
+Frame26 zoom to 13.3615 13.3615
+Frame26 rotate to 0
+Frame26 orient none
+Frame26 wcs align 1
+Frame26 rgb channel red
+Frame26 rgb channel green
+Frame26 rgb channel blue
+Frame26 rgb channel blue
+Frame26 zoom to 13.3615 13.3615
+Frame26 3d view 0 0
+Frame26 3d scale 1
+Frame26 3d method mip
+Frame26 3d highlite 1
+Frame26 3d border 1
+Frame26 3d background none
+Frame26 3d view point 0 0 0 0 0
+Frame26 crosshair physical 226.29533 224.81989
+Frame26 marker centroid radius 10
+Frame26 marker centroid iteration 30
+Frame26 mask transparency 0
+Frame26 mask system physical
+Frame26 mask color red
+Frame26 mask mark nonzero
+Frame26 mask range 0 0
+Frame26 rgb channel red
+Frame26 rgb channel green
+Frame26 rgb channel blue
+Frame26 rgb channel blue
+Frame26 rgb channel red
+Frame26 rgb channel green
+Frame26 rgb channel blue
+Frame26 rgb channel blue
+CreateNameNumberFrame Frame25 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/ngc346-ariv-4711-plus-4740-correct.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame25 magnifier graphics 1
+Frame25 magnifier cursor 1
+Frame25 magnifier zoom 4
+Frame25 magnifier color white
+Frame25 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 1 0.5 1 1
+Frame25 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame25 precision 8 7 4 3 8 7 5 3 8
+Frame25 bg color white
+Frame25 bg color 0
+Frame25 nan color #468
+Frame25 cube axes 123
+Frame25 rgb channel red
+Frame25 rgb view 1 1 1
+Frame25 rgb system image
+Frame25 bin factor to 1 1
+Frame25 bin depth 1
+Frame25 bin filter {""}
+Frame25 bin buffer size 1024
+Frame25 bin about 0 0
+Frame25 bin function sum
+Frame25 colorscale linear
+Frame25 colorscale log 1000
+Frame25 datasec 1
+Frame25 clip user 20.5455 1000
+Frame25 clip mode user
+Frame25 clip scope local
+Frame25 clip minmax mode scan
+Frame25 clip minmax sample 25
+Frame25 clip zscale contrast 0.25
+Frame25 clip zscale sample 600
+Frame25 clip zscale line 120
+Frame25 block to 1 1
+Frame25 wcs wcs fk5 sexagesimal
+Frame25 pan preserve 0
+Frame25 pan to physical 112.45637 140.42739
+Frame25 zoom to 0.446047 0.446047
+Frame25 rotate to 0
+Frame25 orient none
+Frame25 wcs align 1
+Frame25 zoom to 0.446047 0.446047
+Frame25 3d view 0 0
+Frame25 3d scale 1
+Frame25 3d method mip
+Frame25 3d highlite 1
+Frame25 3d border 1
+Frame25 3d background none
+Frame25 3d view point 0 0 0 0 0
+Frame25 crosshair physical 174 164
+Frame25 marker centroid radius 10
+Frame25 marker centroid iteration 30
+Frame25 mask transparency 0
+Frame25 mask system wcs
+Frame25 mask color red
+Frame25 mask mark nonzero
+Frame25 mask range 0 0
+Frame25 contour create green 1 0 smooth 5 6 linear 1000 user local 20.5455 1000 {"300 400 500 600"}
+CreateNameNumberFrame Frame27 rgb
+Frame27 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame27 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch2/pbcd/SPITZER_M2_10743808_0000_10_E6429330_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame27 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch1/pbcd/SPITZER_M1_10743808_0000_10_E6429183_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame27 magnifier graphics 1
+Frame27 magnifier cursor 1
+Frame27 magnifier zoom 4
+Frame27 magnifier color white
+Frame27 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame27 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame27 precision 8 7 4 3 8 7 5 3 8
+Frame27 bg color white
+Frame27 bg color 0
+Frame27 nan color #468
+Frame27 rgb channel red
+Frame27 cube axes 123
+Frame27 rgb channel green
+Frame27 cube axes 123
+Frame27 rgb channel blue
+Frame27 cube axes 123
+Frame27 rgb channel blue
+Frame27 rgb channel blue
+Frame27 rgb view 1 1 1
+Frame27 rgb system wcs
+Frame27 rgb channel red
+Frame27 bin factor to 1 1
+Frame27 bin depth 1
+Frame27 bin filter {""}
+Frame27 bin buffer size 1024
+Frame27 bin about 0 0
+Frame27 bin function sum
+Frame27 rgb channel green
+Frame27 bin factor to 1 1
+Frame27 bin depth 1
+Frame27 bin filter {""}
+Frame27 bin buffer size 1024
+Frame27 bin about 0 0
+Frame27 bin function sum
+Frame27 rgb channel blue
+Frame27 bin factor to 1 1
+Frame27 bin depth 1
+Frame27 bin filter {""}
+Frame27 bin buffer size 1024
+Frame27 bin about 0 0
+Frame27 bin function sum
+Frame27 rgb channel blue
+Frame27 rgb channel red
+Frame27 colorscale linear
+Frame27 colorscale log 1000
+Frame27 datasec 1
+Frame27 clip user 4 708.433
+Frame27 clip mode user
+Frame27 clip scope local
+Frame27 clip minmax mode scan
+Frame27 clip minmax sample 25
+Frame27 clip zscale contrast 0.25
+Frame27 clip zscale sample 600
+Frame27 clip zscale line 120
+Frame27 rgb channel green
+Frame27 colorscale linear
+Frame27 colorscale log 1000
+Frame27 datasec 1
+Frame27 clip user 4 300
+Frame27 clip mode user
+Frame27 clip scope local
+Frame27 clip minmax mode scan
+Frame27 clip minmax sample 25
+Frame27 clip zscale contrast 0.25
+Frame27 clip zscale sample 600
+Frame27 clip zscale line 120
+Frame27 rgb channel blue
+Frame27 colorscale linear
+Frame27 colorscale log 1000
+Frame27 datasec 1
+Frame27 clip user 23 123.508
+Frame27 clip mode user
+Frame27 clip scope local
+Frame27 clip minmax mode scan
+Frame27 clip minmax sample 25
+Frame27 clip zscale contrast 0.25
+Frame27 clip zscale sample 600
+Frame27 clip zscale line 120
+Frame27 rgb channel blue
+Frame27 rgb channel red
+Frame27 block to 1 1
+Frame27 rgb channel green
+Frame27 block to 1 1
+Frame27 rgb channel blue
+Frame27 block to 1 1
+Frame27 rgb channel blue
+Frame27 wcs wcs fk5 sexagesimal
+Frame27 pan preserve 0
+Frame27 pan to physical 598.61721 578.69259
+Frame27 zoom to 4.45511 4.45511
+Frame27 rotate to 0
+Frame27 orient none
+Frame27 wcs align 1
+Frame27 rgb channel red
+Frame27 rgb channel green
+Frame27 rgb channel blue
+Frame27 rgb channel blue
+Frame27 zoom to 4.45511 4.45511
+Frame27 3d view 0 0
+Frame27 3d scale 1
+Frame27 3d method mip
+Frame27 3d highlite 1
+Frame27 3d border 1
+Frame27 3d background none
+Frame27 3d view point 0 0 0 0 0
+Frame27 crosshair physical 735.67167 558.64346
+Frame27 marker centroid radius 10
+Frame27 marker centroid iteration 30
+Frame27 mask transparency 0
+Frame27 mask system physical
+Frame27 mask color red
+Frame27 mask mark nonzero
+Frame27 mask range 0 0
+Frame27 rgb channel red
+Frame27 rgb channel green
+Frame27 rgb channel blue
+Frame27 rgb channel blue
+Frame27 rgb channel red
+Frame27 rgb channel green
+Frame27 rgb channel blue
+Frame27 rgb channel blue
+CreateNameNumberFrame Frame28 rgb
+Frame28 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS160.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame28 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame28 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r10743808/ch2/pbcd/SPITZER_M2_10743808_0000_10_E6429330_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame28 magnifier graphics 1
+Frame28 magnifier cursor 1
+Frame28 magnifier zoom 4
+Frame28 magnifier color white
+Frame28 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame28 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame28 precision 8 7 4 3 8 7 5 3 8
+Frame28 bg color white
+Frame28 bg color 0
+Frame28 nan color #468
+Frame28 rgb channel red
+Frame28 cube axes 123
+Frame28 rgb channel green
+Frame28 cube axes 123
+Frame28 rgb channel blue
+Frame28 cube axes 123
+Frame28 rgb channel red
+Frame28 rgb channel red
+Frame28 rgb view 1 1 1
+Frame28 rgb system wcs
+Frame28 rgb channel red
+Frame28 bin factor to 1 1
+Frame28 bin depth 1
+Frame28 bin filter {""}
+Frame28 bin buffer size 1024
+Frame28 bin about 0 0
+Frame28 bin function sum
+Frame28 rgb channel green
+Frame28 bin factor to 1 1
+Frame28 bin depth 1
+Frame28 bin filter {""}
+Frame28 bin buffer size 1024
+Frame28 bin about 0 0
+Frame28 bin function sum
+Frame28 rgb channel blue
+Frame28 bin factor to 1 1
+Frame28 bin depth 1
+Frame28 bin filter {""}
+Frame28 bin buffer size 1024
+Frame28 bin about 0 0
+Frame28 bin function sum
+Frame28 rgb channel red
+Frame28 rgb channel red
+Frame28 colorscale linear
+Frame28 colorscale log 1000
+Frame28 datasec 1
+Frame28 clip user 23 564.817
+Frame28 clip mode user
+Frame28 clip scope local
+Frame28 clip minmax mode scan
+Frame28 clip minmax sample 25
+Frame28 clip zscale contrast 0.25
+Frame28 clip zscale sample 600
+Frame28 clip zscale line 120
+Frame28 rgb channel green
+Frame28 colorscale linear
+Frame28 colorscale log 1000
+Frame28 datasec 1
+Frame28 clip user 23 723.46
+Frame28 clip mode user
+Frame28 clip scope local
+Frame28 clip minmax mode scan
+Frame28 clip minmax sample 25
+Frame28 clip zscale contrast 0.25
+Frame28 clip zscale sample 600
+Frame28 clip zscale line 120
+Frame28 rgb channel blue
+Frame28 colorscale linear
+Frame28 colorscale log 1000
+Frame28 datasec 1
+Frame28 clip user 23 283.974
+Frame28 clip mode user
+Frame28 clip scope local
+Frame28 clip minmax mode scan
+Frame28 clip minmax sample 25
+Frame28 clip zscale contrast 0.25
+Frame28 clip zscale sample 600
+Frame28 clip zscale line 120
+Frame28 rgb channel red
+Frame28 rgb channel red
+Frame28 block to 1 1
+Frame28 rgb channel green
+Frame28 block to 1 1
+Frame28 rgb channel blue
+Frame28 block to 1 1
+Frame28 rgb channel red
+Frame28 wcs wcs fk5 sexagesimal
+Frame28 pan preserve 0
+Frame28 pan to physical 144.92091 150.53084
+Frame28 zoom to 6.68267 6.68267
+Frame28 rotate to 0
+Frame28 orient none
+Frame28 wcs align 1
+Frame28 rgb channel red
+Frame28 rgb channel green
+Frame28 rgb channel blue
+Frame28 rgb channel red
+Frame28 zoom to 6.68267 6.68267
+Frame28 3d view 0 0
+Frame28 3d scale 1
+Frame28 3d method mip
+Frame28 3d highlite 1
+Frame28 3d border 1
+Frame28 3d background none
+Frame28 3d view point 0 0 0 0 0
+Frame28 crosshair physical 242 264
+Frame28 marker centroid radius 10
+Frame28 marker centroid iteration 30
+Frame28 mask transparency 0
+Frame28 mask system physical
+Frame28 mask color red
+Frame28 mask mark nonzero
+Frame28 mask range 0 0
+Frame28 rgb channel red
+Frame28 rgb channel green
+Frame28 rgb channel blue
+Frame28 rgb channel red
+Frame28 rgb channel red
+Frame28 rgb channel green
+Frame28 rgb channel blue
+Frame28 rgb channel red
+CreateNameNumberFrame Frame29 rgb
+Frame29 rgb channel red
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch3/pbcd/SPITZER_I3_4384256_0000_7_E8758299_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame29 rgb channel green
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch2/pbcd/SPITZER_I2_4384256_0000_7_E8758310_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame29 rgb channel blue
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Work/Muse-Hii-Data/SMC-NGC-346/Spitzer/r4384256/ch1/pbcd/SPITZER_I1_4384256_0000_7_E8758509_maic.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+RGBDialog
+Frame29 magnifier graphics 1
+Frame29 magnifier cursor 1
+Frame29 magnifier zoom 4
+Frame29 magnifier color white
+Frame29 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbarrgb get colorbar]
+colorbarrgb colorbar rgb 0.500000 0.500000 0.500000 1.000000 1.000000 1.000000 0 
+Frame29 colormap [colorbarrgb get colormap]
+colorbarrgb colorbar $sav
+Frame29 precision 8 7 4 3 8 7 5 3 8
+Frame29 bg color white
+Frame29 bg color 0
+Frame29 nan color #468
+Frame29 rgb channel red
+Frame29 cube axes 123
+Frame29 rgb channel green
+Frame29 cube axes 123
+Frame29 rgb channel blue
+Frame29 cube axes 123
+Frame29 rgb channel blue
+Frame29 rgb channel blue
+Frame29 rgb view 1 1 1
+Frame29 rgb system wcs
+Frame29 rgb channel red
+Frame29 bin factor to 1 1
+Frame29 bin depth 1
+Frame29 bin filter {""}
+Frame29 bin buffer size 1024
+Frame29 bin about 0 0
+Frame29 bin function sum
+Frame29 rgb channel green
+Frame29 bin factor to 1 1
+Frame29 bin depth 1
+Frame29 bin filter {""}
+Frame29 bin buffer size 1024
+Frame29 bin about 0 0
+Frame29 bin function sum
+Frame29 rgb channel blue
+Frame29 bin factor to 1 1
+Frame29 bin depth 1
+Frame29 bin filter {""}
+Frame29 bin buffer size 1024
+Frame29 bin about 0 0
+Frame29 bin function sum
+Frame29 rgb channel blue
+Frame29 rgb channel red
+Frame29 colorscale linear
+Frame29 colorscale log 1000
+Frame29 datasec 1
+Frame29 clip user 0.7 6
+Frame29 clip mode user
+Frame29 clip scope local
+Frame29 clip minmax mode scan
+Frame29 clip minmax sample 25
+Frame29 clip zscale contrast 0.25
+Frame29 clip zscale sample 600
+Frame29 clip zscale line 120
+Frame29 rgb channel green
+Frame29 colorscale linear
+Frame29 colorscale log 1000
+Frame29 datasec 1
+Frame29 clip user 0.1 3
+Frame29 clip mode user
+Frame29 clip scope local
+Frame29 clip minmax mode scan
+Frame29 clip minmax sample 25
+Frame29 clip zscale contrast 0.25
+Frame29 clip zscale sample 600
+Frame29 clip zscale line 120
+Frame29 rgb channel blue
+Frame29 colorscale linear
+Frame29 colorscale log 1000
+Frame29 datasec 1
+Frame29 clip user 0.1 3
+Frame29 clip mode user
+Frame29 clip scope local
+Frame29 clip minmax mode scan
+Frame29 clip minmax sample 25
+Frame29 clip zscale contrast 0.25
+Frame29 clip zscale sample 600
+Frame29 clip zscale line 120
+Frame29 rgb channel blue
+Frame29 rgb channel red
+Frame29 block to 1 1
+Frame29 rgb channel green
+Frame29 block to 1 1
+Frame29 rgb channel blue
+Frame29 block to 1 1
+Frame29 rgb channel blue
+Frame29 wcs wcs fk5 sexagesimal
+Frame29 pan preserve 0
+Frame29 pan to physical 1193.8872 603.02517
+Frame29 zoom to 1.33813 1.33813
+Frame29 rotate to 0
+Frame29 orient none
+Frame29 wcs align 1
+Frame29 rgb channel red
+Frame29 rgb channel green
+Frame29 rgb channel blue
+Frame29 rgb channel blue
+Frame29 zoom to 1.33813 1.33813
+Frame29 3d view 0 0
+Frame29 3d scale 1
+Frame29 3d method mip
+Frame29 3d highlite 1
+Frame29 3d border 1
+Frame29 3d background none
+Frame29 3d view point 0 0 0 0 0
+Frame29 crosshair physical 1240 588
+Frame29 marker centroid radius 10
+Frame29 marker centroid iteration 30
+Frame29 mask transparency 0
+Frame29 mask system physical
+Frame29 mask color red
+Frame29 mask mark nonzero
+Frame29 mask range 0 0
+Frame29 rgb channel red
+Frame29 rgb channel green
+Frame29 rgb channel blue
+Frame29 rgb channel blue
+Frame29 rgb channel red
+Frame29 rgb channel green
+Frame29 rgb channel blue
+Frame29 rgb channel blue
+global pds9
+array set pds9 { dialog native text,font courier samp 1 prec,linear 8 iraf 1 prec,len,arcsec 3 font,weight normal automarker 1 language locale text,font,weight normal dialog,all 0 nan #468 prec,angle 8 font,slant roman confirm 1 prec,deg 7 backup 0 language,dir {} font helvetica language,name English bg white prec,len,deg 7 xpa 1 bg,use 0 prec,dms 3 theme black prec,len,arcmin 5 prec,len,linear 8 dialog,center 0 prec,hms 4 font,size 12 text,font,slant roman text,font,size 12 }
+global current
+array set current { colorbar colorbarrgb orient none zoom {1.33813 1.33813} mode region ext {} display single cursor {} align 1 rotate 0 rgb blue frame Frame29 }
+global pcurrent
+array set pcurrent { orient none zoom {1 1} mode none display single align 0 rotate 0 }
+global view
+array set view { info,wcss 0 info,wcsc 0 info,wcst 0 info,wcsd 0 graph,horz 0 info,wcsu 0 info,wcse 0 info,bunit 0 info,lowhigh 0 magnifier 1 info,frame 1 info,image 1 info,wcsv 0 info,wcsf 0 info,wcsw 0 info,wcsg 0 info 1 colorbar 1 info,physical 1 info,wcsx 0 info,wcsh 0 info,wcs 1 info,keyword 0 info,wcsy 0 info,wcsi 0 info,keyvalue {} info,wcsz 0 info,wcsj 0 buttons 1 info,object 1 info,wcsk 0 info,amplifier 0 info,wcsl 0 info,filename 1 info,detector 0 info,wcsm 0 info,minmax 0 info,wcsn 0 info,wcso 0 panner 1 info,wcsp 0 info,wcsq 0 info,wcsa 0 layout horizontal info,wcsr 0 info,wcsb 0 graph,vert 0 }
+global pview
+array set pview { info,wcss 0 info,wcsc 0 info,wcst 0 info,wcsd 0 graph,horz 0 info,wcsu 0 info,wcse 0 info,bunit 0 info,lowhigh 0 magnifier 1 info,wcsf 0 info,wcsv 0 info,frame 1 info,image 1 colorbar 1 info 1 info,wcsg 0 info,wcsw 0 info,keyword 0 info,wcs 1 info,wcsh 0 info,wcsx 0 info,physical 1 info,keyvalue {} info,wcsi 0 info,wcsy 0 info,object 1 buttons 1 info,wcsj 0 info,wcsz 0 info,wcsk 0 info,filename 1 info,wcsl 0 info,amplifier 0 info,minmax 0 info,wcsm 0 info,detector 0 info,wcsn 0 panner 1 info,wcso 0 info,wcsp 0 layout horizontal info,wcsa 0 info,wcsq 0 graph,vert 0 info,wcsb 0 info,wcsr 0 }
+global canvas
+array set canvas { gap 4 width 919 gap,bottom 14 height 618 }
+global phttp
+array set phttp { auth,passwd {} proxy,host {} auth,user {} auth 0 proxy 0 proxy,port {} }
+global pbuttons
+array set pbuttons { color,he 1 frame,lock,frame,physical 0 view,lowhigh 0 frame,single 1 analysis,bout 1 major,color 1 view,wcs 0 bin,in 1 view,buttons 1 file,import,gif 0 file,export,envi 0 help,release 1 file,open 1 file,open,me,frames 0 file,import,png 0 edit,crosshair 1 view,panner 1 frame,lock,scale 0 help,story 0 help,new 0 region,saveselect 0 file,save,slice 0 file,open,me,cube 0 frame,match,color 0 scale,params 0 file,saveimage,gif 0 view,amplifier 0 region,dissolve 0 major,zoom 1 frame,newrgb 1 major,file 1 bin,512x 0 file,saveimage,png 0 file,console 0 frame,lock,cube,none 0 bin,8192x 0 edit,prefs 0 frame,match,smooth 0 region,deleteselect 0 bin,2048x 0 zoom,i2 1 scale,minmax 1 zoom,i4 1 edit,colorbar 1 scale,asinh 1 file,open,rgb,cube 0 color,numerics 0 view,horizontal 0 major,wcs 1 zoom,i8 0 view,colorbar 1 color,sls 0 file,import,envi 0 frame,match,crop,wcs 0 frame,clear 1 bin,1 1 bin,2 1 zoom,16 0 frame,new3d 1 analysis,b16 0 zoom,none 0 file,page 1 edit,rotate 1 bin,4 1 file,open,slice 0 region,list 1 file,pspage 0 frame,lock,crop,none 0 file,import,rgbarray 0 frame,lock,frame,detector 0 bin,8 1 scale,zscale 1 region,centroid 0 region,autocentroid 0 file,export,array 0 scale,pow 1 zoom,270 0 frame,size 0 frame,match,crop,image 0 scale,90 0 wcs,fk4 1 zoom,32 0 analysis,b32 0 wcs,fk5 1 frame,blink 1 color,cool 1 frame,match,frame,amplifier 0 bin,average 0 bin,128x 0 frame,lock,crosshair,image 0 color,staircase 0 scale,95 0 view,image 0 frame,reset 0 scale,96 0 file,saveimage,tiff 0 file,save 1 scale,97 0 major,scale 1 scale,98 0 file,save,rgb,cube 0 region,showtext 0 scale,99 0 file,exit 1 edit,region 1 frame,first 1 frame,lock,crop,physical 0 help,ref 1 color,grey 1 frame,lock,crop,amplifier 0 frame,lock,scalelimits 0 frame,lock,crosshair,none 0 file,export,jpeg 0 view,filename 0 view,magnifier 1 file,backup 0 frame,match,scalelimits 0 region,vector 0 frame,lock,crosshair,wcs 0 color,vert 0 color,green 0 file,header 1 edit,cut 0 edit,crop 1 scale,local 0 frame,lock,crop,image 0 frame,match,scale 0 region,all 1 scale,user 0 file,samp,image 0 color,params 0 edit,footprint 1 zoom,in 1 analysis,bin 1 file,import,array 0 frame,movelast 0 color,standard 0 frame,match,frame,physical 0 help,faq 1 scale,global 0 frame,lock,frame,image 0 region,load 1 analysis,smooth 1 frame,match,frame,image 0 region,savetemplate 0 region,loadtemplate 0 scale,925 0 color,rainbow 1 zoom,params 0 frame,refresh 0 zoom,i16 0 file,import,jpeg 0 zoom,90 0 region,delete 0 file,export,rgbarray 0 edit,copy 0 region,annulus 0 frame,lock,crosshair,amplifier 0 bin,fit 1 region,ruler 0 region,circle 0 frame,match,crosshair,amplifier 0 color,a 1 view,physical 0 color,b 1 scale,sqrt 1 frame,match,cube,image 0 frame,lock,crop,detector 0 zoom,i32 0 major,view 1 frame,match,cube,wcs 0 view,vertical 0 region,point 0 region,group 0 frame,lock,axes 0 frame,movenext 1 frame,match,crosshair,physical 0 bin,128 0 file,print 1 frame,lock,crop,wcs 0 frame,delete 1 frame,lock,frame,none 0 file,save,me,cube 0 file,open,rgb,image 0 file,open,url 0 frame,match,crop,physical 0 color,red 0 frame,movefirst 0 region,none 1 region,polygon 0 file,save,rgb,image 0 edit,3d 1 bin,params 0 frame,last 1 scale,zmax 0 edit,catalog 1 frame,tile 1 major,help 1 region,compass 0 edit,paste 0 frame,match,crosshair,wcs 0 help,about 1 region,back 1 scale,datasec 0 scale,squared 1 file,samp,table 0 frame,match,frame,detector 0 frame,lock,cube,image 0 file,export,tiff 0 help,desk 1 file,import,slice,gif 0 region,ellipse 0 frame,cube 0 edit,none 1 view,graphvert 1 major,edit 1 color,blue 0 frame,lock,crosshair,physical 0 file,import,slice,png 0 file,open,mosaic,wfpc2 0 file,psprint 0 file,import,slice,jpeg 0 wcs,ecliptic 1 color,horz 0 region,save 1 region,newgroup 0 color,aips0 1 wcs,galactic 1 region,front 1 zoom,0 0 frame,match,axes 0 zoom,1 1 scale,995 0 zoom,2 1 frame,moveprev 1 scale,hist 1 frame,match,frame,wcs 0 analysis,contours 1 zoom,4 1 color,reset 0 color,numspace 0 file,open,mosaic,wcs 0 file,export,gif 0 region,show 0 zoom,8 0 view,minmax 0 view,detector 0 frame,new 1 frame,match,crop,amplifier 0 file,open,mosaic,wcs,seg 0 zoom,center 0 region,ellipseannulus 0 zoom,fit 1 major,bin 1 analysis,grid 1 frame,next 1 file,export,png 0 edit,pan 1 view,info 1 file,import,tiff 0 frame,match,crosshair,detector 0 frame,lock,frame,amplifier 0 bin,1024x 0 analysis,bfit 1 file,xpa,info 0 bin,out 1 view,object 0 frame,lock,smooth 0 file,saveimage,eps 0 frame,match,crop,detector 0 color,invert 0 region,create 0 region,info 1 frame,match,crosshair,image 0 scale,sinh 1 color,bb 1 file,tcl 0 file,export,nrrd 0 region,deleteload 0 wcs,sexagesimal 1 region,panda 0 file,open,mosaic,iraf 0 region,boxannulus 0 wcs,degrees 1 major,analysis 1 region,box 0 wcs,icrs 1 view,frame 0 region,segment 0 frame,lock,color 0 region,listselect 0 bin,16 1 frame,lock,bin 0 frame,3d 0 major,frame 1 file,restore 0 frame,lock,crosshair,detector 0 frame,match,bin 0 color,color 0 help,ack 1 color,i8 1 file,save,mosaic,wcs 0 frame,lock,cube,wcs 0 frame,prev 1 color,heat 1 edit,zoom 1 region,invert 0 edit,examine 1 view,bunit 0 bin,32 1 analysis,b1 1 frame,deleteall 0 analysis,b2 1 region,text 0 region,projection 0 zoom,crop 0 analysis,b4 1 scale,log 1 frame,lock,frame,wcs 0 bin,4096x 0 file,import,nrrd 0 analysis,b8 0 zoom,align 0 scale,linear 1 file,open,mosaic,iraf,seg 0 file,saveimage,fits 0 file,import,slice,tiff 0 edit,undo 0 major,region 1 zoom,x 0 zoom,180 0 zoom,xy 0 zoom,y 0 frame,rgb 0 bin,256 0 color,hsv 0 view,graphhorz 1 region,line 0 color,numvalue 0 file,saveimage,jpeg 0 region,epanda 0 zoom,out 1 bin,sum 0 bin,256x 0 help,user 1 file,movie 0 region,bpanda 0 file,save,mosaic,wcs,seg 0 bin,64 1 }
+global ppanner
+array set ppanner { compass 1 }
+global pmagnifier
+array set pmagnifier { region 1 zoom 4 cursor 1 color white }
+global colorbar
+array set colorbar { invert 0 lock 0 size 20 font,weight normal space 0 tag red font,slant roman map grey numerics 1 font helvetica orientation horizontal ticks 11 font,size 9 }
+global saveimage
+array set saveimage { tiff,compress none error {An error has occurred while creating the image. Please be sure that the ds9 window is in the upper left corner of the default screen and the entire window is visible.} jpeg,quality 75 }
+global debug
+array set debug { tcl,xpa 0 tcl,samp 0 tksao,rgb 0 tksao,block 0 tcl,ftp 0 tcl,marker 0 tksao,crop 0 tksao,compress 0 tksao,mosaic 0 tksao,wcs 0 tksao,parser 0 tcl,restore 0 tcl,idletasks 0 tcl,info 0 tcl,events 0 tcl,fp 0 tcl,grid 0 tksao,gz 0 tcl,cat 0 tcl,image 0 tcl,update 0 tksao,perf 0 tcl,sia 0 iis 0 tcl,layout 0 tcl,hv 0 tksao,bin 0 tcl,http 0 }
+global movie
+array set movie { el,to 30 error {An error has occurred while creating the image. Please be sure that the ds9 window is in the upper left corner of the default screen and the entire window is visible.} type gif az,from 45 sl,from 1 zm,from 1 first 0 abort 0 num 24 repeat oscillate el,from 30 az,to -45 status 0 repeat,num 0 action slice sl,to 1 zm,to 1 delay 0 }
+global ps
+array set ps { scale 100 orient portrait height 11 size letter resolution 150 filename,txt ds9.txt dest printer level 2 width 8.5 filename ds9.ps cmd lp color rgb }
+global pps
+array set pps { scale 100 orient portrait height 11 size letter resolution 150 filename,txt ds9.txt dest printer level 2 width 8.5 filename ds9.ps cmd lp color rgb }
+global rgb
+array set rgb { lock,block 0 blue 1 lock,wcs 0 frame Frame29 red 1 lock,slice 0 lock,axes 0 lock,scalelimits 0 green 1 lock,crop 0 lock,colorbar 0 system wcs lock,scale 0 lock,bin 0 lock,smooth 0 }
+global threed
+array set threed { scale 1 lock 0 method mip highlite,color cyan border,color blue compass,color green az 0 highlite 1 border 1 compass 0 background none el 0 }
+global blink
+array set blink { interval 500 }
+global pblink
+array set pblink { interval 500 }
+global tile
+array set tile { grid,col 10 grid,dir x mode grid grid,gap 4 grid,row 10 grid,mode automatic }
+global ptile
+array set ptile { grid,col 10 mode grid grid,dir x grid,row 10 grid,gap 4 grid,mode automatic }
+global crosshair
+array set crosshair { skyformat sexagesimal system wcs lock none sky fk5 }
+global cube
+array set cube { axes 123 system image axis 2 lock none lock,axes 0 frame Frame29 }
+global bin
+array set bin { wheel,factor 1.2 wheel 0 buffersize 1024 depth 1 lock 0 function sum factor {1 1} }
+global pbin
+array set pbin { wheel,factor 1.2 wheel 0 lock 0 depth 1 buffersize 1024 function sum factor {1 1} }
+global panzoom
+array set panzoom { wheel,factor 1.2 skyformat sexagesimal preserve 0 mode click wheel 1 system wcs lock wcs sky fk5 }
+global ppanzoom
+array set ppanzoom { wheel,factor 1.2 preserve 0 wheel 1 mode click }
+global crop
+array set crop { skyformat sexagesimal rcoord wcs dformat degrees system wcs lock none dcoord wcs sky fk5 }
+global scale
+array set scale { lock 0 type linear scope local log 1000 min 0.1 bins 512 xaxis full mode user datasec 1 max 3 yaxis log lock,limits 0 }
+global pscale
+array set pscale { datasec 1 mode minmax scope local log 1000 type linear }
+global minmax
+array set minmax { mode scan sample 25 }
+global pminmax
+array set pminmax { mode scan sample 25 }
+global zscale
+array set zscale { line 120 sample 600 contrast .25 }
+global pzscale
+array set pzscale { line 120 contrast .25 sample 600 }
+global marker
+array set marker { panda,ang2 360 shape projection show 1 bpanda,ang1 0 bpanda,ang2 360 boxannulus,annuli 1 delete 1 centroid,radius 10 tag {} load,format ds9 dformat degrees annulus,inner 15 panda,angnum 4 show,text 1 centroid,iteration 30 epanda,angnum 4 plot2d 0 font,size 10 move 1 rotate 1 fixed 0 default,color green skyformat sexagesimal ellipseannulus,radius1 40 load,system physical ellipseannulus,radius2 20 ellipseannulus,radius3 60 epanda,radius1 40 default,use 0 plot3d 0 epanda,radius2 20 panda,annuli 1 panda,outer 30 epanda,radius3 60 segment,length 20 source 1 epsilon 3 strip 0 bpanda,radius1 80 epanda,annuli 1 bpanda,radius2 40 bpanda,radius3 120 color green stats 0 sky fk5 annulus,outer 30 format ds9 font,weight normal load,sky fk5 polygon,width 20 font,slant roman edit 1 font helvetica bpanda,angnum 4 dash 0 boxannulus,radius1 80 projection,thick 0 dashlist {8 3} boxannulus,radius2 40 polygon,height 20 system wcs box,radius1 80 boxannulus,radius3 120 box,radius2 40 annulus,annuli 1 point,size 11 compass,radius 40 copy Frame21 epanda,ang1 0 include 1 copy,system wcs epanda,ang2 360 centroid,auto 0 circle,radius 20 width 1 load current bpanda,annuli 1 ellipse,radius1 40 ellipse,radius2 20 panda,inner 15 preserve 0 maxdialog 48 ellipseannulus,annuli 1 panda,ang1 0 }
+global pmarker
+array set pmarker { panda,ang2 360 bpanda,ang1 0 shape circle show 1 bpanda,ang2 360 boxannulus,annuli 1 delete 1 centroid,radius 10 dformat degrees annulus,inner 15 panda,angnum 4 show,text 1 epanda,angnum 4 centroid,iteration 30 plot2d 0 font,size 10 rotate 1 move 1 fixed 0 default,color green ellipseannulus,radius1 40 ellipseannulus,radius2 20 ellipseannulus,radius3 60 plot3d 0 default,use 0 epanda,radius1 40 panda,outer 30 panda,annuli 1 epanda,radius2 20 epanda,radius3 60 segment,length 20 source 1 epsilon 3 bpanda,radius1 80 bpanda,radius2 40 epanda,annuli 1 bpanda,radius3 120 stats 0 color green format ds9 annulus,outer 30 font,weight normal polygon,width 20 font,slant roman edit 1 font helvetica bpanda,angnum 4 dash 0 projection,thick 0 boxannulus,radius1 80 dashlist {8 3} polygon,height 20 boxannulus,radius2 40 boxannulus,radius3 120 box,radius1 80 box,radius2 40 point,size 11 annulus,annuli 1 compass,radius 40 epanda,ang1 0 include 1 epanda,ang2 360 centroid,auto 0 circle,radius 20 width 1 bpanda,annuli 1 ellipse,radius1 40 preserve 0 panda,inner 15 ellipse,radius2 20 panda,ang1 0 ellipseannulus,annuli 1 }
+global centroid
+array set centroid {  }
+global wcs
+array set wcs { load,fn {} load,sock {} skyformat sexagesimal system wcs frame Frame29 sky fk5 }
+global pwcs
+array set pwcs { skyformat sexagesimal load,sock {} load,fn {} system wcs sky fk5 }
+global graph
+array set graph { vert,thick 1 horz,method average horz,log false horz,grid 1 vert,method average horz,thick 1 vert,log false vert,grid 1 }
+global pgraph
+array set pgraph { horz,method average vert,thick 1 horz,grid 1 horz,log false horz,thick 1 vert,method average vert,grid 1 vert,log false }
+global pcoord
+array set pcoord { wcss 0 wcsc 0 wcst 0 wcsd 0 wcsu 0 wcse 0 wcsv 0 wcsf 0 image 1 wcsw 0 wcsg 0 wcsx 0 wcsh 0 physical 0 wcs 1 wcsy 0 wcsi 0 wcsz 0 wcsj 0 wcsk 0 wcsl 0 filename 0 amplifier 0 wcsm 0 detector 0 wcsn 0 wcso 0 wcsp 0 value 1 wcsq 0 wcsa 0 wcsr 0 wcsb 0 }
+global pexamine
+array set pexamine { zoom 4 mode new }
+global pixel
+array set pixel { size 5 }
+global mask
+array set mask { high 0 blend transparent system physical low 0 transparency 0 mark nonzero color red }
+global pmask
+array set pmask { high 0 system physical blend transparent transparency 0 low 0 color red mark nonzero }
+global contour
+array set contour { init,scale 0 numlevel 5 scale linear method smooth init,scope 0 scope local view 0 copy Frame25 width 1 dash 0 init,limits 0 smooth 6 log 1000 min 0.1 init,mode 0 mode user max 3 color green }
+global pcontour
+array set pcontour { numlevel 5 dash 0 width 1 method smooth smooth 4 color green view 0 }
+global grid
+array set grid { grid,color cyan grid,style 0 view 0 axes,origin lll numlab,type interior border 1 tick,width 1 numlab,color cyan numlab,weight normal title,text {} axes,color cyan numlab,slant roman axes,style 0 textlab,color black numlab 1 skyformat sexagesimal textlab,gap1 {} border,color cyan textlab,slant roman textlab,gap2 {} textlab,size 10 grid,gapunit1 degrees border,style 0 grid,gapunit2 degrees grid,gapunit3 pixels title,gap {} textlab,font helvetica grid,width 1 format1 {} title 1 format2 {} sky fk5 textlab 1 title,color black axes,width 1 title,slant roman border,width 1 system wcs numlab,vertical 0 tick,color cyan textlab,def1 1 tick,style 0 textlab,def2 1 axes 1 type analysis grid,gap1 {} tick 1 grid,gap2 {} numlab,gap1 {} grid,gap3 {} numlab,gap2 {} grid 1 numlab,size 10 numlab,gap3 {} axes,type interior textlab,weight normal title,size 12 numlab,font helvetica title,def 1 title,font helvetica textlab,text1 {} title,weight normal textlab,text2 {} }
+global pgrid
+array set pgrid { view 0 }
+global block
+array set block { lock 0 factor {1 1} }
+global pblock
+array set pblock { lock 0 factor {1 1} }
+global smooth
+array set smooth { radius 3 sigma 1.5 radius,minor 3 lock 0 sigma,minor 1.5 function gaussian angle 0 view 0 }
+global psmooth
+array set psmooth { radius 3 lock 0 radius,minor 3 sigma 1.5 function gaussian sigma,minor 1.5 view 0 angle 0 }
+global pnres
+array set pnres { server simbad-cds }
+global sao
+array set sao { width 15 mode new height 15 save 0 rformat arcmin sky fk5 }
+global eso
+array set eso { width 15 mode new height 15 survey DSS1 save 0 rformat arcmin sky fk5 }
+global stsci
+array set stsci { width 15 mode new height 15 survey all save 0 rformat arcmin sky fk5 }
+global twomass
+array set twomass { width 15 mode new height 15 survey j save 0 rformat arcmin sky fk5 }
+global nvss
+array set nvss { width 15 mode new height 15 save 0 rformat arcmin sky fk5 }
+global vlss
+array set vlss { width 15 mode new height 15 save 0 rformat arcmin sky fk5 }
+global skyview
+array set skyview { width 300 mode new width,pixels 300 height 300 survey dss height,pixels 300 save 0 rformat arcsec sky fk5 }
+global cat
+array set cat { id 0 sym,font,msg {} }
+global pcat
+array set pcat { sym,units physical sym,font,weight normal sym,width 1 loc 500 server cds sym,font,slant roman sym,font,size 10 sym,color green sym,font helvetica sym,font,weight, {} sym,dash 0 sym,shape {circle point} }
+global vla
+array set vla { width 15 mode new height 15 survey first save 0 rformat arcmin sky fk5 }
+global pvo
+array set pvo { method mime hv 1 delay 15 server http://cxc.harvard.edu/chandraed/list.txt }
+global pap
+array set pap { layout,strip,scale 50 canvas,title,slant roman canvas,background white grid,color gray64 graph,ds,line,shape,fill 1 canvas,axis,title,slant roman graph,axis,x,max {} canvas,legend,title,slant roman graph,axis,y,format {} axis,title,weight normal graph,title,size 12 canvas,title,family helvetica graph,ds,bar,relief raised graph,ds,line,shape,color red canvas,axis,title,size 9 legend,title,family helvetica foreground black graph,ds,fill,color black graph,axis,x,format {} layout,axis,x,grid 0 graph,ds,shape,color red layout grid graph,ds,error,color red graph,ds,line,smooth linear legend,font,slant roman graph,ds,bar,fill 1 canvas,title,size 12 canvas,axis,title,family helvetica graph,ds,error 1 graph,ds,bar,border,width 1 axis,font,family helvetica canvas,title,weight normal canvas,axis,font,size 9 graph,name {} legend,font,family helvetica canvas,layout,strip,scale 50 legend,title,weight normal layout,axis,x,log 0 bg systemTextBackgroundColor graph,ds,bar,color black canvas,grid,color gray64 layout,axis,x,flip 0 graph,axis,y,grid 1 graph,ds,shape,symbol none graph,ds,line,color black graph,axis,x,log 0 axis,font,slant roman graph,title,family helvetica graph,axis,y,title {} graph,ds,error,dash 0 canvas,axis,title,weight normal graph,ds,color black graph,ds,fill 0 graph,axis,y,min {} legend,font,size 9 graph,ds,dash 0 graph,ds,scatter,fill 1 graph,ds,name {} graph,axis,y,max {} canvas,legend,title,family helvetica canvas,foreground black canvas,theme 1 axis,font,weight normal legend,title,size 10 graph,ds,shape,fill 1 graph,legend 0 graph,axis,y,auto 1 legend,font,weight normal graph,title,slant roman canvas,layout grid graph,ds,error,width 1 graph,ds,line,fill,color black graph,axis,y,flip 0 background white canvas,legend,font,slant roman axis,title,slant roman layout,axis,x,title {} graph,ds,scatter,symbol circle legend,title,slant roman graph,ds,error,cap 0 graph,title,weight normal graph,axis,x,title {} canvas,axis,font,family helvetica graph,format 1 canvas,legend,font,family helvetica canvas,legend,title,weight normal graph,axis,x,grid 1 axis,title,size 9 graph,ds,scatter,color black graph,ds,bar,width 1 graph,ds,smooth linear graph,ds,line,width 1 canvas,axis,font,slant roman graph,ds,line,shape,symbol none graph,title {} axis,title,family helvetica graph,ds,width 1 canvas,legend,font,size 9 graph,ds,show 1 layout,axis,x,min 0 graph,ds,bar,border,color black graph,legend,title Legend graph,ds,line,fill 0 canvas,legend,title,size 10 canvas,axis,font,weight normal graph,axis,x,auto 1 layout,axis,x,max 0 fg systemTextColor graph,ds,line,dash 0 bar,mode normal canvas,legend,font,weight normal graph,legend,position right graph,axis,x,flip 0 graph,axis,y,log 0 axis,font,size 9 graph,axis,x,min {} }
+global panalysis
+array set panalysis { user2 {} autoload 1 user3 {} log 0 user4 {} user {} }
+global active
+array set active { Frame14 1 Frame5 1 Frame15 1 Frame6 1 Frame7 1 Frame8 1 Frame9 1 Frame20 1 Frame21 1 Frame22 1 Frame23 1 Frame25 1 Frame26 1 Frame27 1 Frame1 1 Frame10 1 Frame28 1 Frame2 1 Frame11 1 Frame29 1 Frame3 1 Frame12 1 Frame13 1 Frame4 1 }

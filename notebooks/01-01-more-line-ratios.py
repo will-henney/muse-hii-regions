@@ -27,6 +27,7 @@ from mpdaf.obj import Image
 import regions
 import sys
 import pandas as pd
+import cmasher as cmr
 import pyneb as pn
 
 sns.set_context("talk")
@@ -878,6 +879,7 @@ sns.histplot(
 im4711 = Image("../data/ngc346-ariv-4711-bin01-sum.fits")
 im4740 = Image("../data/ngc346-ariv-4740-bin01-sum.fits")
 im7171 = Image("../data/ngc346-ariv-7171-bin01-sum.fits")
+im7237 = Image("../data/ngc346-ariv-7237-bin01-sum.fits")
 im7263 = Image("../data/ngc346-ariv-7263-bin01-sum.fits")
 im7136 = Image("../data/ngc346-ariii-7136-bin01-sum.fits")
 
@@ -984,7 +986,7 @@ avHe_e4713_5876
 # Now do the correction by faking the 4713 line and subtracting it:
 
 #im_fake_4713 = (avHe_e4713_5876 / avHe_reddening_4713_5876) * im5875
-im_fake_4713 = 0.0255 * im5875
+im_fake_4713 = 0.025 * im5875
 im4711c = im4711 - im_fake_4713
 
 # Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
@@ -1015,17 +1017,49 @@ im_ariv_sum.rebin(1).plot(
 
 # That is looking good.  Apply the mask to all the other images
 
-for im in im4711c, im4740, im7171, im7263:
+for im in im4711c, im4740, im7171, im7263, im7237:
     im.mask = im.mask | im_ariv_sum.mask
 
-ariv_R1 = im4711c / im4740
-ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 250)
-ariv_R3_plus_R4 = (im7171 + im7263) / (im4740 + im4711c)
-ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 300)
+# Now find average reddening for [Ar IV] lines.  Try two methods: (1) brightness-weighted mean; (2) make a mask based on the Ar IV brightness and then take median in that area. 
+
+fig, ax = plt.subplots(figsize=(10, 10))
+im = im_ariv_sum.copy()
+im.data = imEBV.data
+im.mask = im.mask | (im_ariv_sum.data < 120)
+trim_edges(im, 20)
+im.plot(vmin=0, vmax=0.2, cmap="magma_r", colorbar="v");
+
+avArIV_EBV = np.average(imEBV.data, weights=im_ariv_sum.data)
+medianArIV_EBV = np.median(im.data.data[~im.mask])
+avArIV_EBV, medianArIV_EBV
+
+# So there isn't much difference. But we take the median since it should be less sensitive to those spots of higher $E(B-V)$ due to stars. 
+
+# Apply extinction correction to all lines:
+
+im4740r = im4740 * 10**(0.4 * medianArIV_EBV * rc.X(4740))
+im4711r = im4711c * 10**(0.4 * medianArIV_EBV * rc.X(4711))
+im7171r = im7171 * 10**(0.4 * medianArIV_EBV * rc.X(7171))
+im7136r = im7136 * 10**(0.4 * medianArIV_EBV * rc.X(7136))
+im7263r = im7263 * 10**(0.4 * medianArIV_EBV * rc.X(7263))
+im7237r = im7237 * 10**(0.4 * medianArIV_EBV * rc.X(7237))
+for im in im4711r, im4740r, im7171r, im7136r, im7263r, im7237r:
+    im.mask = im.mask | im_ariv_sum.mask
+
+# And replace the summed image:
+
+im_ariv_sum = im4711r + im4740r
+
+ariv_R1 = im4711r / im4740r
+ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 300)
+ariv_R3_plus_R4 = (im7171r + im7263r) / (im4740r + im4711r)
+ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 400)
+trim_edges(ariv_R1, 20)
+trim_edges(ariv_R3_plus_R4, 20)
 
 fig, axes = plt.subplots(2, 2, figsize=(12, 12), sharex="row", sharey="row")
-im4711c.plot(ax=axes[0, 0], vmin=-20, vmax=300, colorbar="v")
-im4740.plot(ax=axes[0, 1], vmin=-20, vmax=300/1.4, colorbar="v")
+im4711r.plot(ax=axes[0, 0], vmin=-20, vmax=400, colorbar="v", cmap=cmr.bubblegum)
+im4740r.plot(ax=axes[0, 1], vmin=-20, vmax=350/1.3, colorbar="v", cmap=cmr.bubblegum)
 n = 8
 #(im4711c.rebin(n) / im4740.rebin(n)).plot(ax=axes[1, 0], vmin=0, vmax=2, colorbar="v")
 #(
@@ -1035,19 +1069,23 @@ n = 8
 ariv_R1.rebin(n).plot(ax=axes[1, 0], vmin=0, vmax=2, cmap="mako_r", colorbar="v")
 ariv_R3_plus_R4.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=0.08, cmap="inferno", colorbar="v")
 
+# Save the combined image, corrected for extinction:
+
+im_ariv_sum.write("../data/ngc346-ariv-4711-plus-4740-correct.fits", savemask="nan")
+
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
-ratio = 1.4
-xmax = 250
+ratio = 1.35
+xmax = 300
 ymax = ratio*xmax
-x = im4740[yslice, xslice].rebin(n).data
-y = im4711c[yslice, xslice].rebin(n).data 
+x = im4740r[yslice, xslice].rebin(n).data
+y = im4711r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -100.0) & (y > -100.0) & (x < xmax) & (y < ymax)
 #m = m & (x > 0)
 #m = m & (y < 0.113)
 #m = m & (y > 0.103)
-m = m & ~im4740[yslice, xslice].rebin(n).mask & ~im4711[yslice, xslice].rebin(n).mask
+m = m & ~im4740r[yslice, xslice].rebin(n).mask & ~im4711r[yslice, xslice].rebin(n).mask
 df = pd.DataFrame(
     {
         "4740": x[m],
@@ -1069,13 +1107,13 @@ g = sns.pairplot(
 g.axes[1, 0].plot([0, xmax], [0, ymax])
 g.fig.suptitle("Correlation between [Ar IV] 4711 and 4740");
 
-n = 4
+n = 2
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 1.35
 xmax = 300
 ymax = ratio * xmax
-x = im4740[yslice, xslice].rebin(n).data
-y = im4711c[yslice, xslice].rebin(n).data 
+x = im4740r[yslice, xslice].rebin(n).data
+y = im4711r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -100.0) & (y > -100.0) & (x < xmax) & (y < ymax)
 y = y / x
@@ -1110,15 +1148,19 @@ ariv = pn.Atom("Ar", 4)
 
 ariv.getTemDen([1.30, 1.35, 1.40], tem=17500, wave1=4711, wave2=4740)
 
+# So we are close to the low density limit, with a nominal value of 160.  We need to get a very precise estimate of the uncertainty in order to get the error bars. 
+
 ariv.getSources()
+
+# Now for the T diagnostics:
 
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
-ratio = 0.025
-xmax = 600
+ratio = 0.024
+xmax = 750
 ymax = ratio*xmax
 x = im_ariv_sum[yslice, xslice].rebin(n).data
-y = im7171[yslice, xslice].rebin(n).data 
+y = im7171r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
 #m = m & (x > 0)
@@ -1146,13 +1188,15 @@ g = sns.pairplot(
 g.axes[1, 0].plot([0, xmax], [0, ymax])
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171");
 
+
+
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
-ratio = 0.025
-xmax = 600
+ratio = 0.024
+xmax = 750
 ymax = ratio*xmax
 x = im_ariv_sum[yslice, xslice].rebin(n).data
-y = im7263[yslice, xslice].rebin(n).data 
+y = im7263r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
 #m = m & (x > 0)
@@ -1182,11 +1226,11 @@ g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263");
 
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
-ratio = 0.025
+ratio = 0.024
 xmax = 600
 ymax = ratio*xmax
 x = im_ariv_sum[yslice, xslice].rebin(n).data
-y = im7171[yslice, xslice].rebin(n).data 
+y = im7171r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
 y = y / x
@@ -1217,11 +1261,11 @@ g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171 / (4711 + 4740)");
 
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
-ratio = 0.025
+ratio = 0.024
 xmax = 600
 ymax = ratio*xmax
 x = im_ariv_sum[yslice, xslice].rebin(n).data
-y = im7263[yslice, xslice].rebin(n).data 
+y = im7263r[yslice, xslice].rebin(n).data 
 z = im_ariv_sum[yslice, xslice].rebin(n).data
 m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
 y = y / x
@@ -1249,5 +1293,378 @@ g = sns.pairplot(
         bins=128//n),
 )
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263 / (4711 + 4740)");
+
+# And do the one that is contaminated by C II
+
+n = 8
+xslice, yslice = slice(200, 300), slice(100, 250)
+ratio = 0.024
+xmax = 600
+ymax = ratio*xmax
+x = im_ariv_sum[yslice, xslice].rebin(n).data
+y = im7237r[yslice, xslice].rebin(n).data 
+z = im_ariv_sum[yslice, xslice].rebin(n).data
+m = (x > -0.5*xmax) & (y > -2*ymax) & (x < xmax) & (y < 3*ymax)
+y = y / x
+m = m & (y > -ratio) & (y < 3*ratio)
+#m = m & (x > 0)
+#m = m & (y < 0.113)
+#m = m & (y > 0.103)
+m = m & ~im_ariv_sum[yslice, xslice].rebin(n).mask & ~im7237r[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "4711 + 4740": x[m],
+        "7237 / (4711 + 4740)": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+        bins=128//n),
+    diag_kws=dict(
+        weights=200 + z[m], 
+        bins=128//n),
+)
+g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7237 / (4711 + 4740)");
+
+# As expected, this last one is no good.  But the others are fine.  Now include density and temperature indiocators together:
+
+# +
+Ts = [1e4, 1.5e4, 2.0e4, 2.5e4, 3.0e4]
+#dens = [10.0, 100.0, 1000.0]
+dens = [1.0, 200.0, 400.0, 600.0, 800.0, 1000.0]
+
+
+Tfine = np.linspace(Ts[0], Ts[-1], 200)
+dfine = np.linspace(dens[0], dens[-1], 200)
+ariv.getEmissivity(Tgrid, Ngrid, wave=4711)
+e4711 = ariv.getEmissivity(Tfine, dens, wave=4711)
+e4740 = ariv.getEmissivity(Tfine, dens, wave=4740)
+e7171 = ariv.getEmissivity(Tfine, dens, wave=7171)
+e7263 = ariv.getEmissivity(Tfine, dens, wave=7263)
+
+rr1 = e4711 / e4740
+rr3 = e7263 / (e4711 + e4740)
+rr4 = e7171 / (e4711 + e4740)
+
+e4711 = ariv.getEmissivity(Ts, dfine, wave=4711)
+e4740 = ariv.getEmissivity(Ts, dfine, wave=4740)
+e7171 = ariv.getEmissivity(Ts, dfine, wave=7171)
+e7263 = ariv.getEmissivity(Ts, dfine, wave=7263)
+
+_rr1 = e4711 / e4740
+_rr3 = e7263 / (e4711 + e4740)
+_rr4 = e7171 / (e4711 + e4740)
+
+_rr1 = _rr1.T
+_rr3 = _rr3.T
+_rr4 = _rr4.T
+
+# +
+n = 8
+xslice, yslice = slice(200, 300), slice(100, 250)
+#xslice, yslice = slice(None, None), slice(None, None)
+ratio = 0.024
+wmax = 750
+w = im_ariv_sum[yslice, xslice].rebin(n).data
+x = im7263r[yslice, xslice].rebin(n).data / w
+y = im7171r[yslice, xslice].rebin(n).data / w
+z = im4711r[yslice, xslice].rebin(n).data / im4740r[yslice, xslice].rebin(n).data
+m = (w > 0.4*wmax) & (w < wmax) 
+m = m & (x > -0*ratio) & (x < 2*ratio)
+m = m & (y > -0*ratio) & (y < 2*ratio)
+m = m & (z > 0.8) & (z < 2.1)
+m = m & ~ariv_R1[yslice, xslice].rebin(n).mask & ~ariv_R3_plus_R4[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "R3 = 7263 / (4711 + 4740)": x[m],
+        "R4 = 7171 / (4711 + 4740)": y[m],
+        "R1 = 4711 / 4740": z[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="kde",
+    diag_kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+    ),
+    diag_kws=dict(
+        weights=w[m], 
+    #    bins=128//n,
+    ),
+)
+g.axes[1, 0].plot(rr3, rr4, color="k")
+g.axes[1, 0].plot(_rr3, _rr4, color="k")
+
+g.axes[2, 0].plot(rr3, rr1, color="k")
+g.axes[2, 0].plot(_rr3, _rr1, color="k")
+
+g.axes[2, 1].plot(rr4, rr1, color="k")
+g.axes[2, 1].plot(_rr4, _rr1, color="k")
+
+#g = sns.pairplot(
+#    df,
+#    kind="scatter",
+#    height=4,
+#    corner=True,
+#    plot_kws=dict(
+#        linewidth=0,
+#        alpha=0.5,
+#    ),
+#    diag_kws=dict(
+#        weights=w[m], 
+#        bins=128//n),
+#)
+g.fig.suptitle("Correlation between [Ar IV] R1, R3, and R4");
+# -
+
+# Following function is copied from the matplotlib docs.  Ideas originally from https://carstenschelp.github.io/2018/09/14/Plot_Confidence_Ellipse_001.html
+#
+# I have modified it to include a weight array.
+
+# +
+from matplotlib.patches import Ellipse
+import matplotlib.transforms as transforms
+
+# See: https://carstenschelp.github.io/2018/09/14/Plot_Confidence_Ellipse_001.html
+
+def confidence_ellipse(x, y, w, ax, n_std=3.0, facecolor='none', **kwargs):
+    """
+    Create a plot of the covariance confidence ellipse of *x* and *y*.
+
+    Parameters
+    ----------
+    x, y : array-like, shape (n, )
+        Input data.
+
+    w : array-like, shape (n, )
+        Weights of each input point.
+
+    ax : matplotlib.axes.Axes
+        The axes object to draw the ellipse into.
+
+    n_std : float
+        The number of standard deviations to determine the ellipse's radiuses.
+
+    **kwargs
+        Forwarded to `~matplotlib.patches.Ellipse`
+
+    Returns
+    -------
+    matplotlib.patches.Ellipse
+    """
+    if x.size != y.size:
+        raise ValueError("x and y must be the same size")
+
+    cov = np.cov(x, y, aweights=w)
+    pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
+    # Using a special case to obtain the eigenvalues of this
+    # two-dimensionl dataset.
+    ell_radius_x = np.sqrt(1 + pearson)
+    ell_radius_y = np.sqrt(1 - pearson)
+    ellipse = Ellipse((0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
+                      facecolor=facecolor, **kwargs)
+
+    # Calculating the stdandard deviation of x from
+    # the squareroot of the variance and multiplying
+    # with the given number of standard deviations.
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    mean_x = np.average(x, weights=w)
+
+    # calculating the stdandard deviation of y ...
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+    mean_y = np.average(y, weights=w)
+
+    transf = transforms.Affine2D() \
+        .rotate_deg(45) \
+        .scale(scale_x, scale_y) \
+        .translate(mean_x, mean_y)
+
+    ellipse.set_transform(transf + ax.transData)
+    return ax.add_patch(ellipse)
+
+
+# +
+n = 8
+xslice, yslice = slice(230, 300), slice(144, 245)
+w_low_cutoff = 250
+w_mid_cutoff = 350 # 375
+xymin, xymax = 0.011, 0.059
+zzmin, zzmax = 1.11, 1.5
+
+w = im_ariv_sum[yslice, xslice].rebin(n).data
+x = im7263r[yslice, xslice].rebin(n).data / w
+y = im7171r[yslice, xslice].rebin(n).data / w
+z = im4711r[yslice, xslice].rebin(n).data / im4740r[yslice, xslice].rebin(n).data
+m = (w > w_mid_cutoff) #& (w < wmax) 
+#m = m & (x + y > 0.25*ratio) & (x + y < 2*ratio)
+m = m & (z > 1.1) & (z < 2.1)
+#m = m & ~ariv_R1[yslice, xslice].rebin(n).mask & ~ariv_R3_plus_R4[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "(7171 + 7263) / (4711 + 4740)": x[m] + y[m],
+        "4711 / 4740": z[m],
+        "sum": w[m],
+    }
+).sort_values(by="sum")
+mean_R1 = np.average(z[m], weights=w[m])
+mean_R34 = np.average(x[m] + y[m], weights=w[m])
+
+var_R1 = np.average((z[m] - mean_R1)**2, weights=w[m])
+var_R34 = np.average((x[m] + y[m] - mean_R34)**2, weights=w[m])
+
+sig_R1 = np.sqrt(var_R1)
+sig_R34 = np.sqrt(var_R34)
+
+text = f"R1 = {mean_R1:.3f} +/- {sig_R1:.3f}"
+text += f", (R3 + R4) = {mean_R34:.3f} +/- {sig_R34:.3f}"
+
+_vars = df.columns[:2]
+g = sns.pairplot(
+    df,
+    x_vars=_vars, y_vars=_vars, 
+    kind="scatter",
+    diag_kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        #weights=z[m], 
+        c=df["sum"],
+        cmap="Blues",
+        s=200,
+        vmin=w_low_cutoff,
+    ),
+    diag_kws=dict(
+        weights=w[m], 
+        bins=8,
+    #    bins=128//n,
+    ),
+)
+g.axes[1, 0].plot(rr3 + rr4, rr1, color="k")
+g.axes[1, 0].plot(_rr3 + _rr4, _rr1, color="k")
+confidence_ellipse(
+    x[m] + y[m], z[m], w[m], 
+    g.axes[1, 0], n_std=1, 
+    edgecolor='red', linewidth=2,
+)
+g.axes[1, 0].scatter(
+    mean_R34, mean_R1, 
+    c="r", marker="+", 
+    s=400, linewidth=3,
+)
+
+g.axes[1, 0].set_xlim(xymin, xymax)
+g.axes[1, 0].set_ylim(zzmin, zzmax)
+
+g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
+g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
+
+g.fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics.pdf")
+#g.fig.suptitle("Correlation between [Ar IV] ratios");
+text
+# -
+
+df.columns[:2]
+
+# +
+n = 8
+xslice, yslice = slice(230, 300), slice(144, 245)
+w_low_cutoff = 250
+w_mid_cutoff = 350 # 375
+xymin, xymax = 0.011, 0.059
+zzmin, zzmax = 1.11, 1.5
+
+ww = im_ariv_sum[yslice, xslice].rebin(n)
+xx = im7263r[yslice, xslice].rebin(n) / ww
+yy = im7171r[yslice, xslice].rebin(n) / ww
+xy = xx + yy
+zz = im4711r[yslice, xslice].rebin(n) / im4740r[yslice, xslice].rebin(n)
+mm = (ww.data > w_low_cutoff) #& (ww.data < wmax) 
+#mm = mm & (xy.data > xymin) & (xy.data < xymax)
+#mm = mm & (zz.data > zzmin) & (zz.data < zzmax)
+ww.mask = ww.mask | ~mm | (ww.data < w_mid_cutoff)
+xy.mask = ww.mask
+zz.mask = ww.mask
+fig, axes = plt.subplots(1, 3, sharey=True, figsize=(12, 5))
+ww.plot(ax=axes[0], colorbar="v", vmin=w_low_cutoff, vmax=None, cmap="Blues")
+zz.plot(ax=axes[1], colorbar="v", vmin=zzmin, vmax=zzmax, cmap=cmr.amber)
+xy.plot(ax=axes[2], colorbar="v", vmin=xymin, vmax=xymax, cmap=cmr.ember)
+fig.tight_layout()
+fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics-maps.pdf");
+# -
+
+cov = np.cov(x[m] + y[m], z[m], aweights=w[m])
+pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
+cov, pearson, np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+
+n = 8
+xslice, yslice = slice(200, 300), slice(100, 250)
+#xslice, yslice = slice(None, None), slice(None, None)
+ratio = 0.024
+wmax = 750
+w = im_ariv_sum[yslice, xslice].rebin(n).data
+x = im7263r[yslice, xslice].rebin(n).data / w
+y = im7171r[yslice, xslice].rebin(n).data / w
+z = im4711r[yslice, xslice].rebin(n).data / im4740r[yslice, xslice].rebin(n).data
+#a = im4686[yslice, xslice].rebin(n).data
+m = (w > 0.2*wmax) & (w < wmax) 
+m = m & (x > -0*ratio) & (x < 2*ratio)
+m = m & (y > -0*ratio) & (y < 2*ratio)
+m = m & (z > 0.8) & (z < 2.1) # & (a > 0)
+m = m & ~ariv_R1[yslice, xslice].rebin(n).mask & ~ariv_R3_plus_R4[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "R3 = 7263 / (4711 + 4740)": x[m],
+        "R4 = 7171 / (4711 + 4740)": y[m],
+        "R1 = 4711 / 4740": z[m],
+        "I(4711 + 4740)": w[m],
+        #"I(He II 4686)": a[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="kde",
+    diag_kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=z[m], 
+    ),
+    diag_kws=dict(
+        weights=w[m], 
+        #bins=128//n,
+    ),
+)
+g.axes[1, 0].plot(rr3, rr4)
+g.axes[2, 0].plot(rr3, rr1)
+g.axes[2, 1].plot(rr4, rr1)
+#g = sns.pairplot(
+#    df,
+#    kind="scatter",
+#    height=4,
+#    corner=True,
+#    plot_kws=dict(
+#        linewidth=0,
+#        alpha=0.5,
+#    ),
+#    diag_kws=dict(
+#        weights=w[m], 
+#        bins=128//n),
+#)
+g.fig.suptitle("Correlation between [Ar IV] R1, R3, and R4");
+
+ariv.getTemDen([0.01, 0.02, 0.03, 0.04], den=10000, to_eval = 'L(7171) / (L(4711) + L(4740))')
+
+ariv.getTemDen([0.01, 0.02, 0.03], den=100, to_eval = 'L(7263) / (L(4711) + L(4740))')
+
+fig, ax = plt.subplots()
+ax.plot(rr4, rr1)
 
 
