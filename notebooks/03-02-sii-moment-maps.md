@@ -333,7 +333,13 @@ moments.save_moments_to_fits(
     mom6716,
     label="6716",
     flabel="ngc346-sii",
-    **mom_pars_6716,
+    restwav=6716.44,
+)
+moments.save_moments_to_fits(
+    mom6731,
+    label="6731",
+    flabel="ngc346-sii",
+    restwav=6730.816,
 )
 ```
 

@@ -53,13 +53,14 @@
     + The C II emission seems to come from much closer to the ionization front than it does in Orion
     + This is probably an ionization effect - the C^+ column in the ionized gas is much smaller because the spectrum is harder
     + But may also be a contribution of the low metallicity
-  + [ ] 8046.3
+  + [X] 8046.3
+    + Also contaminated
 + He I 4713 - see above
-+ [-] Look for other He I lines
++ [X] Look for other He I lines
   + [X] He I 4921.93
   + He I 5015.68 - on wing of 5007 but not excessively blended
   + [X] He I 5047.74 - weak
-  + [ ] Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
+  + [X] Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
 + [X] Look for other He II lines
   + *none are usable*
   + 4859.319 (4-8 Br \delta) - completely swamped by H\beta
@@ -202,6 +203,19 @@
 + Adams:2013a
   - DUSTY OB STARS IN THE SMALL MAGELLANIC CLOUD. II. EXTRAGALACTIC DISKS OR EXAMPLES OF THE PLEIADES PHENOMENON?
   - Has an "interacting hotspot model" that seems to be very similar to a dust wave
+
+
+
+*** Velocity profiles across bow shock
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
+[[file:ngc-346_att/screenshot-20210610-133815.png]]
++ Basically, all fully ionized lines are similar: V = +162 +/- 2
++ [O I] and [S II] are significantly redder: V = 172 more or less
++ The [Ar IV] is similar to others: +162
++ But He II is redder: +157 +/- 2
+  + But the difference may not be significant
 ** General thoughts
 + Properties of N66 from Lopez:2014a
   + Q(H) = 4e50 /s = 40 x Orion
