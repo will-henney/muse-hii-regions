@@ -82,7 +82,12 @@
     + We have a SMC reddening curve that we calculate from pyneb using parameters from Gordon:2003l
     + I am ignoring the stellar absorption EW for now, but that needs to be dealt with if we ever look at more reddened regions. 
 + [X] [S III] lines for temperature
-+ [ ] [Cl III] lines for density  
++ [X] [Cl III] lines for density
+  + These are rubbish, unfortunately.  Signal-to-noise is too low to say anything at all
++ [ ] [S II] lines for density
+  + This works much better - s/n is high and we are clearly away from the low-density limit
+  + We can distinguish the denser gas close to ionization fronts on filaments from the lower-density diffuse component
+    + The latter has densities of order 
 **** Lines that that do NOT come from bow shock
 + [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
 + [Fe III] 4658.1 - weaker than 4987, but similar distribution

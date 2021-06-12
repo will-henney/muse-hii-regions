@@ -1135,7 +1135,7 @@ median_EBV
 
 The `avHe_Tsiii` looks good. But to be honest, I am a bit suspicious of the `avHe_EBV` reddening, since there are lots of anomalous spots of high $E(B-V)$ that correspond to stars (presumably underlying stellar absorption affecting the Balmer decrement).  
 
-I couls use the median instead, but I have ended up using the weighted one after all, since we seem to be oversubtracting if anything.
+I could use the median instead, but I have ended up using the weighted one after all, since we seem to be oversubtracting if anything.
 
 ```python
 avHe_reddening_4713_5876 = 10**(0.4 * avHe_EBV * (rc.X(4713) - rc.X(5876)))
@@ -1150,6 +1150,29 @@ avHe_e4713_5876 = (
     / hei.getEmissivity(avHe_Tsiii, dens, wave=5876)
 )
 avHe_e4713_5876
+```
+
+Take advantage to save extinction-corrected maps of the high-ionization lines.  These are using the avHe reddening, not the pixel-by-pixel values
+
+```python
+avHe_corr_4686 = 10**(0.4 * avHe_EBV * rc.X(4686))
+avHe_corr_4686
+```
+
+```python
+(im4686 * avHe_corr_4686).write("../data/ngc346-heii-4686-correct.fits")
+```
+
+```python
+((imhb - hbfix) * 10**(0.4 * avHe_EBV * rc.X(4861))).write(
+    "../data/ngc346-hi-4861-correct.fits",
+)
+(im5875 * 10**(0.4 * avHe_EBV * rc.X(5875))).write(
+    "../data/ngc346-hei-5875-correct.fits",   
+)
+(im7136 * 10**(0.4 * avHe_EBV * rc.X(7136))).write(
+    "../data/ngc346-ariii-7136-correct.fits",
+)
 ```
 
 Now do the correction by faking the 4713 line and subtracting it:

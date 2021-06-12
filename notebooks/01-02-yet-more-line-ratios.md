@@ -244,6 +244,57 @@ s2.getTemDen([1.4, 1.3, 0.8], tem=12000, wave1=6716, wave2=6731)
 So the density is about 50 +/- 30 pcc in the diffuse gas.  We get ten times higher density in the case of Source E, which has a ratio as low as 0.8
 
 
+### Make a map of [S II] density
+
+```python
+r_s2_grid = np.linspace(0.5, 1.44, 1001)
+n_s2_grid = s2.getTemDen(r_s2_grid, tem=12000.0, wave1=6716, wave2=6731)
+```
+
+```python
+n_s2_grid
+```
+
+```python
+iew6716 = imcont / (1.25 * im6716)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(10, 10))
+iew6716.plot(colorbar="v", cmap="gray_r", scale="linear", vmin=-1.0, vmax=10.); 
+```
+
+```python
+fixmask = im6716.mask | (iew6716.data > 10.0) | (iew6716.data < -0.2)
+fixmask[90:97, 147:152] = True
+fixmask[79:86, 191:197] = True
+
+
+im_n_sii = im6716.clone(data_init=np.empty)
+im_n_sii.mask = fixmask
+trim_edges(im_n_sii, 10)
+im_n_sii.data[~fixmask] = np.interp(
+    im6716.data[~fixmask] / im6731.data[~fixmask], 
+    r_s2_grid, n_s2_grid,
+    left=np.nan, right=np.nan,
+)
+im_n_sii.mask = im_n_sii.mask | ~np.isfinite(im_n_sii.data)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 12))
+im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax=3000.); 
+```
+
+This seems to be good enough in some of the diffuse regions. although it is way to noisy in the faint parts. 
+
+```python
+im_n_sii.write("../data/ngc346-N-sii.fits", savemask="nan")
+```
+
+### Compare [S II] density with [S III] temperature
+
+
 ## He II emission measure
 
 ```python
@@ -307,12 +358,61 @@ In other words, the He++ emission measure, $\int n(\mathrm{He^{++}})\, n_\mathrm
 - [ ] We can do the same with [Ar IV] and [Ar III] 
 - [ ] Ask Mabel to look at her slit A to see if she sees the He II and [Ar IV] signatures of the bow shock.  Also, maybe measure [O III] temperature to see if it goes up
 
-```python
 
+### Conversion to a density
+
+We want the surface brightness of He++ in physical units. 
+
+MUSE flux units are $10^{-20}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ Å^{-1}\ pix^{-1}}$ in the cube, but we have summed over wavelength pixels, which are 1.4 Å.  The spatial pixels are 0.2 arcsec. 
+
+```python
+import astropy.units as u
 ```
 
 ```python
+muse_bright_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm**2 / (0.2 * u.arcsec)**2
+```
 
+```python
+muse_bright_unit = muse_bright_unit.to(u.erg / u.s / u.cm**2 / u.sr)
+muse_bright_unit
+```
+
+```python
+im4686 = Image("../data/ngc346-heii-4686-correct.fits")
+im5875 = Image("../data/ngc346-hei-5875-correct.fits")
+imhb = Image("../data/ngc346-hi-4861-correct.fits")
+imariv = Image("../data/ngc346-ariv-4711-plus-4740-correct.fits")
+imariii = Image("../data/ngc346-ariii-7136-correct.fits")
+imoiii = Image("../data/ngc346-oiii-5007-bin01-sum.fits")
+```
+
+```python
+fig, ax = plt.subplots(figsize=(10, 10))
+(im4686 / imhb)[yslice, xslice].plot(vmin=0.0, vmax=0.016, colorbar="v")
+```
+
+```python
+xxslice = slice(None, None)
+heii_profile = im4686[yslice, xxslice][20:60, :].data.mean(axis=0)
+hei_profile = im5875[yslice, xxslice][20:60, :].data.mean(axis=0)
+hb_profile = imhb[yslice, xxslice][20:60, :].data.mean(axis=0)
+ariv_profile = imariv[yslice, xxslice][20:60, :].data.mean(axis=0)
+ariii_profile = imariii[yslice, xxslice][20:60, :].data.mean(axis=0)
+oiii_profile = imoiii[yslice, xxslice][20:60, :].data.mean(axis=0)
+```
+
+```python
+fig, ax = plt.subplots()
+ax.plot(heii_profile)
+ax.plot(0.6 * ariv_profile)
+ax.plot(0.1* ariii_profile)
+ax.plot(0.002 * oiii_profile)
+ax.axhline(0, color="k")
+#x.plot(hb_profile / 60)
+ax.set(
+    ylim=[-30, 400],
+)
 ```
 
 ## [Cl III] density
