@@ -183,6 +183,29 @@
 + T_eff = 55000 K or 51000 K with an alternative solution
 + Wind parameters:
   + Mdot = 2.5e-6 Msun/yr
+    + I know longer have faith in this value.
+    + Supposedly it is from the Ha and He II 4686 lines, but these are not well produced by the Fastwind models.
+      + The model predicts emission in the wings of the He II line, which is not seen at all
+        [[file:ngc-346_att/screenshot-20210612-122838.png]]
+      + Green is the observations.  Red, blue, black is different T_eff models. Red is supposedly the average of blue (cooler) and black (hotter), so it is odd that it does not lie between them.
+      + Also the POWR models give He II 4686 emission for the high mass-loss case (SMC-OB-III grid)
+    + Observed He II line from W3 from MUSE:
+      [[file:ngc-346_att/screenshot-20210612-130804.png]]
+    + Same for W1 (O4 If+)
+      [[file:ngc-346_att/screenshot-20210612-130853.png]]
+    + So W1 has clear wind signature in the He II line
+      + A velocity of 2000 km/s is \Delta\lambda = 31 \AA at 4686
+      + The wings go from 4667 to 4710 -> +/- 20 \AA -> +/- 1280 km/s
+    + [X] But note that they both have broad bumps in the wings of the H\beta line
+      + *I now think these are not real*
+        + I looked at the original spectra, and I think it is more likely to be a broad absorption feature around 4750 that has thrown off the continuum fit
+        + Orion stars show the same, see Simon-Diaz paper
+        + Might be some broad DIB
+      + These don't seem to be predicted by any of the atmosphere models
+      + /Could they be Raman scattering?/
+        + No I don't think so
+      + 4809 to 4919 \AA in H\beta -> +/- 55 \AA -> +/- 3000 km/s
+      + Seems a bit excessive to be a velocity
   + Vw = 2800 km/s
   + Ram pressure at 1 pc
     + \rho V^2 = Mdot V / 4 \pi R^2
@@ -192,10 +215,49 @@
     + P_gas / k = 2 n T
     + Assume T = 1e4 K => n = 135 pcc
     + This is well in line with measurements
+      + *No it is not* [2021-06-12 Sat 09:22]
+      + I now get a much lower density than this: 11 pcc
   + We could also have a ram pressure component, so multiply by 1 + M^2
     + We can't have M much larger than 1, otherwise the density would have to be too low
 + We can estimate the density from the surface brightness of He II
-  
+**** Atmosphere models for W3
++ The POWR OB models only go up to 50,000 K
+  + This is just about acceptable if we take the lower T solution from Rivero-Gonzalez
++ There are 3 sets of SMC O star models with different wind strengths
++ I am first looking at the intermediate set
++ Model parameters for 50-42 (Teff = 50 kK, log g = 4.2)
+  : ********************************************************************************
+  : *
+  : * FUNDAMENTAL PARAMETERS
+  : * ======================
+  : *
+  : * MODEL START 16/09/18    21:34:14
+  : *   50kK/logQ-13.5/3020 logg=4.2 L=5.76 H73 N3E-5 C2E-4 O1E-3 Fe3.5E-4
+  : *
+  : * TEFF    =  50000 K       (INPUT)
+  : * LOG L   =  5.760 L_SUN   (INPUT)
+  : * RSTAR   = 10.137 R_SUN   (CALCULATED FROM LUMINOSITY AND TEFF)
+  : * M-DOT   = -6.771 DEX, IN M_SUN/YR   (CALCULATED FROM RTRANS)
+  : * RTRANS  =375.582 =  2.575 DEX   (INPUT)
+  : * VFINAL  =   3020 KM/S
+  : * VDOP    =     30 KM/S
+  : * DENSCON(1) =  10.00    FILLFAC(1) =0.1000
+  : * LOG G_GRAV =   4.20 [CGS]   (INPUT)
+  : *   IMPLIED STELLAR MASS = 59.47 M_SUN
+  : *   CALCULATED LOG G_EFF =  4.19 [CGS] VIA EDDINGTON_GAMMA =  0.02
+  : * VTURB   =  10.00 KM/S
+  : * RMAX    = 100.00 RSTAR = 1013.71 R_SUN
+  : *
+  : ********************************************************************************
++ So that has L = 5.75e5, whereas the observationally derived value is 9.5e5 to 1.2e6
+  + And the derived gravity is 4.0 rather than 4.2
+  + Radius is 12.5 Rsun, as opposed to 10.1 Rsun
+  + Implied stellar mass ~ R^2 g, so modified by (12.5 / 10.1)**2 10**(4.0 - 4.2) = 0.966
+    + So should be 57.5 Msun
+  + Derived log Q = -12.51 versus -13.5 in the model
+    + Model mass loss: 1.7e-7 Msun/yr
+    + Fastwind value: 2.e-6 Msun/yr
+    + 
 *** Relevant papers on bow shocks in SMC
 + Gvaramadze:2011b
   - Massive runaway stars in the Small Magellanic Cloud
