@@ -390,7 +390,9 @@ yslice
 xxslice = slice(None, None)
 #yyslice = slice(164, 204) # original
 #yyslice = slice(160, 210) # broader
-yyslice = slice(170, 200) # narrower
+#yyslice = slice(170, 200) # narrower
+yyslice = slice(180, 200) # top half ultra narrow
+
 
 def make_profile(im):
     #return np.make(im[yyslice, xxslice].data, axis=0)
@@ -405,21 +407,31 @@ oiii_profile = make_profile(imoiii)
 
 # +
 fig, ax = plt.subplots(figsize=(12, 6))
-ax.plot(heii_profile, label="He II")
-ax.plot(0.6 * ariv_profile, label="[Ar IV]")
-ax.plot(0.13 * ariii_profile, label="[Ar III]")
-ax.plot(0.0020 * oiii_profile, label="[O III]")
-ax.plot(0.011 * hb_profile, label="Hβ")
-ax.plot(0.100 * hei_profile, label="He I")
+ix0 = 227.5
+nx = len(heii_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, heii_profile, label="He II", lw=4)
+ax.plot(pos, 1.00 * ariv_profile, label="[Ar IV]", lw=3)
+ax.plot(pos, 3 * 0.13 * ariii_profile, label="[Ar III]", lw=2.0)
+ax.plot(pos, 3 * 0.0019 * oiii_profile, label="[O III]", lw=1.5)
+ax.plot(pos, 3 * 0.011 * hb_profile, label="Hβ", lw=1.0)
+ax.plot(pos, 3 * 0.100 * hei_profile, label="He I", lw=0.5)
 
 ax.axhline(0, color="k")
 
-ax.legend(ncol=2, loc="upper left")
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=3,loc="upper left")
 
 ax.set(
-    ylim=[-30, 400],
+    xlabel="Offset west from W 3, arcsec",
+    ylabel="Surface brightness",
+    xlim=[-12, 22],
+    ylim=[-30, 1300],
 )
-sns.despine();
+sns.despine()
+fig.savefig("../figs/ngc346-bow-shock-brightness-cuts.pdf");
 # -
 
 # From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
