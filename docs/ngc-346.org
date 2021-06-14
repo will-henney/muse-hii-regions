@@ -114,10 +114,10 @@
 | Ar^{+}  |  27.630 | 2.032 |
 | N^{+}   |  29.601 | 2.177 |
 | S^{+2}  |   34.86 | 2.564 |
-| Ar^{+2} |  40.735 | 2.996 |
 | O^{+}   |  35.121 | 2.583 |
-| S^{+3}  |  47.222 | 3.473 |
 | Cl^{+2} |   39.80 | 2.927 |
+| Ar^{+2} |  40.735 | 2.996 |
+| S^{+3}  |  47.222 | 3.473 |
 | Cl^{+3} |   53.24 | 3.915 |
 |------+---------+-------|
 | He^{+}  |  54.418 | 4.002 |
@@ -183,7 +183,7 @@
 + T_eff = 55000 K or 51000 K with an alternative solution
 + Wind parameters:
   + Mdot = 2.5e-6 Msun/yr
-    + I know longer have faith in this value.
+    + I no longer have faith in this value.
     + Supposedly it is from the Ha and He II 4686 lines, but these are not well produced by the Fastwind models.
       + The model predicts emission in the wings of the He II line, which is not seen at all
         [[file:ngc-346_att/screenshot-20210612-122838.png]]
@@ -397,6 +397,53 @@
 
 *** Ionizing stars in N66
 
+**** Contribution of the WR+WR binary HD 5980
++ Considerable variation over last 20 years
++ *Conclusions*
+  + For the low state, we have Q_0 = 1e50 approx
+  + And a very low Q_2 (so no ionizing to He II)
++ High state (1994):
+  + log L = 6.6
+  + T_* = 47 kK
+  + Mdot / sqrt(f) = 111e-5
+  + Vinf = 750 km/s
+  + R_10 = 28 Rsun
++ Low state (2014):
+  + log L = 6.23
+  + T_* = 48 kK
+  + Mdot / sqrt(f) = 14e-5
+  + Vinf = 2100 km/s
+  + R_10 = 19 Rsun
++ Transformation for POWR models
+  - All their models are for nominal log L = 5.3
+  - They use a transformed radius: R_t = R_* (V_inf / 2500 km/s)^{2/3} (Mdot sqrt(D) / 1e-4)^{-2/3}
+    - where D = 1/f is clumping factor
+  - For a different luminosity, we must rescale R_* as L^{1/2}
+  - And Mdot scales as L^{3/4}
+  - So we have:
+    - High state:
+      - R_* = 28 sqrt(10**(5.3 - 6.6)) = 6.268 Rsun
+      - R_t = R_* ((750/2500)/ (11.1))**(2/3) = 0.09 6.268 = 0.56412 Rsun => -0.248 on log10 scale
+        - Unfortunately, that is off the bottom of the grid!
+    - Low state:
+      - Luminosity is 10**(6.23 - 5.3) = 8.5 times higher than fiducial
+      - R_* = 19 sqrt(10**(5.3 - 6.23)) = 6.513 Rsun
+      - R_t = R_* ((2100/2500)/ (1.4))**(2/3) = 0.7114 6.513 = 4.633 Rsun => 0.6659 on log 10 scale
++ So for the low state, the closest model is 06-14: T = 44.7 kK, log Rt = 0.7
+  + This comes with R_* = 7.5 => rescaled: 7.5 sqrt(8.5) = 21.9 Rsun
+    + (close enough to 19)
+  + Q_0, Q_1, Q_2, Q_3 = 49.01, 47.69, 0.00, 45.77 - so very soft
+    + Rescaled back to real luminosity: Q_0 = 49.01 + 6.23 - 5.3 = 49.94
+  + Mdot = -4.23 => rescaled: (8.5)**(3/4) 10**(-4.23) = 2.93e-4
+    + this is not entirely consistent with the original 1.4e-4
+  + V = 1600 km/s
++ We should also look at the closest hotter model 07-13: T = 50000 K, log Rt = 0.8
+  + R_* = 5.9 => rescaled: 5.9 sqrt(8.5) = 17 Rsun
+    + So this model and the previous one nicely bracket 19 Rsun
+  + Q_0, Q_1, Q_2, Q_3 = 49.09, 48.47, 36.46, 47.42 - so not so soft, but still almost no He+ ionizing radiation
+    + Rescaled ionizing luminosity: 49.09 + 6.23 - 5.3 = 50.02
+  + Mdot = -4.53 => rescaled: (8.5)**(3/4) 10**(-4.53) = 1.47e-4
+    + Very close to original
 **** Notable stars by luminosity
 + SSN 7, MPG 435, DEHLS 1001, Walborn 1
   + O4If+O5-6
@@ -549,29 +596,32 @@
   + Spectroscopy of the brighter stars
 + 
 **** [#A] Ionizing luminosities and fluxes
-***** DONE Which are the most important stars?
+***** DONE Which are the most important stars for mYSO C?
 CLOSED: [2021-05-29 Sat 00:16]
-| Name    | SSN | MPG | Sp. Type    | T_eff, kK |        V |    BC |   M_bol | L/Lsun | R/Rsun | log q_0 |     Q_0 | d (") |   F_bol | L_glob/L_sun | Q_0(glob) |
-|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| W 1     |   7 | 435 | O4If+O5-6   |       43 |     12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |  24.46 | 8.0e49 | 11.56 |   3.72 |      2.6e3 |   1.5e47 |
-| W 2     | 14* | 470 | O8.5 III    |       36 |     14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |  24.04 | 9.2e48 |  3.04 |   8.06 |      5.7e3 |   2.5e47 |
-| W 3     |   9 | 355 | O2 III(f)   |     52.5 |    13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |   24.9 | 7.7e49 | 22.68 |   0.76 |      5.3e2 |   3.7e46 |
-|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| SSN 168 | 168 |     | B0?         |       30 | 16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |   23.2 | 4.0e47 |   0.2 | 266.05 |          0 |        0 |
-|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| Sk 80   |   5 | 789 | O7 Iaf+     |       36 |    12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |  24.07 | 5.2e49 | 122.4 |   0.03 |      1.8e1 |   8.7e44 |
-| HD 5980 |     | 755 | WR+WR+O     |       50 |    11.31 | -4.43 | -12.37 |  6.9e6 |  34.95 |   24.8 | 4.7e50 | 105.7 |   0.22 |      1.5e2 |   1.1e46 |
-|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| W 4     |  11 | 342 | O5-6 V((f)) |       43 |     13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |  24.47 | 3.2e49 | 24.85 |   0.32 |      2.2e2 |   1.3e46 |
-| SSN 13  |  13 | 324 | O4 V((f+))  |       48 |    14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |   24.8 | 3.7e49 | 36.99 |   0.12 |      8.4e1 |   6.8e45 |
-| SSN 15  |  15 | 368 | O6: V((f))  |     42.5 |     14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |   24.4 | 1.8e49 | 17.15 |   0.41 |      2.9e2 |   1.5e46 |
-| SSN 17  |  17 | 396 | O7V         |       38 |   14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |  24.15 | 8.7e48 | 11.53 |   0.51 |      3.6e2 |   1.6e46 |
-| SSN 18  |  18 | 487 | O8V         |       36 |    14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |  23.94 | 5.2e48 |  8.37 |   0.76 |      5.4e2 |   1.9e46 |
-| SSN 46  |  46 | 500 | O6V:        |     42.5 |   15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |   24.4 | 6.2e48 | 16.39 |   0.16 |      1.1e2 |   5.8e45 |
-| SSN 22  |  22 | 476 | O7?V?       |       38 |   14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |  24.15 | 7.3e48 |  4.06 |   3.44 |      2.4e3 |   1.1e47 |
-|---------+-----+-----+-------------+----------+----------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-|         |     |     |             |          |          |     X |      X |  1.3e7 |      X |      X | 8.0e50 |     X |      X |      1.3e4 |   6.3e47 |
-#+TBLFM: $7=-6.9 log10(1000 $5) + 27.99 ; f2::$8=$6 + $7 - 0.3 - 18.95;f2::$9=10**(-0.4 ($8 - 4.73));s2::$10=sqrt($9 $lsun / 4 $pi $sigma (1000 $5)**4) / $rsun ; f2::$12=4 $pi ($10 $rsun)**2 10**($11);s2::$14=$9 $lsun / 4 $pi (0.3 $pc $13)**2 ; f2::$15=$13 > 1 ? $9 (1 / 2 $13)**2 : 0 ;s2::$16=$13 > 1 ? $12 (1 / 2 $13)**2 : 0 ;s2::@15$7..@15$8=X::@15$9=vsum(@I..@IIIII);s2::@15$10..@15$11=X::@15$12=vsum(@I..@IIIII);s2::@15$13..@15$14=X::@15$15..@15$16=vsum(@I..@IIIII);s2
+| Name    | SSN | MPG | Sp. Type    | T_eff, kK |           V |    BC |   M_bol | L/Lsun | R/Rsun | log q_0 |     Q_0 | d (") |   F_bol | L_glob/L_sun | Q_0(glob) |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 1     |   7 | 435 | O4If+O5-6   |       43 |        12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |  24.46 | 8.0e49 | 11.56 |   3.72 |      2.6e3 |   1.5e47 |
+| W 2     | 14* | 470 | O8.5 III    |       36 |        14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |  24.04 | 9.2e48 |  3.04 |   8.06 |      5.7e3 |   2.5e47 |
+| W 3     |   9 | 355 | O2 III(f)   |     52.5 |       13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |   24.9 | 7.7e49 | 22.68 |   0.76 |      5.3e2 |   3.7e46 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| SSN 168 | 168 |     | B0?         |       30 |    16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |   23.2 | 4.0e47 |   0.2 | 266.05 |          0 |        0 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| Sk 80   |   5 | 789 | O7 Iaf+     |       36 |       12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |  24.07 | 5.2e49 | 122.4 |   0.03 |      1.8e1 |   8.7e44 |
+| HD 5980 |     | 755 | WR+WR+O     |       43 | 11.6 + 0.75 | -3.98 | -10.88 |  1.8e6 |  24.14 |      X |   1e50 | 105.7 |   0.06 |      4.0e1 |   2.2e45 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 4     |  11 | 342 | O5-6 V((f)) |       43 |        13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |  24.47 | 3.2e49 | 24.85 |   0.32 |      2.2e2 |   1.3e46 |
+| SSN 13  |  13 | 324 | O4 V((f+))  |       48 |       14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |   24.8 | 3.7e49 | 36.99 |   0.12 |      8.4e1 |   6.8e45 |
+| SSN 15  |  15 | 368 | O6: V((f))  |     42.5 |        14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |   24.4 | 1.8e49 | 17.15 |   0.41 |      2.9e2 |   1.5e46 |
+| SSN 17  |  17 | 396 | O7V         |       38 |      14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |  24.15 | 8.7e48 | 11.53 |   0.51 |      3.6e2 |   1.6e46 |
+| SSN 18  |  18 | 487 | O8V         |       36 |       14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |  23.94 | 5.2e48 |  8.37 |   0.76 |      5.4e2 |   1.9e46 |
+| SSN 46  |  46 | 500 | O6V:        |     42.5 |      15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |   24.4 | 6.2e48 | 16.39 |   0.16 |      1.1e2 |   5.8e45 |
+| SSN 22  |  22 | 476 | O7?V?       |       38 |      14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |  24.15 | 7.3e48 |  4.06 |   3.44 |      2.4e3 |   1.1e47 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| SSN 26  |  26 | 655 | OC5-6Vz     |       43 |       14.90 | -3.98 |  -8.33 |  1.7e5 |   7.42 |  24.47 | 9.9e48 |    60 |   0.02 |      1.2e1 |   6.9e44 |
+| SSN 37  |  37 | 593 | O5.5V       |       43 |       15.07 | -3.98 |  -8.16 |  1.4e5 |   6.73 |  24.47 | 8.1e48 |    40 |   0.03 |      2.2e1 |   1.3e45 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+|         |     |     |             |          |             |     X |      X |  7.6e6 |      X |      X | 4.3e50 |     X |      X |      1.3e4 |   6.3e47 |
+#+TBLFM: $7=-6.9 log10(1000 $5) + 27.99 ; f2::$8=$6 + $7 - 0.3 - 18.95;f2::$9=10**(-0.4 ($8 - 4.73));s2::$10=sqrt($9 $lsun / 4 $pi $sigma (1000 $5)**4) / $rsun ; f2::$12=4 $pi ($10 $rsun)**2 10**($11);s2::$14=$9 $lsun / 4 $pi (0.3 $pc $13)**2 ; f2::$15=$13 > 1 ? $9 (1 / 2 $13)**2 : 0 ;s2::$16=$13 > 1 ? $12 (1 / 2 $13)**2 : 0 ;s2::@7$12=1e50::@17$7..@17$8=X::@17$9=vsum(@I..@IIIII);s2::@17$10..@17$11=X::@17$12=vsum(@I..@IIIII);s2::@17$13..@17$14=X::@17$15..@17$16=vsum(@I..@IIIII);s2
 
 + M_bol = V + BC - AV - DM
   + DM = 18.95
@@ -599,6 +649,10 @@ CLOSED: [2021-05-29 Sat 00:16]
     + 6% from W 3
     + 13% from the rest (each 3% or less)
 + [ ] Now, we need to compare this with the Ha luminosity of the globule and of the inner sources
+***** Relative contributions to the global ionization balance
++ The list above has all the stars with Q_0 > 5e48 I think
+  + Except for some more that a long way to S or N
++ Excluding the WR binary, the total is 3.3e50
 ***** Conversion of spectral type to ionizing luminosity
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
@@ -608,7 +662,7 @@ CLOSED: [2021-05-29 Sat 00:16]
   + But what about the SMC abundances?
 ****** Spectral type to effective temperature
 + Massey:2005z show the S. Type - T_eff relations for MW vs SMC
-  c[[file:ngc-346_att/screenshot-20210527-134032.png]]
+  file:ngc-346_att/screenshot-20210527-134032.png
   + They find that SMC stars a bit hotter (green line) for both supergiants and dwarfs
   + I have inserted these temperatures as a column in the above table
 + [ ] But what about bespoke stellar parameter determinations?
@@ -654,7 +708,90 @@ CLOSED: [2021-05-29 Sat 00:16]
     : strength of mid-IR nebular lines emitted in compact H I regions. The
     : softening of the SEDs when metallicity increases is crucial to
     : understand the behaviour of observed excitation sequences.
+***** Helium-plus ionizing luminosities 
++ This is important for the bow shock ionization
++ We are also interested in the ionization of Ar III -> Ar IV
+  + This requires 40.735 eV, compared with 35.121 eV for O III and 54.418 eV for He II
+  + Ar IV can persist in the He II zone since Ar IV -> V requires 59.58 eV
+****** Luminosities from POWR models
+#+begin_src python :tangle "../scripts/powr-parse.py" :results output table
+  from pathlib import Path
 
+  datapath = Path("../stars/powr")
+  datafiles = datapath.glob("*_colors.txt")
+
+  rslt = [
+      ["Grid", "Model", "Q0", "Q1", "Q2", "Q3"],
+      None,
+  ]
+
+  for datafile in datafiles:
+      with open(datafile) as f:
+          lines = f.readlines()
+
+      _, grid_id, _, model_id = lines[0].split()
+      # print(grid_id, model_id)
+      _, _, _, Q0 = lines[6].split()
+      _, _, _, Q1 = lines[7].split()
+      _, _, _, Q2 = lines[8].split()
+      _, _, _, Q3 = lines[9].split()
+
+      rslt.append([grid_id, model_id, Q0, Q1, Q2, Q3])
+
+  print(rslt)
+#+end_src
+
+#+RESULTS:
+| Grid       | Model |    Q0 |    Q1 |    Q2 |    Q3 |
+|------------+-------+-------+-------+-------+-------|
+| OB-I       | 54-42 | 50.00 | 49.52 | 45.79 | 48.85 |
+| OB-I       | 50-42 | 49.66 | 49.08 | 45.49 | 48.37 |
+| SMC-OB-II  | 49-44 | 49.25 | 48.72 | 45.02 | 48.12 |
+| SMC-OB-I   | 50-44 | 49.32 | 48.82 | 44.80 | 48.24 |
+| SMC-OB-III | 50-42 | 49.59 | 49.05 | 44.63 | 48.34 |
+| OB-I       | 53-42 | 49.92 | 49.41 | 45.53 | 48.74 |
+| OB-I       | 50-40 | 50.09 | 49.52 | 45.37 | 48.80 |
+| SMC-OB-III | 49-42 | 49.52 | 48.96 | 44.68 | 48.24 |
+| SMC-OB-II  | 50-44 | 49.33 | 48.82 | 45.28 | 48.23 |
+| SMC-OB-I   | 49-44 | 49.24 | 48.73 | 44.36 | 48.14 |
+| OB-I       | 49-42 | 49.57 | 48.97 | 44.79 | 48.24 |
+| SMC-OB-III | 49-44 | 49.26 | 48.70 | 44.65 | 48.01 |
+| SMC-OB-I   | 36-38 | 48.82 | 47.81 | 42.06 | 46.54 |
+| SMC-OB-I   | 49-42 | 49.51 | 48.99 | 44.65 | 48.38 |
+| SMC-OB-II  | 50-42 | 49.58 | 49.07 | 45.52 | 48.46 |
+| SMC-OB-II  | 42-38 | 49.57 | 48.85 | 41.43 | 48.09 |
+| SMC-OB-I   | 50-42 | 49.58 | 49.07 | 45.19 | 48.47 |
+| SMC-OB-II  | 49-42 | 49.51 | 48.98 | 45.32 | 48.36 |
+| OB-I       | 52-42 | 49.81 | 49.34 | 45.93 | 48.72 |
+| OB-I       | 56-42 | 50.08 | 49.67 | 46.99 | 49.10 |
+| OB-I       | 51-42 | 49.75 | 49.20 | 45.23 | 48.50 |
+| SMC-OB-III | 50-44 | 49.33 | 48.79 | 44.75 | 48.10 |
+****** Fiddle with the ordering
+| Grid       | Model |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 |      Q2/Q0 | Q3/Q0 |
+|------------+-------+-------+-------+-------+-------+-------+------------+-------|
+| OB-I       | 56-42 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |   0.000813 | 0.105 |
+| OB-I       | 54-42 | 50.00 | 49.52 | 45.79 | 48.85 | 0.331 |   0.000062 | 0.071 |
+| OB-I       | 53-42 | 49.92 | 49.41 | 45.53 | 48.74 | 0.309 |   0.000041 | 0.066 |
+| OB-I       | 52-42 | 49.81 | 49.34 | 45.93 | 48.72 | 0.339 |   0.000132 | 0.081 |
+| OB-I       | 51-42 | 49.75 | 49.20 | 45.23 | 48.50 | 0.282 |   0.000030 | 0.056 |
+| SMC-OB-I   | 50-44 | 49.32 | 48.82 | 44.80 | 48.24 | 0.316 |   0.000030 | 0.083 |
+| SMC-OB-II  | 50-44 | 49.33 | 48.82 | 45.28 | 48.23 | 0.309 |   0.000089 | 0.079 |
+| SMC-OB-III | 50-44 | 49.33 | 48.79 | 44.75 | 48.10 | 0.288 |   0.000026 | 0.059 |
+| OB-I       | 50-42 | 49.66 | 49.08 | 45.49 | 48.37 | 0.263 |   0.000068 | 0.051 |
+| SMC-OB-III | 50-42 | 49.59 | 49.05 | 44.63 | 48.34 | 0.288 |   0.000011 | 0.056 |
+| SMC-OB-II  | 50-42 | 49.58 | 49.07 | 45.52 | 48.46 | 0.309 |   0.000087 | 0.076 |
+| SMC-OB-I   | 50-42 | 49.58 | 49.07 | 45.19 | 48.47 | 0.309 |   0.000041 | 0.078 |
+| OB-I       | 50-40 | 50.09 | 49.52 | 45.37 | 48.80 | 0.269 |   0.000019 | 0.051 |
+| SMC-OB-II  | 49-44 | 49.25 | 48.72 | 45.02 | 48.12 | 0.295 |   0.000059 | 0.074 |
+| SMC-OB-I   | 49-44 | 49.24 | 48.73 | 44.36 | 48.14 | 0.309 |   0.000013 | 0.079 |
+| SMC-OB-III | 49-44 | 49.26 | 48.70 | 44.65 | 48.01 | 0.275 |   0.000025 | 0.056 |
+| SMC-OB-III | 49-42 | 49.52 | 48.96 | 44.68 | 48.24 | 0.275 |   0.000014 | 0.052 |
+| OB-I       | 49-42 | 49.57 | 48.97 | 44.79 | 48.24 | 0.251 |   0.000017 | 0.047 |
+| SMC-OB-I   | 49-42 | 49.51 | 48.99 | 44.65 | 48.38 | 0.302 |   0.000014 | 0.074 |
+| SMC-OB-II  | 49-42 | 49.51 | 48.98 | 45.32 | 48.36 | 0.295 |   0.000065 | 0.071 |
+| SMC-OB-II  | 42-38 | 49.57 | 48.85 | 41.43 | 48.09 | 0.191 | 7.24436e-9 | 0.033 |
+| SMC-OB-I   | 36-38 | 48.82 | 47.81 | 42.06 | 46.54 | 0.098 | 1.73780e-7 | 0.005 |
+#+TBLFM: $7=10**($4 - $3);f3::$8=10**($5 - $3);f6::$9=10**($6 - $3);f3
 ***** TODO What is this "excitation parameter" that the early papers mention?
 + It has units of pc cm^-2, which is length
 
