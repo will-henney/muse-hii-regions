@@ -652,7 +652,25 @@ CLOSED: [2021-05-29 Sat 00:16]
 ***** Relative contributions to the global ionization balance
 + The list above has all the stars with Q_0 > 5e48 I think
   + Except for some more that a long way to S or N
-+ Excluding the WR binary, the total is 3.3e50
++ Total luminosity is 4.3e50
+  + Could be 5.3e50 if we add in both WR stars as equals
+  + Lopez:2014a give 50.6 -> 4e50
+    + This is based on a simple conversion of the H\alpha luminosity of log L(Ha) = 38.6
+    + [ ] We should compare that with the flux measured in our MUSE field
+      + 
+  
++ Recombination time:
+  + Dense gas:
+    + n_e = 100 pcc
+    + \alpha \approx 2e-13
+    + 1 / \alpha n = 1600 years
+  + He II gas
+    + n_e = 11 pcc
+    + \alpha = 1.5e-12
+    + 1 / \alpha n = 1920 years
+  + So almost the same!  The lower density is compensated by a higher recombination rate
+  + So recomb timescale of a few thousand years is small compared with stellar evolution timescale, even for WR stars
++ 
 ***** Conversion of spectral type to ionizing luminosity
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att

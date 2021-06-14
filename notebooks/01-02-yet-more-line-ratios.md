@@ -288,12 +288,64 @@ im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax
 
 This seems to be good enough in some of the diffuse regions. although it is way to noisy in the faint parts. 
 
+
+### Compare [S II] density with [S III] temperature
+
 ```python
 im_n_sii.write("../data/ngc346-N-sii.fits", savemask="nan")
 ```
 
-### Compare [S II] density with [S III] temperature
+```python
+im_T_siii = Image("../data/ngc346-T-siii.fits")
+```
 
+```python
+n = 16
+imx = im_T_siii.rebin(n)
+imy = im_n_sii.rebin(n) 
+imz = imhb.rebin(n)
+
+m = ~imx.mask & ~imy.mask
+m = m & (imx.data > 5000) & (imx.data < 20000)
+m = m & (imy.data > 0) & (imy.data < 300)
+df = pd.DataFrame(
+    {
+        "T([S III])": imx.data[m],
+        "n([S II])": imy.data[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=imz.data[m],
+        bins=50,
+    ),
+    diag_kws=dict(
+        weights=imz.data[m],
+        bins=50,
+    ),
+)
+g.fig.suptitle("Temperature vs Density");
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
 
 ## He II emission measure
 
@@ -393,26 +445,195 @@ fig, ax = plt.subplots(figsize=(10, 10))
 ```
 
 ```python
-xxslice = slice(None, None)
-heii_profile = im4686[yslice, xxslice][20:60, :].data.mean(axis=0)
-hei_profile = im5875[yslice, xxslice][20:60, :].data.mean(axis=0)
-hb_profile = imhb[yslice, xxslice][20:60, :].data.mean(axis=0)
-ariv_profile = imariv[yslice, xxslice][20:60, :].data.mean(axis=0)
-ariii_profile = imariii[yslice, xxslice][20:60, :].data.mean(axis=0)
-oiii_profile = imoiii[yslice, xxslice][20:60, :].data.mean(axis=0)
+yslice
 ```
 
 ```python
-fig, ax = plt.subplots()
-ax.plot(heii_profile)
-ax.plot(0.6 * ariv_profile)
-ax.plot(0.1* ariii_profile)
-ax.plot(0.002 * oiii_profile)
+xxslice = slice(None, None)
+#yyslice = slice(164, 204) # original
+#yyslice = slice(160, 210) # broader
+yyslice = slice(170, 200) # narrower
+
+def make_profile(im):
+    #return np.make(im[yyslice, xxslice].data, axis=0)
+    return np.mean(im[yyslice, xxslice].data, axis=0)
+
+heii_profile = make_profile(im4686)
+hei_profile = make_profile(im5875)
+hb_profile = make_profile(imhb)
+ariv_profile = make_profile(imariv)
+ariii_profile = make_profile(imariii)
+oiii_profile = make_profile(imoiii)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(heii_profile, label="He II")
+ax.plot(0.6 * ariv_profile, label="[Ar IV]")
+ax.plot(0.13 * ariii_profile, label="[Ar III]")
+ax.plot(0.0020 * oiii_profile, label="[O III]")
+ax.plot(0.011 * hb_profile, label="Hβ")
+ax.plot(0.100 * hei_profile, label="He I")
+
 ax.axhline(0, color="k")
-#x.plot(hb_profile / 60)
+
+ax.legend(ncol=2, loc="upper left")
+
 ax.set(
     ylim=[-30, 400],
 )
+sns.despine();
+```
+
+From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
+
+```python
+peak_heii = muse_bright_unit * 400
+```
+
+From the image, the chord length through the bow is about 60 pixels.  We can assume that the line-of-sight depth is similar:
+
+```python
+depth_heii = 60 * 0.2 * 61700 * u.au
+depth_heii.to(u.pc)
+```
+
+Surface brightness assuming optically thin emission with isotropic line emissivity, $e(\lambda)$, is given by 
+$$
+I(\lambda) = \int \frac{e(\lambda)\, n_e\, n_i}{4 \pi} \, dz 
+$$
+where $e(\lambda)$ is in the units given by pyneb: `u.erg * u.cm**3 / u.s` and $n_e$, $n_i$ are the electron and ion densities. 
+
+Assume neutral fractions of He and H are negligible and hydrogen number density is $n$.  If the He abundance is $y = n(\mathrm{He}) / n(\mathrm{H})$ and the He++ ion fraction is $x_{++}$, then we have:
+$$
+n(\mathrm{He^{++}}) = y\, x_{++}\, n \quad \text{and} \quad n_e = [1 + y\, (1 + x_{++})]\, n
+$$
+implying that 
+$$
+n(\mathrm{He^{++}}) \, n_e = n_e^2 \, \frac{y\, x_{++}}{1 + y\, (1 + x_{++})}
+\approx n_e^2 \, \frac{y}{1 + 2 y}
+$$
+
+So, with homogeneous conditions, we have
+$$
+I(4686) = \frac{e(4686)}{4\pi}\, \frac{y}{1 + 2 y} \, n_e^2 \, \delta z
+$$
+which can be solved for density to yield
+$$
+n_e = \left[
+\frac{4\pi\, I(4686)}{\delta z\, e(4686)} \, \frac{1 + 2 y}{y} 
+\right]^{1/2}
+$$
+
+
+We can take the helium abundance from above and get ...
+
+```python
+pn_e_units = u.erg * u.cm**3 / u.s
+yHe = 0.0824
+ne = np.sqrt(
+    4 * np.pi * u.sr * peak_heii / (depth_heii.cgs * e4686 * pn_e_units)
+    * (1 + 2 * yHe) / yHe
+)
+ne
+```
+
+**So electron density of 11 pcc!**
+
+Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is alower limit (density would scale approximately as $x_{++}^{-1/2}$). 
+
+
+#### Find the He II flux and the He++ ionizing luminosity
+
+
+
+```python
+im4686[160:210, 235:255].plot(vmin=0, vmax=400)
+```
+
+```python
+muse_flux_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm**2 
+```
+
+```python
+cutout = im4686[160:210, 235:255]
+m = (cutout.data > 0.0) & ~cutout.mask
+F_heii = muse_flux_unit * np.sum(cutout.data[m])
+F_heii
+```
+
+```python
+D_lmc = 61700 * u.pc
+```
+
+```python
+L_heii = 4 * np.pi * D_lmc.cgs**2 * F_heii
+L_heii
+```
+
+```python
+L_heii.to(u.solLum)
+```
+
+Effective recomb rate:
+
+```python
+import astropy.constants as constants
+```
+
+```python
+hnu4686 = (constants.h * constants.c / (4686 * u.Angstrom)).cgs
+hnu4686
+```
+
+```python
+alpha_eff_4686 = e4686 * pn_e_units / hnu4686
+alpha_eff_4686
+```
+
+```python
+pn.atomicData.getAllAvailableFiles("He2")
+```
+
+It only works as follows:
+
+```python
+pn.atomicData.setDataFile('he_ii_trc_SH95-caseB.dat')
+alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=10000, den=100)
+alphaB_He_plus *= u.cm**3 / u.s
+alphaB_He_plus
+```
+
+Solid angle: assume a +/- 75 degree end cap.  
+
+```python
+Omega_over_4pi = (1 - np.cos(75*u.deg)) / 2
+Omega_over_4pi
+```
+
+$$
+Q \frac{\Omega}{4\pi} = \int_{\mathcal{V}} n_e \, n_i \, \alpha_B\, d\mathcal{V}
+$$
+and
+$$
+L(4686) = \int_{\mathcal{V}} n_e \, n_i \, e(4686)\, d\mathcal{V}
+$$
+so that 
+$$
+Q = \frac{\alpha_B \, L(4686)} {e(4686)\, (\Omega/4\pi)}
+$$
+
+```python
+Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
+Q2
+```
+
+## Can we get a He I density?
+
+```python
+dgrid = [1.0, 10.0, 100.0, 1000.0]
+T0 = [11000, 13000, 18000]
+he1.getEmissivity(tem=T0, den=dgrid, wave=5876) / he1.getEmissivity(tem=T0, den=dgrid, wave=6678)
 ```
 
 ## [Cl III] density
