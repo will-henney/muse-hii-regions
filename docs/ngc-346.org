@@ -138,6 +138,18 @@
 + From the ACS H\alpha image, there is small region that shows the bow shell cleanly
   [[file:ngc-346_att/screenshot-20210614-130218.png]]
   Between about 3 and 7 arcsec from W3.  Beyond this, the globules start to dominate the H alpha and other medium ionization lines
+***** Ionization balance of Ar
++ We should have
+  \[
+  \frac{Ar^{3+}}{Ar^{2+}} =
+  \frac{F \sigma}{\alpha n_e}
+  \]
+  + F is the ionizing flux for h\nu > 40.7 eV
+  + \sigma is the Ar^{2+} photoionization cross section
+  + \alpha is the Ar^{3+} recombination rate
++ Assume constant T and that F only varies by geometrical dilution: F ~ 1/R^2
+  + 
+  
 **** [Ar IV] density and T indicators
 :PROPERTIES:
 :ID:       8B4C1164-B47D-47BE-9012-7DD0B661E014
@@ -801,6 +813,7 @@ CLOSED: [2021-05-29 Sat 00:16]
 + The Q0' (H0) and Q2' (He+) columns are ionizing luminosities rescaled so that the model has a bolometric luminosity of log L = 5.98, as implied by the cooler Rivero-Gonzalez solution
   + [ ] We should also rescale the Mdot values
 + The observationally derived Q2 is 45.67
+  + For T = 50,000 K this is 
 | Grid       | Model | log L | V_inf | log M_dot |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 | 1e4 Q2/Q0 | Q3/Q0 |   Q0' |   Q2' |
 |------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------|
 | OB-I       | 56-42 | 6.230 | 4136 |       -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 |

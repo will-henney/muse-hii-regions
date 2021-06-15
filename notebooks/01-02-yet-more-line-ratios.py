@@ -413,10 +413,11 @@ pos = (np.arange(nx) - ix0) * 0.2
 
 ax.plot(pos, heii_profile, label="He II", lw=4)
 ax.plot(pos, 1.00 * ariv_profile, label="[Ar IV]", lw=3)
-ax.plot(pos, 3 * 0.13 * ariii_profile, label="[Ar III]", lw=2.0)
-ax.plot(pos, 3 * 0.0019 * oiii_profile, label="[O III]", lw=1.5)
-ax.plot(pos, 3 * 0.011 * hb_profile, label="Hβ", lw=1.0)
-ax.plot(pos, 3 * 0.100 * hei_profile, label="He I", lw=0.5)
+ax.plot(pos, 3 * 0.0019 * oiii_profile, label="[O III]", lw=2.0)
+ax.plot(pos, 3 * 0.13 * ariii_profile, label="[Ar III]", lw=1.5)
+ax.plot(pos, 3 * 0.100 * hei_profile, label="He I", lw=1.0)
+ax.plot(pos, 3 * 0.011 * hb_profile, label="Hβ", lw=0.5)
+
 
 ax.axhline(0, color="k")
 
@@ -542,6 +543,96 @@ Omega_over_4pi
 
 Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
+
+# ## Ar ionization balance
+#
+# We will calculate the conditions at the very peak of the [Ar IV] emission. 
+#
+# We need a very careful slection of the background (BG) and bow shock (BS) samples, since we want to make sure we are in the little triangle window where the intermediate ionization lines are not too contaminated by globule i-fronts and unrelated filaments.
+
+i0, j0, w, h = 234, 200, 12, 8
+bgbox = regions.BoundingBox(
+    iymin=j0 - h//2, iymax=j0 + h//2, 
+    ixmin=i0 - w//2, ixmax=i0 + w//2,
+)
+i0, j0, w, h = 250, 193, 8, 8
+bsbox = regions.BoundingBox(
+    iymin=j0 - h//2, iymax=j0 + h//2, 
+    ixmin=i0 - w//2, ixmax=i0 + w//2,
+)
+
+fig, axes = plt.subplots(1, 3, figsize=(12, 5), sharey=True)
+imariv.plot(ax=axes[0], vmin=0, vmax=700, colorbar="v")
+imariii.plot(ax=axes[1], vmin=0, vmax=2500, colorbar="v")
+(imariv / imariii).plot(ax=axes[2], vmin=0, vmax=0.45, cmap="magma_r", colorbar="v")
+for ax in axes:
+    bsbox.plot(ax=ax, color="w")
+    bgbox.plot(ax=ax, color="w")
+    ax.set(
+        xlim=[200, 300],
+        ylim=[100, 250],
+    )
+fig.tight_layout();    
+
+# +
+bs_ariv = imariv[bsbox.slices].data.mean()
+bg_ariv = imariv[bgbox.slices].data.mean()
+sbs_ariv = imariv[bsbox.slices].data.std()
+sbg_ariv = imariv[bgbox.slices].data.std()
+
+bs_ariii = imariii[bsbox.slices].data.mean()
+bg_ariii = imariii[bgbox.slices].data.mean()
+sbs_ariii = imariii[bsbox.slices].data.std()
+sbg_ariii = imariii[bgbox.slices].data.std()
+# -
+
+f"[Ar IV]: BS = {bs_ariv:.2f} +/- {sbs_ariv:.2f}, BG = {bg_ariv:.2f} +/- {sbg_ariv:.2f}"
+
+f"[Ar III]: BS = {bs_ariii:.2f} +/- {sbs_ariii:.2f}, BG = {bg_ariii:.2f} +/- {sbg_ariii:.2f}"
+
+# +
+BS_ariv = bs_ariv - bg_ariv
+sBS_ariv = np.hypot(sbs_ariv, sbg_ariv)
+
+BS_ariii = bs_ariii - bg_ariii
+sBS_ariii = np.hypot(sbs_ariii, sbg_ariii)
+
+BS_ar_iv_iii = BS_ariv / BS_ariii
+sBS_ar_iv_iii = BS_ar_iv_iii * np.hypot(sBS_ariii / BS_ariii, sBS_ariv / BS_ariv)
+
+f"BG-subtracted BS: [Ar IV] / [Ar III] = {BS_ar_iv_iii:.3f} +/- {sBS_ar_iv_iii:.3f}"
+# -
+
+ar4 = pn.Atom("Ar", 4)
+ar3 = pn.Atom("Ar", 3)
+
+Ts = [15000, 17500, 20000]
+e4711 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4711)
+e4740 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4740)
+e7136 = ar3.getEmissivity(tem=Ts, den=10.0, wave=7136)
+
+e4711 + e4740
+
+e7136
+
+# So the emissivity is very similar, strangely. 
+#
+# Anyway, we should have:
+# $$
+# \frac {n(\mathrm{Ar^{3+}})} {n(\mathrm{Ar^{2+}})}
+# = 
+# \frac{I(4711 + 4740)}{I(7136)} 
+# \, \frac{e(7136)}{e(4711 + 4740)}
+# $$
+
+e7136 / (e4711 + e4740)
+
+# So the T uncertainty of +/- 2500 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value: 
+
+Ar3p_over_Ar2p = BS_ar_iv_iii * (e7136 / (e4711 + e4740))[1]
+Ar3p_over_Ar2p
+
+# Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models.
 
 # ## Can we get a He I density?
 
