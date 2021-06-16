@@ -756,6 +756,18 @@ CLOSED: [2021-05-29 Sat 00:16]
 + We are also interested in the ionization of Ar III -> Ar IV
   + This requires 40.735 eV, compared with 35.121 eV for O III and 54.418 eV for He II
   + Ar IV can persist in the He II zone since Ar IV -> V requires 59.58 eV
+****** Consistency check on the ionization fraction and thickness of the He II zone
++ Based on the notebook [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.md]]
++ There I find that Q_2 = 4.7e45 /s
++ And I also found that n_e = 11 /cm^3
++ The distance of the inner edge from the star is 4 arcsec = 9.23e+17 cm = 0.3 pc
++ So the ionizing flux is F = Q / 4 \pi R^2 = 4.39e+08 phot/s/cm^2
++ This should be equal to n_e n_i \alpha_B h = y_He n_e^2 \alpha_B h / (1 + 2 y_He)
+  + Assuming y_He = 0.082 and \alpha_B = 1.533e-12 cm^3/s
+  + h = F / y_He n_e^2 \alpha_B = 4.39e+08 / 0.082 11**2 1.533e-12 = 2.886e+19 cm = 9.353 pc
+  + That would be 120 arcsec, which is way too thick
+  + Which suggests that I have made a mistake somewhere
+
 ****** Luminosities from POWR models
 #+begin_src python :tangle "../scripts/powr-parse.py" :results output table
   from pathlib import Path
