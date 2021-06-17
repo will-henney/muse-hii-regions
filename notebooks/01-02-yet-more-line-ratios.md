@@ -19,8 +19,11 @@ The previous notebook has grown too long, so I am starting a new one.  What I pl
 
 1. [X] [Cl III] density ratio. *Conclusion:* [Cl III] is useless
 2. [X] [S II] density - this is the best
+3. [ ] He II analysis – ionizing luminosity and density
+    *This has a mistake at the moment, which I need to track down*
+4. [ ] [Ar IV] and [Ar III] ionization balance
 2. [ ] Maybe tetrablok binning and make figure
-3. [ ] Profile cuts across the bow shock
+3. [X] Profile cuts across the bow shock
 4. [ ] Analysis of average line velocities 
 
 

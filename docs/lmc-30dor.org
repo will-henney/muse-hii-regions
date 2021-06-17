@@ -6,9 +6,22 @@
     + She tried to follow similar steps to those in [[file:~/Dropbox/muse-hii-regions/notebooks/02-00-raman-wings.ipynb][NGC 346 notebook]] but it was taking unreasonable amount of time (hours?)
     + This may be due to low RAM on her machine (8GB versus 64GB on mine)
   + So Will is going to carry out the initial steps and produce smaller files that Mabel's machine will be able to manage:
-    1. [ ] Download the data cubes from ESO archive for the 4 fields of 30Dor (A to D)
+    1. [X] Download the data cubes from ESO archive for the 4 fields of 30Dor (A to D)
        - Note that the data cubes will not be stored in this repo (they are too big!).  But we should store the download shell scripts to make this step reproducible
     2. [ ] Fit and remove continuum pixel-by-pixel
     3. [ ] Divide the wavelength range into chunks of about 800 \AA and write out smaller cubes
        - For instance, the range 6100 \to 6900 is more than enough for analyzing the Raman wings of H\alpha
        - The full range is 4700 \AA and the data cubes are about 3GB, so our smaller files should be about 6 times smaller, or 0.5GB
+
+
+** Original files
++ I downloaded what looked to be the combined cubes for each of the 4 positions (with overview images)
+  + A :: ADP.2016-07-14T14:17:17.826.fits
+  + B :: ADP.2016-07-19T06:16:41.316.fits
+  + C :: ADP.2016-07-19T11:27:30.987.fits
+  + D :: ADP.2016-07-15T13:22:09.432.fits
++ Will's local copy of the files is at
+  + ~/Users/will/Work/Muse-Hii-Data/30Dor/2021-06/~
++ Overview images and log files are copied to the data folder of this repo
+  + [[file:../data/lmc-30dor/]]
+
