@@ -171,16 +171,18 @@ axes[0, 0].set_title("B033 Raman wing")
 axes[0, 1].set_title("R040 Raman wing")
 axes[1, 0].set_title("(B033 + R040) / continuum")
 axes[1, 1].set_title("continuum")
-fig.tight_layout();
+fig.suptitle("30 Dor C")
+fig.tight_layout()
+fig.savefig("../figs/lmc-30dor-C-raman-blue-red.pdf");
 
 # The blue and red Raman wings look remarkably similar.  They trace different material than [O I], more distant from the star cluster.
 
 # +
 fig, ax = plt.subplots(figsize=(12, 6))
-cubeC[:, :40, 250:].mean(axis=(1, 2)).plot()
-cubeC[:, 130:180, 80:120].mean(axis=(1, 2)).plot()
-(0.035*cubeC[:, 260:275, 20:40]).mean(axis=(1, 2)).plot()
-
+cubeC[:, :40, 250:].mean(axis=(1, 2)).plot(label="Raman peak SW")
+cubeC[:, 130:180, 80:120].mean(axis=(1, 2)).plot(label="Raman peak mid")
+(0.035*cubeC[:, 260:275, 20:40]).mean(axis=(1, 2)).plot(label="Star NE")
+(0.035*cubeC[:, 20:50, 60:75]).mean(axis=(1, 2)).plot(label="Star SE")
 
 for wav in 6633.35, 6663.75, 6480.8:
     ax.axvline(wav * (1.0 + Vsys / light_speed), color="k", linewidth=0.5)
@@ -190,16 +192,61 @@ for wav in 6196.0, 6613.5,:
 ax.axvspan(6594.2*dopfac, 6611.2*dopfac, linewidth=0, color="r", alpha=0.2)
 ax.axvspan(6518.55*dopfac, 6540.65*dopfac, linewidth=0, color="b", alpha=0.2)
 
+ax.axvspan(6612.05*dopfac, 6628.20*dopfac, linewidth=0, color="r", alpha=0.1)
+ax.axvspan(6499.85*dopfac, 6517.70*dopfac, linewidth=0, color="b", alpha=0.1)
+
+
+ax.legend()
+
 ax.set(
     xlim=[6400, 6800],
-    ylim=[150, 500],
-);
+    ylim=[200, 500],
+)
+fig.savefig("../figs/lmc-30dor-C-raman-clump-spectra.pdf");
 # -
 
 # This is selecting the 3 regions that have a large Raman/continuum ratio.  
 #
-# The middle one is the compact source at the top-left.  It is clearly a Wolf-Rayet star and is not Raman scattering at all.  The shape of the wings is wrong, and the He I line has wings too. 
+# The middle two are the compact source at the top-left and the bunch of stars at bottom left.  They are clearly Wolf-Rayet stars and do not show Raman scattering at all.  The shape of the wings is wrong, and the He I line has wings too. 
 #
 # But the top and bottom one are clear Raman profiles. The O I 6633 absorption looks to be slightly blue-shifted from the systemic velocity.  Why would that be?
+#
+# Both the B033 and R040 bands are relativly free of line contamination, although there is a small contribution from the [N II] line in B033. 
+
+# +
+fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+((raman_R040 + raman_B033) /  siii6312map).plot(
+    ax=axes[0], vmin=0, vmax=0.04, cmap="gray_r", colorbar="v",
+)
+(oi6300map / siii6312map).plot(
+    ax=axes[1], vmin=0, vmax=2.0, cmap="gray_r", colorbar="v",
+)
+axes[0].set_title("Raman / [S III]")
+axes[1].set_title("[O I] / [S III]")
+
+
+fig.tight_layout()
+# -
+
+# Save FITS files of what we have done. Use label `ROUGH` because we should really redo this with a proper continuum subtraction. 
+
+for im, label in [
+    (raman_R040, "ha-raman-R040"),
+    (raman_B033, "ha-raman-B033"),
+    (oi6300map, "oi-6300"),
+    (siii6312map, "siii-6312"),
+]:
+    im.write(f"../data/lmc-30dor-C-ROUGH-{label}.fits", savemask="nan")
+
+# ### Summary of initial analysis of Raman wings in 30 Dor field C
+#
+# + There is Raman wing emission from the entire map, but it is generally weak:(R040+B033)/continuum < 0.1
+# + There are some clumps and filaments of intense Raman wing emission: (R040+B033)/continuum > 0.2
+# + These are all low ionization regions where [O I] / [S III] ~ 1
+# + But they tend to be slightly displaced away from the cluster from the [O I] emission
+# + And not all regions with high [O I] / [S III] show high Raman wing emission
+# + Wolf Rayet stars can be "Raman imposters" due to therir broad Hα lines.  But these also have broad He I lines, which would allow them to be easily masked out
+# + There is an absorption feature at 6614 Å, which is probably DIB absorption.  It is strong in the integrated spectrum of the field, but much weaker in the areas of intense Raman wings.
+# + [ ] *There is something very strange about the Hα map, which has lots of horrible artifacts*  The other lines (e.g., [O I], [S III]) do not show this problem.
 
 
