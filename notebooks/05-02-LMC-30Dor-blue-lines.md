@@ -36,6 +36,8 @@ cubeC = Cube("../big-data/lmc-30dor-C-subcube-46-55.fits")
 cubeD = Cube("../big-data/lmc-30dor-D-subcube-46-55.fits")
 ```
 
+## Inspect the average spectrum for each field
+
 ```python
 fig, ax = plt.subplots(figsize=(12, 6))
 for cube, label in zip([cubeA, cubeB, cubeC, cubeD], "ABCD"):
@@ -47,7 +49,10 @@ ax.set(
 sns.despine();
 ```
 
-We can see the blue-bump from WR stars arounf 4700 Å.  This includes broad He II plus C III/IV, N III, and N V.  Hopefull, this will be restricted to particular regions in each field.
+We can see the blue-bump from WR stars around 4700 Å.  This includes broad He II plus C III/IV, N III, and N V.  Hopefully, this will be restricted to particular regions in each field.
+
+
+## Define continuum wavelength ranges
 
 We can try the same wav ranges as we used for NGC 346
 
@@ -89,11 +94,17 @@ ax.set(
 sns.despine();
 ```
 
+## Test the polynomial fitting with field A
+
+This takes about a minute for each field.
+
 ```python
 contA = extract.fit_continuum(
     cubeA, wav_ranges=wavranges, deg=5, median=False,
 )
 ```
+
+### Inspect the results for different portions of the field. 
 
 ```python
 fig, ax = plt.subplots(figsize=(12, 8))
@@ -103,6 +114,13 @@ for wavrange in wavranges:
     ax.axvspan(*wavrange, alpha=0.3)
 ax.set(ylim=[0, 800])
 ```
+
+I had to go back and forth a few times adjusting the wav ranges.  It is difficult to get a good fit on the blue side because of the WR features. 
+
+As can be seen here, the final version is not perfect – it slightly overpredicts the continuum around 4700 to 4800.  This might affect some of the weak [Fe III] lines, but the [Ar IV] 4740 does not seem to be much affected. 
+
+
+### Look at some line images
 
 ```python
 fig, axes = plt.subplots(
@@ -130,6 +148,8 @@ fig, axes = plt.subplots(
 )
 ```
 
+## Now do the other fields
+
 ```python
 contB = extract.fit_continuum(
     cubeB, wav_ranges=wavranges, deg=5, median=False,
@@ -147,6 +167,48 @@ contD = extract.fit_continuum(
     cubeD, wav_ranges=wavranges, deg=5, median=False,
 )
 ```
+
+## Save the continuum-subtracted cubes
+
+```python
+csub = {}
+cdiv = {}
+for cube, cont, label in zip(
+    [cubeD, cubeC, cubeB, cubeA],
+    [contD, contC, contB, contA],
+    "DCBA",
+):
+    prefix = f"../big-data/lmc-30dor-{label}-subcube-46-55"
+    csub[label] = (cube - cont)
+    cdiv[label] = (cube / cont)
+    csub[label].write(
+        f"{prefix}-contsub.fits",
+        savemask="nan",
+        )
+    cdiv[label].write(
+        f"{prefix}-contdiv.fits",
+        savemask="nan",
+        )
+    cont.write(
+        f"{prefix}-cont.fits",
+        savemask="nan",
+        )    
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+## Quick look at some line images
 
 ```python
 fig, axes = plt.subplots(
@@ -259,12 +321,72 @@ for cube, cont, ax in zip(
     [contD, contC, contB, contA],
     axes.flat,
 ):
-    (cube - cont).select_lambda(4871, 4876).sum(axis=0).rebin(1).plot(
+    (cube - cont).select_lambda(4871 , 4876).sum(axis=0).rebin(1).plot(
         ax=ax, 
         vmin=-10, 
         vmax=3000,
     )
 fig.suptitle("Hβ red wing")
+fig.tight_layout();
+```
+
+```python
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(12, 12), 
+    sharex=True, sharey=True
+)
+for cube, cont, ax in zip(
+    [cubeD, cubeC, cubeB, cubeA],
+    [contD, contC, contB, contA],
+    axes.flat,
+):
+    (cube - cont).select_lambda(5268 , 5276).sum(axis=0).rebin(1).plot(
+        ax=ax, 
+        vmin=-10, 
+        vmax=1500,
+    )
+fig.suptitle("[Fe III] 5269")
+fig.tight_layout();
+```
+
+```python
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(12, 12), 
+    sharex=True, sharey=True
+)
+for cube, cont, ax in zip(
+    [cubeD, cubeC, cubeB, cubeA],
+    [contD, contC, contB, contA],
+    axes.flat,
+):
+    (cube - cont).select_lambda(4657, 4665).sum(axis=0).rebin(1).plot(
+        ax=ax, 
+        vmin=-10, 
+        vmax=4000,
+    )
+fig.suptitle("[Fe III] 4658")
+fig.tight_layout();
+```
+
+```python
+fig, axes = plt.subplots(
+    2, 2, 
+    figsize=(12, 12), 
+    sharex=True, sharey=True
+)
+for cube, cont, ax in zip(
+    [cubeD, cubeC, cubeB, cubeA],
+    [contD, contC, contB, contA],
+    axes.flat,
+):
+    (cube - cont).select_lambda(4641, 4659).sum(axis=0).rebin(1).plot(
+        ax=ax, 
+        vmin=-10, 
+        vmax=2000,
+    )
+fig.suptitle("O III 4650 complex")
 fig.tight_layout();
 ```
 

@@ -458,4 +458,27 @@ contcube.write(
     savemask="nan",
 )
 
+# Do continuum subtraction on the other cubes too.
+
+for label in "ABD":
+    prefix = f"../big-data/lmc-30dor-{label}-subcube-62-71"
+    cube = Cube(f"{prefix}.fits")
+    contcube = extract.fit_continuum(
+        cube, wav_ranges=wavranges, deg=4, median=False,
+    )
+    csubcube = (cube - contcube)
+    cdivcube = (cube / contcube)
+    csubcube.write(
+        f"{prefix}-contsub.fits",
+        savemask="nan",
+        )
+    cdivcube.write(
+        f"{prefix}-contdiv.fits",
+        savemask="nan",
+        )
+    contcube.write(
+        f"{prefix}-cont.fits",
+        savemask="nan",
+    )
+
 
