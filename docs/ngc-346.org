@@ -284,6 +284,9 @@
     + Fastwind value: 2.e-6 Msun/yr
     + 
 *** Photospheric absorption lines from W3
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
 + We might be able to get a radial velocity
   + (assuming it is not a binary)
 + There is an absorption line around 4740, which in most stars is to the red of the [Ar IV] emission line
@@ -294,9 +297,14 @@
   + These show W3 is not special
   + And most stars are blue-shifted with respect to the gas
   + Although this is assuming that the lines are symmetrical, which may not be the case if they are affected by the stellar wind
-+ [ ] Or we could look at red lines - the wavelength resolution is better there
++ [X] Or we could look at red lines - the wavelength resolution is better there
   + But the lines are weaker
   + For the hot stars, we have the narrow line N IV 6380, which could give a precise velocity
++ [ ] Castro:2018a use the He II 5411.5 line to measure the radial velocities
+  + Yes, this looks the best line
+    [[file:ngc-346_att/screenshot-20210620-144147.png]]
+    This shows the profiles of several bright stars.  The thick yellow one is W 3.  It is considerably more blue-shifted than the others.
+  + We should modify the moment calculations to work with the ~contdiv~ files and determine EW and mean velocity (and sigma, and skewness ...)
 *** Relevant papers on bow shocks in SMC
 + Gvaramadze:2011b
   - Massive runaway stars in the Small Magellanic Cloud
