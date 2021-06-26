@@ -167,9 +167,12 @@ cp -av ../OrionMuse/muse-hr-image-wfc3-f547m.fits .
       w = np.ones_like(im)
 
   continuum = fits.open('muse-hr-image-wfc3-f547m.fits')['DATA'].data
-  starmask = continuum > 30
-  m =  np.isfinite(hdu.data) & (~starmask)
-  m = pad_array(m, nmax)
+  starmask = continuum > 150
+
+  # If we pad the starmask and combine it with the padded image, then we
+  # automatically deal with the case where the input files have already
+  # been padded
+  m =  np.isfinite(im) & (~pad_array(starmask, nmax))
 
   for n, mingood in zip(nlist, mingoods):
       im[~m] = 0.0

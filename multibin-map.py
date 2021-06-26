@@ -3,18 +3,11 @@ import sys
 import os
 from distutils.dep_util import newer, newer_group
 import numpy as np
-from rebin_utils import downsample, oversample
+from rebin_utils import downsample, oversample, pad_array
 from astropy.io import fits
 
 nlist = [1, 2, 4, 8, 16, 32, 64, 128, 256]
 mingoods = [2, 2, 2, 2, 2, 2, 2, 2, 2]
-
-def pad_array(a, n):
-    """Pad 2d array `a` to nearest multiple of `n` in each dimension"""
-    newshape = (n*np.ceil(np.array(a.shape).astype(float)/n)).astype(int)
-    b = np.zeros(newshape, dtype=a.dtype)
-    b[:a.shape[0], :a.shape[1]] = a
-    return b
 
 
 try: 
@@ -52,9 +45,12 @@ else:
     w = np.ones_like(im)
 
 continuum = fits.open('muse-hr-image-wfc3-f547m.fits')['DATA'].data
-starmask = continuum > 30
-m =  np.isfinite(hdu.data) & (~starmask)
-m = pad_array(m, nmax)
+starmask = continuum > 150
+
+# If we pad the starmask and combine it with the padded image, then we
+# automatically deal with the case where the input files have already
+# been padded
+m =  np.isfinite(im) & (~pad_array(starmask, nmax))
 
 for n, mingood in zip(nlist, mingoods):
     im[~m] = 0.0
