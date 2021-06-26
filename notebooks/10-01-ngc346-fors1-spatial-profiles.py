@@ -79,6 +79,14 @@ restwav = {
     "H I 4861": 4861.32,
     "H I 4340": 4340.463,
     "H I 4102": 4101.735,
+    "He I 5876": 5875.62,
+    "[Cl III] 5518": 5517.71,
+    "[Cl III] 5538": 5537.88,
+    "[N II] 5755": 5755.08,
+    "[Fe III] 4658": 4658.10,
+    "[Fe III] 4987": 4987.20,
+    "[Fe III] 5270": 5270.4,
+    "O II 4650": 4650.00,
 }
 
 vsys = 160.0
@@ -86,24 +94,52 @@ vlim = np.array([50.0, 400.0])
 restwav["He II 4686"] * (1.0 + vlim / 3e5)
 restwav["[O III] 5007"] * (1.0 + vlim / 3e5)
 
+dwav = wcs2.wcs.cdelt[0]
 
+
+# +
 def extract_line(wav0, pvim, wcs, vlim=[-50, 500]):
+    """
+    Integrated line flux along the slit
+    """
     wavrange = wav0 * (1.0 + np.array(vlim) / 3e5)
     imwin, ww = extract.pvslice(pvim, wcs, wavrange, None)
     return imwin.sum(axis=1)
 
+def extract_ew(wav0, pvim, pvcont, wcs, vlim=[-50, 500]):
+    """
+    Line equivalent width (angstrom units) along the slit
+    """
+    wavrange = wav0 * (1.0 + np.array(vlim) / 3e5)
+    imwin, ww = extract.pvslice(pvim, wcs, wavrange, None)
+    imcont, _ = extract.pvslice(pvcont, wcs, wavrange, None)
+    dwav = wcs.wcs.cdelt[0]
+    return dwav * (imwin / imcont).sum(axis=1)
+
+
+# -
 
 sA = {}
+ewA = {}
 for label, wav0 in restwav.items():
-    pvim, wcs = (hdu2.data, wcs2) if wav0 > 4400.0 else (hdu1.data, wcs1)
+    if wav0 > 4400.0:
+        pvim, pvcont, wcs = hdu2.data, hdu2c.data, wcs2
+    else:
+        pvim, pvcont, wcs = hdu1.data, hdu1c.data, wcs1
     sA[label] = extract_line(wav0, pvim, wcs)
+    ewA[label] = extract_ew(wav0, pvim, pvcont, wcs)
 
-sA
+ewA
 
 sB = {}
+ewB = {}
 for label, wav0 in restwav.items():
-    pvim, wcs = (hdu2B.data, wcs2B) if wav0 > 4400.0 else (hdu1B.data, wcs1B)
+    if wav0 > 4400.0:
+        pvim, pvcont, wcs = hdu2B.data, hdu2cB.data, wcs2B
+    else:
+        pvim, pvcont, wcs = hdu1B.data, hdu1cB.data, wcs1B
     sB[label] = extract_line(wav0, pvim, wcs)
+    ewB[label] = extract_ew(wav0, pvim, pvcont, wcs)    
 
 ny = len(sA["He II 4686"])
 _, posA = wcs1.pixel_to_world_values(
@@ -215,6 +251,111 @@ for ax, pos, s in zip(axes, [posA, posB], [sA, sB]):
         xlim=[-230, 200],
         ylim=[-0.01, 1.5],
     )
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
+    for line in "[O III] 5007", "H I 4861":
+        ax.plot(pos, ew[line], linewidth=3.0, alpha=1.0, label=line)
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend()
+    ax.set(
+        #xlim=[-10, 50],
+        #ylim=[-0.003, 0.02],
+    );
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
+    for line in "He I 5876", "[Ne III] 3869":
+        ax.plot(pos, ew[line], linewidth=3.0, alpha=1.0, label=line)
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend()
+    ax.set(
+        #xlim=[-10, 50],
+        #ylim=[-0.003, 0.02],
+    );
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
+    for line in "[O III] 4363", "[N II] 5755":
+        ax.plot(pos, ew[line], linewidth=3.0, alpha=1.0, label=line)
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend()
+    ax.set(
+        #xlim=[-10, 50],
+        #ylim=[-0.003, 0.02],
+    );
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
+    m = ew["[O III] 5007"] > 250.0
+    for line in "[Ar IV] 4740", "He II 4686":
+        y = ew[line][:]
+        y[~m] = np.nan
+        ax.plot(pos, y, linewidth=1.5, alpha=1.0, label=line)
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend()
+    ax.set(
+        xlim=[-10, 50],
+        ylim=[-2, 3],
+    );
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, s, ew in zip(axes, [posA, posB], [sA, sB], [ewA, ewB]):
+    m = ew["[O III] 5007"] > 250.0
+    for line in "[Fe III] 4658", "O II 4650":
+        y = s[line][:]
+        y[~m] = np.nan
+        ax.plot(pos, y, linewidth=0.5, alpha=1.0, label=line)
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend()
+    ax.set(
+        xlim=[-100, 50],
+        ylim=[-20, 40],
+    );
+
+a = np.arange(4)
+np.kron(a, np.ones((4,)))
+
+sys.path.append("../../multibin-maps")
+import rebin_utils
+
+fig, axes = plt.subplots(2, 1, figsize=(12, 6))
+for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
+    for line, color in zip(["[Ar IV] 4740", "He II 4686"], "cr"):
+        m = ew["[O III] 5007"] > 250.0
+        x, y = pos[:], ew[line][:]
+        w = np.ones_like(y)
+        lw = 0.5
+        for n in [1, 2, 4, 8]:
+            ax.plot(
+                x, y, 
+                linewidth=lw, alpha=1.0, label=line, color=color, drawstyle="steps-mid",
+            )
+            [x, y], m, w = rebin_utils.downsample1d([x, y], m, weights=w)
+            y[~m] = np.nan
+            lw += 0.5
+            line="_nolabel"
+    ax.axhline(0.0, linestyle="dashed", color="k")
+    ax.axvline(0.0, linestyle="dotted", color="k")
+    ax.legend(fontsize="x-small")
+    ax.set(
+        xlim=[-20, 50],
+        #xlim=[-100, 50],
+        ylim=[-2, 3],
+    );
+
+
+
+
+
+
+
+
 
 # +
 fig, ax = plt.subplots(figsize=(12, 12))
