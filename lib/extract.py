@@ -142,3 +142,23 @@ def pv_fit_continuum(
             # If we fail for any reason, then just set zeros
             cont_pvim[j, :] = 0.0
     return cont_pvim
+
+
+def pvslice(im, w, wavrange, posrange):
+    """
+    Return the (image, wcs) tuple of a sub-image of the PV image `im`
+    with WCS `w` for the wavelength range `wavrange` and the position
+    range `posrange`
+    """
+    ny, nx = im.shape
+    if posrange is None:
+        ylim = np.array([0, ny])
+    else:
+        _, ylim = w.world_to_pixel_values([0, 0], posrange)
+    if wavrange is None:
+        xlim = np.array([0, nx])
+    else:
+        xlim, _ = w.world_to_pixel_values(wavrange, [0, 0])
+
+    xslice, yslice = slice(*xlim.astype(int)), slice(*ylim.astype(int))
+    return im[yslice, xslice], w.slice((yslice, xslice))

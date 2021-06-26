@@ -13,7 +13,6 @@ jupyter:
     name: python3
 ---
 
-<!-- #region -->
 # FORS1 longslit observations of NGC 343
 
 These are spectra that are described in [Valerdi et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019ApJ...876...98V). 
@@ -24,21 +23,7 @@ Slit A crosses W 3 (near enough) and is close to the axis of the bow shock.  It 
 
 Slit B is parallel to A, displaced 8 arcsec to south.  It just misses the inner rim, but does show the enhanced [Ar IV] zone of the bow shock. 
 
-I would like to achieve the following:
-
-1. [X] Identify W 3 and the bow shock in the spectra
-2. [ ] Trace the full western extent of the bow shock in [Ar IV]
-    - the MUSE field extends only 22 arcsec from the star 
-    - the FORS1 spectrum shows a roughly linear ramp that extends about 34 arcsec (see image below)
-3. [ ] Calculate the [O III] 4363/5007 temperature profile of the bow shock
-    - See if there is any evidence for temperatures as high as the [Ar IV] temperature
-4. [ ] Measure the [Ne III] 3869 profile.  Ne$^+$ has the same ionization potential as Ar$^{+2}$ (40 eV), but [Ne III] seems to be much more broadly distributed than [Ar IV] 
-
-
-
-![FORS1 profile of Ar IV](assets/ngc346-screenshot-fors1-ariv-profile.png)
-
-<!-- #endregion -->
+In this first notebook, I just do the continuum fitting and subtraction.  I leave the spatial profiles for next time. 
 
 ```python
 from pathlib import Path
@@ -394,6 +379,210 @@ fig.savefig(f"../figs/ngc346-fors1-A-continuum-subtraction-{wav1:d}-{wav2:d}.pdf
 
 ```python
 prefix = f"../data/ngc346-fors1-A-{wav1:d}-{wav2:d}"
+hdr = ww.to_header()
+fits.PrimaryHDU(header=hdr, data=im).writeto(
+    f"{prefix}.fits",
+    overwrite=True,
+)
+fits.PrimaryHDU(header=hdr, data=imc).writeto(
+    f"{prefix}-cont.fits",
+    overwrite=True,
+)
+fits.PrimaryHDU(header=hdr, data=im - imc).writeto(
+    f"{prefix}-contsub.fits",
+    overwrite=True,
+)
+```
+
+## Repeat for slit B
+
+
+```python
+slitB = fits.open("../data/30070000.346B.05.1.B.W.fits")[0]
+w = WCS(slitB)
+```
+
+```python
+w.wcs.pc = np.eye(2)
+w.wcs.cname = "wavelength", "position"
+w.wcs.cunit = "Angstrom", "arcsec"
+w.wcs.cdelt[1] = 0.2
+w.wcs.cd[1, 1] = 0.2
+w.wcs.crpix[1] = 900.0
+w.wcs.crval[1] = 0.0
+```
+
+Longer wave range
+
+```python
+wavranges = [
+    (4490, 4530),
+    (4550, 4640), (4720, 4730), (4760, 4800), (4880, 4915),
+    (4937, 4947), (4974, 4984), (5028, 5038), (5070, 5100), 
+    (5120, 5145), (5220, 5260), (5330, 5390), (5450, 5510),
+    (5700, 5850), (5950, 5980),
+]
+```
+
+```python
+fig, ax = plt.subplots(
+    figsize=(12, 6),
+)
+
+wav1, wav2 = 4400, 6000
+im, ww = pvslice(slitB.data, w, [wav1, wav2], [-5, -3])
+spec = im.mean(axis=0)
+n = len(spec)
+wavs, _ = ww.pixel_to_world_values(np.arange(n), [0]*n)
+ax.plot(wavs, spec, drawstyle="steps-mid", linewidth=3, label="bow rim")
+
+im, ww = pvslice(slitB.data, w, [wav1, wav2], [-15, -5])
+spec2 = im.mean(axis=0)
+ax.plot(wavs, spec2, drawstyle="steps-mid", linewidth=2, label="bow main")
+
+im, ww = pvslice(slitB.data, w, [wav1, wav2], [-3, 3])
+spec3 = im.mean(axis=0)
+ax.plot(wavs, spec3, drawstyle="steps-mid", linewidth=1, label="star")
+
+im, ww = pvslice(slitB.data, w, [wav1, wav2], [4, 8])
+spec4 = im.mean(axis=0)
+ax.plot(wavs, spec4, drawstyle="steps-mid", linewidth=0.5, label="bg neb")
+
+for wavrange in wavranges:
+    ax.axvspan(*wavrange, alpha=0.3)
+ax.legend()
+ax.set(
+    ylim=[0, 100],
+)
+sns.despine();
+```
+
+```python
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], None)
+imc = extract.pv_fit_continuum(
+    im, ww, wav_ranges=wavranges, 
+    deg=4, median=False, verbose=False,
+)
+```
+
+```python
+fig, axes = plt.subplots(
+    1, 3,
+    figsize=(18, 10),
+    subplot_kw=dict(projection=ww),
+    sharey=True,
+)
+axes[0].imshow(im, origin="lower", vmin=10, vmax=100)
+axes[1].imshow(imc, origin="lower", vmin=10, vmax=100)
+axes[2].imshow(im - imc, origin="lower", vmin=-10, vmax=10)
+for ax in axes[1:]:
+    ax.coords[1].set_ticklabel_visible(False)
+    ax.coords[1].set_axislabel(" ")
+
+axes[0].set_title("Original", pad=12)
+axes[1].set_title("Continuum", pad=12)
+axes[2].set_title("Original – Continuum", pad=12)
+fig.suptitle("NGC 346 FORS1 Slit B")
+fig.tight_layout(rect=(0.05, 0.05, 1.0, 1.0))
+fig.savefig(f"../figs/ngc346-fors1-B-continuum-subtraction-{wav1:d}-{wav2:d}.pdf");
+```
+
+```python
+prefix = f"../data/ngc346-fors1-B-{wav1:d}-{wav2:d}"
+hdr = ww.to_header()
+fits.PrimaryHDU(header=hdr, data=im).writeto(
+    f"{prefix}.fits",
+    overwrite=True,
+)
+fits.PrimaryHDU(header=hdr, data=imc).writeto(
+    f"{prefix}-cont.fits",
+    overwrite=True,
+)
+fits.PrimaryHDU(header=hdr, data=im - imc).writeto(
+    f"{prefix}-contsub.fits",
+    overwrite=True,
+)
+```
+
+... and the shorter wave section ...
+
+```python
+wavranges = [
+    (3650, 3690),
+    (3780, 3795),
+    (3845, 3865),
+    (3905, 3930), (3940, 3960),
+    (3985, 4005), (4035, 4055), (4120, 4140),
+    (4175, 4195), (4210, 4230), (4250, 4330),
+    (4445, 4465), (4490, 4530),
+    (4550, 4640), 
+]
+```
+
+```python
+fig, ax = plt.subplots(
+    figsize=(12, 6),
+)
+
+wav1, wav2 = 3562, 4600
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], [-5, -3])
+spec = im.mean(axis=0)
+n = len(spec)
+wavs, _ = ww.pixel_to_world_values(np.arange(n), [0]*n)
+ax.plot(wavs, spec, drawstyle="steps-mid", linewidth=3, label="bow rim")
+
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], [-15, -5])
+spec2 = im.mean(axis=0)
+ax.plot(wavs, spec2, drawstyle="steps-mid", linewidth=2, label="bow main")
+
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], [-3, 3])
+spec3 = im.mean(axis=0)
+ax.plot(wavs, spec3, drawstyle="steps-mid", linewidth=1, label="star")
+
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], [4, 8])
+spec4 = im.mean(axis=0)
+ax.plot(wavs, spec4, drawstyle="steps-mid", linewidth=0.5, label="bg neb")
+
+for wavrange in wavranges:
+    ax.axvspan(*wavrange, alpha=0.3)
+ax.legend()
+ax.set(
+    ylim=[0, 500],
+)
+sns.despine();
+```
+
+```python
+im, ww = extract.pvslice(slitB.data, w, [wav1, wav2], None)
+imc = extract.pv_fit_continuum(
+    im, ww, wav_ranges=wavranges, deg=4, median=False,
+)
+```
+
+```python
+fig, axes = plt.subplots(
+    1, 3,
+    figsize=(15, 10),
+    subplot_kw=dict(projection=ww),
+    sharey=True,
+)
+axes[0].imshow(im, origin="lower", vmin=10, vmax=500)
+axes[1].imshow(imc, origin="lower", vmin=10, vmax=500)
+axes[2].imshow(im - imc, origin="lower", vmin=-30, vmax=100)
+for ax in axes[1:]:
+    ax.coords[1].set_ticklabel_visible(False)
+    ax.coords[1].set_axislabel(" ")
+
+axes[0].set_title("Original", pad=12)
+axes[1].set_title("Continuum", pad=12)
+axes[2].set_title("Original – Continuum", pad=12)
+fig.suptitle("NGC 346 FORS1 Slit B")
+fig.tight_layout(rect=(0.05, 0.05, 1.0, 1.0))
+fig.savefig(f"../figs/ngc346-fors1-B-continuum-subtraction-{wav1:d}-{wav2:d}.pdf");
+```
+
+```python
+prefix = f"../data/ngc346-fors1-B-{wav1:d}-{wav2:d}"
 hdr = ww.to_header()
 fits.PrimaryHDU(header=hdr, data=im).writeto(
     f"{prefix}.fits",
