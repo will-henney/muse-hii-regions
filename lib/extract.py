@@ -1,16 +1,18 @@
-"""Functions to extract emission lines from MUSE cubes
+"""Functions to extract emission lines from MUSE cubes and PV images
 
 Author: Will Henney, IRyA-UNAM, 2021
 """
-from typing import Sequence
+from collections.abc import Sequence
+from typing import Optional, Union
 import numpy as np
 from mpdaf.obj import Cube  # type: ignore
 from numpy.polynomial import Chebyshev as T
 import itertools
 from astropy.wcs import WCS  # type: ignore
+from astropy.io import fits  # type: ignore
 
 
-def _am_i_special(i, j):
+def _am_i_special(i: int, j: int) -> bool:
     return i == 0 and j % 10 == 0
 
 
@@ -160,5 +162,149 @@ def pvslice(im, w, wavrange, posrange):
     else:
         xlim, _ = w.world_to_pixel_values(wavrange, [0, 0])
 
+    # Force pixel limits to be in bounds
+    ylim[0] = max(0, ylim[0])
+    ylim[1] = min(ny - 1, ylim[1])
+    xlim[0] = max(0, xlim[0])
+    xlim[1] = min(nx - 1, xlim[1])
+
     xslice, yslice = slice(*xlim.astype(int)), slice(*ylim.astype(int))
     return im[yslice, xslice], w.slice((yslice, xslice))
+
+
+from dataclasses import dataclass
+from tetrabloks import rebin_utils
+
+
+@dataclass
+class EmissionLine:
+    """
+    Class for keeping track of an emission line
+
+    Minimum functionality: name and rest wavelength
+
+    May also include other stuff like spatial profiles
+    """
+
+    name: str
+    wav0: float
+    vlim: tuple[float, float] = (-50.0, 500.0)
+
+
+@dataclass
+class SlitProfile:
+    """
+    A profile as a function of position along the slit
+    """
+
+    position: np.ndarray
+    data: np.ndarray
+
+    def multibin(
+        self,
+        kmax: int = 5,
+        mask: Optional[np.ndarray] = None,
+        weights: Optional[np.ndarray] = None,
+    ) -> dict:
+        nlist = 2 ** np.arange(kmax)
+        x = self.position
+        y = self.data
+        if mask is None:
+            m = np.ones_like(y).astype(bool)
+        else:
+            m = mask
+        if weights is None:
+            w = np.ones_like(y)
+        else:
+            w = weights
+        rslt = {}
+        for n in nlist:
+            y[~m] = np.nan
+            rslt[n] = SlitProfile(x, y)
+            [x, y], m, w = rebin_utils.downsample1d([x, y], m, weights=w)
+        return rslt
+
+
+@dataclass
+class PositionVelocityImage:
+    """
+    Class to contain data and accompanying WCS of a position-velocity image
+
+    The wavelength axis must be the second python axis
+    """
+
+    data: np.ndarray
+    wcs: WCS
+
+    @classmethod
+    def from_hdu(
+        cls, hdu: Union[fits.PrimaryHDU, fits.ImageHDU]
+    ) -> "PositionVelocityImage":
+        return PositionVelocityImage(hdu.data, WCS(hdu))
+
+    def slit_profile(self, emline: EmissionLine) -> SlitProfile:
+        """
+        Calculate integrated line flux as function of position
+        """
+        wavrange = emline.wav0 * (1.0 + np.array(emline.vlim) / 3e5)
+        pvwin = self.slice(wavrange, None)
+        ny, nx = pvwin.data.shape
+        _, positions = pvwin.wcs.pixel_to_world_values(
+            [0] * ny,
+            np.arange(ny),
+        )
+        return SlitProfile(positions, np.atleast_1d(pvwin.data.sum(axis=1)))
+
+    def slit_ew_profile(
+        self, emline: EmissionLine, continuum: "PositionVelocityImage"
+    ) -> SlitProfile:
+        """
+        Calculate equivalent width (angstrom units) of line as
+        function of position
+        """
+        wavrange = emline.wav0 * (1.0 + np.array(emline.vlim) / 3e5)
+        pvwin = self.slice(wavrange, None)
+        contwin = continuum.slice(wavrange, None)
+        ny, nx = pvwin.data.shape
+        _, positions = pvwin.wcs.pixel_to_world_values(
+            [0] * ny,
+            np.arange(ny),
+        )
+        dwav = pvwin.wcs.wcs.cdelt[0]
+        ew = dwav * (pvwin.data / contwin.data).sum(axis=1)
+        return SlitProfile(positions, ew)
+
+    def slice(
+        self,
+        wavrange: Optional[Sequence[float]],
+        posrange: Optional[Sequence[float]],
+    ) -> "PositionVelocityImage":
+        """
+        Return a slice (sub-image) of the position-velocity image for
+        the wavelength range `wavrange` and the position range
+        `posrange`.  If either range is None, then the full extent
+        along that axis is used.
+        """
+        ny, nx = self.data.shape
+        if posrange is None:
+            ylim = np.array([0, ny])
+        else:
+            _, ylim = self.wcs.world_to_pixel_values([0, 0], posrange)
+        if wavrange is None:
+            xlim = np.array([0, nx])
+        else:
+            xlim, _ = self.wcs.world_to_pixel_values(wavrange, [0, 0])
+
+        # Force pixel limits to be in bounds. This allows one to use,
+        # for example, a very high upper limit on wavrange or posrange
+        # to guarantee getting all the way up to the end of that axis
+        ylim[0] = max(0, ylim[0])
+        ylim[1] = min(ny - 1, ylim[1])
+        xlim[0] = max(0, xlim[0])
+        xlim[1] = min(nx - 1, xlim[1])
+
+        xslice, yslice = slice(*xlim.astype(int)), slice(*ylim.astype(int))
+        return PositionVelocityImage(
+            self.data[yslice, xslice],
+            self.wcs.slice((yslice, xslice)),
+        )

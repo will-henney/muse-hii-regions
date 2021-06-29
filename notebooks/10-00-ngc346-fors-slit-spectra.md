@@ -598,6 +598,4 @@ fits.PrimaryHDU(header=hdr, data=im - imc).writeto(
 )
 ```
 
-```python
 
-```

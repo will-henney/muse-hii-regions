@@ -67,8 +67,19 @@ wcs1 = WCS(hdu1)
 wcs2 = WCS(hdu2)
 wcs1B = WCS(hdu1B)
 wcs2B = WCS(hdu2B)
+for w in wcs1, wcs2, wcs1B, wcs2B:
+    w.wcs.cdelt[1] *= -1.0
 
 # Set up the lines that we want with wavelength limits:
+
+pv1A = extract.PositionVelocityImage(hdu1.data, wcs1)
+pv2A = extract.PositionVelocityImage(hdu2.data, wcs2)
+pvc1A = extract.PositionVelocityImage(hdu1c.data, wcs1)
+pvc2A = extract.PositionVelocityImage(hdu2c.data, wcs2)
+pv1B = extract.PositionVelocityImage(hdu1B.data, wcs1B)
+pv2B = extract.PositionVelocityImage(hdu2B.data, wcs2B)
+pvc1B = extract.PositionVelocityImage(hdu1cB.data, wcs1B)
+pvc2B = extract.PositionVelocityImage(hdu2cB.data, wcs2B)
 
 restwav = {
     "He II 4686": 4685.68,
@@ -89,70 +100,27 @@ restwav = {
     "O II 4650": 4650.00,
 }
 
-vsys = 160.0
-vlim = np.array([50.0, 400.0])
-restwav["He II 4686"] * (1.0 + vlim / 3e5)
-restwav["[O III] 5007"] * (1.0 + vlim / 3e5)
+emlines = {k: extract.EmissionLine(k, v) for k, v in restwav.items()}
 
-dwav = wcs2.wcs.cdelt[0]
+emlines
 
-
-# +
-def extract_line(wav0, pvim, wcs, vlim=[-50, 500]):
-    """
-    Integrated line flux along the slit
-    """
-    wavrange = wav0 * (1.0 + np.array(vlim) / 3e5)
-    imwin, ww = extract.pvslice(pvim, wcs, wavrange, None)
-    return imwin.sum(axis=1)
-
-def extract_ew(wav0, pvim, pvcont, wcs, vlim=[-50, 500]):
-    """
-    Line equivalent width (angstrom units) along the slit
-    """
-    wavrange = wav0 * (1.0 + np.array(vlim) / 3e5)
-    imwin, ww = extract.pvslice(pvim, wcs, wavrange, None)
-    imcont, _ = extract.pvslice(pvcont, wcs, wavrange, None)
-    dwav = wcs.wcs.cdelt[0]
-    return dwav * (imwin / imcont).sum(axis=1)
-
-
-# -
-
-sA = {}
-ewA = {}
-for label, wav0 in restwav.items():
-    if wav0 > 4400.0:
-        pvim, pvcont, wcs = hdu2.data, hdu2c.data, wcs2
+for em in emlines.values():
+    if em.wav0 > 4400:
+        em.pvA = pv2A
+        em.pvB = pv2B
+        em.pvcA = pvc2A
+        em.pvcB = pvc2B
     else:
-        pvim, pvcont, wcs = hdu1.data, hdu1c.data, wcs1
-    sA[label] = extract_line(wav0, pvim, wcs)
-    ewA[label] = extract_ew(wav0, pvim, pvcont, wcs)
+        em.pvA = pv1A
+        em.pvB = pv1B
+        em.pvcA = pvc1A
+        em.pvcB = pvc1B
 
-ewA
-
-sB = {}
-ewB = {}
-for label, wav0 in restwav.items():
-    if wav0 > 4400.0:
-        pvim, pvcont, wcs = hdu2B.data, hdu2cB.data, wcs2B
-    else:
-        pvim, pvcont, wcs = hdu1B.data, hdu1cB.data, wcs1B
-    sB[label] = extract_line(wav0, pvim, wcs)
-    ewB[label] = extract_ew(wav0, pvim, pvcont, wcs)    
-
-ny = len(sA["He II 4686"])
-_, posA = wcs1.pixel_to_world_values(
-    [0] * ny,
-    np.arange(ny),
-)
-ny = len(sB["He II 4686"])
-_, posB = wcs1.pixel_to_world_values(
-    [0] * ny,
-    np.arange(ny),
-)
-posA *= -1.0
-posB *= -1.0
+for em in emlines.values():
+    em.A = em.pvA.slit_profile(em)
+    em.ewA = em.pvA.slit_ew_profile(em, em.pvcA)
+    em.B = em.pvB.slit_profile(em)
+    em.ewB = em.pvB.slit_ew_profile(em, em.pvcB)
 
 # +
 fig, axes = plt.subplots(
@@ -161,13 +129,17 @@ fig, axes = plt.subplots(
     figsize=(12, 12),
     sharex=True,
 )
-axes[0].plot(posA, sA["[Ar IV] 4740"], linewidth=1.0, alpha=1.0)
-axes[0].plot(posA, sA["He II 4686"], linewidth=2.0, alpha=1.0)
+e = emlines["[Ar IV] 4740"]
+axes[0].plot(e.A.position, e.A.data, linewidth=1.0, alpha=1.0)
+axes[1].plot(e.B.position, e.B.data, linewidth=1.0, alpha=1.0)
+
+e = emlines["He II 4686"]
+axes[0].plot(e.A.position, e.A.data, linewidth=2.0, alpha=1.0)
+axes[1].plot(e.B.position, e.B.data, linewidth=2.0, alpha=1.0)
+
 axes[0].axhline(0.0, linestyle="dashed", color="k")
 axes[0].axvline(0.0, linestyle="dotted", color="k")
 
-axes[1].plot(posB, sB["[Ar IV] 4740"], linewidth=1.0, alpha=1.0)
-axes[1].plot(posB, sB["He II 4686"], linewidth=2.0, alpha=1.0)
 axes[1].axhline(0.0, linestyle="dashed", color="k")
 axes[1].axvline(0.0, linestyle="dotted", color="k")
 
@@ -179,12 +151,17 @@ for ax in axes:
 
 # +
 fig, axes = plt.subplots(2, 1, figsize=(12, 12))
-axes[0].plot(posA, 1e-3 * sA["[O III] 5007"], linewidth=1.0, alpha=1.0)
-axes[0].plot(posA, 0.075 * sA["[O III] 4363"], linewidth=1.0, alpha=1.0)
-axes[0].plot(posA, sA["He II 4686"], linewidth=2.0, alpha=1.0)
-axes[1].plot(posB, 1e-3 * sB["[O III] 5007"], linewidth=1.0, alpha=1.0)
-axes[1].plot(posB, 0.075 * sB["[O III] 4363"], linewidth=1.0, alpha=1.0)
-axes[1].plot(posB, sB["He II 4686"], linewidth=2.0, alpha=1.0)
+e = emlines["[O III] 5007"]
+axes[0].plot(e.A.position, 1e-3 * e.A.data, linewidth=1.0, alpha=1.0)
+axes[1].plot(e.B.position, 1e-3 * e.B.data, linewidth=1.0, alpha=1.0)
+
+e = emlines["[O III] 4363"]
+axes[0].plot(e.A.position, 0.075 * e.A.data, linewidth=1.0, alpha=1.0)
+axes[1].plot(e.B.position, 0.075 * e.B.data, linewidth=1.0, alpha=1.0)
+
+e = emlines["He II 4686"]
+axes[0].plot(e.A.position, e.A.data, linewidth=2.0, alpha=1.0)
+axes[1].plot(e.B.position, e.B.data, linewidth=2.0, alpha=1.0)
 
 for ax in axes:
     ax.axhline(0.0, linestyle="dashed", color="k")
@@ -193,18 +170,89 @@ for ax in axes:
         xlim=[-25, 75],
         ylim=[-30, 60],
     )
+
+# +
+Amask = emlines["[O III] 5007"].ewA.data > 200.0
+Bmask = emlines["[O III] 5007"].ewB.data > 200.0
+
+for e in emlines.values():
+    e.multiA = e.A.multibin(mask=Amask)
+    e.multiB = e.B.multibin(mask=Bmask)
 # -
 
-fig, axes = plt.subplots(2, 1, figsize=(12, 6))
-for ax, pos, s in zip(axes, [posA, posB], [sA, sB]):
-    ax.plot(pos, s["[O III] 4363"] / s["[O III] 5007"], linewidth=3.0, alpha=1.0)
-    ax.plot(pos, 0.0003 * s["[O III] 5007"], linewidth=2.0, alpha=1.0)
-    ax.axhline(0.0, linestyle="dashed", color="k")
-    ax.axvline(0.0, linestyle="dotted", color="k")
+
+e.multiB[16].data
+
+# +
+fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+e1 = emlines["[O III] 4363"]
+e2 = emlines["[O III] 5007"]
+xmin, xmax = -10, 50
+
+n = 1
+ratio = e1.multiA[n].data / e2.multiA[n].data
+pos = e1.multiA[n].position
+ax.plot(pos, ratio, linewidth=1.0, alpha=1.0, drawstyle="steps-mid")
+
+n = 8
+ratio = e1.multiA[n].data / e2.multiA[n].data
+pos = e1.multiA[n].position
+ax.plot(pos, ratio, linewidth=4.0, alpha=1.0, drawstyle="steps-mid")
+
+ax.plot(e2.A.position, 3e-7*e2.A.data)
+
+ax.axhline(0.0, linestyle="dashed", color="k")
+m = (pos > xmin) & (pos < xmax)
+ax.axhline(
+    np.nanmedian(ratio[m]),
+    linestyle="dotted", color="k",
+)
+ax.axvline(0.0, linestyle="dotted", color="k")
+ax.set(
+    xlim=[xmin, xmax],
+    ylim=[-0.003, 0.02],
+);
+
+# +
+fig, axes = plt.subplots(
+    2,
+    1,
+    figsize=(12, 12),
+    sharex=True,
+)
+n = 8
+e = emlines["[Ar IV] 4740"]
+axes[0].plot(
+    e.multiA[n].position, e.multiA[n].data, 
+    linewidth=1.0, alpha=1.0, drawstyle="steps-mid",
+)
+axes[1].plot(
+    e.multiB[n].position, e.multiB[n].data, 
+    linewidth=1.0, alpha=1.0, drawstyle="steps-mid",
+)
+
+e = emlines["He II 4686"]
+axes[0].plot(
+    e.multiA[n].position, e.multiA[n].data, 
+    linewidth=2.0, alpha=1.0, drawstyle="steps-mid",
+)
+axes[1].plot(
+    e.multiB[n].position, e.multiB[n].data, 
+    linewidth=2.0, alpha=1.0, drawstyle="steps-mid",
+)
+
+axes[0].axhline(0.0, linestyle="dashed", color="k")
+axes[0].axvline(0.0, linestyle="dotted", color="k")
+
+axes[1].axhline(0.0, linestyle="dashed", color="k")
+axes[1].axvline(0.0, linestyle="dotted", color="k")
+
+for ax in axes:
     ax.set(
-        xlim=[-10, 50],
-        ylim=[-0.003, 0.02],
+        xlim=[-25, 75],
+        ylim=[-30, 60],
     )
+# -
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, pos, s in zip(axes, [posA, posB], [sA, sB]):
@@ -260,9 +308,9 @@ for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend()
     ax.set(
-        #xlim=[-10, 50],
-        #ylim=[-0.003, 0.02],
-    );
+        # xlim=[-10, 50],
+        # ylim=[-0.003, 0.02],
+    )
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
@@ -272,9 +320,9 @@ for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend()
     ax.set(
-        #xlim=[-10, 50],
-        #ylim=[-0.003, 0.02],
-    );
+        # xlim=[-10, 50],
+        # ylim=[-0.003, 0.02],
+    )
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
@@ -284,9 +332,9 @@ for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend()
     ax.set(
-        #xlim=[-10, 50],
-        #ylim=[-0.003, 0.02],
-    );
+        # xlim=[-10, 50],
+        # ylim=[-0.003, 0.02],
+    )
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
@@ -301,7 +349,7 @@ for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
     ax.set(
         xlim=[-10, 50],
         ylim=[-2, 3],
-    );
+    )
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, pos, s, ew in zip(axes, [posA, posB], [sA, sB], [ewA, ewB]):
@@ -316,12 +364,12 @@ for ax, pos, s, ew in zip(axes, [posA, posB], [sA, sB], [ewA, ewB]):
     ax.set(
         xlim=[-100, 50],
         ylim=[-20, 40],
-    );
+    )
 
 a = np.arange(4)
 np.kron(a, np.ones((4,)))
 
-sys.path.append("../../multibin-maps")
+sys.path.append("../multibin-maps")
 import rebin_utils
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
@@ -333,37 +381,23 @@ for ax, pos, ew in zip(axes, [posA, posB], [ewA, ewB]):
         lw = 0.5
         for n in [1, 2, 4, 8]:
             ax.plot(
-                x, y, 
-                linewidth=lw, alpha=1.0, label=line, color=color, drawstyle="steps-mid",
+                x,
+                y,
+                linewidth=lw,
+                alpha=1.0,
+                label=line,
+                color=color,
+                drawstyle="steps-mid",
             )
             [x, y], m, w = rebin_utils.downsample1d([x, y], m, weights=w)
             y[~m] = np.nan
             lw += 0.5
-            line="_nolabel"
+            line = "_nolabel"
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend(fontsize="x-small")
     ax.set(
         xlim=[-20, 50],
-        #xlim=[-100, 50],
+        # xlim=[-100, 50],
         ylim=[-2, 3],
-    );
-
-
-
-
-
-
-
-
-
-# +
-fig, ax = plt.subplots(figsize=(12, 12))
-hb_hg = s4861 / s4341
-hg_hd = s4341 / s4102
-
-ax.scatter(hb_hg, hg_hd, s=300, linewidth=0, alpha=0.1, marker=".")
-ax.set(
-    xlim=[1.5, 2.5],
-    ylim=[1.0, 2.0],
-)
+    )
