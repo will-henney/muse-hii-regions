@@ -205,22 +205,58 @@ class SlitProfile:
         kmax: int = 5,
         mask: Optional[np.ndarray] = None,
         weights: Optional[np.ndarray] = None,
-    ) -> dict:
+    ) -> dict[int, "SlitProfile"]:
+        """
+        Calculate a sequence of rebinnings: x 2, x 4, x 8, ..., x 2^`kmax`
+
+        Each rebinning is oversampled back to the original resolution (with padding).
+        Returns a dict: {1: profile@1x, 2: profile@2x}
+        """
         nlist = 2 ** np.arange(kmax)
-        x = self.position
-        y = self.data
+        nmax = nlist[-1]
+        x = self.position[:]
+        y = self.data[:]
+        # Check that array length is multiple of maximum n
+        remainder = len(x) % nmax
+        npad = (nmax - remainder) % nmax
+        if npad > 0:
+            # If not, then pad the right edge to the correct size
+            x = np.pad(x, (0, npad), mode="empty")
+            y = np.pad(y, (0, npad), mode="empty")
+        assert len(x) % nmax == 0, f"Does not divide: {len(x)}, {nmax}"
+        # Save the padded positions at original resolution
+        x0 = x[:]
+
+        # Make an all-true mask if none was provided
         if mask is None:
             m = np.ones_like(y).astype(bool)
         else:
-            m = mask
+            # Make sure mask conforms to the padded array
+            m = np.pad(mask, (0, npad), mode="constant", constant_values=False)
+        # Save the padded mask at original resolution
+        m0 = m[:]
+        # Policy is to set invalid values where mask is false
+        x0[~m0] = np.nan
+
+        # Use constant weights if none were provided
         if weights is None:
             w = np.ones_like(y)
         else:
             w = weights
         rslt = {}
+
         for n in nlist:
-            y[~m] = np.nan
-            rslt[n] = SlitProfile(x, y)
+            assert x.shape == y.shape == m.shape == w.shape
+            # Upsample the data array back to the original resolution
+            y0 = rebin_utils.oversample1d(y, n)
+            # And set all values invalid that are outside the original mask
+            y0[~m0] = np.nan
+            assert y0.shape == x0.shape, (
+                f"Different shapes: y0 = {y0.shape}, " f"x0 = {x0.shape} (n = {n})"
+            )
+            # Save the profile at current binning level
+            rslt[n] = SlitProfile(x0, y0)
+            # Downsample to get the next coarser binning level
             [x, y], m, w = rebin_utils.downsample1d([x, y], m, weights=w)
         return rslt
 
