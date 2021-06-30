@@ -17,7 +17,11 @@ def downsample1d(profiles, mask, weights=None, verbose=False, mingood=1):
     """
     # Construct slices for even and odd elements, respectively
     # e, o = np.s_[:,-1,2], np.s_[1,:,2] # Just learnt about the np.s_() function!
-    e, o = slice(None, -1, 2), slice(1, None, 2)
+    e, o = slice(None, None, 2), slice(1, None, 2)
+
+    assert (
+        mask[e].shape == mask[o].shape
+    ), f"Incompatible odd/even lengths: {mask[o].shape}, {mask[e].shape}"
 
     # Find the number of good sub-pixels in each new pixel
     ngood = mask[e].astype(int) + mask[o].astype(int)
@@ -39,6 +43,11 @@ def downsample1d(profiles, mask, weights=None, verbose=False, mingood=1):
             for profile in profiles
         ]
     else:
+        assert weights[e].shape == weights[o].shape == mask[e].shape == mask[o].shape, (
+            f"Incompatible mask/weight lengths. "
+            f"Weights: {weights[o].shape}, {weights[e].shape}. "
+            f"Mask: {mask[o].shape}, {mask[e].shape}."
+        )
         newweights = weights[e] * mask[e] + weights[o] * mask[o]
         newprofiles = [
             np.where(
