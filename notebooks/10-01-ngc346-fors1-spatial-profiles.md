@@ -558,6 +558,48 @@ fig.tight_layout()
 fig.savefig("../figs/ngc346-fors1-combo.pdf")
 ```
 
+## Analysis of 4363 / 5007 ratio
+
+```python
+import pyneb as pn
+o3 = pn.Atom("O", 3)
+```
+
+```python
+o3.getTemDen(
+    int_ratio=[average_ratio_mabel, 0.0145, 0.016, 0.022],
+    den=100.0,
+    wave1=4363,
+    wave2=5007,
+)
+```
+
+So that is rather small variation in temperature. including the ratios seen in the SNR sections. 
+
+Define regions to take the nebular BG and the rise at the bow shock rim.
+
+```python
+e1 = emlines["[O III] 4363"]
+e2 = emlines["[O III] 5007"]
+
+pos_bg = [-6.0, -2.0]
+pos_rim = [2.0, 8.0]
+mask_bg = (e1.A.position >= pos_bg[0]) &  (e1.A.position <= pos_bg[1])
+mask_rim = (e1.A.position >= pos_rim[0]) &  (e1.A.position <= pos_rim[1])
+e1_rim = e1.A.data[mask_rim].mean()
+e2_rim = e2.A.data[mask_rim].mean()
+e1_bg = e1.A.data[mask_bg].mean()
+e2_bg = e2.A.data[mask_bg].mean()
+
+np.round([_ for _ in [e1_rim, e1_bg, e2_rim, e2_bg]])
+```
+
+```python
+
+```
+
+## More graphs
+
 ```python
 fig, axes = plt.subplots(2, 1, figsize=(12, 12))
 n = 8
