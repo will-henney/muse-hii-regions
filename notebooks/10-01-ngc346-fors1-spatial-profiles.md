@@ -110,13 +110,13 @@ restwav = {
     "[Fe III] 5270": 5270.4,
     "O II 4650": 4650.00,
     "[O II] 3729": 3728.815,
-    "[O II] 3726": 3726.032, 
+    "[O II] 3726": 3726.032,
     "Wing 4975": 4975.0,
 }
 ```
 
 ```python
-emlines = {k: extract.EmissionLine(k, v) for k, v in restwav.items()}
+emlines = {k: extract.EmissionLine(k, v, vlim=(100.0, 400.0)) for k, v in restwav.items()}
 ```
 
 ```python
@@ -144,7 +144,7 @@ for em in emlines.values():
     em.cA = em.pvcA.slit_profile(em)
     em.B = em.pvB.slit_profile(em)
     em.ewB = em.pvB.slit_ew_profile(em, em.pvcB)
-    em.cB = em.pvcB.slit_profile(em)    
+    em.cB = em.pvcB.slit_profile(em)
 ```
 
 ```python
@@ -199,12 +199,14 @@ for ax in axes:
 ```
 
 ```python
-Amask = emlines["[O III] 5007"].ewA.data > 300.0
-Bmask = emlines["[O III] 5007"].ewB.data > 300.0
+Amask = emlines["[O III] 5007"].ewA.data > 250.0
+Bmask = emlines["[O III] 5007"].ewB.data > 250.0
 
 for e in emlines.values():
     e.multiA = e.A.multibin(kmax=10, mask=Amask)
     e.multiB = e.B.multibin(kmax=10, mask=Bmask)
+    e.multi_cA = e.cA.multibin()
+    e.multi_cB = e.cB.multibin()    
 ```
 
 
@@ -212,34 +214,42 @@ for e in emlines.values():
 e.multiB[512].data
 ```
 
+Reddening correction for 4363 / 5007 from Mabel paper:
+
+```python
+redcorr_oiii_ratio = (7.06 / 522.70) / (6.82 / 534.12)
+average_ratio_mabel = (7.06 / 522.70)
+redcorr_oiii_ratio, average_ratio_mabel
+```
+
 ```python
 fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True, sharey=True)
 e1 = emlines["[O III] 4363"]
 e2 = emlines["[O III] 5007"]
-#min, xmax = -10, 50
+# min, xmax = -10, 50
 xmin, xmax = -230, 180
 
 n = 2
-ratioA = e1.multiA[n].data / e2.multiA[n].data
-ratioB = e1.multiB[n].data / e2.multiB[n].data
+ratioA = redcorr_oiii_ratio * e1.multiA[n].data / e2.multiA[n].data
+ratioB = redcorr_oiii_ratio * e1.multiB[n].data / e2.multiB[n].data
 posA = e1.multiA[n].position
 posB = e1.multiB[n].position
 axes[0].plot(posA, ratioA, linewidth=1.0, alpha=1.0, drawstyle="steps-mid")
 axes[1].plot(posB, ratioB, linewidth=1.0, alpha=1.0, drawstyle="steps-mid")
 
 n = 8
-ratioA = e1.multiA[n].data / e2.multiA[n].data
-ratioB = e1.multiB[n].data / e2.multiB[n].data
+ratioA = redcorr_oiii_ratio * e1.multiA[n].data / e2.multiA[n].data
+ratioB = redcorr_oiii_ratio * e1.multiB[n].data / e2.multiB[n].data
 posA = e1.multiA[n].position
 posB = e1.multiB[n].position
 axes[0].plot(posA, ratioA, linewidth=4.0, alpha=1.0, drawstyle="steps-mid")
 axes[1].plot(posB, ratioB, linewidth=4.0, alpha=1.0, drawstyle="steps-mid")
 
-axes[0].plot(e2.A.position, 3e-7*e2.A.data)
-axes[1].plot(e2.B.position, 3e-7*e2.B.data)
+axes[0].plot(e2.A.position, 3e-7 * e2.A.data)
+axes[1].plot(e2.B.position, 3e-7 * e2.B.data)
 
-#axes[0].plot(e1.cA.position, 5e-7*e1.cA.data)
-#axes[1].plot(e1.cB.position, 5e-7*e1.cB.data)
+# axes[0].plot(e1.cA.position, 5e-7*e1.cA.data)
+# axes[1].plot(e1.cB.position, 5e-7*e1.cB.data)
 
 m = (posA > -50) & (posA < xmax)
 average_ratioA = np.nanmean(ratioA[m])
@@ -252,7 +262,8 @@ for ax, ratio in zip(axes, [ratioA, ratioB]):
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axhline(
         average_ratio,
-        linestyle="dotted", color="k",
+        linestyle="dotted",
+        color="k",
     )
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.set(
@@ -265,7 +276,7 @@ axes[-1].set(
 )
 sns.despine()
 fig.tight_layout()
-fig.savefig("../figs/ngc346-fors1-oiii-4363-5007-ratio.pdf");
+fig.savefig("../figs/ngc346-fors1-oiii-4363-5007-ratio.pdf")
 ```
 
 ```python
@@ -281,63 +292,96 @@ n = 16
 e = emlines["He II 4686"]
 fac = 1.0 / np.nanmax(e.multiA[n].data)
 axes[0].fill_between(
-    e.multiA[n].position, fac * e.multiA[n].data, 
-    linewidth=2.0, alpha=0.3, 
+    e.multiA[n].position,
+    fac * e.multiA[n].data,
+    linewidth=2.0,
+    alpha=0.3,
     label=e.name,
 )
 axes[1].fill_between(
-    e.multiB[n].position, fac * e.multiB[n].data, 
-    linewidth=2.0, alpha=0.3, 
+    e.multiB[n].position,
+    fac * e.multiB[n].data,
+    linewidth=2.0,
+    alpha=0.3,
 )
 
 e = emlines["[O II] 3729"]
 fac = 1.0 / np.nanmax(e.A.data)
 axes[0].plot(
-    e.A.position, fac * e.A.data, 
-    linewidth=2.5, alpha=1.0, drawstyle="steps-mid", color="b",
+    e.A.position,
+    fac * e.A.data,
+    linewidth=2.5,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="b",
     label=e.name,
 )
 axes[1].plot(
-    e.B.position, fac * e.B.data, 
-    linewidth=2.5, alpha=1.0, drawstyle="steps-mid", color="b",
+    e.B.position,
+    fac * e.B.data,
+    linewidth=2.5,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="b",
 )
 
 e = emlines["[Ne III] 3869"]
 fac = 1.0 / np.nanmax(e.A.data)
 axes[0].plot(
-    e.A.position, fac * e.A.data, 
-    linewidth=2.5, alpha=1.0, drawstyle="steps-mid", color="g",
+    e.A.position,
+    fac * e.A.data,
+    linewidth=2.5,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="g",
     label=e.name,
 )
 axes[1].plot(
-    e.B.position, fac * e.B.data, 
-    linewidth=2.5, alpha=1.0, drawstyle="steps-mid", color="g",
+    e.B.position,
+    fac * e.B.data,
+    linewidth=2.5,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="g",
 )
 
 e = emlines["[Ar IV] 4740"]
 fac = 1.0 / np.nanmax(e.multiA[n].data)
 axes[0].plot(
-    e.multiA[n].position, fac * e.multiA[n].data, 
-    linewidth=3.0, alpha=1.0, drawstyle="steps-mid", color="r",
+    e.multiA[n].position,
+    fac * e.multiA[n].data,
+    linewidth=3.0,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="r",
     label=e.name,
 )
 axes[1].plot(
-    e.multiB[n].position, fac * e.multiB[n].data, 
-    linewidth=3.0, alpha=1.0, drawstyle="steps-mid", color="r",
+    e.multiB[n].position,
+    fac * e.multiB[n].data,
+    linewidth=3.0,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color="r",
 )
 
 
 fac = 1.0 / np.nanmax(e.cA.data)
 axes[0].fill_between(
-    e.cA.position, fac * e.cA.data, 
-    linewidth=0.0, alpha=0.7, color="m", 
+    e.cA.position,
+    fac * e.cA.data,
+    linewidth=0.0,
+    alpha=0.7,
+    color="m",
     label="continuum",
 )
 axes[1].fill_between(
-    e.cB.position, fac * e.cB.data, 
-    linewidth=0.0, alpha=0.7, color="m", 
+    e.cB.position,
+    fac * e.cB.data,
+    linewidth=0.0,
+    alpha=0.7,
+    color="m",
 )
-
 
 
 axes[0].axhline(0.0, linestyle="dashed", color="k")
@@ -351,7 +395,7 @@ for ax in axes:
         xlim=[xmin, xmax],
         ylim=[-0.1, 1.45],
     )
-    
+
 axes[0].legend()
 axes[-1].set(
     xlabel="Offset West from Walborn 3, arcsec",
@@ -359,12 +403,164 @@ axes[-1].set(
 )
 sns.despine()
 fig.tight_layout()
-fig.savefig("../figs/ngc346-fors1-multiline-slit-profiles.pdf");
+fig.savefig("../figs/ngc346-fors1-multiline-slit-profiles.pdf")
+```
+
+I want to combine the two previous plots to focus on only Slit A.
+
+```python
+import cmasher as cmr
+fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+
+# Take 5 colors from rainforest in [0.15, 0.85] range in HEX
+#colors = cmr.take_cmap_colors('cmr.rainforest', 5, cmap_range=(0.15, 0.85), return_fmt='hex')
+colors = cmr.take_cmap_colors(
+    'cmr.torch', 
+    5, 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+
+
+# Ratio plot
+e1 = emlines["[O III] 4363"]
+e2 = emlines["[O III] 5007"]
+xmin, xmax = -230, 180
+
+n = 1
+ratioA = redcorr_oiii_ratio * e1.multiA[n].data / e2.multiA[n].data
+posA = e1.multiA[n].position
+axes[0].plot(
+    posA, ratioA, 
+    linewidth=0.2, color="k", alpha=0.5, 
+    drawstyle="steps-mid",
+)
+
+n = 4
+ratioA = redcorr_oiii_ratio * e1.multiA[n].data / e2.multiA[n].data
+posA = e1.multiA[n].position
+axes[0].plot(posA, ratioA, linewidth=4.0, alpha=1.0, color=colors[1], drawstyle="steps-mid")
+
+m = (posA > -50) & (posA < xmax)
+average_ratioA = np.nanmean(ratioA[m])
+
+#axes[0].axhline(0.0, linestyle="dashed", color="k")
+axes[0].axhline(
+    average_ratio_mabel,
+    linestyle="dotted",
+    color="k",
+)
+
+axes[0].axvspan(
+    2, 8,
+    0.5, 0.7,
+    linewidth=0.0,
+    facecolor="k",
+    alpha=0.2,
+)
+
+axes[0].axvline(0.0, linestyle="dotted", color="k")
+axes[0].set(
+    xlim=[xmin, xmax],
+    ylim=[0.01, 0.022],
+    ylabel="[O III] λ4363 / λ5007",
+)
+
+
+
+# Profile plot
+
+n = 8
+e = emlines["He II 4686"]
+fac = 1.1 / np.nanmax(e.multiA[n].data)
+axes[1].fill_between(
+    e.multiA[n].position,
+    fac * e.multiA[n].data,
+    linewidth=1.0,
+    alpha=1.0,
+    color=colors[4],
+    edgecolor="k",
+    label=e.name,
+    step="mid",
+)
+
+e = emlines["[O II] 3729"]
+fac = 0.7 / np.nanmax(e.A.data)
+axes[1].plot(
+    e.A.position,
+    fac * e.A.data,
+    linewidth=2.5,
+    alpha=0.6,
+    drawstyle="steps-mid",
+    color=colors[0],
+    label=e.name,
+)
+
+e = emlines["[Ne III] 3869"]
+e = emlines["[O III] 5007"]
+fac = 1.4 / np.nanmax(e.A.data)
+axes[1].plot(
+    e.A.position,
+    fac * e.A.data,
+    linewidth=2.5,
+    alpha=0.6,
+    drawstyle="steps-mid",
+    color=colors[1],
+    label=e.name,
+)
+
+
+n = 16
+e = emlines["[Ar IV] 4740"]
+fac = 1.0 / np.nanmax(e.multiA[n].data)
+axes[1].plot(
+    e.multiA[n].position,
+    fac * e.multiA[n].data,
+    linewidth=3.0,
+    alpha=1.0,
+    drawstyle="steps-mid",
+    color=colors[2],
+    label=e.name,
+)
+
+n = 1
+fac = 1.45 / np.nanmax(e.multi_cA[n].data)
+axes[1].fill_between(
+    e.multi_cA[n].position,
+    fac * e.multi_cA[n].data,
+    linewidth=2.0,
+    alpha=1.0,
+    color=colors[3],
+    label="continuum",
+    step="mid",
+)
+
+
+axes[1].axhline(0.0, linestyle="dashed", color="k")
+axes[1].axvline(0.0, linestyle="dotted", color="k")
+
+axes[1].set(
+    xlim=[xmin, xmax],
+    ylim=[-0.1, 1.45],
+)
+axes[1].legend()
+axes[-1].set(
+    xlabel="Offset West from Walborn 3, arcsec",
+    ylabel="Relative Brightness",
+)
+
+for ax in axes:
+    ax.minorticks_on()
+
+sns.despine()
+fig.tight_layout()
+fig.savefig("../figs/ngc346-fors1-combo.pdf")
 ```
 
 ```python
 fig, axes = plt.subplots(2, 1, figsize=(12, 12))
-n = 4
+n = 8
 sA = {e.name: e.multiA[n].data for e in emlines.values()}
 e = emlines["[O III] 5007"]
 posA = e.multiA[n].position
@@ -378,31 +574,31 @@ for ax, pos, s in zip(axes, [posA, posB], [sA, sB]):
         s["[O III] 4363"]
         / s["[O III] 5007"]
         / np.nanmedian(s["[O III] 4363"] / s["[O III] 5007"]),
-        linewidth=4.0,
+        linewidth=1.0,
         alpha=1.0,
         label="[O III] 4363 / 5007",
     )
     ax.plot(
         pos,
-        s["[Ne III] 3869"]
+        0.15 + s["[Ne III] 3869"]
         / s["[O III] 5007"]
         / np.nanmedian(s["[Ne III] 3869"] / s["[O III] 5007"]),
-        linewidth=3.0,
+        linewidth=1.0,
         alpha=1.0,
         label="[Ne III] 3869 / [O III] 5007",
     )
     ax.plot(
         pos,
-        0.75 + 0.2 * s["[O III] 5007"] / np.nanmedian(s["[O III] 5007"]),
+        -0.3 + + s["He I 5876"] / s["H I 4861"] / np.nanmedian(s["He I 5876"] / s["H I 4861"]),
         #    0.1* s4341 / np.median(s4341),
-        linewidth=2.0,
+        linewidth=1.0,
         alpha=1.0,
-        label="[O III] 5007",
+        label="He I 5876 / H I 4861",
     )
     ax.plot(
         pos,
-        s["H I 4340"] / s["H I 4861"] / np.nanmedian(s["H I 4340"] / s["H I 4861"]),
-        linewidth=1.5,
+        -0.15 + s["H I 4340"] / s["H I 4861"] / np.nanmedian(s["H I 4340"] / s["H I 4861"]),
+        linewidth=1.0,
         alpha=1.0,
         label="Hγ / Hβ",
     )
@@ -413,8 +609,8 @@ for ax, pos, s in zip(axes, [posA, posB], [sA, sB]):
     ax.legend(fontsize="x-small", ncol=2)
     ax.set(
         # xlim=[-10, 50],
-        #xlim=[-230, 200],
-        ylim=[0.75, 1.25],
+        # xlim=[-230, 200],
+        ylim=[0.4, 1.35],
     )
 ```
 
@@ -426,7 +622,7 @@ posA[np.isfinite(posA)]
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, ew in zip(axes, ["ewA", "ewB"]):
     for line in "[O III] 5007", "H I 4861":
-        p = getattr(emlines[line], ew)        
+        p = getattr(emlines[line], ew)
         ax.plot(p.position, p.data, linewidth=3.0, alpha=1.0, label=line)
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axvline(0.0, linestyle="dotted", color="k")
@@ -441,7 +637,7 @@ for ax, ew in zip(axes, ["ewA", "ewB"]):
 fig, axes = plt.subplots(2, 1, figsize=(12, 6))
 for ax, ew in zip(axes, ["ewA", "ewB"]):
     for line in "He I 5876", "[Ne III] 3869":
-        p = getattr(emlines[line], ew)        
+        p = getattr(emlines[line], ew)
         ax.plot(p.position, p.data, linewidth=3.0, alpha=1.0, label=line)
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axvline(0.0, linestyle="dotted", color="k")
@@ -458,7 +654,9 @@ n = 16
 for ax, multi in zip(axes, ["multiA", "multiB"]):
     for line in "[O III] 4363", "[N II] 5755":
         p = getattr(emlines[line], multi)[n]
-        ax.plot(p.position, p.data / np.nanmax(p.data), linewidth=1.5, alpha=1.0, label=line)
+        ax.plot(
+            p.position, p.data / np.nanmax(p.data), linewidth=1.5, alpha=1.0, label=line
+        )
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend()
@@ -479,12 +677,14 @@ for ax, multi in zip(axes, ["multiA", "multiB"]):
             correct = getattr(emlines["Wing 4975"], multi)[n].data
         else:
             correct = 0.0
-        ax.plot(p.position, scale * (p.data - correct), linewidth=1.5, alpha=1.0, label=line)
+        ax.plot(
+            p.position, scale * (p.data - correct), linewidth=1.5, alpha=1.0, label=line
+        )
     ax.axhline(0.0, linestyle="dashed", color="k")
     ax.axvline(0.0, linestyle="dotted", color="k")
     ax.legend()
     ax.set(
-#        xlim=[-100, 50],
+        #        xlim=[-100, 50],
         xlim=[xmin, xmax],
         ylim=[-0.1, 1.5],
     )

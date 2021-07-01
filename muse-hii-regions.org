@@ -170,3 +170,18 @@ I have made a series of notebooks
     + /But I haven't tried this yet/
     + I don't know whether the jupytext metadata will survive
       + A quick test shows that this metadata doesn't get written to the ~.org~ file by pandoc
+** Static type checking with mypy
++ I have added type hints to the functions in [[file:lib/extract.py]]
++ [ ] I should really write a bunch of tests too
++ Internal consistency can be checked with mypy:
+  #+begin_src bash :dir lib
+    mypy --namespace-packages -m extract
+  #+end_src
+
+  #+RESULTS:
+  : Success: no issues found in 1 source file
++ Note that this only works if mypy is installed in current virtual environment
+  + At the moment I am using ~py39~, which I can switch to inside emacs via
+    #+begin_src lisp
+      (pyvenv-activate "/Users/will/miniconda3/envs/py39/")
+    #+end_src
