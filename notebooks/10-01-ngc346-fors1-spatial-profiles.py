@@ -19,12 +19,12 @@
 # I would like to achieve the following:
 #
 # 1. [X] Identify W 3 and the bow shock in the spectra
-# 2. [ ] Trace the full western extent of the bow shock in [Ar IV]
+# 2. [X] Trace the full western extent of the bow shock in [Ar IV]
 #     - the MUSE field extends only 22 arcsec from the star
 #     - the FORS1 spectrum shows a roughly linear ramp that extends about 34 arcsec (see image below)
-# 3. [ ] Calculate the [O III] 4363/5007 temperature profile of the bow shock
+# 3. [X] Calculate the [O III] 4363/5007 temperature profile of the bow shock
 #     - See if there is any evidence for temperatures as high as the [Ar IV] temperature
-# 4. [ ] Measure the [Ne III] 3869 profile.  Ne$^+$ has the same ionization potential as Ar$^{+2}$ (40 eV), but [Ne III] seems to be much more broadly distributed than [Ar IV]
+# 4. [X] Measure the [Ne III] 3869 profile.  Ne$^+$ has the same ionization potential as Ar$^{+2}$ (40 eV), but [Ne III] seems to be much more broadly distributed than [Ar IV]
 #
 #
 #

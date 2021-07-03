@@ -1,0 +1,211 @@
+* Cloudy models for the NGC 346-W 3 bow shock
++ I want to use the spectrum from POWR models of the O2 star
++ And find the ionization structure for simple models, assuming constant density
+  + Compare with He++/He+ structure, and also Ar+++/Ar++ (and Ne++, O++ too to a certain extent)
+
+
+** Atmosphere models
+[[file:../stars/powr/seds/]]
+
+*** [#A] Convert seds for use in in Cloudy
++ Look up how I did this for the Raman project
+  + The best example seems to be [[id:534BA570-96A5-4014-9FFF-8450B46BFA0A][Combine fine and coarse and make them suitable for Cloudy]]
+  + For this project, the coarse SEDs should be sufficient,
+    + but I still need to convert them to Cloudy's expected units
+    + and maybe I should check for duplicates while I am at it
+
+
+#+begin_src python
+  from pathlib import Path
+  import numpy as np
+
+  datapath = Path("../stars/powr/seds")
+
+  infiles = datapath.glob("*_sed.txt")
+
+
+  wavtot = None
+  for infile in infiles:
+      wav, flam = np.loadtxt(infile, unpack=True)
+
+      # Make sure no repeated entries
+      wav_unique = np.sort(list(set(wav)))
+      flam_unique = np.interp(wav_unique, wav, flam)
+
+      # Write out a version to be used with Cloudy's "table SED" command
+
+      # Energy in Rydbergs
+      e_ryd = 1e8/(1.09737315685e5 * 10**wav_unique)
+      # Use that Fnu = (lam/nu) Flam = (lam**2 / c) Flam and don't worry
+      # about the normalization
+      Fnu = 10**(flam_unique + 2*wav_unique)
+
+      outfile = str(infile).replace("_sed.txt", ".sed")
+      # Write out the sed in fixed-width 14-character columns
+      header = f"{'E, Ryd':14s}{'F_nu':14s}"
+      data = list(zip(e_ryd[::-1], Fnu[::-1]))
+      np.savetxt(outfile, data, header=header, fmt="%14.7e")
+
+
+#+end_src
+
+#+RESULTS:
+: None
+
+Copy SED files to cloudy model folder
+
+#+begin_src sh :results verbatim
+cp -pv ../stars/powr/seds/*.sed ../cloudy/models
+#+end_src
+
+#+RESULTS:
+: ../stars/powr/seds/smc-ob-i_49-42.sed -> ../cloudy/models/smc-ob-i_49-42.sed
+: ../stars/powr/seds/smc-ob-i_50-42.sed -> ../cloudy/models/smc-ob-i_50-42.sed
+: ../stars/powr/seds/smc-ob-ii_49-42.sed -> ../cloudy/models/smc-ob-ii_49-42.sed
+: ../stars/powr/seds/smc-ob-ii_50-42.sed -> ../cloudy/models/smc-ob-ii_50-42.sed
+: ../stars/powr/seds/smc-ob-iii_49-42.sed -> ../cloudy/models/smc-ob-iii_49-42.sed
+: ../stars/powr/seds/smc-ob-iii_50-42.sed -> ../cloudy/models/smc-ob-iii_50-42.sed
+
+**** Description of SED files
+#+begin_src text :tangle ../stars/powr/seds/README 
+  + The files "*_sed.txt" are the originals downloaded from POWR website
+    + The columns are log10(lambda) and log10(F_lambda)
+  + The files "*.sed" have been converted for use with Cloudy's "table SED" command
+    + The columns are E, Rydbergs and F_nu
+#+end_src
+
+*** Luminosity of W3
++ From [[id:903F97D6-AF67-4C78-8011-C7DDD449B546][Which are the most important stars for mYSO C?]]
++ Bolometric luminosity: 1.1e6 Lsun = 4.202e39 erg/s
+** Input files for Cloudy runs
+*** Bow shock Cloudy models
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n010.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-physical>>
+  <<cloudy-saves>>
+#+end_src
+
+*** Building blocks for Cloudy input files
+**** Radiation field
+#+name: cloudy-w3-radiation
+#+begin_src cloudy-input
+  # POWR SMC 50000 K model with standard wind 
+  table SED "smc-ob-i_50-42.sed"
+  # Bolometric luminosity of 1.1e6 Lsun
+  luminosity total 39.62
+  # Add 10 L_sun of 1e6 K x-rays
+  brems 6
+  luminosity total 34.6
+  # And general Milky Way backgrounds
+  cmb
+  table ism
+  cosmic rays, background
+#+end_src
+**** Physical parameters
++ We will try constant density to start with
+  + Start with 10 pcc, but could be higher
++ Inner radius is about 4 arcsec, so 1.2 pc = 3.703e+18 cm
+  + 18.57 on log scale
++ Magnetic field
+  + Assume Alfven speed of 3 km/s
+  + B / (4 pi \rho)^{1/2} = 3 km/s
+  + B = 3 1.0e5 sqrt(4 pi 10 2e-24) = 4.75e-6 G
+    + -5.323 on log10 scale
++ Abundances are largely from Valerdi:2019a
+#+name: cloudy-w3-physical
+#+begin_src cloudy-input
+  # Density of 10 pcc
+  hden 1.00
+  # 1.2 pc
+  radius 18.57
+  constant density
+  magnetic field -5.3 gauss
+  turbulence 5 km/s
+  iterate
+  init file="ism.ini"
+  # Approximation to SMC abundances
+  abundances HII no grains
+  # 0.3x ISM grain abundance
+  grains ISM 0.3
+  # Particular elements from Valerdi+ 2019
+  # Note that scale is log10 wrt H (12 less than conventional value)
+  element abundance helium -1.084
+  element abundance nitrogen -5.39
+  element abundance oxygen -3.81
+  element abundance neon -4.52
+  element abundance sulphur -5.56
+  element abundance argon -6.18
+  element abundance chlorine -6.53
+  # All other elements get scaled to ISM x 0.3
+  element scale factor carbon 0.3
+  element scale factor magnesium 0.3
+  element scale factor silicon 0.3
+  element scale factor phosphorus 0.3
+  element scale factor iron 0.3
+  element scale factor nickel 0.3
+#+end_src
+**** Save files
++ Unlike in the Raman project, I am not interested in the PDR or the FUV pumping lines
++ But I am interested in getting all the observed optical lines
+#+name: cloudy-saves
+#+begin_src cloudy-input
+  save overview last ".ovr"
+  save continuum last ".cont"
+  save pressure last ".pre"
+  save cooling last ".cool"
+  save heating last ".heat"
+  save physical conditions last ".phys"
+  save hydrogen lya last ".lya" 
+  save lines, emissivity last ".emis"
+  O  1 6300.30
+  O  2 7319.99
+  O  2 7318.92
+  O  3 4363.21
+  O  3 5006.84
+  Ar 3 7135.79
+  Ar 4 4711.26
+  Ar 4 4740.12
+  Ar 4 7332.15
+  Ar 3 7751.11
+  Ne 3 3868.76
+  Ne 4 4724.17
+  S  3 6312.06
+  S  3 9068.62
+  H  1 4861.33
+  H  1 6562.81
+  Ca B 6562.81
+  Blnd 5875.66A
+  IRAC 3.60000m
+  IRAC 4.50000m
+  IRAC 5.80000m
+  IRAC 8.00000m
+  F12  12m 
+  F25  25m
+  MIPS  24m 
+  PAC1  70m
+  PAC2 100m
+  PAC3 160m
+  end of lines
+  save lines, array ".lina" last, units microns
+  save radius last ".rad"
+  # Everything about grains
+  save grain abundance last ".gabun"
+  save grain charge last ".gcharge"
+  save grain continuum last ".gcont"
+  save grain drift velocity last ".gdrift"
+  save grain potential last ".gpot"
+  save grain temperature last ".gtemp"
+  # Ionization structure per element
+  save element carbon last ".C"
+  save element nitrogen last ".N"
+  save element oxygen last ".O"
+  save element sulphur last ".S"
+  save element argon last ".Ar"
+  save element neon last ".Ne"
+  save element silicon last ".Si"
+  save element chlorine last ".Cl"
+#+end_src
+** Plots of Cloudy models
+
+

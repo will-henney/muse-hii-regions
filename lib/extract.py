@@ -235,7 +235,7 @@ class SlitProfile:
             m = np.pad(mask, (0, npad), mode="constant", constant_values=False)
         # Save the padded mask at original resolution
         m0 = m[:]
-        # Policy is to set invalid values where mask is false
+        # Policy is to set values where mask is false to NaNs
         x0[~m0] = np.nan
 
         # Use constant weights if none were provided
@@ -243,8 +243,8 @@ class SlitProfile:
             w = np.ones_like(y)
         else:
             w = weights
-        rslt = {}
 
+        rslt = {}
         for n in nlist:
             assert x.shape == y.shape == m.shape == w.shape
             # Upsample the data array back to the original resolution
