@@ -147,7 +147,22 @@ I have made a series of notebooks
     + But probably better to just do edits in the upstream repo and then pull them
 
 ** Another git subtree for cloudytab library
++ I did the same as above, except that I put the subtree prefix to ~lib/cloudytab~
+  * Also, I had already moved multibin-maps to the ~lib~ folder earlier
++ So the corresponding raw git commands (from ~M a~ and ~O i a~) were:
+  #+begin_example
+      0 git … remote add -f cloudytab https\://github.com/div-B-equals-0/cloudytab.git
+    Updating cloudytab
+    Unpacking objects: 100% (14/14), 3.81 KiB | 300.00 KiB/s, done.
+    From https://github.com/div-B-equals-0/cloudytab
+     ,* [new branch]      main       -> cloudytab/main
 
+      0 git … subtree add --prefix\=lib/cloudytab cloudytab HEAD
+    git fetch cloudytab HEAD
+    From https://github.com/div-B-equals-0/cloudytab
+     ,* branch            HEAD       -> FETCH_HEAD
+    Added dir 'lib/cloudytab'
+  #+end_example
 
 ** File maintenance
 + Note that most of this is not necessary most of the time
