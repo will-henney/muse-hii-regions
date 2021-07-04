@@ -35,7 +35,7 @@ class CloudyModel:
         self.io = {}
         self.skipped = {}
         for filepath in self.filepaths:
-            saveid = filepath.suffix
+            saveid = filepath.suffix.strip(".")
             if saveid in IGNORE_EXTENSIONS:
                 # Figure files, etc need to be skipped
                 self.skipped[saveid] = "Extension is listed in IGNORE_EXTENSIONS"
