@@ -1,7 +1,7 @@
-title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc
+title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 10 pcc
 # Density of 10 pcc
 hden 1.00
-constant density
+constant pressure
 magnetic field -5.3 gauss
 # POWR SMC 50000 K model with standard wind 
 table SED "smc-ob-i_50-42.sed"

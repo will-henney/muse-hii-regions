@@ -1,11 +1,15 @@
                                                     Cloudy (master, 5fdc6bc)
                                                          www.nublado.org
 
-                                                  PRNG seed: 0x0816b716d13e42db
+                                                  PRNG seed: 0x8970a9e85b241497
 
                        **************************************13Jun01**************************************
                        *                                                                                 *
-                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc                    *
+                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc                     *
+                       * # Density of 10 pcc                                                             *
+                       * hden 1.00                                                                       *
+                       * constant density                                                                *
+                       * magnetic field -5.3 gauss                                                       *
                        * # POWR SMC 50000 K model with standard wind                                     *
                        * table SED "smc-ob-i_50-42.sed"                                                  *
                        * # Bolometric luminosity of 1.1e6 Lsun                                           *
@@ -17,12 +21,8 @@
                        * cmb                                                                             *
                        * table ism                                                                       *
                        * cosmic rays, background                                                         *
-                       * # Density of 10 pcc                                                             *
-                       * hden 1.00                                                                       *
                        * # 1.2 pc                                                                        *
                        * radius 18.57                                                                    *
-                       * constant density                                                                *
-                       * magnetic field -5.3 gauss                                                       *
                        * turbulence 5 km/s                                                               *
                        * iterate                                                                         *
                        * init file="ism.ini"                                                             *
@@ -195,7 +195,7 @@ Attention: duplicate reaction C+,OH=>H+,CO -- using new version
  Chlorine   0  7.08e-05 9.93e-01 6.94e-03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
  Argon      0  9.41e-01 5.68e-02 2.54e-03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
  Iron       0  6.25e-05 1.00e+00 1.76e-05 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
-   Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+   Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
    Calculation stopped because lowest Te reached. Iteration 1 of 2
    The geometry is spherical.
  C-R(out)/R(in)=2.27e+01 and SPHERE was not set.
@@ -220,7 +220,11 @@ Attention: duplicate reaction C+,OH=>H+,CO -- using new version
    The continuum optical depth at the lowest energy considered (3.045e-09 Ryd) was 9.852e+00.
 
                        ***************************> Cloudy (master, 5fdc6bc) <****************************
-                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc                    *
+                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc                     *
+                       * # Density of 10 pcc                                                             *
+                       * hden 1.00                                                                       *
+                       * constant density                                                                *
+                       * magnetic field -5.3 gauss                                                       *
                        * # POWR SMC 50000 K model with standard wind                                     *
                        * table SED "smc-ob-i_50-42.sed"                                                  *
                        * # Bolometric luminosity of 1.1e6 Lsun                                           *
@@ -232,12 +236,8 @@ Attention: duplicate reaction C+,OH=>H+,CO -- using new version
                        * cmb                                                                             *
                        * table ism                                                                       *
                        * cosmic rays, background                                                         *
-                       * # Density of 10 pcc                                                             *
-                       * hden 1.00                                                                       *
                        * # 1.2 pc                                                                        *
                        * radius 18.57                                                                    *
-                       * constant density                                                                *
-                       * magnetic field -5.3 gauss                                                       *
                        * turbulence 5 km/s                                                               *
                        * iterate                                                                         *
                        * init file="ism.ini"                                                             *
@@ -269,6 +269,7 @@ Attention: duplicate reaction C+,OH=>H+,CO -- using new version
                        * save physical conditions last ".phys"                                           *
                        * save hydrogen lya last ".lya"                                                   *
                        * save lines, emissivity last ".emis"                                             *
+                       * He 2 4685.70                                                                    *
                        * O  1 6300.30                                                                    *
                        * O  2 7319.99                                                                    *
                        * O  2 7318.92                                                                    *
@@ -284,8 +285,8 @@ Attention: duplicate reaction C+,OH=>H+,CO -- using new version
                        * S  3 6312.06                                                                    *
                        * S  3 9068.62                                                                    *
                        * H  1 4861.33                                                                    *
-                       * H  1 6562.81                                                                    *
-                       * Ca B 6562.81                                                                    *
+                       * H  1 6562.82                                                                    *
+                       * Ca B 6562.82                                                                    *
                        * Blnd 5875.66A                                                                   *
                        * IRAC 3.60000m                                                                   *
                        * IRAC 4.50000m                                                                   *
@@ -973,7 +974,7 @@ He 1                3587.16A   34.641    0.0019      Cl 2                9123.60
 
 
 
- Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+ Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
  Cooling:  HFBc                      0 :0.082 H  1c                     0 :0.196 O  2c                     0 :0.064 O  3c                     0 :0.390 HFFc                      0 :0.067  
  Heating:  BFH1                      0 :0.857 BFHe                      0 :0.092  
 
@@ -1017,7 +1018,7 @@ He 1                3587.16A   34.641    0.0019      Cl 2                9123.60
    <a>:7.77E-09  erdeFe8.9E+30  Tcompt9.71E+09  Tthr8.51E+12  <Tden>: 1.26E+04  <dens>:2.23E-23  <MolWgt>6.34E-01
      Mean Jeans  l(cm)1.34E+21  M(sun)1.43E+07  smallest:     len(cm):7.52E+20  M(sun):2.50E+06  a_ox tran: -3.58
  Rion:8.219E+19  Dist:0.00E+00  Diam:0.000E+00
- Hatom level 70  HatomType: add  HInducImp  F  He tot level: 63  He2 level:   70  ExecTime    78.2
+ Hatom level 70  HatomType: add  HInducImp  F  He tot level: 63  He2 level:   70  ExecTime    80.1
  ConvrgError(%)  <eden>  0.058  MaxEden  0.439  <H-C>   0.12  Max(H-C)    0.50  <Press>   0.000  MaxPrs er  0.000
   Continuity(%)  chng Te   3.6  elec den   4.5  n(H2)    0.0  n(CO)        0.0
 
@@ -1105,16 +1106,12 @@ He 1                3587.16A   34.641    0.0019      Cl 2                9123.60
  New He Is optical depths:    1 4.01e+01    2 1.16e-01    3 9.38e-02    4 8.60e-02    5 8.60e-02
           Old He Is Lines:  584 0.00e+00 3889 0.00e+00 5016 0.00e+00 5876 0.00e+00
           New He Is Lines:  584 7.00e+04 3889 7.16e-02 5016 8.19e-08 5876 1.60e-11
-Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
 
 
-          Start Iteration Number 2                      Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+          Start Iteration Number 2                       Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
 
 
-WARNING: no exact matching lines found for "H  1" 6562.81A
-Taking best match as "H  1                6562.82A"
-WARNING: no exact matching lines found for "Ca B" 6562.81A
-Taking best match as "Ca B                6562.82A"
  ####  1  Te:1.490E+04 Hden:1.000E+01 Ne:1.129E+01 R:3.717E+18 R-R0:1.249E+15 dR:2.498E+15 NTR:  7 Htot:4.387E-22 T912: 1.21e-05###
  Hydrogen      3.43e-06 1.00e+00 H+o/Hden 1.00e+00 1.46e-14 H-    H2 2.38e-19 8.08e-16 H2+ HeH+ 3.61e-16 Ho+ ColD 8.57e+10 2.50e+16
  Helium        2.56e-06 4.60e-01 5.40e-01 HeI 2s3S 6.45e-09 Comp H,C 6.63e-27 1.82e-27 Fill Fac 1.00e+00 Gam1/tot 1.00e+00
@@ -1191,7 +1188,7 @@ Taking best match as "Ca B                6562.82A"
  Chlorine   0  7.25e-05 9.93e-01 7.00e-03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
  Argon      0  9.41e-01 5.68e-02 2.55e-03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
  Iron       0  6.22e-05 1.00e+00 1.87e-05 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00
-   Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+   Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
    Calculation stopped because lowest Te reached. Iteration 2 of 2
    The geometry is spherical.
  C-R(out)/R(in)=2.27e+01 and SPHERE was not set.
@@ -1216,7 +1213,11 @@ Taking best match as "Ca B                6562.82A"
    The continuum optical depth at the lowest energy considered (3.045e-09 Ryd) was 9.845e+00.
 
                        ***************************> Cloudy (master, 5fdc6bc) <****************************
-                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc                    *
+                       * title Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc                     *
+                       * # Density of 10 pcc                                                             *
+                       * hden 1.00                                                                       *
+                       * constant density                                                                *
+                       * magnetic field -5.3 gauss                                                       *
                        * # POWR SMC 50000 K model with standard wind                                     *
                        * table SED "smc-ob-i_50-42.sed"                                                  *
                        * # Bolometric luminosity of 1.1e6 Lsun                                           *
@@ -1228,12 +1229,8 @@ Taking best match as "Ca B                6562.82A"
                        * cmb                                                                             *
                        * table ism                                                                       *
                        * cosmic rays, background                                                         *
-                       * # Density of 10 pcc                                                             *
-                       * hden 1.00                                                                       *
                        * # 1.2 pc                                                                        *
                        * radius 18.57                                                                    *
-                       * constant density                                                                *
-                       * magnetic field -5.3 gauss                                                       *
                        * turbulence 5 km/s                                                               *
                        * iterate                                                                         *
                        * init file="ism.ini"                                                             *
@@ -1265,6 +1262,7 @@ Taking best match as "Ca B                6562.82A"
                        * save physical conditions last ".phys"                                           *
                        * save hydrogen lya last ".lya"                                                   *
                        * save lines, emissivity last ".emis"                                             *
+                       * He 2 4685.70                                                                    *
                        * O  1 6300.30                                                                    *
                        * O  2 7319.99                                                                    *
                        * O  2 7318.92                                                                    *
@@ -1280,8 +1278,8 @@ Taking best match as "Ca B                6562.82A"
                        * S  3 6312.06                                                                    *
                        * S  3 9068.62                                                                    *
                        * H  1 4861.33                                                                    *
-                       * H  1 6562.81                                                                    *
-                       * Ca B 6562.81                                                                    *
+                       * H  1 6562.82                                                                    *
+                       * Ca B 6562.82                                                                    *
                        * Blnd 5875.66A                                                                   *
                        * IRAC 3.60000m                                                                   *
                        * IRAC 4.50000m                                                                   *
@@ -1951,7 +1949,7 @@ He 1                3819.76A   34.402    0.0011      Si 2                2344.20
 
 
 
- Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+ Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
  Cooling:  HFBc                      0 :0.082 H  1c                     0 :0.196 O  2c                     0 :0.064 O  3c                     0 :0.390 HFFc                      0 :0.067  
  Heating:  BFH1                      0 :0.858 BFHe                      0 :0.092  
 
@@ -1995,7 +1993,7 @@ He 1                3819.76A   34.402    0.0011      Si 2                2344.20
    <a>:7.77E-09  erdeFe8.9E+30  Tcompt9.71E+09  Tthr8.51E+12  <Tden>: 1.26E+04  <dens>:2.23E-23  <MolWgt>6.34E-01
      Mean Jeans  l(cm)1.35E+21  M(sun)1.43E+07  smallest:     len(cm):7.56E+20  M(sun):2.54E+06  a_ox tran: -3.58
  Rion:8.217E+19  Dist:0.00E+00  Diam:0.000E+00
- Hatom level 70  HatomType: add  HInducImp  F  He tot level: 63  He2 level:   70  ExecTime   143.9
+ Hatom level 70  HatomType: add  HInducImp  F  He tot level: 63  He2 level:   70  ExecTime   147.8
  ConvrgError(%)  <eden>  0.052  MaxEden  0.377  <H-C>   0.11  Max(H-C)    0.50  <Press>   0.000  MaxPrs er  0.000
   Continuity(%)  chng Te   3.6  elec den   4.7  n(H2)    0.0  n(CO)        0.0
 
@@ -2319,7 +2317,7 @@ He 1                3819.76A   34.402    0.0011      Si 2                2344.20
  Iron        4.069  4.061  4.105  4.102  4.157  4.152  4.161
 
                1      2      3      4      5      6      7      8      9     10     11     12     13     14     15     16     17
-Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc  
+Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 10 pcc  
 
 ---------------Convergence statistics---------------
       2.03 mean iterations/state convergence
@@ -2329,5 +2327,5 @@ Walborn 3 in SMC-N66 / NGC 346, bow shock, n = 100 pcc
          1 mean step length searches/chemistry step
 ----------------------------------------------------
 
- Cloudy ends: 224 zones, 2 iterations, 1 caution. (single thread) ExecTime(s) 143.91
+ Cloudy ends: 224 zones, 2 iterations, 1 caution. (single thread) ExecTime(s) 147.81
  [Stop in cdMain at maincl.cpp:593, Cloudy exited OK]
