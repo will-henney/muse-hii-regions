@@ -120,6 +120,71 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
 
 
 
+
+**** Fourth model: like second but stop at 8 pc
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n010-p-r08.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 10 pcc, up to 8 pc
+  # Density of 10 pcc
+  hden 1.00
+  constant pressure
+  magnetic field -5.3 gauss
+  stop radius 19.39
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-common-physical>>
+  <<cloudy-saves>>
+#+end_src
+
+**** Fifth model: like fourth but n0 = 5
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n005-p-r08.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 10 pcc, up to 8 pc
+  # Density of 10 pcc
+  hden 0.699
+  constant pressure
+  magnetic field -5.45 gauss
+  stop radius 19.39
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-common-physical>>
+  <<cloudy-saves>>
+#+end_src
+
+**** Sixth model: like fourth but n0 = 100
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n100-p-r08.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 100 pcc, up to 8 pc
+  # Density of 100 pcc
+  hden 2.00
+  constant pressure
+  magnetic field -4.8 gauss
+  stop radius 19.39
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-common-physical>>
+  <<cloudy-saves>>
+#+end_src
+
+**** Seventh model: like fourth but n0 = 50
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n050-p-r08.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 100 pcc, up to 8 pc
+  # Density of 50 pcc
+  hden 1.699
+  constant pressure
+  magnetic field -4.95 gauss
+  stop radius 19.39
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-common-physical>>
+  <<cloudy-saves>>
+#+end_src
+
+**** Eighth model: like fourth but density falls as r^-1
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n010-d01-r08.in
+  title Walborn 3 in SMC-N66 / NGC 346, bow shock, power law r^-1, n0 = 10 pcc, up to 8 pc
+  # Density of 10 pcc
+  hden 1.00, power = -1
+  magnetic field -5.3 gauss
+  stop radius 19.39
+  <<cloudy-w3-radiation>>
+  <<cloudy-w3-common-physical>>
+  <<cloudy-saves>>
+#+end_src
+
 *** Building blocks for Cloudy input files
 **** Radiation field
 #+name: cloudy-w3-radiation
@@ -239,5 +304,11 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
   save element chlorine last ".Cl"
 #+end_src
 ** Plots of Cloudy models
++ These are in notebook
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/20-00-ngc346-bowshock-cloudy.py][20-00-ngc346-bowshock-cloudy.py]]
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/20-00-ngc346-bowshock-cloudy.ipnb][20-00-ngc346-bowshock-cloudy.ipynb]]
++ It is hard to get the [Ar IV] to fall off on the right scale
+  + We can maybe do it with a constant density model with n = 50
+  + Or we can have a density that falls with radius
 
 
