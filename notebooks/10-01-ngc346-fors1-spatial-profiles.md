@@ -586,17 +586,82 @@ pos_bg = [-6.0, -2.0]
 pos_rim = [2.0, 8.0]
 mask_bg = (e1.A.position >= pos_bg[0]) &  (e1.A.position <= pos_bg[1])
 mask_rim = (e1.A.position >= pos_rim[0]) &  (e1.A.position <= pos_rim[1])
-e1_rim = e1.A.data[mask_rim].mean()
-e2_rim = e2.A.data[mask_rim].mean()
-e1_bg = e1.A.data[mask_bg].mean()
-e2_bg = e2.A.data[mask_bg].mean()
-
-np.round([_ for _ in [e1_rim, e1_bg, e2_rim, e2_bg]])
+e1_rim_data = e1.A.data[mask_rim]
+e2_rim_data = e2.A.data[mask_rim]
+e1_bg_data = e1.A.data[mask_bg]
+e2_bg_data = e2.A.data[mask_bg]
 ```
+Do bootstrap resampling to find the uncertainty in the mean values:
+
+```python
+from astropy.stats import bootstrap
+nboot = 100000
+e1_rim_means = bootstrap(e1_rim_data, nboot, bootfunc=np.mean)
+print("Standard error of mean: sigma/sqrt(n) = ", e1_rim_data.std() / np.sqrt(len(e1_rim_data)))
+print("Standard deviation of bootstrap means: ", e1_rim_means.std())
+print("The two numbers should be roughly the same")
+```
+
+
+```python
+e2_rim_means = bootstrap(e2_rim_data, nboot, bootfunc=np.mean)
+e1_bg_means = bootstrap(e1_bg_data, nboot, bootfunc=np.mean)
+e2_bg_means = bootstrap(e2_bg_data, nboot, bootfunc=np.mean)
+```
+
+```python
+from astropy import uncertainty as unc
+```
+
+Reserve the bare names `e1_rim`, etc. for the uncertainty distributions
+
+```python
+e1_rim = unc.Distribution(e1_rim_means)
+e2_rim = unc.Distribution(e2_rim_means)
+e1_bg = unc.Distribution(e1_bg_means)
+e2_bg = unc.Distribution(e2_bg_means)
+
+R_bg = e1_bg / e2_bg
+R_bs = (e1_rim - e1_bg) / (e2_rim - e2_bg)
+```
+
+```python
+print(f"BS 4363 / 5007 = {R_bs.pdf_mean():.4f} +/- {R_bs.pdf_std():.4f}")
+print(f"BG 4363 / 5007 = {R_bg.pdf_mean():.4f} +/- {R_bg.pdf_std():.4f}")
+```
+
+Calculate ratio for T grid with pyneb, since it is more efficient to use linear interpolation for large numbers of ratios:
+
+```python
+Tgrid = np.linspace(5000.0, 20000.0, 151)
+Rgrid = o3.getEmissivity(tem=Tgrid, den=100.0, wave=4363) / o3.getEmissivity(tem=Tgrid, den=100.0, wave=5007)
+```
+
+```python
+T_bg = unc.Distribution(np.interp(R_bg.distribution, Rgrid, Tgrid))
+T_bs = unc.Distribution(np.interp(R_bs.distribution, Rgrid, Tgrid))
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.hist(T_bg.distribution / 1000, bins=100, density=True, label="Background [O III]")
+ax.hist(T_bs.distribution / 1000, bins=100, density=True, label="Bow shock [O III]")
+ax.legend()
+ax.set(
+    xlabel="Temperature, kK",
+    ylabel="Probability density, kK$^{-1}$",
+)
+sns.despine()
+fig.tight_layout();
+```
+
 ```python
 
 ```
 
+```python
+
+```
 
 ## More graphs
 
