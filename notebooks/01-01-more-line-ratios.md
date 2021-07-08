@@ -1,6 +1,7 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
@@ -944,7 +945,7 @@ red_R_hei_hb.data = 10**(0.4*imEBV.data*(rc.X(4861) - rc.X(5875)))
 
 ```python
 fig, ax = plt.subplots(figsize=(12, 12))
-(imR_5875_4861 / red_R_hei_hb).plot(colorbar="v", cmap="gray", vmin=0.1, vmax=0.115); 
+(imR_hei_hb / red_R_hei_hb).plot(colorbar="v", cmap="gray", vmin=0.1, vmax=0.115); 
 ```
 
 So if we correct it for reddening, then lots of spurious structure disappears.  But we are left with very little variation at all, except for at the mYSO and the top right corner, which both show low He I.
@@ -1288,6 +1289,10 @@ Save the combined image, corrected for extinction:
 
 ```python
 im_ariv_sum.write("../data/ngc346-ariv-4711-plus-4740-correct.fits", savemask="nan")
+im4740r.write("../data/ngc346-ariv-4740-correct.fits", savemask="nan")
+im4711r.write("../data/ngc346-ariv-4711-correct.fits", savemask="nan")
+im7171r.write("../data/ngc346-ariv-7171-correct.fits", savemask="nan")
+im7136r.write("../data/ngc346-ariv-7136-correct.fits", savemask="nan")
 ```
 
 ```python
@@ -1580,7 +1585,7 @@ dens = [1.0, 200.0, 400.0, 600.0, 800.0, 1000.0]
 
 Tfine = np.linspace(Ts[0], Ts[-1], 200)
 dfine = np.linspace(dens[0], dens[-1], 200)
-ariv.getEmissivity(Tgrid, Ngrid, wave=4711)
+
 e4711 = ariv.getEmissivity(Tfine, dens, wave=4711)
 e4740 = ariv.getEmissivity(Tfine, dens, wave=4740)
 e7171 = ariv.getEmissivity(Tfine, dens, wave=7171)
@@ -1917,6 +1922,10 @@ ariv.getTemDen([0.01, 0.02, 0.03], den=100, to_eval = 'L(7263) / (L(4711) + L(47
 ```python
 fig, ax = plt.subplots()
 ax.plot(rr4, rr1)
+```
+
+```python
+
 ```
 
 ```python
