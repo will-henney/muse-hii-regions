@@ -633,7 +633,7 @@ print(f"BG 4363 / 5007 = {R_bg.pdf_mean():.4f} +/- {R_bg.pdf_std():.4f}")
 Calculate ratio for T grid with pyneb, since it is more efficient to use linear interpolation for large numbers of ratios:
 
 ```python
-Tgrid = np.linspace(5000.0, 20000.0, 151)
+Tgrid = np.linspace(5000.0, 30000.0, 251)
 Rgrid = o3.getEmissivity(tem=Tgrid, den=100.0, wave=4363) / o3.getEmissivity(tem=Tgrid, den=100.0, wave=5007)
 ```
 
@@ -656,11 +656,88 @@ fig.tight_layout();
 ```
 
 ```python
-
+from mpdaf.obj import Image
 ```
 
 ```python
+im4740 = Image("../data/ngc346-ariv-4740-correct.fits")
+im4711 = Image("../data/ngc346-ariv-4711-correct.fits")
+im7263 = Image("../data/ngc346-ariv-7263-correct.fits")
+im7171 = Image("../data/ngc346-ariv-7171-correct.fits")
+```
 
+```python
+xslice, yslice = slice(230, 300), slice(144, 245)
+def boot2dist(im, w, nboot):
+    _data = im[yslice, xslice].data.data
+    _mask = im[yslice, xslice].data.mask
+    _w = w[yslice, xslice].data.data
+    _statfunc = lambda x: np.average(x, weights=_w[~_mask])
+    return unc.Distribution(
+        bootstrap(_data[~_mask], nboot, bootfunc=_statfunc)
+    )
+```
+
+```python
+nboot = 10000
+weights = im4740 + im4711
+i4740 = boot2dist(im4740, weights, nboot)
+i4711 = boot2dist(im4711, weights, nboot)
+i7263 = boot2dist(im7263, weights, nboot)
+i7171 = boot2dist(im7171, weights, nboot)
+```
+
+```python
+R1 = i4711 / i4740
+R34 = (i7263 + i7171) / (i4711 + i4740)
+R3 = i7263 / (i4711 + i4740)
+R4 = i7171 / (i4711 + i4740)
+```
+
+```python
+print(f"4711 / 4740 = {R1.pdf_mean():.4f} +/- {R1.pdf_std():.4f}")
+print(f"7263 / (4711 + 4740) = {R3.pdf_median():.4f} +/- {R3.pdf_std():.4f}")
+print(f"7171 / (4711 + 4740) = {R4.pdf_median():.4f} +/- {R4.pdf_std():.4f}")
+```
+
+```python
+ar4 = pn.Atom("Ar", 4)
+```
+
+```python
+e4711 = ar4.getEmissivity(tem=Tgrid, den=100.0, wave=4711)
+e4740 = ar4.getEmissivity(tem=Tgrid, den=100.0, wave=4740)
+e7263 = ar4.getEmissivity(tem=Tgrid, den=100.0, wave=7263)
+e7171 = ar4.getEmissivity(tem=Tgrid, den=100.0, wave=7171)
+R34grid = (e7263 + e7171) / (e4711 + e4740)
+R3grid = e7263 / (e4711 + e4740)
+R4grid = e7171 / (e4711 + e4740)
+```
+
+```python
+T_R3 = unc.Distribution(np.interp(R3.distribution, R3grid, Tgrid))
+T_R4 = unc.Distribution(np.interp(R4.distribution, R4grid, Tgrid))
+```
+
+```python
+print(f"T([Ar IV] R3) = {T_R3.pdf_mean():.4f} +/- {T_R3.pdf_std():.4f}")
+print(f"T([Ar IV] R4) = {T_R4.pdf_mean():.4f} +/- {T_R4.pdf_std():.4f}")
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.hist(T_bg.distribution / 1000, bins=100, density=True, label="Background [O III]", alpha=0.6)
+ax.hist(T_bs.distribution / 1000, bins=100, density=True, label="Bow shock [O III]", alpha=0.6)
+ax.hist(T_R3.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV]", alpha=0.6)
+#ax.hist(T_R4.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV] R4")
+ax.legend()
+ax.set(
+    xlabel="Temperature, kK",
+    ylabel="Probability density, kK$^{-1}$",
+)
+sns.despine()
+fig.tight_layout()
+fig.savefig("../figs/ngc346-bowshock-T-oiii-ariv.pdf");
 ```
 
 ## More graphs

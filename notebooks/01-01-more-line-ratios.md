@@ -1292,7 +1292,7 @@ im_ariv_sum.write("../data/ngc346-ariv-4711-plus-4740-correct.fits", savemask="n
 im4740r.write("../data/ngc346-ariv-4740-correct.fits", savemask="nan")
 im4711r.write("../data/ngc346-ariv-4711-correct.fits", savemask="nan")
 im7171r.write("../data/ngc346-ariv-7171-correct.fits", savemask="nan")
-im7136r.write("../data/ngc346-ariv-7136-correct.fits", savemask="nan")
+im7263r.write("../data/ngc346-ariv-7263-correct.fits", savemask="nan")
 ```
 
 ```python
