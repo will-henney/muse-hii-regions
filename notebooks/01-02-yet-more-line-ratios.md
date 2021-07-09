@@ -1,6 +1,7 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
@@ -300,6 +301,7 @@ im_n_sii.write("../data/ngc346-N-sii.fits", savemask="nan")
 
 ```python
 im_T_siii = Image("../data/ngc346-T-siii.fits")
+imhb = Image("../data/ngc346-hi-4861-correct.fits")
 ```
 
 ```python
@@ -333,31 +335,14 @@ g = sns.pairplot(
 )
 g.fig.suptitle("Temperature vs Density");
 ```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
 ## He II emission measure
 
 ```python
 he2 = pn.RecAtom("He", 2)
 he1 = pn.RecAtom("He", 1)
 h1 = pn.RecAtom("H", 1)
-
 ```
+
 
 ```python
 e4686 = he2.getEmissivity(tem=18000, den=1, wave=4686)
@@ -716,8 +701,10 @@ ar4 = pn.Atom("Ar", 4)
 ar3 = pn.Atom("Ar", 3)
 ```
 
+First T is for BG nebula. Second and third are lower and upper limits for bow shock.  See analysis of [Ar IV] temperature in `10-01` notebook
+
 ```python
-Ts = [15000, 17500, 20000]
+Ts = [12500, 14000, 16000]
 e4711 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4711)
 e4740 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4740)
 e7136 = ar3.getEmissivity(tem=Ts, den=10.0, wave=7136)
@@ -745,14 +732,29 @@ $$
 e7136 / (e4711 + e4740)
 ```
 
-So the T uncertainty of +/- 2500 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value: 
+So the T uncertainty of +/- 1000 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value: 
 
 ```python
 Ar3p_over_Ar2p = BS_ar_iv_iii * (e7136 / (e4711 + e4740))[1]
 Ar3p_over_Ar2p
 ```
 
-Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models.
+Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models
+
+Now do the same, but for the BG nebula
+
+```python
+Ar3p_over_Ar2p_BG = (bg_ariv / bg_ariii) * (e7136 / (e4711 + e4740))[0]
+Ar3p_over_Ar2p_BG 
+```
+
+So this implies 20% Ar+++ in the BG region. 
+
+However, these are both still integrals along the line of sight, so the actual variation in ionization might be larger. 
+
+For instance, the Ar+++ fraction might be higher than 50% at the inner edge.  We could do a LOS integration on the Cloudy emissivities to investigate this. 
+
+Likewise, the Ar+++ fraction in the BG might be lower than 0.2 since that could be due to contamination by the bow shock wing emission. 
 
 
 ## Can we get a He I density?

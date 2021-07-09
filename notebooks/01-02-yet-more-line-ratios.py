@@ -274,6 +274,7 @@ im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax
 im_n_sii.write("../data/ngc346-N-sii.fits", savemask="nan")
 
 im_T_siii = Image("../data/ngc346-T-siii.fits")
+imhb = Image("../data/ngc346-hi-4861-correct.fits")
 
 # +
 n = 16
@@ -306,15 +307,6 @@ g = sns.pairplot(
 )
 g.fig.suptitle("Temperature vs Density");
 # -
-
-
-
-
-
-
-
-
-
 # ## He II emission measure
 
 he2 = pn.RecAtom("He", 2)
@@ -609,7 +601,9 @@ f"BG-subtracted BS: [Ar IV] / [Ar III] = {BS_ar_iv_iii:.3f} +/- {sBS_ar_iv_iii:.
 ar4 = pn.Atom("Ar", 4)
 ar3 = pn.Atom("Ar", 3)
 
-Ts = [15000, 17500, 20000]
+# First T is for BG nebula. Second and third are lower and upper limits for bow shock.  See analysis of [Ar IV] temperature in `10-01` notebook
+
+Ts = [12500, 14000, 16000]
 e4711 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4711)
 e4740 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4740)
 e7136 = ar3.getEmissivity(tem=Ts, den=10.0, wave=7136)
@@ -630,12 +624,25 @@ e7136
 
 e7136 / (e4711 + e4740)
 
-# So the T uncertainty of +/- 2500 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value: 
+# So the T uncertainty of +/- 1000 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value: 
 
 Ar3p_over_Ar2p = BS_ar_iv_iii * (e7136 / (e4711 + e4740))[1]
 Ar3p_over_Ar2p
 
-# Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models.
+# Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models
+#
+# Now do the same, but for the BG nebula
+
+Ar3p_over_Ar2p_BG = (bg_ariv / bg_ariii) * (e7136 / (e4711 + e4740))[0]
+Ar3p_over_Ar2p_BG 
+
+# So this implies 20% Ar+++ in the BG region. 
+#
+# However, these are both still integrals along the line of sight, so the actual variation in ionization might be larger. 
+#
+# For instance, the Ar+++ fraction might be higher than 50% at the inner edge.  We could do a LOS integration on the Cloudy emissivities to investigate this. 
+#
+# Likewise, the Ar+++ fraction in the BG might be lower than 0.2 since that could be due to contamination by the bow shock wing emission. 
 
 # ## Can we get a He I density?
 
