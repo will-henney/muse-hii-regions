@@ -643,13 +643,14 @@ T_bs = unc.Distribution(np.interp(R_bs.distribution, Rgrid, Tgrid))
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(6, 4))
 ax.hist(T_bg.distribution / 1000, bins=100, density=True, label="Background [O III]")
 ax.hist(T_bs.distribution / 1000, bins=100, density=True, label="Bow shock [O III]")
 ax.legend()
 ax.set(
     xlabel="Temperature, kK",
     ylabel="Probability density, kK$^{-1}$",
+    xlim=[11.9, 15.9],
 )
 sns.despine()
 fig.tight_layout();
@@ -669,10 +670,11 @@ im7171 = Image("../data/ngc346-ariv-7171-correct.fits")
 ```python
 xslice, yslice = slice(230, 300), slice(144, 245)
 def boot2dist(im, w, nboot):
-    _data = im[yslice, xslice].data.data
-    _mask = im[yslice, xslice].data.mask
+    _data = im[yslice, xslice][20:60, 20:30].data.data
+    _mask = im[yslice, xslice][20:60, 20:30].data.mask
     _w = w[yslice, xslice].data.data
-    _statfunc = lambda x: np.average(x, weights=_w[~_mask])
+    #_statfunc = lambda x: np.average(x, weights=_w[~_mask])
+    _statfunc = np.mean
     return unc.Distribution(
         bootstrap(_data[~_mask], nboot, bootfunc=_statfunc)
     )
@@ -725,19 +727,81 @@ print(f"T([Ar IV] R4) = {T_R4.pdf_mean():.4f} +/- {T_R4.pdf_std():.4f}")
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(7, 5))
 ax.hist(T_bg.distribution / 1000, bins=100, density=True, label="Background [O III]", alpha=0.6)
 ax.hist(T_bs.distribution / 1000, bins=100, density=True, label="Bow shock [O III]", alpha=0.6)
-ax.hist(T_R3.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV]", alpha=0.6)
-#ax.hist(T_R4.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV] R4")
+ax.hist(T_R3.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV] R3", alpha=0.6)
+#ax.hist(T_R4.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV] R4", alpha=0.6)
 ax.legend()
 ax.set(
     xlabel="Temperature, kK",
     ylabel="Probability density, kK$^{-1}$",
+    xlim=[11.9, 18.1],
 )
 sns.despine()
 fig.tight_layout()
 fig.savefig("../figs/ngc346-bowshock-T-oiii-ariv.pdf");
+```
+
+```python
+dengrid = np.linspace(1.0, 5000.0, 1000)[::-1]
+e4711d = ar4.getEmissivity(tem=14500, den=dengrid, wave=4711)
+e4740d = ar4.getEmissivity(tem=14500, den=dengrid, wave=4740)
+R1grid = e4711d / e4740d
+
+```
+
+```python
+den_R1 = unc.Distribution(np.interp(R1.distribution, R1grid, dengrid))
+```
+
+```python
+R1
+```
+
+```python
+print(f"n_e([Ar IV] R1) = {den_R1.pdf_mean():.4f} +/- {den_R1.pdf_std():.4f}")
+
+```
+
+```python
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.hist(den_R1.distribution, bins=100, density=True, label="$n_e$([Ar IV]) R1", alpha=0.6)
+#ax.hist(T_R4.distribution / 1000, bins=100, density=True, label="Bow shock [Ar IV] R4")
+ax.legend()
+ax.set(
+    xlabel="Density, cm$^{-3}$",
+    ylabel="Probability density, cm$^{3}$",
+    xlim=[0.0, 600.0],
+    ylim=[0.0, 0.004],
+)
+sns.despine()
+fig.tight_layout()
+fig.savefig("../figs/ngc346-bowshock-den-ariv.pdf");
+```
+
+```python
+R1
+```
+
+```python
+(im4711[yslice, xslice].rebin(4) / im4740[yslice, xslice].rebin(4)).plot(vmin=1.0, vmax=2.0, colorbar="v")
+```
+
+```python
+win4711 = im4711[yslice, xslice]
+win4740 = im4740[yslice, xslice]
+
+prof4711 = np.mean(win4711.data[20:60, :], axis=0)
+prof4740 = np.mean(win4740.data[20:60, :], axis=0)
+fig, ax = plt.subplots()
+
+ax.plot(prof4711 / prof4740)
+ax.plot((prof4711 + prof4740) / 400)
+```
+
+```python
+
 ```
 
 ## More graphs

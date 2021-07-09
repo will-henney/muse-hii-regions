@@ -1590,6 +1590,85 @@ g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 g.fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics.pdf")
 #g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
+
+# +
+n = 8
+xslice, yslice = slice(230, 300), slice(144, 245)
+w_low_cutoff = 250
+w_mid_cutoff = 350 # 375
+xymin, xymax = 0.003, 0.033
+zzmin, zzmax = 1.11, 1.5
+
+w = im_ariv_sum[yslice, xslice].rebin(n).data
+x = im7263r[yslice, xslice].rebin(n).data / w
+y = im7171r[yslice, xslice].rebin(n).data / w
+z = im4711r[yslice, xslice].rebin(n).data / im4740r[yslice, xslice].rebin(n).data
+m = (w > w_mid_cutoff) #& (w < wmax) 
+#m = m & (x + y > 0.25*ratio) & (x + y < 2*ratio)
+m = m & (z > 1.1) & (z < 2.1)
+#m = m & ~ariv_R1[yslice, xslice].rebin(n).mask & ~ariv_R3_plus_R4[yslice, xslice].rebin(n).mask
+df = pd.DataFrame(
+    {
+        "7263 / (4711 + 4740)": x[m],
+        "4711 / 4740": z[m],
+        "sum": w[m],
+    }
+).sort_values(by="sum")
+mean_R1 = np.average(z[m], weights=w[m])
+mean_R34 = np.average(x[m], weights=w[m])
+
+var_R1 = np.average((z[m] - mean_R1)**2, weights=w[m])
+var_R34 = np.average((x[m] - mean_R34)**2, weights=w[m])
+
+sig_R1 = np.sqrt(var_R1)
+sig_R34 = np.sqrt(var_R34)
+
+text = f"R1 = {mean_R1:.3f} +/- {sig_R1:.3f}"
+text += f", R3 = {mean_R34:.3f} +/- {sig_R34:.3f}"
+
+_vars = df.columns[:2]
+g = sns.pairplot(
+    df,
+    x_vars=_vars, y_vars=_vars, 
+    kind="scatter",
+    diag_kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        #weights=z[m], 
+        c=df["sum"],
+        cmap="Blues",
+        s=200,
+        vmin=w_low_cutoff,
+    ),
+    diag_kws=dict(
+        weights=w[m], 
+        bins=8,
+    #    bins=128//n,
+    ),
+)
+g.axes[1, 0].plot(rr3, rr1, color="k")
+g.axes[1, 0].plot(_rr3, _rr1, color="k")
+confidence_ellipse(
+    x[m], z[m], w[m], 
+    g.axes[1, 0], n_std=1, 
+    edgecolor='red', linewidth=2,
+)
+g.axes[1, 0].scatter(
+    mean_R34, mean_R1, 
+    c="r", marker="+", 
+    s=400, linewidth=3,
+)
+
+g.axes[1, 0].set_xlim(xymin, xymax)
+g.axes[1, 0].set_ylim(zzmin, zzmax)
+
+g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
+g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
+
+g.fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics-R1-R3.pdf")
+#g.fig.suptitle("Correlation between [Ar IV] ratios");
+text
 # -
 
 df.columns[:2]
