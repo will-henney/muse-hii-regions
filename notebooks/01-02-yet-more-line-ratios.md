@@ -765,6 +765,195 @@ T0 = [11000, 13000, 18000]
 he1.getEmissivity(tem=T0, den=dgrid, wave=5876) / he1.getEmissivity(tem=T0, den=dgrid, wave=6678)
 ```
 
+```python
+he1.getEmissivity(tem=T0, den=dgrid, wave=4922) / he1.getEmissivity(tem=T0, den=dgrid, wave=5876)
+```
+
+```python
+he1.getEmissivity(tem=T0, den=dgrid, wave=5048) / he1.getEmissivity(tem=T0, den=dgrid, wave=5876)
+```
+
+So, at best we might be able to get a temperature from the He I lines, if we use 5048 / 5876
+
+```python
+im5048 = Image("../data/ngc346-hei-5048-bin01-sum.fits")
+im5876 = Image("../data/ngc346-hei-5875-bin01-sum.fits")
+```
+
+```python
+n = 1
+fig, axes = plt.subplots(2, 2, figsize=(12, 12))
+im5048.rebin(n).plot(vmin=-10, vmax=60, ax=axes[0, 0], colorbar="v")
+im5876.rebin(n).plot(vmin=-10, vmax=3000, ax=axes[0, 1], colorbar="v")
+imcont.rebin(n).plot(vmin=0, vmax=1e4, ax=axes[1, 0], colorbar="v")
+(
+    im5048.rebin(n)
+    / im5876.rebin(n)
+).plot(
+    ax=axes[1, 1],
+    vmin=0.0, 
+    vmax=0.03, 
+    cmap="magma",
+    colorbar="v",
+)
+for ax in axes.flat:
+    bsbox.plot(ax=ax, color="w")
+    bgbox.plot(ax=ax, color="w")
+    ax.set(
+        xlim=[200, 300],
+        ylim=[100, 250],
+    )
+fig.tight_layout();
+```
+
+```python
+yyslice = slice(164, 204) # original
+#yyslice = slice(160, 210) # broader
+#yyslice = slice(170, 200) # narrower
+#yyslice = slice(180, 200) # top half ultra narrow
+hei_5048_profile = make_profile(im5048)
+hei_5876_profile = make_profile(im5876)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ix0 = 227.5
+nx = len(hei_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, 0.01 * hei_5876_profile / np.median(hei_5876_profile), label="He I", lw=4)
+ax.plot(pos, hei_5048_profile / hei_5876_profile, label="5048 / 5875", lw=3)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=3,loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    ylabel="Surface brightness",
+    xlim=[-12, 22],
+    ylim=[0, 0.03],
+)
+sns.despine()
+```
+
+```python
+bs_5048 = im5048[bsbox.slices].data.mean()
+bs_5876 = im5876[bsbox.slices].data.mean()
+bs_5048 / bs_5876
+```
+
+```python
+bg_5048 = im5048[bgbox.slices].data.mean()
+bg_5876 = im5876[bgbox.slices].data.mean()
+bg_5048 / bg_5876
+```
+
+These are all way lower than the theoretical values for reasonable temperatures.  Maybe the 5048 line is affected by underlying stellar absorption. 
+
+
+## Plot the [S II] density and [S III] temperature
+
+These are not necessarily that useful, since they do not come from the same component as the bow shock, but I will plot them for completeness:
+
+```python
+#yyslice = slice(164, 204) # original
+#yyslice = slice(160, 210) # broader
+#yyslice = slice(170, 200) # narrower
+yyslice = slice(180, 200) # top half ultra narrow
+n_sii_profile = make_profile(im_n_sii)
+T_siii_profile = make_profile(im_T_siii)
+sii_profile = make_profile(im6731)
+im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+siii_profile = make_profile(im9069)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ix0 = 227.5
+nx = len(hei_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, 0.01 * n_sii_profile, label="$n$([S II]) / 100 cm$^{-3}$", lw=4)
+ax.plot(pos, 0.0001 * T_siii_profile, label="$T$([S III]) / 10,000 K", lw=3)
+ax.plot(pos, 1.0 * sii_profile / np.median(sii_profile), label="[S II] brightness", lw=3)
+ax.plot(pos, 1.7 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3)
+
+
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=2,loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    xlim=[-12, 22],
+    ylim=[0, 3.4],
+)
+sns.despine()
+fig.savefig("../figs/ngc346-bow-shock-sii-siii-ne-te.pdf");
+```
+
+<!-- #region tags=["temperature"] -->
+So the [S III] temperature is significantly larger than the [O III] temperature from the nebula. It is around 14000 K and has a drop towards W 3 coming from the east side, and then a step and a very constant region.  But the step occurs before the bow shock, so is probably unrelated. 
+<!-- #endregion -->
+
+## Plot the He I / H I ratio
+
+This is something we looked at before in the `01-01` notebook.  We will try and see if we get a significant dip in He I / H I that accompanies the rise in He II / H I
+
+```python
+imhei_c = Image("../data/ngc346-hei-5875-correct.fits")
+imhi_c = Image("../data/ngc346-hi-4861-correct.fits")
+imheii_c = Image("../data/ngc346-heii-4686-correct.fits")
+```
+
+```python
+m = imcont.data > 500.0
+for im in imhei_c, imheii_c, imhi_c:
+    im.mask = im.mask | m
+```
+
+```python
+#yyslice = slice(164, 204) # original
+yyslice = slice(160, 210) # broader
+#yyslice = slice(170, 200) # narrower
+#yyslice = slice(180, 200) # top half ultra narrow
+hei_c_profile = make_profile(imhei_c)
+hi_c_profile = make_profile(imhi_c)
+heii_c_profile = make_profile(imheii_c)
+```
+
+```python
+fig, ax = plt.subplots(figsize=(12, 6))
+ix0 = 227.5
+nx = len(hei_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, heii_c_profile / hi_c_profile, 
+        label="He II λ4686 / H I λ4861", lw=3)
+ax.plot(pos, hei_c_profile / hi_c_profile - 0.10, 
+        label="(He I λ5875 / H I λ4861) – 0.1", lw=4)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=1,loc="upper right")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    xlim=[-12, 22],
+    ylim=[-0.005, 0.015],
+)
+sns.despine()
+fig.savefig("../figs/ngc346-bow-shock-he-ratios.pdf");
+```
+
 ## [Cl III] density
 
 ```python
@@ -954,6 +1143,18 @@ cl3.getTemDen(1.44, tem=12000, wave1=5518, wave2=5538)
 ```python
 e5518 = cl3.getEmissivity(tem=12000, den=[1, 10, 100, 1000], wave=5518)
 e5538 = cl3.getEmissivity(tem=12000, den=[1, 10, 100, 1000], wave=5538)
+e5518 / e5538
+```
+
+```python
+e5518 = cl3.getEmissivity(tem=15000, den=[1, 10, 100, 1000], wave=5518)
+e5538 = cl3.getEmissivity(tem=15000, den=[1, 10, 100, 1000], wave=5538)
+e5518 / e5538
+```
+
+```python
+e5518 = cl3.getEmissivity(tem=8000, den=[1, 10, 100, 1000], wave=5518)
+e5538 = cl3.getEmissivity(tem=8000, den=[1, 10, 100, 1000], wave=5538)
 e5518 / e5538
 ```
 
