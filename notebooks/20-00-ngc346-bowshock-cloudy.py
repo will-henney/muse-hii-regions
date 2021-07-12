@@ -246,4 +246,25 @@ sns.despine()
 fig.tight_layout();
 # -
 
+# ## Brightness versus projected radius in spherical symmetry
+#
+# First approximation to bow shock shape is that it is a hemisphere
+#
+# Therefore at each projected radius $b$, the brightness is given by:
+# $$
+# S(b) = \int_{-\infty}^\infty j(r) \, dz
+# $$
+# where
+# $$
+# r^2 = b^2 + z^2 
+# \quad \Rightarrow \quad
+# 2 r\, dr = 2 z\, dz
+# \quad \Rightarrow \quad
+# dz = \frac{r}{z}\, dr
+# $$
+# Therefore
+# $$
+# S(b) = 2 \int_b^\infty j(r) \, \frac{r}{(r^2 - b^2)^{1/2}} \, dr
+# $$
+
 
