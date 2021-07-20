@@ -125,7 +125,7 @@ fig.savefig("../figs/ngc-346-bow-multi-acs-wide.pdf");
 ```python
 fig, ax = plt.subplots(figsize=(8, 6), subplot_kw=dict(projection=wacs))
 ax.imshow(hduacs.data, cmap="gray_r", vmin=0.25, vmax=0.6)
-gauss = Gaussian2DKernel(x_stddev=2.0)
+gauss = Gaussian2DKernel(x_stddev=1.5)
 imariv = fits.open(datadir / f"ngc346-ariv-4711-plus-4740-correct.fits")["DATA"].data
 imariv_s = convolve(imariv, gauss)
 imheii = fits.open(datadir / f"ngc346-heii-4686-correct.fits")["DATA"].data
