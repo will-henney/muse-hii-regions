@@ -340,6 +340,7 @@ Separate file: [[file:cloudy-bow-shock.org]]
 **** Brightness profiles of the different bands
 + Table of image files
 + Root folder is ~/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/~
+#+name: infrared-images
 |   5 | IRAC | ~Spitzer/r4384256/ch3/pbcd/SPITZER_I3_4384256_0000_7_E8758299_maic.fits~         |
 |   8 | IRAC | ~Spitzer/r4384256/ch4/pbcd/SPITZER_I4_4384256_0000_7_E8758329_maic.fits~         |
 |  12 | WISE | ~WISE/0145m727_ac51-w3-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits~ |
@@ -356,6 +357,49 @@ Separate file: [[file:cloudy-bow-shock.org]]
        - Since, then we can simply sum along the y direction.
        - This would also allow us to calculate ratios
        - Seems like the best bet
+***** COMMENT Re-project all infrared images to a common grid
++ Make a new grid with 1 arcsec square pixels, centered on Walborn 3
+
+#+header: :var filetab=infrared-images 
+#+begin_src python :tangle ../scripts/ir-reproject.py :eval no
+  import numpy as np
+  from pathlib import Path
+  from astropy.io import fits
+  from astropy.wcs import WCS
+  from astropy.coordinates import SkyCoord
+  import reproject
+
+  indir = Path("~/Work/Muse-Hii-Data/SMC-NGC-346").expanduser()
+  outdir = Path("../data")
+  c0 = SkyCoord.from_name("Cl* NGC 346 W 3")
+
+
+  NY, NX = 200, 200
+  w0 = WCS(naxis=2)
+  w0.wcs.crpix = [NX / 2, NY / 2]
+  w0.wcs.crval = [c0.ra.deg, c0.dec.deg]
+  w0.wcs.cdelt = np.ones((2,)) / 3600.0
+  w0.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+  print(w0.to_header())
+
+  for wav, cam, pathstring in filetab:
+      pathstring = str(indir / pathstring.strip("~"))
+      hdulist = fits.open(pathstring)
+      hdu = hdulist[0]
+      newdata, footprint = reproject.reproject_interp(hdu, w0, (NY, NX))
+      newfile = outdir / f"ngc346-ir-{10*wav:04d}-{cam}.fits"
+      fits.PrimaryHDU(data=newdata, header=w0.to_header()).writeto(newfile, overwrite=True)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src sh :results verbatim
+  python ../scripts/ir-reproject.py
+#+end_src
+
+#+RESULTS:
+: WCSAXES =                    2 / Number of coordinate axes                      CRPIX1  =                100.0 / Pixel coordinate of reference point            CRPIX2  =                100.0 / Pixel coordinate of reference point            CDELT1  =  0.00027777777777778 / [deg] Coordinate increment at reference point  CDELT2  =  0.00027777777777778 / [deg] Coordinate increment at reference point  CUNIT1  = 'deg'                / Units of coordinate increment and value        CUNIT2  = 'deg'                / Units of coordinate increment and value        CTYPE1  = 'RA---TAN'           / Right ascension, gnomonic projection           CTYPE2  = 'DEC--TAN'           / Declination, gnomonic projection               CRVAL1  =          14.75315934 / [deg] Coordinate value at reference point      CRVAL2  =         -72.17449222 / [deg] Coordinate value at reference point      LONPOLE =                180.0 / [deg] Native longitude of celestial pole       LATPOLE =         -72.17449222 / [deg] Native latitude of celestial pole        MJDREF  =                  0.0 / [d] MJD of fiducial time                       RADESYS = 'ICRS'               / Equatorial coordinate system                   END                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+
 **** Try and get the SED
 + Where are the infrared images stored?
 **** Spitzer IRS spectra
