@@ -363,13 +363,13 @@ Separate file: [[file:cloudy-bow-shock.org]]
 |    250 | SPIRE250 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE250.img.fits~  |
 |    350 | SPIRE350 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE350.img.fits~  |
 |    500 | SPIRE500 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE500.img.fits~  |
-+ [ ] Copy them all to this repo?
++ [X] Copy them all to this repo?
 + [ ] Make profiles along the slits
   + [[file:../data/ngc346-infrared-slit-A.reg]]
   + [[file:../data/ngc346-infrared-slit-B.reg]]
   + Options:
     1. Write some library routines to calculate profiles from DS9 regions
-    2. [ ] Or, we could just rebin to a common RA, Dec grid.
+    2. [X] Or, we could just rebin to a common RA, Dec grid.
        - Since, then we can simply sum along the y direction.
        - This would also allow us to calculate ratios
        - Seems like the best bet
@@ -445,7 +445,8 @@ Separate file: [[file:cloudy-bow-shock.org]]
 #+end_src
 
 #+RESULTS:
-
+**** Profiles along a broad slit
+Try this in a notebook
 **** Try and get the SED
 + Where are the infrared images stored?
 **** Spitzer IRS spectra
