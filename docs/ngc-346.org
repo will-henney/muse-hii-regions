@@ -460,6 +460,95 @@ Try this in a notebook
 + These might be useful for a follow up project
 + But it looks tricky to analyse the data
   + I tried installing Cubism, but it is not compatible with macos 11
+**** Dust opacity spectra
++ We need these in order to plot spectrum of modified black-body: \(\kappa_\lambda B_\lambda\)
++ Since currently, we are just using a \beta law, which is fine in the far-infrared but not in mid-infrared
+  + But is it really worth it?
++ We can follow the same approach as in [[id:D71FC23A-3AE0-4603-8305-D7F6B7244A71][Effects of rotational disruption of large grains]] in the dust-wave project
+
+#+name: xsec-dust
+#+header: :var GRAINTYPE="silicate_ism_10"
+#+BEGIN_SRC python :return figfile :results file
+  import numpy as np
+  from astropy.table import Table
+  import astropy.units as u
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import sys
+  import os
+
+  CDC = "../../cloudy-dust-charging"
+
+  figfile = f"../figs/xsec-infrared-dust-{GRAINTYPE}.pdf"
+
+  sns.set_color_codes()
+  fig, ax = plt.subplots(1, 1, figsize=(5, 3))
+
+  total = None
+
+  mass_per_H = 1.3*1.67262158e-24
+
+  xsecfile = os.path.join(CDC, "dust-opacity", f"{GRAINTYPE}.abs")
+  t = Table.read(xsecfile, format="ascii.no_header")
+  ts = Table.read(xsecfile.replace(".abs", ".sca"), format="ascii.no_header")
+  tg = Table.read(xsecfile.replace(".abs", ".ggg"), format="ascii.no_header")
+
+  rwav = t['col1']/0.0912
+  wav = 1.0/rwav
+
+  total = np.zeros_like(wav)
+
+  for i, name in enumerate(t.colnames[1:]):
+      # total += t[name] + ts[name]
+      # tot_ratd += (t[name] + ts[name])*ratd_weights[i]
+      total += t[name]
+
+  ax.plot(wav, total/mass_per_H, '-', color='k', label=GRAINTYPE)
+  beta = 1.5
+  ax.plot(wav, 3e-3 * (wav / 1000) ** (-beta), lw=0.5, linestyle="dashed")
+  ax.legend()
+
+  ax.set(
+      xscale='log',
+      yscale='log',
+      xlim=[0.01, 1000.0],
+      ylim=[0.0001, 1000.0],
+      xlabel=r"Wavelength $\lambda$, $\mu$m",
+      ylabel=r"Opacity $\kappa_{\mathrm{abs}}$, $\mathrm{cm}^2\ \ \mathrm{g}^{-1}$",
+  )
+
+  sns.despine()
+  #fig.suptitle("Graphite+Silicate: " + GRAINTYPE)
+  fig.tight_layout()
+  fig.savefig(figfile)
+
+  # Make a new table
+  out_tab = Table(
+      data={"Wavelength": wav, "Opacity": total / mass_per_H},
+      units={"Wavelength": u.micron, "Opacity": u.cm**2 / u.g},
+  )
+  tabfile = figfile.replace(".pdf", ".ecsv").replace("/figs/", "/data/")
+  out_tab.write(tabfile, format="ascii.ecsv")
+#+END_SRC
+
+#+RESULTS: xsec-dust-ratd
+[[file:../figs/xsec-infrared-dust-silicate_ism_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_ab08_10")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_ab08_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_c120")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_c120.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_c15")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_c15.pdf]]
+
 ** General thoughts
 + Properties of N66 from Lopez:2014a
   + Q(H) = 4e50 /s = 40 x Orion

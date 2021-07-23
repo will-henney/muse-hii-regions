@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 import astropy.units as u
 from astropy import constants
+from astropy.table import Table
 from mpdaf.obj import Image
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -103,7 +104,7 @@ irdata = {}
 for path in sorted(irfiles):
     irim = IRim(path, 24)
     irim.eval_box_flux(
-        slice(760, 800), 
+        slice(760, 820), 
         [slice(700, 750), slice(890, 940)],
     )
     irdata[irim.label] = irim
@@ -160,16 +161,24 @@ fig.savefig("../figs/ngc346-infrared-profiles.pdf");
 x = irdata["IRAC1"]
 x.boxflux, x.bgflux, x.bgsig, x.bgsigi
 
+opac_tab = Table.read("../data/xsec-infrared-dust-ism_10.ecsv")
+opac_tab
+
 from astropy.modeling.blackbody import blackbody_lambda
 
 # +
 fig, ax = plt.subplots(figsize=(8, 6))
+
+wavpts = []
+bgpts = []
 for irim, color in zip(irdata.values(), colors):
     ebg = np.hypot(irim.bgsig, irim.bgsigi)
     alpha = 0.5 if "MSX" in irim.label else 1.0
+    wavpts.append(irim.wav)
+    bgpts.append(irim.bgflux)
     ax.errorbar(irim.wav, irim.bgflux, yerr=ebg, color=color, alpha=0.3*alpha)
     ax.scatter(irim.wav, irim.bgflux, color="w", marker="s", s=30, edgecolors=color, alpha=alpha)
-    eflux = 0.7 * irim.bgsig
+    eflux = 1.0 * irim.bgsig
     if irim.boxflux > eflux:
         ax.errorbar(
             irim.wav, irim.boxflux,
@@ -184,21 +193,22 @@ for irim, color in zip(irdata.values(), colors):
         ax.errorbar(irim.wav, irim.boxflux + eflux,
                     xerr=0.03*irim.wav, yerr=0.3*(irim.boxflux + eflux), uplims=True, 
                     linewidth=2, color=color, alpha=alpha)
-        
-beta = 1.3
-wavgrid = np.logspace(0.5, 2.8)
-bb = wavgrid * blackbody_lambda(wavgrid * u.micron, 100 * u.K)
-bb *= wavgrid ** (-beta)
+ax.plot(wavpts, bgpts, alpha=0.2, color="r", linestyle="dashed")
+beta = 1.4
+wavgrid = opac_tab["Wavelength"].data
+kappa = opac_tab["Opacity"].data
+bb = wavgrid * blackbody_lambda(wavgrid * u.micron, 105 * u.K)
+bb *= kappa
 bb /= bb.max()
-bb *= 2800
+bb *= 4000
 
-bb2 = wavgrid * blackbody_lambda(wavgrid * u.micron, 31 * u.K)
+bb2 = wavgrid * blackbody_lambda(wavgrid * u.micron, 30 * u.K)
 bb2 *= wavgrid ** (-beta)
 bb2 /= bb2.max()
-bb2 *= 4500
+bb2 *= 6500
 
 ax.plot(wavgrid, bb, color="0.5")
-ax.plot(wavgrid, bb2, color="0.7")
+ax.plot(wavgrid, bb2, color="0.8")
 
 
 ax.set_xscale("log")
@@ -206,6 +216,7 @@ ax.set_yscale("log")
 ax.set(
     xlabel="Wavelength, micron",
     ylabel=r"Luminosity SED: $\nu\, L_\nu$, L$_\odot$",
+    xlim=[3.0, 600.0],
     ylim=[20.0, 1e4],
 )
 sns.despine()
@@ -235,7 +246,7 @@ Lbol.cgs / constants.L_sun.cgs
 
 irdata["MIPS1"].boxflux
 
-# So that is consistent: we have a bolometric shell luminosity of 3600 Lsun.  The stellar luminosity is beleieved to be about 1e6 Lsun, so we have
+# So that is consistent: we have a bolometric shell luminosity of 3600 Lsun.  The stellar luminosity is believed to be about 1e6 Lsun, so we have
 
 tau = 2 * (Lbol.cgs / constants.L_sun.cgs).value / 1e6
 tau
