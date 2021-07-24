@@ -314,11 +314,10 @@ he1 = pn.RecAtom("He", 1)
 h1 = pn.RecAtom("H", 1)
 
 
-e4686 = he2.getEmissivity(tem=18000, den=1, wave=4686)
-e4686cold = he2.getEmissivity(tem=12000, den=1, wave=4686)
-e4861 = h1.getEmissivity(tem=12000, den=1, wave=4861)
-e5875 = he1.getEmissivity(tem=12000, den=1, wave=5876)
-e4686, e4686cold, e4861, e5875
+e4686 = he2.getEmissivity(tem=[12500, 15500], den=100, wave=4686)
+e4861 = h1.getEmissivity(tem=[12500, 15500], den=1, wave=4861)
+e5875 = he1.getEmissivity(tem=[12500, 15500], den=1, wave=5876)
+e4686, e4861, e5875
 
 # From the other notebook, we measure 5875 / 4861 = 0.108 +/- 0.001
 #
@@ -328,7 +327,7 @@ e5875 / e4861
 
 # This implies a He abundance of 
 
-np.array([0.107, 0.108, 0.109]) / (e5875 / e4861)
+np.array([0.107, 0.108, 0.109])[None, :] / (e5875 / e4861)[:, None]
 
 # From Table 5 of Valerdi+ (2019), they have a He+ abundance of 10.915 or 10.917, with error of +/- 0.004 , so:
 
@@ -344,7 +343,7 @@ f"He++/H+ = {10**(8.30 - 12.0):.3e}; He++/He+ = {10**(8.30 - 10.915):.3e}"
 
 y_heiii_hii = 0.015 / (e4686 / e4861)
 y_heiii_heii = y_heiii_hii / 0.08167471
-f"Bow shock He++/H+ = {y_heiii_hii:.4f}; He++/He+ = {y_heiii_heii:.4f}"
+f"Bow shock He++/H+ = {np.round(y_heiii_hii, 4)}; He++/He+ = {np.round(y_heiii_heii, 4)}"
 
 # In other words, the He++ emission measure, $\int n(\mathrm{He^{++}})\, n_\mathrm{e}\, dz$, is ony 2.5% of the total $\int n(\mathrm{He^{+}})\, n_\mathrm{e}\, dz$.
 #
@@ -457,12 +456,12 @@ depth_heii.to(u.pc)
 #
 # So, with homogeneous conditions, we have
 # $$
-# I(4686) = \frac{e(4686)}{4\pi}\, \frac{y}{1 + 2 y} \, n_e^2 \, \delta z
+# I(4686) = \frac{e(4686)}{4\pi}\, \frac{y\, x_{++}}}{1 + (1 + x_{++}) y} \, n_e^2 \, \delta z
 # $$
 # which can be solved for density to yield
 # $$
 # n_e = \left[
-# \frac{4\pi\, I(4686)}{\delta z\, e(4686)} \, \frac{1 + 2 y}{y} 
+# \frac{4\pi\, I(4686)}{\delta z\, e(4686)} \, \frac{1 + (1 + x_{++}) y}{x_{++}\,y} 
 # \right]^{1/2}
 # $$
 
@@ -515,7 +514,7 @@ pn.atomicData.getAllAvailableFiles("He2")
 # It only works as follows:
 
 pn.atomicData.setDataFile('he_ii_trc_SH95-caseB.dat')
-alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=10000, den=100)
+alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=[1.25e4, 1.55e4], den=100)
 alphaB_He_plus *= u.cm**3 / u.s
 alphaB_He_plus
 

@@ -549,6 +549,27 @@ Try this in a notebook
 #+RESULTS:
 [[file:../figs/xsec-infrared-dust-pah1_c15.pdf]]
 
+*** Analysis of bow shock density, etc
+
+**** He II lines
++ I have already tried to do this analysis in notebook 01-02:
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.py]]
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.ipynb]]
++ But I was getting inconsistent results, so I am going to start again
++ I had used a few different approaches:
+  1. (Comes second in the notebook). Use the total He II luminosity to derive the ionizing photon rate Q_2.  The only assumption here is that all the He II emission comes from recombination (in photoionization equilibrium).
+     - We find a flux of 2.04e-15 erg/s/cm^2
+     - This corresponds to a luminosity of 9.28e32 erg/s = 0.242 Lsun
+     - PyNeb is used to get emissivity of 4686 and \alpha_B(He^++)
+       - but I had assumed T = 18000 and 12000
+       - Switched this now to 12500, 15500 as more representative of measured values
+     - This gives Q_2 = \alpha_B(He^++) L(4686) / e(4686) (\Omega / 4\pi)
+       - Q_2 = (2.8 +/- 0.1)e45
+     - This can be compared with stellar atmosphere models
+
+**** 
+
+
 ** General thoughts
 + Properties of N66 from Lopez:2014a
   + Q(H) = 4e50 /s = 40 x Orion
@@ -1004,15 +1025,37 @@ CLOSED: [2021-05-29 Sat 00:16]
   + Ar IV can persist in the He II zone since Ar IV -> V requires 59.58 eV
 ****** Consistency check on the ionization fraction and thickness of the He II zone
 + Based on the notebook [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.md]]
-+ There I find that Q_2 = 4.7e45 /s
-+ And I also found that n_e = 11 /cm^3
-+ The distance of the inner edge from the star is 4 arcsec = 9.23e+17 cm = 0.3 pc
-+ So the ionizing flux is F = Q / 4 \pi R^2 = 4.39e+08 phot/s/cm^2
-+ This should be equal to n_e n_i \alpha_B h = y_He n_e^2 \alpha_B h / (1 + 2 y_He)
-  + Assuming y_He = 0.082 and \alpha_B = 1.533e-12 cm^3/s
-  + h = F / y_He n_e^2 \alpha_B = 4.39e+08 / 0.082 11**2 1.533e-12 = 2.886e+19 cm = 9.353 pc
-  + That would be 120 arcsec, which is way too thick
-  + Which suggests that I have made a mistake somewhere
++ There I find that Q_2 = 2.8e45 /s
+  + Old value of Q_2 = 4.7e45 /s was not using the right temperature
++ And I also found that n_e = 9.5 +/- 0.5 /cm^3
+  + But that has to be multiplied by sqrt((1.0824 + 0.0824 x) / 1.1648 x)
+  + Where x is the He++ fraction
+  + And where we can simplify to 1 / sqrt(x) to +/- 10%
+  + So another way of putting this is that x = (10/n_e)^2
++ The distance of the inner edge from the star is 4 arcsec = 4 9.23e+17 cm = 1.2 pc
++ So the ionizing flux is F_2 = Q_2 / 4 \pi R^2 = 1.625e+07 phot/s/cm^2
++ This should be equal to n_e n_i \alpha_B h = y_He x n_e^2 \alpha_B h / (1 + 2 y_He)
+  + Assuming y_He = 0.082 and \alpha_B = 1.2e-12 cm^3/s
+  + h = 1.165 F / y_He x n_e^2 \alpha_B = 1.165 1.625e+07 / 0.082 10**2 1.2e-12 = 1.9e18 cm = 0.61 pc
+    + 1 arcsec = 0.3 pc
+    + So this is 2 arcsec - just right!
++ *Return to this* [2021-07-23 Fri]
+  + We now have Q_2 = (2.8 +/- 0.1)e45
+  + Found the mistake! I missed a factor of 4 in the distance
+  + I am going to now edit the values above
+  + Now it all works out fine.
+***** Estimating He++ ionization fraction
++ Now that we have the F_2 flux determined we can estimate the He++ x from local ionization balance:
+  + (1 - x) y n \sigma F_2 = x y n^2 (1 + 2 y)  \alpha
+  + x / (1 - x) = \sigma F_2 / \alpha n
+  + We have all these ingredients except for \sigma, which we can easily find since it is hydrogenic
+  + Turns out to be about 1.6e-18 cm^2 at threshold
+  + Therefore, we can find
+    + \sigma F_2 / \alpha n = 1.6e-18 1.625e+07 / 1.2e-12 (10 / sqrt(x)) = 2.17 sqrt(x)
+    + x^{1/2} / (1 - x) = 2.17 => x = 0.63
+  + So n = 13 pcc
+  + Is this consistent with the Cloudy models?
+    + Yes, more or less - but it requires the density to fall with radius
 
 ****** Luminosities from POWR models
 #+begin_src python :tangle "../scripts/powr-parse.py" :results output table

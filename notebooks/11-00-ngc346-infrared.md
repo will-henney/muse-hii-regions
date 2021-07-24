@@ -146,7 +146,7 @@ goodbands = "WISE3", "MSX-E", "MSX-C", "WISE4", "MIPS1"
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(8, 6))
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
     'cmr.infinity', 
@@ -170,7 +170,7 @@ ax.set(
     ylabel="Relative brightness + offset",
     yscale="linear",
     ylim=[-2.0, 3.0 + offset],
-    xlim=[-180, 180],
+    xlim=[-195, 195],
 )
 sns.despine()
 fig.savefig("../figs/ngc346-infrared-profiles.pdf");
