@@ -312,4 +312,79 @@ fig.tight_layout();
 # S(b) = 2 \int_b^\infty j(r) \, \frac{r}{(r^2 - b^2)^{1/2}} \, dr
 # $$
 
+# +
+nb = 200
+def brightness(r, dr, e, nb):
+    b = np.linspace(0.0, r.max(), nb)
+    _r = np.linspace(0.0, r.max(), 3 * nb + 5)
+    _e = np.interp(_r, r, e, left=0.0, right=0.0)
+    nr = len(_r)
+    _dr = [r.max() / nr] * nr
+    bgrid = np.stack([b] * nr, axis=0)
+    rgrid = np.stack([_r] * nb, axis=1)
+    egrid = np.stack([_e] * nb, axis=1)
+    drgrid = np.stack([_dr] * nb, axis=1)
+    rgrid[rgrid <= bgrid] = np.nan
+    sb = 2 * np.nansum(egrid * rgrid * drgrid / (drgrid + np.sqrt(rgrid**2 - bgrid**2)), axis=0)
+    return b, sb
+        
+    
+# -
+
+m = m8
+r = m.data["rad"]["radius"]
+dr = m.data["rad"]["dr"]
+e = m.data["emis"]["He 2 4685.70A"]
+b, s = brightness(r, dr, e, nb)
+s
+
+# +
+fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
+
+
+# colnames = m.data["emis"].colnames[1:]
+
+embands = [
+ 'He 2 4685.70A',
+ 'Ar 4 4740.12A',
+ 'Ne 3 3868.76A',
+ 'O  3 5006.84A',
+ 'Blnd 5875.66A',
+ 'Ar 3 7135.79A',
+ 'H  1 4861.33A',
+ 'Ca B 6562.82A',
+ 'O  2 7319.99A',
+]
+
+# Take N colors from named colormap in [0.15, 0.85] range in HEX
+colors = cmr.take_cmap_colors(
+    'cmr.neon', 
+    len(embands), 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+for m, ax in zip([m4, m7, m8], axes):
+    r = m.data["rad"]["radius"]
+    dr = m.data["rad"]["dr"]
+    nb = 200
+    for emband, color in zip(embands, colors):
+        em = m.data["emis"][emband]
+        b, sb = brightness(r, dr, em, nb)
+        radius = b * u.cm.to(u.pc) 
+        ax.plot(radius, sb / sb.max(), label=emband, color=color)
+    ax.set(
+        yscale="linear",
+        ylim=[0.00, 1.1],
+        xlabel="Radius, pc",
+        ylabel="Surface brightness",
+    )
+axes[0].legend(ncol=3)
+axes[0].set_title("Constant pressure, n = 10, Rmax = 8 pc")
+axes[1].set_title("Constant pressure, n = 50, Rmax = 8 pc")
+axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
+sns.despine()
+fig.tight_layout();
+# -
+
 
