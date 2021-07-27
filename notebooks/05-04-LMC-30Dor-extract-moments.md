@@ -100,5 +100,14 @@ for label in "ABCD":
 ```
 
 ```python
+emlines = [
+    EmissionLine("oii-4650", 4650.0, (-600.0, 600.0)),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
+```python
 
 ```
