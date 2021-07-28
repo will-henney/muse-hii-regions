@@ -56,7 +56,7 @@ class EmissionLine:
     """Emission line"""
     name: str
     wav0: float
-    vlim: tuple[float, float] = (-50.0, 500.0)
+    vlim: tuple[float, float] = (100.0, 400.0)
     
     def save_moments(self, cube: Cube, prefix: str):
         wav1 = self.wav0 * (1.0 + self.vlim[0] / C_KMS)
@@ -69,10 +69,12 @@ class EmissionLine:
             flabel=prefix,
             restwav=self.wav0,
             irange=None,
-            vrange=None,
+            vrange=[100.0, 400.0],
             srange=None,
         )
             
+
+
 ```
 
 ```python
@@ -102,6 +104,21 @@ for label in "ABCD":
 ```python
 emlines = [
     EmissionLine("oii-4650", 4650.0, (-600.0, 600.0)),
+    EmissionLine("feiii-4702", 4701.62),
+    EmissionLine("ariv-4711", 4711.37),
+    EmissionLine("feiii-4734", 4733.93),
+    EmissionLine("feiii-4755", 4754.83),
+    EmissionLine("feiii-4770", 4769.60),    
+    EmissionLine("feiii-4881", 4881.073),
+    EmissionLine("oiii-4931", 4931.32),
+    EmissionLine("feiii-4987", 4987.20),    
+    EmissionLine("hei-5016", 5015.68),
+    EmissionLine("hei-5048", 5047.74),
+    EmissionLine("si-ii-5056", 5055.98),
+    EmissionLine("feii-5159", 5158.81),
+    EmissionLine("ariii-5192", 5191.82),
+    EmissionLine("feii-5262", 5261.61),
+    EmissionLine("feiii-5412", 5412.00), 
 ]
 for label in "ABCD":
     for em in emlines:
