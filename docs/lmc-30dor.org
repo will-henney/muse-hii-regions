@@ -8,8 +8,8 @@
   + So Will is going to carry out the initial steps and produce smaller files that Mabel's machine will be able to manage:
     1. [X] Download the data cubes from ESO archive for the 4 fields of 30Dor (A to D)
        - Note that the data cubes will not be stored in this repo (they are too big!).  But we should store the download shell scripts to make this step reproducible
-    2. [ ] Fit and remove continuum pixel-by-pixel
-    3. [ ] Divide the wavelength range into chunks of about 800 \AA and write out smaller cubes
+    2. [X] Fit and remove continuum pixel-by-pixel
+    3. [X] Divide the wavelength range into chunks of about 800 \AA and write out smaller cubes
        - For instance, the range 6100 \to 6900 is more than enough for analyzing the Raman wings of H\alpha
        - The full range is 4700 \AA and the data cubes are about 3GB, so our smaller files should be about 6 times smaller, or 0.5GB
 
@@ -29,3 +29,16 @@
   + [[file:../data/lmc-30dor/]]
   + The PNG files are white light images of each field, together with 
 
+
+
+** [Fe III] lines and a possible jet
++ Some notes in [[https://www.craft.do/s/rNuIpgvsEx8WxD][this Craft doc]]
+
+** Location within wider region
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/lmc-30dor_att
+:END:
+[[file:lmc-30dor_att/screenshot-20210728-231746.png]]
+This is from the MCELS images
+[[file:lmc-30dor_att/screenshot-20210728-231844.png]]
+See [[file:~/Work/MCELS/]]
