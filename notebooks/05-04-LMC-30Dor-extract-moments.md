@@ -23,6 +23,7 @@ import seaborn as sns
 from mpdaf.obj import Cube
 import regions
 import sys
+import warnings
 sys.path.append("../lib")
 import moments
 import extract
@@ -61,17 +62,19 @@ class EmissionLine:
     def save_moments(self, cube: Cube, prefix: str):
         wav1 = self.wav0 * (1.0 + self.vlim[0] / C_KMS)
         wav2 = self.wav0 * (1.0 + self.vlim[1] / C_KMS)
-        moments.save_moments_to_fits(
-            moments.find_moments(
-                cube.select_lambda(wav1, wav2)
-            ),
-            label=self.name,
-            flabel=prefix,
-            restwav=self.wav0,
-            irange=None,
-            vrange=[100.0, 400.0],
-            srange=None,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            moments.save_moments_to_fits(
+                moments.find_moments(
+                    cube.select_lambda(wav1, wav2)
+                ),
+                label=self.name,
+                flabel=prefix,
+                restwav=self.wav0,
+                irange=None,
+                vrange=[100.0, 400.0],
+                srange=None,
+            )
             
 
 
@@ -90,6 +93,7 @@ emlines = [
     EmissionLine("feiii-4658", 4658.10),
     EmissionLine("hi-4861", 4861.32),
     EmissionLine("hei-4922", 4921.93),
+    EmissionLine("oiii-4959", 4958.91),
     EmissionLine("oiii-5007", 5006.84),
     EmissionLine("si-ii-5041", 5041.03),
 ]

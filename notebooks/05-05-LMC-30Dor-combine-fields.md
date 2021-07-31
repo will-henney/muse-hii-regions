@@ -14,6 +14,8 @@ jupyter:
     name: python3
 ---
 
+# Test of mosaicking together the 30 Dor fields: A, B, C, & D
+
 ```python
 from pathlib import Path
 import numpy as np
@@ -238,13 +240,13 @@ ax.contour(2 * combo, levels=[2.5e5, 5e5, 10e5], linewidths=[0.5, 1.0, 1.5], col
 ax.set_title("Hα / Hβ")
 ```
 
-In the left-hand 2 fields, the alignment is not perfect.  We could maybe fix this by looking at the continuum images, but I will eave it for now.
+In the left-hand 2 fields, the alignment is not perfect.  We could maybe fix this by looking at the continuum images, but I will leave it for now.
 
 
 ## Now process all the emission lines and save them to files
 
 ```python
-afiles = list(Path("../data").glob("lmc-30dor-A-*bin01-*.fits"))
+afiles = sorted(Path("../data").glob("lmc-30dor-A-*bin01-*.fits"))
 ```
 
 ```python
@@ -280,7 +282,11 @@ for afile in afiles:
 ```
 
 ```python
-afiles
+afile.stat().st_mtime
+```
+
+```python
+Path(outfile).stat().st_mtime
 ```
 
 ```python
