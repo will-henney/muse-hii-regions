@@ -32,6 +32,8 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
+## Blue lines
+
 ```python
 labels = "ABCD"
 csub = {
@@ -123,6 +125,31 @@ emlines = [
     EmissionLine("ariii-5192", 5191.82),
     EmissionLine("feii-5262", 5261.61),
     EmissionLine("feiii-5412", 5412.00), 
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
+## Green lines
+
+```python
+labels = "ABCD"
+csub = {
+    label: 
+    Cube(f"../big-data/lmc-30dor-{label}-subcube-54-63-contsub.fits") 
+    for label in labels
+}
+```
+
+```python
+emlines = [
+    EmissionLine("cliii-5517", 5517.71), 
+    EmissionLine("cliii-5538", 5537.88),
+    EmissionLine("nii-5755", 5755.08),    
+    EmissionLine("hei-5876", 5875.62),
+    EmissionLine("si-ii-5958", 5957.56),
+    EmissionLine("si-ii-5979", 5978.93),
 ]
 for label in "ABCD":
     for em in emlines:

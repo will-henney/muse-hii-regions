@@ -254,8 +254,33 @@ afiles
 ```
 
 ```python
+def update_p(a, b, check_mtime=False):
+    """Return True iff path `a` exists but `b` does not
+    
+    Additionally, if `check_mtime` is true, then also update if `a` is newer than `b`
+    """
+    A = Path(a)
+    B = Path(b)
+    if A.exists():
+        if B.exists():
+            if check_mtime:
+                return A.stat().st_mtime > B.stat().st_mtime
+            else:
+                return False
+        else:
+            return True
+    else:
+        return False
+
+```
+
+```python
 for afile in afiles:
     pieces = []
+    outfile = str(afile).replace("-A-", "-ABCD-")
+    if not update_p(afile, outfile):
+        continue
+    print(f"{afile} -> {outfile}")
     for field in "ABCD":
         infile = str(afile).replace("-A-", f"-{field}-")
         hdu = fits.open(infile)["DATA"]
@@ -277,16 +302,7 @@ for afile in afiles:
         np.stack(pieces),
         axis=0,
     )
-    outfile = str(afile).replace("-A-", "-ABCD-")
     fits.PrimaryHDU(header=mosaic_hdr, data=combo).writeto(outfile, overwrite=True)
-```
-
-```python
-afile.stat().st_mtime
-```
-
-```python
-Path(outfile).stat().st_mtime
 ```
 
 ```python
