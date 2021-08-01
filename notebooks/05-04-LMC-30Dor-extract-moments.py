@@ -119,12 +119,14 @@ for label in "ABCD":
 
 # ## Green lines
 
+# + tags=[]
 labels = "ABCD"
 csub = {
     label: 
     Cube(f"../big-data/lmc-30dor-{label}-subcube-54-63-contsub.fits") 
     for label in labels
 }
+# -
 
 emlines = [
     EmissionLine("cliii-5517", 5517.71), 
@@ -138,6 +140,7 @@ for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
 
+# + tags=[]
 emlines = [
     EmissionLine("feiii-5412", 5412.00),
     EmissionLine("ni-iv-5820", 5820.10), 
@@ -149,5 +152,87 @@ emlines = [
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
+# -
+
+emlines = [
+    EmissionLine("c-ii-6151", 6151.43),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+# ## Red lines
+
+# + tags=[]
+labels = "ABCD"
+csub = {
+    label: 
+    Cube(f"../big-data/lmc-30dor-{label}-subcube-62-71-contsub.fits") 
+    for label in labels
+}
+# -
+
+emlines = [
+    EmissionLine("oi-6300", 6300.30), 
+    EmissionLine("siii-6312", 6312.06),
+    EmissionLine("si-ii-6347", 6347.11),
+    EmissionLine("oi-6363", 6363.78),    
+    EmissionLine("si-ii-6371", 6371.36),
+    EmissionLine("cii-6462", 6461.95),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+# + tags=[]
+emlines = [
+    EmissionLine("nii-6548", 6548.05),
+    EmissionLine("nii-6583", 6583.45), 
+    EmissionLine("hei-6678", 6678.15),
+    EmissionLine("sii-6716", 6716.44), 
+    EmissionLine("sii-6731", 6730.816),
+    EmissionLine("oi-7002", 7001.92),
+    EmissionLine("hei-7065", 7065.28)
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+# -
+
+labels = "ABCD"
+csub = {
+    label: 
+    Cube(f"../big-data/lmc-30dor-{label}-subcube-70-79-contsub.fits") 
+    for label in labels
+}
+
+emlines = [
+    EmissionLine("ariii-7136", 7135.78),
+    EmissionLine("feii-7155", 7155.14), 
+    EmissionLine("hei-7160", 7160.13),
+    EmissionLine("cii-7231", 7231.34), 
+    EmissionLine("cii-7236", 7236.42),
+    EmissionLine("oi-7254", 7254.15),
+    EmissionLine("hei-7281", 7281.35)
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+ emlines = [
+     EmissionLine("hei-7281", 7281.35),
+     EmissionLine("hei-7298", 7298.050),
+     EmissionLine("oii-7318", 7318.39),
+     EmissionLine("oii-7330", 7329.66), 
+     EmissionLine("ni-ii-7378", 7377.83),
+     EmissionLine("feii-7388", 7388.16),
+     EmissionLine("ni-ii-7412", 7411.61),
+     EmissionLine("ni-7442", 7442.30),
+     EmissionLine("fe-ii-7453", 7452.54),
+     EmissionLine("ni-7468", 7468.31),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")   
 
 
