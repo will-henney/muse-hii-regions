@@ -261,4 +261,43 @@ for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
 
- 
+labels = "ABCD"
+csub = {
+    label: 
+    Cube(f"../big-data/lmc-30dor-{label}-subcube-78-87-contsub.fits") 
+    for label in labels
+}
+
+emlines = [
+    EmissionLine("cr-ii-8000", 8000.08),
+    EmissionLine("cliv-8046", 8045.62),
+    EmissionLine("cai-8125", 8125.31),
+    EmissionLine("xxx-8152", 8151.7, vlim=(200.0, 300.0)),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+emlines = [
+    EmissionLine("he-i-8156", 8155.66),
+    EmissionLine("crii-8188", 8188.11),
+    EmissionLine("ni-8216", 8216.34),
+    EmissionLine("ni-8223", 8223.14),
+    EmissionLine("oi-8446", 8446.36),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+emlines = [
+    EmissionLine("hi-8467", 8467.25),
+    EmissionLine("hi-8545", 8545.38),
+    EmissionLine("hi-8598", 8598.39),
+    EmissionLine("feii-8617", 8616.95),
+    EmissionLine("hi-8665", 8665.02),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+

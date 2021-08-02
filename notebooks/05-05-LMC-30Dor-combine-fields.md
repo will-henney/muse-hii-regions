@@ -250,7 +250,7 @@ afiles = sorted(Path("../data").glob("lmc-30dor-A-*bin01-*.fits"))
 ```
 
 ```python
-afiles
+[_ for _ in afiles if "-sum" in str(_)]
 ```
 
 ```python

@@ -221,7 +221,7 @@ ax.set_title("Hα / Hβ")
 
 afiles = sorted(Path("../data").glob("lmc-30dor-A-*bin01-*.fits"))
 
-afiles
+[_ for _ in afiles if "-sum" in str(_)]
 
 
 def update_p(a, b, check_mtime=False):
