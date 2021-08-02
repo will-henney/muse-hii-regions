@@ -235,4 +235,30 @@ for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")   
 
+emlines = [
+    EmissionLine("ariv-7171", 7170.5),
+    EmissionLine("ariv-7237", 7237.4), 
+    EmissionLine("ariv-7263", 7262.7),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
 
+emlines = [
+    EmissionLine("cliv-7531", 7530.8),
+    EmissionLine("ariii-7751", 7751.10),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+emlines = [
+    EmissionLine("hei-7499", 7499.85),
+    EmissionLine("feii-7516", 7515.83),
+    EmissionLine("cai-7890", 7890.07, vlim=(150.0, 350.0)),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+
+ 
