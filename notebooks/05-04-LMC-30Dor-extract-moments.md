@@ -88,7 +88,6 @@ moments.SAVEPATH = Path("../data")
 
 ```python
 emlines = [
-    EmissionLine("heii-4686", 4685.68),
     EmissionLine("ariv-4740", 4740.17),
     EmissionLine("ni-5198-5200", 5199.12),
     EmissionLine("feiii-5270", 5270.40),
@@ -102,6 +101,18 @@ emlines = [
 ```
 
 ```python
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
+```python
+emlines = [
+    EmissionLine("nii-4607", 4607.12),
+    EmissionLine("oii-4642", 4641.81),
+    EmissionLine("oii-4650", 4649.985),
+    EmissionLine("heii-4686", 4685.68, (-700, 900)),
+]
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
@@ -334,6 +345,55 @@ emlines = [
     EmissionLine("hi-8598", 8598.39),
     EmissionLine("feii-8617", 8616.95),
     EmissionLine("hi-8665", 8665.02),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
+```python
+labels = "ABCD"
+csub = {
+    label: 
+    Cube(f"../big-data/lmc-30dor-{label}-subcube-86-94-contsub.fits") 
+    for label in labels
+}
+```
+
+```python
+emlines = [
+    EmissionLine("CONT-8730", 8730.0, vlim=(-50.0, 50.0)),
+    EmissionLine("ci-8727", 8727.13, vlim=(200.0, 300.0)),
+    EmissionLine("CONT-8749", 8749.0, vlim=(-50.0, 50.0)),
+    EmissionLine("hi-8750", 8750.47),
+    EmissionLine("hi-8863", 8862.79),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
+There are some misterious very neutral/molecular lines at 9114 and 9145 Å.  The 9114 line is similar to 8152 and seems to come from the highest extinction regions. 
+
+The 9145 line is more diffuse, but also from deeper than the C I line.
+
+The 9219 line may not be Ca I since we don't see the 9259 line that would be expected.  But then I don't know what it is. 
+
+```python
+emlines = [
+    EmissionLine("hi-9015", 9014.91),
+    EmissionLine("siii-9069", 9068.90),
+    EmissionLine("cai-9095", 9095.09),
+    EmissionLine("CONT-9112", 9112.5, vlim=(-50.0, 50.0)),
+    EmissionLine("xxx-9114", 9113.8, vlim=(200.0, 300.0)),
+    EmissionLine("clii-9124", 9123.6),
+    EmissionLine("CONT-9145", 9145.0, vlim=(-50.0, 50.0)),
+    EmissionLine("xxx-9145", 9144.9, vlim=(200.0, 300.0)),
+    EmissionLine("cai-9204", 9204.09),
+    EmissionLine("hei-9210", 9210.28),
+    EmissionLine("cai-9219", 9218.52),
+    EmissionLine("hi-9229", 9229.01),
+    EmissionLine("cai-9244", 9244.31),
 ]
 for label in "ABCD":
     for em in emlines:

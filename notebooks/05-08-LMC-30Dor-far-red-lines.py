@@ -197,14 +197,11 @@ sns.despine()
 # No large ranges of clear continuum here
 
 wavranges = [
-    (7015, 7040), (7090, 7100), (7150, 7160),
-    (7210, 7225), (7260, 7275), 
-    (7380, 7390),
-    (7410, 7420), (7450, 7460),
-    (7510, 7520),
-    (7720, 7740),
-    (7780, 7790), (7830, 7840),
-    (7890, 7900),
+    (8658, 8668), (8675, 8685), (8696, 8705),
+    (8720, 8730), (8745, 8755), (8800, 8820), 
+    (8890, 8900), (8930, 8940), (8970, 8980),
+    (9140, 9150),
+    (9200, 9210), (9250, 9270),
 ]
 
 nv, ny, nx = cubeA.data.shape
@@ -235,18 +232,18 @@ ax.set(
 sns.despine()
 # -
 
-# ### 70–79 Test the polynomial fitting with field A
+# ### 86-94 Test the polynomial fitting with field A
 #
 # This takes about a minute for each field.
 
 contA = extract.fit_continuum(
     cubeA,
     wav_ranges=wavranges,
-    deg=5,
+    deg=2,
     median=False,
 )
 
-# #### 70–79 Inspect the results for different portions of the field.
+# #### 86–94 Inspect the results for different portions of the field.
 
 fig, ax = plt.subplots(figsize=(12, 8))
 cubeA[:, 275:300, 120:150].mean(axis=(1, 2)).plot()
@@ -255,30 +252,30 @@ for wavrange in wavranges:
     ax.axvspan(*wavrange, alpha=0.3)
 ax.set(ylim=[0, 800])
 
-# ### 70–79 Now do the other fields
+# ### 86–94 Now do the other fields
 
 contB = extract.fit_continuum(
     cubeB,
     wav_ranges=wavranges,
-    deg=5,
+    deg=2,
     median=False,
 )
 
 contC = extract.fit_continuum(
     cubeC,
     wav_ranges=wavranges,
-    deg=5,
+    deg=2,
     median=False,
 )
 
 contD = extract.fit_continuum(
     cubeD,
     wav_ranges=wavranges,
-    deg=5,
+    deg=2,
     median=False,
 )
 
-# ### 70–79 Save the continuum-subtracted cubes
+# ### 86-94 Save the continuum-subtracted cubes
 
 csub = {}
 cdiv = {}
@@ -287,7 +284,7 @@ for cube, cont, label in zip(
     [contD, contC, contB, contA],
     "DCBA",
 ):
-    prefix = f"../big-data/lmc-30dor-{label}-subcube-70-79"
+    prefix = f"../big-data/lmc-30dor-{label}-subcube-86-94"
     csub[label] = cube - cont
     cdiv[label] = cube / cont
     csub[label].write(
