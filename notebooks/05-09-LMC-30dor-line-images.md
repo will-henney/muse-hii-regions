@@ -86,23 +86,73 @@ im4959 = Image(p("oiii-4959"))
 im4931 = Image(p("oiii-4931"))
 im4642 = Image(p("oii-4642"))
 im4650 = Image(p("oii-4650"))
+imcont = Image("../data/lmc-30dor-ABCD-46-55-avcont.fits")
 ```
 
 ```python
-r = ((im4650 + im4642)/ im4959)
-r.mask = r.mask | (im4959.data < 3e4)
+r_orl_cel = ((im4650 + im4642)/ im4959)
+r_orl_cel.mask = r_orl_cel.mask | (im4959.data < 3e4) | (imcont.data > 1e3)
 fig, ax = plt.subplots(figsize=(10, 10))
-r.plot(vmin=0, vmax=0.003, cmap=cm.arctic_r, colorbar="v")
+r_orl_cel.plot(vmin=0, vmax=0.003, cmap=cm.arctic_r, colorbar="v")
 ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="k")
 ```
 
 This shows that the collisional lines are relatively stronger where the intensity is highest.  And that teh permitted lines are relatively higher in the inner parts. 
 
 ```python
-r = (im4642 / im4650)
-r.mask = r.mask | (im4959.data < 3e4)
+n = 4
+im1, im2 = im4642.copy(), im4650.copy()
+im1.mask = im1.mask | (im4959.data < 3e4) | (imcont.data > 1e3)
+im2.mask = im1.mask
+r = (im1.rebin(n) / im2.rebin(n))
 fig, ax = plt.subplots(figsize=(10, 10))
 r.plot(vmin=0.6, vmax=1.4, cmap=cm.fusion, colorbar="v")
+```
+
+```python
+im4740 = Image(p("ariv-4740"))
+im7330 = Image(p("oii-7330"))
+```
+
+```python
+r_ariv_oiii = (im4740 / im4959)
+fig, ax = plt.subplots(figsize=(10, 10))
+r_ariv_oiii.plot(vmin=0.0, vmax=0.004, cmap=cm.neutral_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
+```
+
+```python
+r_oiii_oii = (im4959 / im7330)
+fig, ax = plt.subplots(figsize=(10, 10))
+r_oiii_oii.plot(vmin=0.0, vmax=300.0, cmap=cm.neutral_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
+```
+
+```python
+import pandas as pd
+```
+
+```python
+n = 2
+m = ~r_orl_cel.rebin(n).data.mask
+m = m & (r_oiii_oii.rebin(n).data > 1.0) & (r_oiii_oii.rebin(n).data < 500.0)
+m = m & (r_ariv_oiii.rebin(n).data > 1e-4) & (r_ariv_oiii.rebin(n).data < 0.005)
+m = m & (r_orl_cel.rebin(n).data > 3e-4) & (r_orl_cel.rebin(n).data < 0.005)
+df = pd.DataFrame(
+    {
+        "R(V1/4959)": np.log10(r_orl_cel.rebin(n).data[m]),
+        "R([O III] / [O II])": np.log10(r_oiii_oii.rebin(n).data[m]),
+        "R([Ar IV] / [O III])": np.log10(r_ariv_oiii.rebin(n).data[m]),
+    }
+)
+
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+);
+
 ```
 
 ```python

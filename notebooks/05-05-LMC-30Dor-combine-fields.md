@@ -305,6 +305,60 @@ for afile in afiles:
     fits.PrimaryHDU(header=mosaic_hdr, data=combo).writeto(outfile, overwrite=True)
 ```
 
+### Same but for continuum files
+
+```python
+afiles = sorted(Path("../big-data").glob("lmc-30dor-A-subcube-*-cont.fits"))
+```
+
+```python
+afiles
+```
+
+```python
+for afile in afiles:
+    pieces = []
+    outfile = str(afile).replace(
+        "-A-", "-ABCD-"
+    ).replace(
+        "/big-data/", "/data/"
+    ).replace(
+        "-subcube-", "-"
+    ).replace(
+        "-cont", "-avcont"
+    )
+    if not update_p(afile, outfile):
+        continue
+    print(f"{afile} -> {outfile}")
+    for field in "ABCD":
+        infile = str(afile).replace("-A-", f"-{field}-")
+        ohdu = fits.open(infile)["DATA"]
+        im = np.mean(ohdu.data, axis=0)
+        m = (im < 0.0) | (im > 1e6)
+        im[m] = np.nan
+        hdu = fits.PrimaryHDU(
+            data = im,
+            header = WCS(ohdu.header).celestial.to_header(),
+        )
+        if field == "C":
+            hdu.header["CRVAL1"] += Shift_1C.deg
+            hdu.header["CRVAL2"] += Shift_2C.deg
+        else:
+            hdu.header["CRVAL1"] += Shift_1.deg
+            hdu.header["CRVAL2"] += Shift_2.deg
+
+        newdata, footprint = reproject.reproject_interp(
+            hdu,
+            mosaic_hdr,
+        )
+        pieces.append(newdata)
+    combo = np.nanmedian(
+        np.stack(pieces),
+        axis=0,
+    )
+    fits.PrimaryHDU(header=mosaic_hdr, data=combo).writeto(outfile, overwrite=True)
+```
+
 ```python
 
 ```
