@@ -21,7 +21,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 import seaborn as sns
-
+import cmasher as cm
 from mpdaf.obj import Image
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -69,6 +69,24 @@ im8727.plot(vmin=-150, vmax=150, cmap="gray_r")
 
 
 
+# ## The O++ lines
 
+im4959 = Image(p("oiii-4959"))
+im4931 = Image(p("oiii-4931"))
+im4642 = Image(p("oii-4642"))
+im4650 = Image(p("oii-4650"))
+
+r = ((im4650 + im4642)/ im4959)
+r.mask = r.mask | (im4959.data < 3e4)
+fig, ax = plt.subplots(figsize=(10, 10))
+r.plot(vmin=0, vmax=0.003, cmap=cm.arctic_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="k")
+
+# This shows that the collisional lines are relatively stronger where the intensity is highest.  And that teh permitted lines are relatively higher in the inner parts. 
+
+r = (im4642 / im4650)
+r.mask = r.mask | (im4959.data < 3e4)
+fig, ax = plt.subplots(figsize=(10, 10))
+r.plot(vmin=0.6, vmax=1.4, cmap=cm.fusion, colorbar="v")
 
 
