@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ---
 jupyter:
   jupytext:
@@ -5,8 +6,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.3'
-      jupytext_version: 1.11.1
+      format_version: '1.2'
+      jupytext_version: 1.3.3
   kernelspec:
     display_name: Python 3
     language: python
@@ -69,10 +70,10 @@ im8727.data -= im8730c.data
 
 im8727.plot(vmin=-150, vmax=150, cmap="gray_r")
 ```
-
 ```python
 
 ```
+
 
 ## H I line ratios for reddening
 

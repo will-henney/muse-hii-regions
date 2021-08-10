@@ -35,11 +35,50 @@
 + Some notes in [[https://www.craft.do/s/rNuIpgvsEx8WxD][this Craft doc]]
 
 
+** The H\beta Raman wing
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/lmc-30dor_att
+:END:
++ This is seen best on the blue side
++ Here are some example profiles
+  [[file:lmc-30dor_att/screenshot-20210809-215942.png]]
++ Note the absorption notch in the profile at observed wavelength of 4845 +/- 0.5
+  + This is quite possibly another UV absorption line
+  + [ ] We can try and work out what the UV rest wavelength must be
+
+
+** Scattering and extinction
+
+*** DIBs
++ We should measure the 5781 EW maps, and correlate it with the reddening
++ There is also the DIB in the red Raman wing
+*** Scattered light
++ We have the broad 4686 line emission (WR blue bump)
+  + Quote from Lopez-Sanchez:2010y
+    : The blend of the broad He Il 14686, CITI/CIV 14650 and NII 14640 emission lines constitutes the blue WR bump; it mainly originates in WN stars with a minor contribution of WC stars.
+  + This is seen all over the field - probably various WN stars and maybe contribution from hot O stars too
+    + There seems to be scattering associated with the ionized gas and the neutral gas too
+    + Very little evidence of limb brightening
++ We have the 5411 absorption line (albeit potentially contaminated by [Fe III] 5412 emission).  Also, it is emission in some cases
++ We have the WR red bump 5800 broad emission (broad C IV)
+  + Quote from Lopez-Sanchez:2010y
+    : The blend of the C III \lambda 5698 and CIV \lambda 5808 broad emission lines constitutes the red WR bump. CIV \lambda 5808 is the strongest emission line in WC stars, but it is barely seen in WN stars.
+  + This is much more restricted to a nebula around the WR sat the top. Presumably this is a WC star
++ We have the WR 6680 broad emission Not sure what makes this: He I maybe?
+*** Reddening
++ We have multiple reddening indicators:
+  + H I 6563/4861 gives red--blue
+  + H I 9229/6563 gives IR-red
+  + [Ar III] 7751/7136 gives local red slope
++ There is a clump at the bottom that shows anomalously low IR-red reddening
+    
+
 ** Summary of results from line extraction and mosaicking
 + [2021-08-03 Tue]
 *** O++ ORLs vs CELs
 + We find that the ORL/CEL ratio increases towards the center of cluster and also towards the WR star
-+ [ ] Should look at correlation with [Ar IV] / [O III] and with [O III] / [O II], since they should be much better measures of e
++ [X] Should look at correlation with [Ar IV] / [O III] and with [O III] / [O II], since they should be much better measures of excitation
+  + Yes this hows a good correlation, especially with [Ar IV] / [O III] - see notebook
 
 ** Location Within Wider Region
 :PROPERTIES:

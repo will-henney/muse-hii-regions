@@ -79,6 +79,20 @@ class EmissionLine:
 
 moments.SAVEPATH = Path("../data")
 
+# The He II 4686 line is mainly a broad scattered component
+
+# + tags=[]
+emlines = [
+    EmissionLine("nii-4607", 4607.12),
+    EmissionLine("oii-4642", 4641.81),
+    EmissionLine("oii-4650", 4649.985),
+    EmissionLine("heii-4686", 4685.68, (-700, 900)),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+# -
+
 emlines = [
     EmissionLine("ariv-4740", 4740.17),
     EmissionLine("ni-5198-5200", 5199.12),
@@ -91,16 +105,6 @@ emlines = [
     EmissionLine("si-ii-5041", 5041.03),
 ]
 
-for label in "ABCD":
-    for em in emlines:
-        em.save_moments(csub[label], f"lmc-30dor-{label}")
-
-emlines = [
-    EmissionLine("nii-4607", 4607.12),
-    EmissionLine("oii-4642", 4641.81),
-    EmissionLine("oii-4650", 4649.985),
-    EmissionLine("heii-4686", 4685.68, (-700, 900)),
-]
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")

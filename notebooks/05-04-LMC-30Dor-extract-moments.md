@@ -1,6 +1,7 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
@@ -86,6 +87,20 @@ class EmissionLine:
 moments.SAVEPATH = Path("../data")
 ```
 
+The He II 4686 line is mainly a broad scattered component
+
+```python tags=[]
+emlines = [
+    EmissionLine("nii-4607", 4607.12),
+    EmissionLine("oii-4642", 4641.81),
+    EmissionLine("oii-4650", 4649.985),
+    EmissionLine("heii-4686", 4685.68, (-700, 900)),
+]
+for label in "ABCD":
+    for em in emlines:
+        em.save_moments(csub[label], f"lmc-30dor-{label}")
+```
+
 ```python
 emlines = [
     EmissionLine("ariv-4740", 4740.17),
@@ -101,18 +116,6 @@ emlines = [
 ```
 
 ```python
-for label in "ABCD":
-    for em in emlines:
-        em.save_moments(csub[label], f"lmc-30dor-{label}")
-```
-
-```python
-emlines = [
-    EmissionLine("nii-4607", 4607.12),
-    EmissionLine("oii-4642", 4641.81),
-    EmissionLine("oii-4650", 4649.985),
-    EmissionLine("heii-4686", 4685.68, (-700, 900)),
-]
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
@@ -252,9 +255,7 @@ emlines = [
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
-```
 
-```python
  emlines = [
      EmissionLine("hei-7281", 7281.35),
      EmissionLine("hei-7298", 7298.050),
