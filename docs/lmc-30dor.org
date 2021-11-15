@@ -31,6 +31,19 @@
 
 
 
+** Cuts through interesting regions
+1. The 30 Dor-10 GMC in the N
+   - This has ver small offset between ionized and neutral species
+2. The big clump to the SW
+   - This has a nice wall that can be used for a cut through the perpendicular ionization front, akin to in the Orion Bar
+3. The triangle cloud
+   - Strong, limb-brightened C I 8727 emission
+4. The close-in extinction cloud
+   - Bright in the mystery 8152 line
+
+   
+
+
 ** [Fe III] lines and a possible jet
 + Some notes in [[https://www.craft.do/s/rNuIpgvsEx8WxD][this Craft doc]]
 
@@ -95,3 +108,68 @@ See [[file:~/Work/MCELS/]]
 + [[file:hst-images/Tarantula-HST-ESO-HR.jpg]]
 + [[file:hst-images/Tarantula-HST-ESO-LL.jpg]]
 + [[file:hst-images/Tarantula-HST-ESO-annotated.jpg]]
+
+
+** Comparison with molecular gas
+
+*** Alma observations
++ [2021-11-14 Sun] There are two sets of data that have good resolution (1 arcsec or better) that I have found so far
+  1. The molecular cloud 30 Dor-10 at the far N edge of our MUSE field
+     - covered in 12CO and 13CO among other lines
+     - described in Indebetouw:2020x
+     - these are the highest resolution observations but they cover only a small area that overlaps with MUSE
+     - The integrated and peak maps are in [[file:../big-data/30-Dor-Radio/]]
+       - ~Alma-2013.1.00346.S-30_doradus_13CO21-peak.fits~
+       - ~Alma-2013.1.00346.S-30_doradus_13CO21-sum.fits~
+  2. Three fields that cover the entire area except for the SW corner
+     + The data is enormous - too big to put on Dropbox
+     + Originals stored locally in ~/Users/will/Work/Alma-Data/LMC-30-Dor/2019.1.00843.S/~
+     + No paper published so far
+     + The best line I have found so far is in spectral window 25 (~spw25~)
+       - 12CO v=0 2-1
+       - Extract from the FITS header:
+         #+begin_example
+           CTYPE3  = 'FREQ    '                                                            
+           CRVAL3  =   2.302808527260E+11                                                  
+           CDELT3  =   6.103865753174E+04                                                  
+           CRPIX3  =   1.000000000000E+00                                                  
+           CUNIT3  = 'Hz      '
+           ...
+           RESTFRQ =   2.305380000000E+11 /Rest Frequency (Hz)                             
+           SPECSYS = 'LSRK    '           /Spectral reference frame                        
+           ALTRVAL =   3.343952551877E+05 /Alternate frequency reference value             
+           ALTRPIX =   1.000000000000E+00 /Alternate frequency reference pixel             
+           VELREF  =                  257 /1 LSR, 2 HEL, 3 OBS, +256 Radio       
+         #+end_example
+         - Apparently, ~ALTRVAL~ is the velocity of pixel 1:
+           : 2.99792458e8 (2.305380000000E+11 - 2.302808527260E+11) / 2.305380000000E+11
+           : = 334395.255188 m
+           so that checks out.  Units are m/s
+         - so velocity pixels are 2.99792458e8 6.103865753174E+04 / 2.305380000000E+11 = 79.3748933989 m/s
+         - So in principal, we could change the FITS header to have
+            #+begin_example
+              CTYPE3  = 'VRAD'                                                            
+              CRVAL3  =   3.343952551877E+05
+              CDELT3  =   -79.3748933989
+              CRPIX3  =   1.000000000000E+00
+              CUNIT3  = 'm/s'
+            #+end_example
+            This says that we have "Radio Velocity", which is defined in Greisen:2006a as
+     + Weaker lines:
+       + spw29: 2.203986840000E+11 Hz 13CO v=0 2-1
+       + spw31: 2.182221920000E+11 Hz H2CO Formaldehyde - very weak
+         + Other H2CO bands are spw33 and spw35 but they are even weaker
+       + spw37: 2.195603580000E+11 Hz C180 v=0 2-1 - very weak
+       + So for some fields I am only downloading spw25 and spw29 to save time
+
+
+**** Making moment maps and channel maps of CO
+
++ This is done in the notebook [[file:../notebooks/05-10-LMC-30dor-molecular-maps.ipynb]]
+
+*** Kinematics of the CO emission
++ In many areas, there seems to be a pronounced gradient with radius: bluer at small radii, redder at large radii
++ The velocity range of the CO emission seems similar to that of the optical lines
++ Point by point comparison between CO and [S II] suggests that the velocities are at least partially correlated.
+  + But I need to look at this more systematically
+    
