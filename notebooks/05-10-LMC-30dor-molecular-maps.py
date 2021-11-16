@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.3.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -74,4 +74,37 @@ fits.PrimaryHDU(
     overwrite=True,
 )
 
-# ## The 2019 Alma observations from the 
+# ## The 2019 Alma observations from the `2019.1.00843.S` program
+
+RAW_DATAPATH = Path.home() / "Work"/ "Alma-Data" / "LMC-30-Dor"
+
+
+def fitspath(uid: str, spw: int=25):
+    """Find an ALMA spectral cube file with given `uid`"""
+    filename = f"member.uid___A001_X1465_X{uid}.30_Doradus_sci.spw{spw}.cube.I.pbcor.fits"
+    matches = list(RAW_DATAPATH.rglob(filename))
+    assert len(matches) == 1
+    return matches[0]
+
+
+# Check that we can find a cube:
+
+fitspath("219a")
+
+paths_12co = {uid: fitspath(uid) for uid in ("218a", "2192", "219a")}
+
+for p in paths_12co.values():
+    fits.open(p).info()
+
+for uid, p in paths_12co.items():
+    hdu = fits.open(p)["PRIMARY"]
+    w = WCS(hdu.header)
+    image = np.nansum(hdu.data, axis=(0, 1))
+    savepath = DATAPATH / f"Alma-2019.1.00843.S-30_doradus_12CO21-{uid}-sum.fits"
+    fits.PrimaryHDU(header=w.celestial.to_header(), data=image).writeto(savepath, overwrite=True)
+    image = np.nanmax(hdu.data, axis=(0, 1))
+    savepath = DATAPATH / f"Alma-2019.1.00843.S-30_doradus_12CO21-{uid}-peak.fits"
+    fits.PrimaryHDU(header=w.celestial.to_header(), data=image).writeto(savepath, overwrite=True)
+    
+
+
