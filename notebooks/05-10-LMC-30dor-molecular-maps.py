@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.3.3
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -23,6 +23,9 @@ from pathlib import Path
 import numpy as np
 from astropy.io import fits
 from astropy.wcs import WCS
+import astropy.units as u
+from astropy import constants
+from reproject import reproject_interp
 
 # ## Alma maps of 30 Dor-10 GMC
 #
@@ -91,20 +94,286 @@ def fitspath(uid: str, spw: int=25):
 
 fitspath("219a")
 
-paths_12co = {uid: fitspath(uid) for uid in ("218a", "2192", "219a")}
+list(RAW_DATAPATH.rglob("*30_Doradus_sci.spw29.cube.I.pbcor.fits"))
 
-for p in paths_12co.values():
+uids = ["218a", "2192", "219a"]
+paths_12co = {uid: fitspath(uid) for uid in uids}
+paths_13co = {uid: fitspath(uid, spw=29) for uid in uids}
+
+for p in paths_13co.values():
     fits.open(p).info()
 
-for uid, p in paths_12co.items():
-    hdu = fits.open(p)["PRIMARY"]
-    w = WCS(hdu.header)
-    image = np.nansum(hdu.data, axis=(0, 1))
-    savepath = DATAPATH / f"Alma-2019.1.00843.S-30_doradus_12CO21-{uid}-sum.fits"
-    fits.PrimaryHDU(header=w.celestial.to_header(), data=image).writeto(savepath, overwrite=True)
-    image = np.nanmax(hdu.data, axis=(0, 1))
-    savepath = DATAPATH / f"Alma-2019.1.00843.S-30_doradus_12CO21-{uid}-peak.fits"
-    fits.PrimaryHDU(header=w.celestial.to_header(), data=image).writeto(savepath, overwrite=True)
+
+# Function to calculate the velocity moments of a cube:
+
+def moments(cube, vels):
+    vcube = vels[:, None, None]
+    mom0 = np.nansum(cube, axis=0)
+    mom1 = np.nansum(cube * vcube, axis=0)
+    vmean = mom1 / mom0
+    mom2 = np.nansum(cube * (vcube - vmean)**2, axis=0)
+    sigma = np.sqrt(mom2 / mom0)
+    return mom0, vmean, sigma
+
+
+# + [markdown] tags=[]
+# Use the rest frequency in the header to convert the spectral axis to velocity, remembering that all must be in SI units.  Then, make an array of velocities in km/s for the spectral axis
+# -
+
+def get_velocities(hdu):
+    hdr = hdu.header.copy()
+    # Rest frequency
+    nu0 = hdr["RESTFRQ"] * u.Hz
+    # Frequency of reference pixel
+    nu1 = hdr["CRVAL3"] * u.Hz
+    # Change from frequency to "Radio" velocities
+    hdr["CTYPE3"] = "VRAD"
+    hdr["CRVAL3"] = (constants.c * (nu0 - nu1) / nu0).si.value
+    hdr["CDELT3"] *= -(1.0 * u.Hz * constants.c / nu0).si.value
+    hdr["CUNIT3"] = "m/s"
+    wspec = WCS(hdr).spectral
     
+    ns, nv, ny, nx = hdu.data.shape
+    vels = wspec.array_index_to_world(
+        np.arange(nv)
+    ).to(u.km / u.s).value
+    return vels
+
+
+# This does a rolling average over the velocity axis, so that we get less noise in the "max" maps.  We are fine doing this because the velocity pixel size is much smaller than the effective velocity resolution. 
+
+def smooth_vels(cube, n):
+    "Perform rolling average of length `n` along the 0-th axis"
+    kernel = np.ones(n) / n
+    nv, ny, nx = cube.shape
+    for j, i in np.ndindex(ny, nx):
+        cube[:, j, i] = np.convolve(cube[:, j, i], kernel, mode="same")
+    return cube
+
+
+def get_moments_and_spectrum(hdu, klim=(700, 1400)):
+    k1, k2 = klim
+    vels = get_velocities(hdu)
+    full_cube = hdu.data[0, ...]
+    zoom_cube = full_cube[k1:k2, ...]
+    _sum, vmean, sigma = moments(zoom_cube, vels[k1:k2])
+    peak = np.nanmax(full_cube, axis=0)
+    peak04 = np.nanmax(smooth_vels(full_cube, 4), axis=0)
+    peak08 = np.nanmax(smooth_vels(full_cube, 8), axis=0)
+    spec = np.nansum(full_cube, axis=(1, 2))
+    specm = np.nanmax(full_cube, axis=(1, 2))
+    return {
+        "vels": vels,
+        "spec": spec,
+        "specm": specm,
+        "peak": peak,
+        "peak04": peak04,
+        "peak08": peak08,
+        "sum": _sum,
+        "vmean": vmean,
+        "sigma": sigma,
+        "wcs": WCS(hdu.header).celestial,
+        "hdu": hdu,
+        "klim": klim,
+    }
+
+
+# Save a peak and a mean version of each map.  Also, keep a dict `cubes_12co` of the original cubes for later use. 
+
+# + tags=[]
+data_12co = {
+    uid: get_moments_and_spectrum(fits.open(p)["PRIMARY"])
+    for uid, p in paths_12co.items()
+}
+
+# + tags=[]
+data_13co = {
+    uid: get_moments_and_spectrum(fits.open(p)["PRIMARY"])
+    for uid, p in paths_13co.items()
+}
+# -
+
+PREFIX = "Alma-2019.1.00843.S-30_doradus"
+def save_images(data_dict, line_id="12CO21"):
+    for uid, data in data_dict.items():
+        w = data["wcs"]
+        for label in "peak", "peak04", "peak08", "sum", "vmean", "sigma":
+            image = data[label]
+            savepath = DATAPATH / f"{PREFIX}_{line_id}-{uid}-{label}.fits"
+            fits.PrimaryHDU(
+                header=w.to_header(), 
+                data=image,
+            ).writeto(savepath, overwrite=True)
+
+
+# Save all the maps to fits files.
+
+save_images(data_12co, line_id="12CO21")
+
+save_images(data_13co, line_id="13CO21")
+
+# ### Stitch together the images
+#
+# Regrid everything to the MUSE frame and then take the median (or the minimum for the max images). 
+
+MUSE_DATAPATH = Path.cwd().parent / "data" 
+musefile = "lmc-30dor-ABCD-oiii-4959-bin01-sum.fits"
+musehdu = fits.open(MUSE_DATAPATH / musefile)["DATA"]
+
+WCS(musehdu.header)
+
+images = [
+    reproject_interp((db["peak08"], db["wcs"]), musehdu.header, return_footprint=False)
+    for db in data_12co.values()
+]
+
+im = np.nanmin(
+    np.stack(images),
+    axis=0,
+)
+#im[~np.isfinite(im)] = 0.0
+fig, ax = plt.subplots(subplot_kw=dict(projection=WCS(musehdu.header)))
+ax.imshow(
+    im, 
+#     vmin=0.0, 
+#     vmax=2.11,
+    cmap="gray_r",
+)
+ax.set_aspect("equal")
+
+# This looks good.  Now write to file.
+
+fits.PrimaryHDU(
+    header=musehdu.header,
+    data=im,
+).writeto(MUSE_DATAPATH / "lmc-30dor-ABCD-12co-21-reproject-max.fits")
+
+# Repeat for 13CO
+
+images = [
+    reproject_interp((db["peak08"], db["wcs"]), musehdu.header, return_footprint=False)
+    for db in data_13co.values()
+]
+im = np.nanmin(
+    np.stack(images),
+    axis=0,
+)
+fits.PrimaryHDU(
+    header=musehdu.header,
+    data=im,
+).writeto(
+    MUSE_DATAPATH / "lmc-30dor-ABCD-13co-21-reproject-max.fits", 
+    overwrite=True,
+)
+
+# And repeat for the summed intensity and the velocity moments:
+
+for line_id, dbdict in [["13co", data_13co], ["12co", data_12co]]:
+    for db in dbdict.values():
+        missing_mask = db["sum"] == 0.0
+        db["sum"][missing_mask] = np.nan
+    imstack = {}
+    for q in "peak08", "sum", "vmean", "sigma":
+        imstack[q] = np.stack([
+            reproject_interp(
+                (db[q], db["wcs"]), 
+                musehdu.header, 
+                return_footprint=False,
+            )
+            for db in dbdict.values()
+        ])
+    peak = np.nanmin(imstack["peak08"], axis=0)
+    mom0 = np.nanmean(imstack["sum"], axis=0)
+    mom1 = np.nanmean(imstack["sum"] * imstack["vmean"], axis=0)
+    mom2 = np.nanmean(imstack["sum"] * imstack["sigma"] ** 2, axis=0)
+    vmean = mom1 / mom0
+    sigma = np.sqrt(np.abs(mom2 / mom0))
+    weak_mask = (peak <= 0.15) & (mom0 < 10.0)
+    vmean[weak_mask] = np.nan
+    sigma[weak_mask] = np.nan
+    for im, label in [
+        [mom0, "sum"], 
+        [peak, "peak"], 
+        [vmean, "vmean"], 
+        [sigma, "sigma"]
+    ]:
+        fits.PrimaryHDU(
+            header=musehdu.header,
+            data=im,
+        ).writeto(
+            MUSE_DATAPATH / f"lmc-30dor-ABCD-{line_id}-21-reproject-{label}.fits", 
+            overwrite=True,
+        )
+                 
+
+# ### Do something with the spectra.
+
+spec_12co = {}
+for uid in cubes_12co:
+    spec_12co[uid] = np.nansum(cubes_12co[uid].data[0, ...], axis=(1, 2))
+
+spec_13co = {}
+for uid in cubes_13co:
+    spec_13co[uid] = np.nansum(cubes_13co[uid].data[0, ...], axis=(1, 2))
+
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set_context("talk")
+
+fig, ax = plt.subplots(figsize=(12,6))
+for label, spec in spec_12co.items(): 
+    ax.plot(vels, spec, label=label)
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[220, 280],
+    xlabel="LSR Velocity, km/s",
+)
+
+fig, ax = plt.subplots(figsize=(12,6))
+for label, spec in spec_13co.items(): 
+    ax.plot(vels, spec, label=label)
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[220, 280],
+    xlabel="LSR Velocity, km/s",
+)
+
+# + jupyter={"source_hidden": true} tags=[]
+specm_13co = {}
+for uid in cubes_13co:
+    specm_13co[uid] = np.nanmax(cubes_13co[uid].data[0, ...], axis=(1, 2))
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12,6))
+for label, spec in specm_13co.items(): 
+    ax.plot(vels, spec, label=label)
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[220, 280],
+    xlabel="LSR Velocity, km/s",
+)
+# -
+
+
+
+# + tags=[]
+specm_12co = {}
+for uid in cubes_12co:
+    specm_12co[uid] = np.nanmax(cubes_12co[uid].data[0, ...], axis=(1, 2))
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12,6))
+for label, spec in specm_12co.items(): 
+    ax.plot(vels, spec, label=label)
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[220, 280],
+    xlabel="LSR Velocity, km/s",
+)
+# -
 
 
