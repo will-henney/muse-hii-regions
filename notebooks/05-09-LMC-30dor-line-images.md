@@ -147,7 +147,7 @@ fig.tight_layout();
 In general, there is a good correlatrion between all the reddening indicators
 
 
-There are some cases, however, where the blue–red reddening and the red–infared are different.  For instance, the cloud at (x, y) = (400, 10) has a high 6563/4861 and hifg 7751/7136, but is not particularly visible in 9229 / 6563
+There are some cases, however, where the blue–red reddening and the red–infared are different.  For instance, the cloud at (x, y) = (400, 10) has a high 6563/4861 and high 7751/7136, but is not particularly visible in 9229 / 6563
 <!-- #endregion -->
 
 ```python

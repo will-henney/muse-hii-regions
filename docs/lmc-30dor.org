@@ -175,4 +175,53 @@ See [[file:~/Work/MCELS/]]
 + The velocity range of the CO emission seems similar to that of the optical lines
 + Point by point comparison between CO and [S II] suggests that the velocities are at least partially correlated.
   + But I need to look at this more systematically
-    
+
+
+
+**** Conversion from LSRK to Barycentric
++ Radio observations tend to use Local Standard of Rest frame LSRK
+  + I have a long discussion of this in [[file:../../KeckProplyd/keck-raman.org][file:~/Dropbox/KeckProplyd/keck-raman.org]]
+  + I traced it back to Gordon:1976a - here is a quote:
+    : The conventional reference frame used for galactic studies is essentially
+    : that of standard solar motion. The convention of Local Standard of Rest	    
+    : (LSR) assumes the sun to move at the rounded velocity of 20.0 km/sec toward  
+    : 18h RA and 30° DEC (1900.0).
++ Optical observations tend to use heliocentric or barycentric (almost the same)
++ Here I will calculate the conversion between the two of them for 30 Dor
+  #+begin_src python :results output verbatim
+    from pathlib import Path
+    from astropy.wcs import WCS
+    import astropy.coordinates as coord
+    from astropy.time import Time
+    import astropy.units as u
+    from astropy.io import fits
+    import numpy as np
+
+    # Choose any of the MUSE images to get the coordinates from
+    fitspath = Path.cwd().parent / "data" / "lmc-30dor-ABCD-oiii-4959-bin01-sum.fits"
+    hdu =  fits.open(fitspath)["DATA"]
+
+    # Get coordinates from header and convert to Galactic
+    w = WCS(hdu.header)
+    ra, dec = w.wcs.crval
+    c0 = coord.SkyCoord(ra, dec, unit=u.deg).galactic
+
+    # Definition of LSRK velocity in Cartesian Galactic frame (km/s)
+    U, V, W = 10.27, 15.32, 7.74
+
+    # Galactic longitude and latitude in radians
+    lll, bbb = c0.l.radian, c0.b.radian
+
+    # Dot product with unit vector to get the V(LSR) - V(HEL)
+    vlsr = U*np.cos(lll)*np.cos(bbb) + V*np.sin(lll)*np.cos(bbb) + W*np.sin(bbb)
+
+    print(f"V(LSR) - V(HEL) = {vlsr:.2f} km/s")
+  #+end_src
+
+  #+RESULTS:
+  : V(LSR) - V(HEL) = -15.49 km/s
++ *Conclusions*
+  + V(LSR) = V(HEL) - 15.49 km/s
+  + So we subtract 15.5 from the heliocentric velocities to get the LSR ones
+  + This means that the systemic velocity of 265 km/s from Castro et al becomes VLSRK = 249.5 km/s
+  + So the blueshifted 250 km/s clump of Ha in the I-V diagrams corresponds to VLSRK = 234.5 km/s

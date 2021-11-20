@@ -308,72 +308,264 @@ for line_id, dbdict in [["13co", data_13co], ["12co", data_12co]]:
 
 # ### Do something with the spectra.
 
-spec_12co = {}
-for uid in cubes_12co:
-    spec_12co[uid] = np.nansum(cubes_12co[uid].data[0, ...], axis=(1, 2))
+# Convert to heliocentric velocities for ease of comparison with MUSE:
 
-spec_13co = {}
-for uid in cubes_13co:
-    spec_13co[uid] = np.nansum(cubes_13co[uid].data[0, ...], axis=(1, 2))
+VHEL = 15.49
 
 from matplotlib import pyplot as plt
 import seaborn as sns
 sns.set_context("talk")
 
 fig, ax = plt.subplots(figsize=(12,6))
-for label, spec in spec_12co.items(): 
+for label, db in data_12co.items():
+    vels = db["vels"] + VHEL
+    spec = db["spec"]
     ax.plot(vels, spec, label=label)
+ax.axvline(265.0, color="k", alpha=0.5, linestyle="dotted")
+ax.axhline(0.0, color="k", alpha=0.5, linestyle="dotted")
 ax.legend()
 ax.set(
 #    xlim=[700, 1400],
-    xlim=[220, 280],
-    xlabel="LSR Velocity, km/s",
+    xlim=[240, 290],
+    xlabel="Heliocentric Velocity, km/s",
 )
+ax.set_title("$^{12}$CO summed line profile")
+sns.despine();
 
 fig, ax = plt.subplots(figsize=(12,6))
-for label, spec in spec_13co.items(): 
+for label, db in data_13co.items():
+    vels = db["vels"] + VHEL
+    spec = db["spec"]
     ax.plot(vels, spec, label=label)
+ax.axvline(265.0, color="k", alpha=0.5, linestyle="dotted")
+ax.axhline(0.0, color="k", alpha=0.5, linestyle="dotted")
 ax.legend()
 ax.set(
 #    xlim=[700, 1400],
-    xlim=[220, 280],
-    xlabel="LSR Velocity, km/s",
+    xlim=[240, 290],
+    xlabel="Heliocentric Velocity, km/s",
 )
+ax.set_title("$^{13}$CO summed line profile")
+sns.despine();
+
+# + tags=[]
+for db in data_13co.values():
+    db["specm"] = np.nanmax(db["hdu"].data[0, ...], axis=(1, 2))
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12,6))
+for label, db in data_13co.items():
+    vels = db["vels"] + VHEL
+    spec = db["specm"]
+    ax.plot(vels, spec, label=label)
+ax.axvline(265.0, color="k", alpha=0.5, linestyle="dotted")
+ax.axhline(0.0, color="k", alpha=0.5, linestyle="dotted")
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[240, 290],
+    xlabel="Heliocentric Velocity, km/s",
+)
+ax.set_title("$^{13}$CO max line profile")
+sns.despine();
+# -
+
+data_13co["218a"]["vels"]
+
+# + tags=[]
+for db in data_12co.values():
+    db["specm"] = np.nanmax(db["hdu"].data[0, ...], axis=(1, 2))
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12,6))
+for label, db in data_12co.items():
+    vels = db["vels"] + VHEL
+    spec = db["specm"]
+    ax.plot(vels, spec, label=label)
+ax.axvline(265.0, color="k", alpha=0.5, linestyle="dotted")
+ax.axhline(0.0, color="k", alpha=0.5, linestyle="dotted")
+ax.legend()
+ax.set(
+#    xlim=[700, 1400],
+    xlim=[235, 300],
+    xlabel="Heliocentric Velocity, km/s",
+)
+ax.set_title("$^{12}$CO max line profile")
+sns.despine();
+# -
+
+# ### Now compare with the mean velocities
+
+import pandas as pd
+
+# +
+_vars = ["sum", "log sum", "peak08", "vhel", "sigma"]
+
+d = {q: [] for q in _vars}
+
+for db in data_12co.values():
+#for db in [data_12co["219a"]]:
+    db["vhel"] = db["vmean"] + VHEL
+    db["log sum"] = np.log10(db["sum"])
+    m = np.isfinite(db["vhel"]) & (db["peak08"] > 0.5) 
+    m = m & (db["sum"] > 3.0)
+    m = m & (db["vhel"] > 220.0) & (db["vhel"] < 330.0)
+    m = m & (db["sigma"] < 20.0)
+    for q in _vars:
+        d[q].extend(list(db[q][m]))
+
+df = pd.DataFrame(d)
+
+g = sns.pairplot(
+    df,
+    vars=["log sum", "vhel", "sigma"],
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=df["sum"],
+        bins=100,
+    ),
+)
+g.fig.suptitle("$^{12}$CO All fields");
+
+# +
+d = {q: [] for q in _vars}
+
+for db in data_13co.values():
+#for db in [data_12co["219a"]]:
+    db["vhel"] = db["vmean"] + VHEL
+    db["log sum"] = np.log10(db["sum"])
+    m = np.isfinite(db["vhel"]) & (db["peak08"] > 0.5) 
+    m = m & (db["sum"] > 3.0)
+    m = m & (db["vhel"] > 220.0) & (db["vhel"] < 330.0)
+    m = m & (db["sigma"] < 20.0)
+    for q in _vars:
+        d[q].extend(list(db[q][m]))
+
+df = pd.DataFrame(d)
+
+g = sns.pairplot(
+    df,
+    vars=["log sum", "vhel", "sigma"],
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=df["sum"],
+        bins=100,
+    ),
+)
+g.fig.suptitle("$^{13}$CO All fields");
+# -
+
+# ### Calculate distance from center
+
+from astropy.coordinates import SkyCoord
+
+c0 = SkyCoord("5:38:41.3616 -69:06:03.254", unit=(u.hourangle, u.deg))
+c0
+
+for field in data_12co:
+    db = data_12co[field]
+    ny, nx = db["sum"].shape
+    w = db["wcs"]
+    X, Y = np.meshgrid(np.arange(nx), np.arange(ny))
+    c = w.pixel_to_world(X, Y)
+    s = c0.separation(c)
+    # print(s.arcsec.min(), s.arcsec.max())
+    db["radius"] = s.arcsec
+    data_13co[field]["radius"] = s.arcsec
+
+# +
+_vars = ["sum", "log sum", "peak08", "vhel", "sigma", "radius"]
+
+d = {q: [] for q in _vars}
+
+for db in data_12co.values():
+#for db in [data_12co["219a"]]:
+    db["vhel"] = db["vmean"] + VHEL
+    db["log sum"] = np.log10(db["sum"])
+    m = np.isfinite(db["vhel"]) & (db["peak08"] > 0.5) 
+    m = m & (db["sum"] > 3.0)
+    m = m & (db["vhel"] > 220.0) & (db["vhel"] < 330.0)
+    m = m & (db["sigma"] < 20.0)
+    for q in _vars:
+        d[q].extend(list(db[q][m]))
+
+df = pd.DataFrame(d)
+
+g = sns.pairplot(
+    df,
+    vars=["log sum", "vhel", "sigma", "radius"],
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=df["sum"],
+        bins=100,
+    ),
+)
+g.fig.suptitle("$^{12}$CO All fields");
+
+# + tags=[]
+from corner import corner
+# -
+
+corner(
+    df, 
+    var_names=["log sum", "vhel", "sigma", "radius"], 
+    weights=df["sum"], 
+    bins=100, 
+    plot_contours=True,
+    smooth=2.0,
+    linewidth=0.3,
+);
+
+# +
+_vars = ["sum", "log sum", "peak08", "vhel", "sigma", "radius"]
+
+d = {q: [] for q in _vars}
+
+for db in data_12co.values():
+#for db in [data_12co["219a"]]:
+    db["vhel"] = db["vmean"] + VHEL
+    db["log sum"] = np.log10(db["sum"])
+    m = np.isfinite(db["vhel"]) & (db["peak08"] > 0.5) 
+    m = m & (db["sum"] > 3.0)
+    m = m & (db["vhel"] > 220.0) & (db["vhel"] < 330.0)
+    m = m & (db["sigma"] < 20.0)
+    m = m & (db["radius"] < 80.0)
+    for q in _vars:
+        d[q].extend(list(db[q][m]))
+
+df = pd.DataFrame(d)
+
+g = sns.pairplot(
+    df,
+    vars=["log sum", "vhel", "sigma", "radius"],
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=df["sum"],
+        bins=100,
+    ),
+)
+g.fig.suptitle("$^{12}$CO $r < 80''$");
 
 # + jupyter={"source_hidden": true} tags=[]
-specm_13co = {}
-for uid in cubes_13co:
-    specm_13co[uid] = np.nanmax(cubes_13co[uid].data[0, ...], axis=(1, 2))
-
-# + tags=[]
-fig, ax = plt.subplots(figsize=(12,6))
-for label, spec in specm_13co.items(): 
-    ax.plot(vels, spec, label=label)
-ax.legend()
-ax.set(
-#    xlim=[700, 1400],
-    xlim=[220, 280],
-    xlabel="LSR Velocity, km/s",
-)
+corner(
+    df, 
+    var_names=["log sum", "vhel", "sigma", "radius"], 
+    weights=df["sum"], 
+    bins=100, 
+    plot_contours=True,
+    smooth=2.0,
+    linewidth=0.3,
+);
 # -
 
-
-
-# + tags=[]
-specm_12co = {}
-for uid in cubes_12co:
-    specm_12co[uid] = np.nanmax(cubes_12co[uid].data[0, ...], axis=(1, 2))
-
-# + tags=[]
-fig, ax = plt.subplots(figsize=(12,6))
-for label, spec in specm_12co.items(): 
-    ax.plot(vels, spec, label=label)
-ax.legend()
-ax.set(
-#    xlim=[700, 1400],
-    xlim=[220, 280],
-    xlabel="LSR Velocity, km/s",
-)
-# -
+# We see a clear gradient of velocity with radius!
 
 
