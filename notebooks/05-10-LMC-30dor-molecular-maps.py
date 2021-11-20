@@ -552,7 +552,9 @@ g = sns.pairplot(
         bins=100,
     ),
 )
-g.fig.suptitle("$^{12}$CO $r < 80''$");
+g.fig.suptitle("$^{12}$CO inner region ($r < 80''$)")
+g.fig.set_size_inches(8, 8)
+g.fig.savefig("30dor-12co-I-v-sigma-rad-distros.pdf");
 
 # + jupyter={"source_hidden": true} tags=[]
 corner(
@@ -567,5 +569,40 @@ corner(
 # -
 
 # We see a clear gradient of velocity with radius!
+
+# +
+_vars = ["sum", "log sum", "peak08", "vhel", "sigma", "radius"]
+
+d = {q: [] for q in _vars}
+
+for db in data_13co.values():
+#for db in [data_12co["219a"]]:
+    db["vhel"] = db["vmean"] + VHEL
+    db["log sum"] = np.log10(db["sum"])
+    m = np.isfinite(db["vhel"]) & (db["peak08"] > 0.5) 
+    m = m & (db["sum"] > 3.0)
+    m = m & (db["vhel"] > 220.0) & (db["vhel"] < 330.0)
+    m = m & (db["sigma"] < 20.0)
+    m = m & (db["radius"] < 80.0)
+    for q in _vars:
+        d[q].extend(list(db[q][m]))
+
+df = pd.DataFrame(d)
+
+g = sns.pairplot(
+    df,
+    vars=["log sum", "vhel", "sigma", "radius"],
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=df["sum"],
+        bins=100,
+    ),
+)
+g.fig.suptitle("$^{13}$CO inner region ($r < 80''$)")
+g.fig.set_size_inches(8, 8)
+g.fig.savefig("30dor-13co-I-v-sigma-rad-distros.pdf");
+# -
 
 
