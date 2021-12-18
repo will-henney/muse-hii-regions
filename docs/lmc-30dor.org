@@ -170,6 +170,28 @@ See [[file:~/Work/MCELS/]]
 
 + This is done in the notebook [[file:../notebooks/05-10-LMC-30dor-molecular-maps.ipynb]]
 
+
+*** Combining ALMA maps with lower-resolution observations
++ This would be good to fill in the noisiest regions of the ALMA map, where there is not much signal
++ To do this properly is hard
+  + See Kong:2018a
++ But we will do it a simpler way:
+  + Take the low-resolution observations I_A (synthesized beam width W_A)
+  + And the high-resolution observations I_B (synthesized beam width W_B < W_A)
+  + Combine as I_A - (I_B \star K) + I_B
+    + Where \star is convolution
+    + And K is smoothing kernel of width W = (W_A^2 - W_B^2)^{1/2}
++ One possible problem is that the sensitivity of the two instruments could be different
+  + In which case we would need to apply a scaling factor to one or the other
++ We have the option of doing it channel-by-channel or of just the integrated map
+**** Maps from Okada:2019r
++ The mm maps are from APEX
+  + 12CO 2-1 has HPBW of 27.1 arcsec
+  + Sampled to 10 arcsec pixels
++ https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/A%2BA/621/A62
+  + That is where you can download all the maps from
++ 
+
 *** Kinematics of the CO emission
 + In many areas, there seems to be a pronounced gradient with radius: bluer at small radii, redder at large radii
 + The velocity range of the CO emission seems similar to that of the optical lines

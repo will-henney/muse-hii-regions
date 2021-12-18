@@ -556,7 +556,7 @@ g.fig.suptitle("$^{12}$CO inner region ($r < 80''$)")
 g.fig.set_size_inches(8, 8)
 g.fig.savefig("30dor-12co-I-v-sigma-rad-distros.pdf");
 
-# + jupyter={"source_hidden": true} tags=[]
+# + tags=[]
 corner(
     df, 
     var_names=["log sum", "vhel", "sigma", "radius"], 

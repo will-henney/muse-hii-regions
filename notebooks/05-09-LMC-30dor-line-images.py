@@ -64,8 +64,38 @@ im8727.data -= im8730c.data
 
 im8727.plot(vmin=-150, vmax=150, cmap="gray_r")
 # -
+# ## Remap Brackett gamma IR line
+#
+# This comes from Sherry Weh
 
 
+BIGDATAPATH = Path.cwd().parent / "big-data" / "30-Dor-Radio"
+
+hdu_brg = fits.open(BIGDATAPATH / "30DOR_BRG_FL_SCCY.fits")[0]
+
+# Load a random Paschen line to get the MUSE wcs
+
+hdu_pa = fits.open(p("hi-9229"))[0]
+
+from reproject import reproject_interp
+
+# Reproject the near-IR map to the MUSE grid
+
+brg_ABCD = reproject_interp(hdu_brg, hdu_pa.header, return_footprint=False)
+
+# And save to a file
+
+fits.PrimaryHDU(
+    data=brg_ABCD, 
+    header=hdu_pa.header,
+).writeto(
+    DATADIR / "lmc-30dor-ABCD-hi-21661-reproject.fits",
+    overwrite=True,
+)
+
+hdu_brg.header["BUNIT"]
+
+# Is that really the brightness units of the image?
 
 # ## H I line ratios for reddening
 
@@ -80,6 +110,8 @@ im8665 = Image(p("hi-8665"))
 im8750 = Image(p("hi-8750"))
 im9229 = Image(p("hi-9229"))
 
+im21661 = 1e20 * Image(str(DATADIR / "lmc-30dor-ABCD-hi-21661-reproject.fits"))
+
 im6563 = Image("../data/MUSE_R136toWill/GAUS_Ha6562.8_060_Will.fits")
 saveunit = im6563.unit
 sig6563 = Image("../data/MUSE_R136toWill/GAUS_Ha6562.8_060_Will.fits", ext=3)
@@ -92,8 +124,13 @@ im7751 = Image(p("ariii-7751"))
 im7136 = Image(p("ariii-7136"))
 (im7751 / im7136).data.mean()
 
+np.nanmedian(im21661.data), np.nanmedian(im9229.data.data)
+
+from astropy.convolution import convolve, Gaussian2DKernel
+kernel = Gaussian2DKernel(x_stddev=3.0)
+
 # + tags=[]
-fig, axes = plt.subplots(2, 2, figsize=(12, 10), sharex=True, sharey=True)
+fig, axes = plt.subplots(3, 2, figsize=(12, 15), sharex=True, sharey=True)
 (im9229 / im4861).plot(
     vmin=0.025, vmax=0.25, 
     cmap=cm.ghostlight_r,
@@ -121,30 +158,64 @@ axes[1, 0].set_title("9229 / 6563")
     ax=axes[1, 1],
     colorbar="v",
 )
+
+rsmooth = convolve(im7751.data, kernel) / convolve(im7136.data, kernel)
+axes[1, 1].contour(rsmooth, levels=[0.266], colors="r")
 axes[1, 1].set_title("7751 / 7136")
-fig.tight_layout();
+
+(im21661 / im9229).plot(
+    vmin=0.035, vmax=0.15, 
+    cmap=cm.ghostlight_r,
+    ax=axes[2, 0],
+    colorbar="v",
+)
+axes[2, 0].set_title("21661 / 9229")
+
+np.sqrt(im9229).plot(
+    #vmin=2.5, vmax=4.0, 
+    vmin=0.0,
+    vmax=2e2,
+    cmap=cm.cosmic,
+    ax=axes[2, 1],
+    colorbar="v",
+)
+axes[2, 1].set_title("I(9229)")
+
+fig.tight_layout()
+...;
 
 # + [markdown] tags=[]
 # In general, there is a good correlatrion between all the reddening indicators
 #
 #
 # There are some cases, however, where the blue–red reddening and the red–infared are different.  For instance, the cloud at (x, y) = (400, 10) has a high 6563/4861 and high 7751/7136, but is not particularly visible in 9229 / 6563
+#
+# But note that this same cloud is prominent in Br-gamma / 9229, which is odd.
+#
+# Also, we need to improve the sky subtraction for the [Ar III] lines, since there is a clear variation between the 4 fields.
+#
+# And another issue is the zero point in the Br-gamma map.  Presumably, that is what gives the dark Brg/9229 regions in the low brightness region to the West (where all other ratios suggest low extinction).
 
 # +
-n = 1
+n = 4
 r_hi_hb = im9229.rebin(n) / im4861.rebin(n)
 r_ha_hb = im6563.rebin(n) / im4861.rebin(n)
 r_hi_ha = im9229.rebin(n) / im6563.rebin(n)
 r_ariii = im7751.rebin(n) / im7136.rebin(n)
+r_bg_hi = im21661.rebin(n) / im9229.rebin(n)
+i_ha = im6563.rebin(n)
 m = ~r_hi_ha.data.mask & (imcont.rebin(n).data < 1e3)
 m = m & (r_hi_ha.data > 0.02) & (r_hi_ha.data < 0.1)
 m = m & (r_ha_hb.data > 1.3) & (r_ha_hb.data < 7.0)
-m = m & (r_ariii.data > 0.22) & (r_ariii.data < 0.4)
-
+m = m & (r_ariii.data > 0.24) & (r_ariii.data < 0.4)
+m = m & (r_bg_hi.data > 0.025) & (r_bg_hi.data < 0.25)
+m
 df = pd.DataFrame(
     {
+        "I(Ha)": np.log10(i_ha.data[m]),
         "Ha / Hb": np.log10(r_ha_hb.data[m]),
         "H9229 / Ha": np.log10(r_hi_ha.data[m]),
+        "Br g / H9229": np.log10(r_bg_hi.data[m]),
         "7751 / 7136": np.log10(r_ariii.data[m]),
     }
 )
@@ -155,15 +226,55 @@ g = sns.pairplot(
     height=4,
     corner=True,
     plot_kws=dict(
-        weights=im9229.rebin(n).data[m],
+#       weights=im21661.rebin(n).data[m],
+        weights=i_ha.data[m],
+#        weights=r_hi_hb.data[m] - 0.025,
+        bins=100,
+    ),
+)
+...;
+
+# +
+n = 8
+r_hi_hb = im9229.rebin(n) / im4861.rebin(n)
+r_ha_hb = im6563.rebin(n) / im4861.rebin(n)
+r_ariii = im7751.rebin(n) / im7136.rebin(n)
+r_bg_ha = im21661.rebin(n) / im6563.rebin(n)
+i_ha = im6563.rebin(n)
+m = ~r_hi_hb.data.mask & (imcont.rebin(n).data < 1e3)
+m = m & (r_hi_hb.data > 0.026) & (r_hi_hb.data < 0.7)
+m = m & (r_ha_hb.data > 1.3) & (r_ha_hb.data < 7.0)
+m = m & (r_ariii.data > 0.24) & (r_ariii.data < 0.4)
+m = m & (r_bg_ha.data > 0.0003) & (r_bg_ha.data < 0.01)
+m
+df = pd.DataFrame(
+    {
+        "I(Ha)": np.log10(i_ha.data[m]),
+        "Ha / Hb": np.log10(r_ha_hb.data[m]),
+        "H9229 / Hb": np.log10(r_hi_hb.data[m]),
+        "Br g / Ha": np.log10(r_bg_ha.data[m]),
+        "7751 / 7136": np.log10(r_ariii.data[m]),
+    }
+)
+
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+#       weights=im21661.rebin(n).data[m],
+        weights=i_ha.data[m],
 #        weights=r_hi_hb.data[m] - 0.025,
         bins=50,
     ),
 )
-;
+...;
 # -
 
-g.axes[idiags]
+# These show very high correlations between the reddening indicators.  There is a subtle curvature in some of them though.
+#
+# In particular, it looks like the infrared /optical ratios increase slower vs red/blue at higher extinctions.  *What could that mean?* *Does it make sense in terms of higher R_V?*
 
 # ## The O++ lines
 
