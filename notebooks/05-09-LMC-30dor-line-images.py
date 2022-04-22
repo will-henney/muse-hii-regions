@@ -38,7 +38,7 @@ def p(s):
     return str(DATADIR / f"lmc-30dor-ABCD-{s}-bin01-sum.fits")
 
 
-imcont = Image("../data/lmc-30dor-ABCD-46-55-avcont.fits")
+eimcont = Image("../data/lmc-30dor-ABCD-46-55-avcont.fits")
 
 # ## The misterious molecular lines
 
@@ -63,7 +63,30 @@ im8730c = Image(p("CONT-8730"))
 im8727.data -= im8730c.data
 
 im8727.plot(vmin=-150, vmax=150, cmap="gray_r")
+# + tags=[]
+im8446 = Image(p("oi-8446"))
+im8446.plot(vmin=0, vmax=1e4)
 # -
+
+fig, ax = plt.subplots(figsize=(10, 10))
+rgb = np.stack(
+    [
+        im8727.data / 200,
+        (im8152.data + 10) / 40,
+        (im9114.data + 10) / 40,
+    ],
+    axis=-1,
+)
+ax.imshow(rgb, origin="lower")
+ax.contour(
+    im8446.data,
+    levels=[0.5e3, 1e3, 2e3, 4e3, 6e3],
+    linewidths=[0.4, 0.8, 1.2, 1.6, 2.0],
+    colors="y",
+)
+
+# There is an anticorrelation between mystery lines (green/blue) and both the O I (contours) and the [C I] (red). The only exception is "Cloud 2" (magenta colored in above image), which shows both 8727 and 9114, but not 8152!
+
 # ## Remap Brackett gamma IR line
 #
 # This comes from Sherry Weh
@@ -237,10 +260,13 @@ g = sns.pairplot(
 # +
 n = 8
 r_hi_hb = im9229.rebin(n) / im4861.rebin(n)
+r_hi_ha = im9229.rebin(n) / im6563.rebin(n)
 r_ha_hb = im6563.rebin(n) / im4861.rebin(n)
 r_ariii = im7751.rebin(n) / im7136.rebin(n)
 r_bg_ha = im21661.rebin(n) / im6563.rebin(n)
+r_bg_hi = im21661.rebin(n) / im9229.rebin(n)
 i_ha = im6563.rebin(n)
+i_bg = im21661.rebin(n)
 m = ~r_hi_hb.data.mask & (imcont.rebin(n).data < 1e3)
 m = m & (r_hi_hb.data > 0.026) & (r_hi_hb.data < 0.7)
 m = m & (r_ha_hb.data > 1.3) & (r_ha_hb.data < 7.0)
@@ -249,10 +275,10 @@ m = m & (r_bg_ha.data > 0.0003) & (r_bg_ha.data < 0.01)
 m
 df = pd.DataFrame(
     {
-        "I(Ha)": np.log10(i_ha.data[m]),
+        "I(Bg)": np.log10(i_bg.data[m]),
         "Ha / Hb": np.log10(r_ha_hb.data[m]),
-        "H9229 / Hb": np.log10(r_hi_hb.data[m]),
-        "Br g / Ha": np.log10(r_bg_ha.data[m]),
+        "H9229 / Ha": np.log10(r_hi_ha.data[m]),
+        "Br g / H9229": np.log10(r_bg_hi.data[m]),
         "7751 / 7136": np.log10(r_ariii.data[m]),
     }
 )
@@ -275,6 +301,10 @@ g = sns.pairplot(
 # These show very high correlations between the reddening indicators.  There is a subtle curvature in some of them though.
 #
 # In particular, it looks like the infrared /optical ratios increase slower vs red/blue at higher extinctions.  *What could that mean?* *Does it make sense in terms of higher R_V?*
+#
+# Also, maybe the underlying photospheric lines might be affecting things.
+#
+# There seems to be a change in behavior around 0.3 in log10(Ha/Hb). Note that I am not convinced by the normalization since the Ha/Hb ratio seems too small in the low extinction parts.
 
 # ## The O++ lines
 

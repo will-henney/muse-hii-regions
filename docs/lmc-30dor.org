@@ -14,6 +14,21 @@
        - The full range is 4700 \AA and the data cubes are about 3GB, so our smaller files should be about 6 times smaller, or 0.5GB
 
 
+
+** What to put in a paper [2022-04-21 Thu]
+- Case study of neutral gas associated with 3 molecular clouds in the center of Tarantula Nebula
+- Massive YSOs could feature in it
+  + Except it turns out that the known YSO is not the source of the [Fe III] jet :(
+  + Our main YSO with Raman emission is associated with MC 10 molecular cloud
+    + Source 7B from van Gelder 2020
+    + Except that the Raman emission does not peak at this source either!
+    + Looks like Raman emission is just form the molecular cloud, not from any particular YSO
+  + The jet source is just S of there in a region without much molecular gas
+- Mystery molecular lines
+  + 9114 and 8152 angstrom
+  + both have similar spatial distribution, which seems *deeper* than [C I] 8727 in some respects, but weirdly different
+    + see the rgb map in the notebook
+    
 ** Original files
 + I downloaded what looked to be the combined cubes for each of the 4 positions (with overview images)
   + A :: ADP.2016-07-14T14:17:17.826.fits
@@ -46,7 +61,8 @@
 
 ** [Fe III] lines and a possible jet
 + Some notes in [[https://www.craft.do/s/rNuIpgvsEx8WxD][this Craft doc]]
-
+  + [[shell:open 'craftdocs://open?blockId=5FDEE6BB-3693-4405-A759-DB82453D6947&spaceId=ebf58611-71d2-f72d-500b-350bfc7b0451'][Open locally in Craft]]
++ The jet seems to be coming from the same source as the YSO that has the peak Raman lines
 
 ** The H\beta Raman wing
 :PROPERTIES:
