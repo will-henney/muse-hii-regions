@@ -106,11 +106,27 @@
     
 
 ** Summary of results from line extraction and mosaicking
-+ [2021-08-03 Tue]
++ [2021-08-03 Tue] Added section on O++ lines
++ [2022-04-22 Fri] Added section on neutral lines
 *** O++ ORLs vs CELs
 + We find that the ORL/CEL ratio increases towards the center of cluster and also towards the WR star
 + [X] Should look at correlation with [Ar IV] / [O III] and with [O III] / [O II], since they should be much better measures of excitation
   + Yes this hows a good correlation, especially with [Ar IV] / [O III] - see notebook
+*** Mystery neutral lines
++ Nominal wavelengths are 8152 and 9114
++ Potential line IDs [2022-04-22 Fri]
+  + Did an ADS search on 9114 and got hit on Jorge García thesis
+  + This has the following IDs
+    + 8150.57 Si I
+    + 9094.83 C I
+    + 9111.81 C I
+    + 9113.70 Cl II[]
+    + 9123.60 [C1 II]
+  + So the Si I line looks very likely for 8152
+    + I had actually been thinking of Si I earlier
+  + The other lines need more thinking about for 9114
+    + On the face of it Cl II seems very unlikely
+    + C I looks more promising, but we have to see if we see the other component at 9095, which in principle should be stronger
 
 ** Location Within Wider Region
 :PROPERTIES:
