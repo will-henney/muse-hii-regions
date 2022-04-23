@@ -38,7 +38,7 @@ def p(s):
     return str(DATADIR / f"lmc-30dor-ABCD-{s}-bin01-sum.fits")
 
 
-eimcont = Image("../data/lmc-30dor-ABCD-46-55-avcont.fits")
+imcont = Image("../data/lmc-30dor-ABCD-46-55-avcont.fits")
 
 # ## The misterious molecular lines
 
@@ -55,23 +55,51 @@ im8152 = Image(p("xxx-8152"))
 im8152.plot(vmin=-10, vmax=50, cmap="gray_r")
 # -
 
+# And this is the other unidentified line, which is a bit more diffuse. 
+
+# +
+im9145 = Image(p("xxx-9145"))
+im9145c = Image(p("CONT-9145"))
+
+im9145.data -= im9145c.data
+im9145.plot(vmin=-30, vmax=50, cmap="gray_r")
+# -
+
+# Although now that I look at it, it really isn't *so* different from the other two. 
+
+# The forbidden [C I] line.
+
 im8727 = Image(p("ci-8727"))
 im8727.plot(vmin=-10, vmax=50, cmap="gray_r")
+
+# And improve the map by subtracting off the hyperlocal continuum. 
 
 # +
 im8730c = Image(p("CONT-8730"))
 im8727.data -= im8730c.data
 
 im8727.plot(vmin=-150, vmax=150, cmap="gray_r")
+# -
+# Look at the fluorescent O I emission for comparison.  Also plot the continuum contours on top. 
+
 # + tags=[]
 im8446 = Image(p("oi-8446"))
-im8446.plot(vmin=0, vmax=1e4)
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.imshow(im8446.data, origin="lower", vmin=0, vmax=0.3e4, cmap="inferno")
+ax.contour(imcont.data, levels=[5e3, 1e4, 1e5], colors="c")
+...;
 # -
+
+# Now plot a color image including the 3 lines: 
+# * C I 8727
+# * Si I 8152 - pretty certain of ID
+# * C I 9114 - unsure of ID
+#
 
 fig, ax = plt.subplots(figsize=(10, 10))
 rgb = np.stack(
     [
-        im8727.data / 200,
+        im8727.data / 100,
         (im8152.data + 10) / 40,
         (im9114.data + 10) / 40,
     ],
@@ -84,8 +112,85 @@ ax.contour(
     linewidths=[0.4, 0.8, 1.2, 1.6, 2.0],
     colors="y",
 )
+...;
 
 # There is an anticorrelation between mystery lines (green/blue) and both the O I (contours) and the [C I] (red). The only exception is "Cloud 2" (magenta colored in above image), which shows both 8727 and 9114, but not 8152!
+#
+# Also the [C I] 8727 looks like it only comes from clouds that have a reasonable amount of CO. 
+
+# Now look at the Ca I 9095 line, which Jorge García Rojas had down as a C I, which cannot be true.
+
+im9095 = Image(p("cai-9095"))
+im9095.data -= im9112c.data
+starmask = imcont.data > 5e3
+im9095.data[starmask] = 0.0
+
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.imshow(im9095.data, origin="lower", vmin=-30, vmax=150, cmap="inferno")
+ax.contour(
+    im8446.data,
+    levels=[0.5e3, 1e3, 2e3, 4e3, 6e3],
+    linewidths=[0.4, 0.8, 1.2, 1.6, 2.0],
+    colors="b",
+)
+
+# +
+im9204 = Image(p("cai-9204"))
+im9219 = Image(p("cai-9219"))
+im9244 = Image(p("cai-9244"))
+
+starmask = imcont.data > 5e3
+for im in im9204, im9219, im9244:
+    im.data[starmask] = 0.0
+# -
+
+fig, axes = plt.subplots(2, 2, figsize=(10, 10), sharex=True, sharey=True)
+ims = im9095, im9204, im9219, im9244
+vmaxes = 150, 200, 400, 100
+for im, ax, vmax in zip(ims, axes.flat, vmaxes):
+    ax.imshow(im.data, origin="lower", vmin=-vmax/5, vmax=vmax, cmap="inferno")
+    ax.set_title(im.filename.split("-")[4])
+fig.suptitle("Supposed Ca I lines")
+fig.tight_layout()
+...;
+
+# So, of these four, 9095 and 9244 look kind of similar, and more or less like I would expect from a Ca I line.  Whereas 9219 looks more like an ionized gas tracer and 9204 too but with some added knots.
+#
+# I had already noted in notebook 05-04 that 9219 is likely not Ca I.
+#
+
+# +
+im6104 = Image(p("ca-i-6104"))
+im7890 = Image(p("cai-7890"))
+im8125 = Image(p("cai-8125"))
+
+starmask = imcont.data > 5e3
+for im in im6104, im7890, im8125:
+    im.data[starmask] = 0.0
+# -
+
+fig, axes = plt.subplots(2, 2, figsize=(10, 10), sharex=True, sharey=True)
+ims = im6104, im7890, im8125, im9244
+iis = 5, 4, 4, 4
+vmaxes = 80, 50, 200, 100
+for im, ax, vmax, ii in zip(ims, axes.flat, vmaxes, iis):
+    ax.imshow(im.data, origin="lower", vmin=-vmax/2, vmax=vmax, cmap="magma")
+    ax.set_title(im.filename.split("-")[ii])
+fig.suptitle("More supposed Ca I lines")
+fig.tight_layout()
+...;
+
+# So the 6104 line is clearly not Ca I since its distribution looks like a higly ionized line. It has highest value around the WR star in the north.
+#
+# The 7890 line might possibly be Ca I but its distribution is very different form the other lines. It looks more like Fe III maybe. *Now identified as [Ni III] nebular line* – see `50-01-astroquery-lines` notebook.
+#
+# The 8125 line does look exactly like 9244 and 9095, except that there seems to be a problem with the sky subtraction in panels ABC.
+
+
+
+
+
+
 
 # ## Remap Brackett gamma IR line
 #
@@ -208,7 +313,7 @@ fig.tight_layout()
 ...;
 
 # + [markdown] tags=[]
-# In general, there is a good correlatrion between all the reddening indicators
+# In general, there is a good correlation between all the reddening indicators
 #
 #
 # There are some cases, however, where the blue–red reddening and the red–infared are different.  For instance, the cloud at (x, y) = (400, 10) has a high 6563/4861 and high 7751/7136, but is not particularly visible in 9229 / 6563
@@ -369,6 +474,121 @@ g = sns.pairplot(
 
 # -
 
+# ## The C++ lines
+#
+# This would be interesting to compare with my Orion project on the same
+
+im6462 = Image(p("cii-6462"))
+im7231 = Image(p("cii-7231"))
+im7236 = Image(p("cii-7236"))
+
+(im7236 + im7231 - 300).plot(vmin=0, vmax=1500)
+
+im5820 = Image(p("ni-iv-5820"))
+
+# + tags=[]
+im5820.plot(vmin=0, vmax=300)
+# -
+
+im8046 = Image(p("cliv-8046"))
+
+# + jupyter={"source_hidden": true} tags=[]
+im8046.plot(vmin=0, vmax=1000)
+# -
+
+im4740.plot(vmin=0, vmax=1500)
+
+r_cii_oiii = ((im7231 + im7236 - 300) / im6563)
+fig, ax = plt.subplots(figsize=(10, 10))
+r_cii_oiii.plot(vmin=0.0, vmax=0.004, cmap=cm.arctic_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
+
+
+# So there is slight evidence for an excess of C II over Ha on the inside rim, but we would have to do a much better job of the sky subtraction to be sure. 
+
 # ## Look at the Raman wings
+
+# Where are the files of these?
+
+def rb(s):
+    """Return path to raman band file"""
+    return str(DATADIR / f"30D_ABCD-raman-{s}.fits")
+
+
+imR1 = Image(rb("R040"))
+imR2 = Image(rb("R058"))
+imR3 = Image(rb("R087"))
+imR4 = Image(rb("R136"))
+
+imB1 = Image(rb("B033"))
+imB2 = Image(rb("B054"))
+imB3 = Image(rb("B080"))
+imB4 = Image(rb("B133"))
+
+fig, [axR, axB] = plt.subplots(1, 2, figsize=(12, 8))
+(imR1 + imR2 + imR3 + imR4).plot(ax=axR, vmin=0, vmax=2000, cmap=cm.neutral)
+(imB1 + imB2 + imB3 + imB4).plot(ax=axB, vmin=0, vmax=2000, cmap=cm.neutral)
+...;
+
+# +
+fig, [axR, axB] = plt.subplots(1, 2, figsize=(14, 8))
+rgbR =np.stack(
+    [
+        imR1.data / 600,
+        imR2.data / 600,
+        (imR3).data / 200,
+    ],
+    axis=-1,
+)
+axR.imshow(rgbR[:, :, ::-1], origin="lower")
+axR.set_title("Red wing")
+
+
+rgbB =np.stack(
+    [
+        imB1.data / 1000,
+        imB2.data / 500,
+        (imB3).data / 200,
+    ],
+    axis=-1,
+)
+axB.imshow(rgbB[:, :, ::-1], origin="lower")
+axB.set_title("Blue wing")
+fig.suptitle("Individual Raman wings")
+fig.tight_layout()
+
+...;
+
+# +
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+rgb =np.stack(
+    [
+        (imR1 + imB1).data / 1800,
+        (imR2 + imB2).data / 1000,
+        (imR3 + imB3).data / 500,
+    ],
+    axis=-1,
+)
+starmask = imcont.data > 2e3
+rgb *= (~starmask).astype(float)[:, :, None]
+
+ax.imshow(rgb[:, :, ::-1], origin="lower")
+oi = im8446.data.copy()
+oi[starmask] = np.nan
+
+ax.contour(oi, levels=[1e3, 2e3, 4e3], linewidths=np.arange(1, 4), colors=["y", "g", "r"])
+fig.suptitle("Combined Raman wings with O I contours and masked out stars")
+fig.tight_layout()
+...;
+
+# -
+
+# So in general the Raman and O I are very well correlated.  Better than for anyy other line I would imagine, although we need to check that. 
+#
+# The brightest Raman emission coincides with the brightest O I 8446 in MC 10 in quadrant A.
+#
+# However, in quadrant D the brightest O I is in a globule whereas the brightest Raman is at the Bar feature. 
+#
+# Maybe the globule has some internal excitation, since it does not have any CO emission associated with it. 
 
 

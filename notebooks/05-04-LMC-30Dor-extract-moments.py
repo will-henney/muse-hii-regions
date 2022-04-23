@@ -220,6 +220,7 @@ csub = {
     for label in labels
 }
 
+# +
 emlines = [
     EmissionLine("ariii-7136", 7135.78),
     EmissionLine("feii-7155", 7155.14), 
@@ -233,7 +234,7 @@ for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")
 
- emlines = [
+emlines = [
      EmissionLine("hei-7281", 7281.35),
      EmissionLine("hei-7298", 7298.050),
      EmissionLine("oii-7318", 7318.39),
@@ -248,6 +249,7 @@ for label in "ABCD":
 for label in "ABCD":
     for em in emlines:
         em.save_moments(csub[label], f"lmc-30dor-{label}")   
+# -
 
 emlines = [
     EmissionLine("ariv-7171", 7170.5),
