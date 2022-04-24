@@ -200,6 +200,8 @@ fig.tight_layout()
 BIGDATAPATH = Path.cwd().parent / "big-data" / "30-Dor-Radio"
 
 hdu_brg = fits.open(BIGDATAPATH / "30DOR_BRG_FL_SCCY.fits")[0]
+hdu_h2 = fits.open(BIGDATAPATH / "30DOR_H2_FL_SCCY.fits")[0]
+hdu_co = fits.open(DATADIR / "lmc-30dor-EXTEND-12co-reproject.fits")[0]
 
 # Load a random Paschen line to get the MUSE wcs
 
@@ -224,6 +226,37 @@ fits.PrimaryHDU(
 hdu_brg.header["BUNIT"]
 
 # Is that really the brightness units of the image?
+
+# Repeat for molecular Hydrogen line and CO
+
+fits.PrimaryHDU(
+    data=reproject_interp(hdu_h2, hdu_pa.header, return_footprint=False), 
+    header=hdu_pa.header,
+).writeto(
+    DATADIR / "lmc-30dor-ABCD-h2-21200-reproject.fits",
+    overwrite=True,
+)
+
+fits.PrimaryHDU(
+    data=reproject_interp(hdu_co, hdu_pa.header, return_footprint=False), 
+    header=hdu_pa.header,
+).writeto(
+    DATADIR / "lmc-30dor-ABCD-co-mm-reproject.fits",
+    overwrite=True,
+)
+
+# Have a look at the full field for molecular hydrogen. 
+
+fig = plt.figure(figsize=(15, 15))
+ax = fig.add_subplot(111)
+ax.imshow(1e20 * hdu_h2.data[1500:2500, 1500:2500], origin="lower", vmin=0, vmax=50, cmap=cm.eclipse)
+axx = fig.add_subplot(333)
+axx.imshow(1e20 * hdu_h2.data, origin="lower", vmin=0, vmax=20, cmap=cm.gothic)
+
+# Full field is shown in top-right inset box, while main figure shows a zoomed in section, which is still way bigger than the MUSE field. The brightest H_2 comes from the NE extension of MC 10, which is outside the MUSE FOV. However, we do get emission H_2 emission from all four of our clouds of interest.
+
+fig, ax = plt.subplots()
+ax.hist((1e20 * hdu_h2.data[1500:2500, 1500:2500]).ravel(), range=(-4, 50), bins=27)
 
 # ## H I line ratios for reddening
 
@@ -492,7 +525,7 @@ im5820.plot(vmin=0, vmax=300)
 
 im8046 = Image(p("cliv-8046"))
 
-# + jupyter={"source_hidden": true} tags=[]
+# + tags=[]
 im8046.plot(vmin=0, vmax=1000)
 # -
 
@@ -569,6 +602,8 @@ rgb =np.stack(
     ],
     axis=-1,
 )
+
+# Mask out the positions of stars
 starmask = imcont.data > 2e3
 rgb *= (~starmask).astype(float)[:, :, None]
 
@@ -583,12 +618,243 @@ fig.tight_layout()
 
 # -
 
-# So in general the Raman and O I are very well correlated.  Better than for anyy other line I would imagine, although we need to check that. 
+# So in general the Raman and O I are very well correlated.  Better than for any other line I would imagine, although we need to check that. 
 #
 # The brightest Raman emission coincides with the brightest O I 8446 in MC 10 in quadrant A.
 #
 # However, in quadrant D the brightest O I is in a globule whereas the brightest Raman is at the Bar feature. 
 #
 # Maybe the globule has some internal excitation, since it does not have any CO emission associated with it. 
+
+# Make some summary images for Raman wings. Sum of inner 6 bands and ratio of inner to outer bands.
+
+imRaman = imR1 + imR2 + imR3 + imB1 + imB2 + imB3
+imRamIn = (imR1 + imB1)
+imRamOut = (imR2 + imR3 + imB2 + imB3)
+imRaman[starmask] = np.nan
+imRamIn[starmask] = np.nan
+imRamOut[starmask] = np.nan
+imRamSlope = imRamIn / imRamOut
+
+# ### Ratio of inner to outer Raman bands
+
+n = 4
+imRamSlope_rebin = imRamIn.rebin(n) / imRamOut.rebin(n)
+imRamSlope_rebin.mask = imRamSlope_rebin.mask | (imRaman.rebin(n).data < 700) 
+fig, ax = plt.subplots(figsize=(12, 12))
+imRamSlope_rebin.plot(vmin=0.4, vmax=2, cmap=cm.amethyst_r, colorbar="v")
+ax.contour(imRaman.rebin(n).data, levels=[1000, 1500, 2000, 2500], linewidths=1.5, cmap=cm.amber)
+ax.set_title("Raman ratio inner/outer with contours of Raman sum")
+...;
+
+im6300 = Image(p("oi-6300"))
+
+# There is some evidence of higher ratio on the inside edges of the Raman emission peaks.  But this is only clear in the SW bar. Elsewhere it is very messy.
+
+r_ram_ha = imRaman / im6563
+r_oi_ha = im8446 / im6563
+r_oin_ha = 0.00 + im6300 / im6563
+i_ha = im6563
+for ratio in r_ram_ha, r_oi_ha, r_oin_ha:
+    ratio.mask = ratio.mask | (i_ha.data < 1e4) | (starmask)
+
+
+fig, ax = plt.subplots(figsize=(12, 12))
+r_ram_ha.plot(vmin=0, vmax=0.025, colorbar="v", cmap=cm.neutral_r)
+...;
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12, 12))
+
+r_oi_ha.plot(vmin=0, vmax=0.025, colorbar="v", cmap=cm.neutral_r)
+
+# + tags=[]
+fig, ax = plt.subplots(figsize=(12, 12))
+
+r_oin_ha.plot(vmin=0, vmax=0.03, colorbar="v", cmap=cm.neutral_r)
+...;
+# -
+
+# So O I/Ha is similar to Raman/Ha, but slightly more concentrated near the fronts, as would be expected.
+#
+# Also, on the E side, there are strange filaments of 6300, whereas 8446 is more diffuse.
+
+# ### Look at molecular hydrogen line too
+
+im21200 = 1e20 * Image(str(DATADIR / "lmc-30dor-ABCD-h2-21200-reproject.fits"))
+
+r_h2_brg = im21200 / im21661
+for ratio in r_h2_brg,:
+    ratio.mask = ratio.mask | (i_ha.data < 1e4) | (starmask)
+
+# +
+fig, ax = plt.subplots(figsize=(12, 12))
+
+r_h2_brg.plot(vmin=0, vmax=1.0, colorbar="v", cmap=cm.neutral_r)
+...;
+# -
+
+imCO = Image(str(DATADIR / "lmc-30dor-ABCD-co-mm-reproject.fits"))
+imCO.plot()
+
+np.mean(imCO.data)
+
+# ## Look at correlations in the low (mainly) ionization tracers
+
+# +
+n = 2
+cmap = cm.amethyst_r
+
+m = ~r_oi_ha.rebin(n).data.mask
+m = m & (r_oi_ha.rebin(n).data > 0.001) & (r_oi_ha.rebin(n).data < 0.03)
+m = m & (r_oin_ha.rebin(n).data > 0.001) & (r_oin_ha.rebin(n).data < 0.03)
+m = m & (r_ram_ha.rebin(n).data > 0.001) & (r_ram_ha.rebin(n).data < 0.03)
+m = m & (r_h2_brg.rebin(n).data > 0.01) & (r_h2_brg.rebin(n).data < 0.5)
+
+df = pd.DataFrame(
+    {
+        "I(Ha)": np.log10(im6563.rebin(n).data[m]),
+        "R([O I] 6300/ Ha)": np.log10(r_oin_ha.rebin(n).data[m]),
+        "R(O I 8446 / Ha)": np.log10(r_oi_ha.rebin(n).data[m]),
+        "R(Raman / Ha)": np.log10(r_ram_ha.rebin(n).data[m]),
+        "R(H2 / Brg)": np.log10(r_h2_brg.rebin(n).data[m]),
+    }
+)
+weights = im8446.rebin(n).data[m]
+
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(
+        weights=weights,
+        bins=30,
+        cmap=cmap,
+    ),
+    diag_kws=dict(
+        color=cmap(0.4),
+    ),
+);
+
+
+# -
+
+# So that shows that there is a very good correlation between Raman and O I 8446.  
+#
+# In fact, each line is best-correlated with the "next" line (diagonal row of graphs): 
+# * 6300 vs 8446 (this has a two-stranded distribution)
+# * 8446 vs Raman
+# * Raman vs H_2 (less well-correlated, but it is still the best correlation for H_2)
+#
+
+# We will look at the Pearson correlation coefficient between the different quantities:
+
+df.corr()
+
+# So that confirms quantitatively what we had deduced above. However, this is for the unweighted correlations.  We really want to use the same weights as we used above for the plts, which was the 8446 intensity.
+#
+# For that, we need to define our own function that applies an arbitrary reduction to each pair of columns in a dataframe and gives us back a new dataframe of the matrix
+
+# +
+import itertools
+
+def apply_func_pairwise_to_dataframe_columns(df, func):
+    """Like df.corr() but for any function
+    
+    Inspired by https://stackoverflow.com/a/45350450/353062 (Maarten Fabré)
+    """
+    results = pd.DataFrame(columns=df.columns, index=df.columns)
+    for (label1, column1), (label2, column2) in itertools.combinations(df.items(), 2):
+        results.loc[label1, label2] = results.loc[label2, label1] = func(column1, column2)
+    return results
+
+
+
+# -
+
+# Try it out with the normal corrcoef to make sure it returns the same values as pandas:
+
+apply_func_pairwise_to_dataframe_columns(df, lambda x, y: np.corrcoef([x, y])[0, 1])
+
+
+# Yes, that works except for the diagonals, which get NaN onstead of 1.  Now make a function to calculate the weighted correlation:
+
+def weighted_corr(x, y, w):
+    covar = np.cov([x, y], aweights=w)
+    corr = covar[0, 1] / np.sqrt(covar[0, 0] * covar[1, 1])
+    return corr
+
+
+# Test it with weights of unity
+
+apply_func_pairwise_to_dataframe_columns(df, lambda x, y: weighted_corr(x, y, np.ones_like(weights)))
+
+# And finally with the real weights
+
+apply_func_pairwise_to_dataframe_columns(df, lambda x, y: weighted_corr(x, y, weights))
+
+# So, that is very similar really. The correlations are a bit higher in some cases, reaching 0.7 for 6300–8446 and 8446–Raman. But they are slightly lower for Raman–H2, although still nearly 0.4
+
+# Note also the correlations of Ha intensity with the ratios.  This is negative in all cases. Its magnitude is low for 6300, getting higher with each until reaching $-0.63$ for H2.  In principle, a low correlation of the ratio with Ha means that the other line is positively correlated with Ha. Whereas a negative correlation of the ration with Ha, coupled with a slope of $-1$ (which is what we see) implies that the other line intensity is *uncorrelated* with Ha.
+
+# +
+from dataclasses import make_dataclass
+
+Quant = make_dataclass("Quant", [("label", str), ("min", float), ("max", float), ("image", Image)])
+# -
+
+quantities = [
+    Quant("I([Ar IV] 4740)", 1.5e1, 1.5e3, im4740),
+    Quant("I([O III] 4959)", 1e4, 1e6, im4959),
+    Quant("I(Ha 6563)", 1e4, 1e6, im6563),
+    Quant("I([O II] 7330)", 3e2, 3e4, im7330),
+    Quant("I([O I] 6300)", 1e2, 1e4, im6300),
+    Quant("I(O I 8446)", 1e2, 1e4, im8446),
+    Quant("I(Raman)", 1e2, 1e4, imRaman),
+    Quant("I(H_2)", 2, 100.0, im21200),
+    Quant("I(12CO)", 0.3, 400.0, imCO),
+]
+pd.DataFrame(quantities)
+
+
+def df4pairplot(quantities, n=1, extramask=None, weight_label=None):
+    im0 = quantities[0].image.copy()
+    if extramask is not None:
+        im0.mask = im0.mask | extramask    
+    m = ~im0.rebin(n).data.mask
+    for q in quantities:
+        data = q.image.rebin(n).data
+        m = m & (data > q.min) & (data <= q.max) 
+    df = pd.DataFrame({q.label: np.log10(q.image.rebin(n).data[m]) for q in quantities})
+    if weight_label is None:
+        df = df.assign(weight=1.0)
+    else:
+        df = df.assign(weight=10**df[weight_label])
+    return df
+
+
+df = df4pairplot(quantities, 4, starmask, "I(O I 8446)")
+df
+
+cmap = cm.ember_r
+g = sns.pairplot(
+    df.drop(columns="weight"),
+    kind="hist",
+    height=3,
+    corner=True,
+    plot_kws=dict(
+        weights=df.weight,
+        bins=30,
+        cmap=cmap,
+    ),
+    diag_kws=dict(
+        color=cmap(0.4),
+    ),
+);
+
+df.drop(columns="weight").corr()
+
+apply_func_pairwise_to_dataframe_columns(df.drop(columns="weight"), lambda x, y: weighted_corr(x, y, df.weight))
 
 
