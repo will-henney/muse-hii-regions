@@ -69,7 +69,7 @@ class EmissionLine:
                 flabel=prefix,
                 restwav=self.wav0,
                 irange=None,
-                vrange=[100.0, 400.0],
+                vrange=self.vlim,
                 srange=None,
             )
             

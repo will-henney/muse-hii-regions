@@ -758,6 +758,9 @@ im6300 = Image(p("oi-6300"))
 
 There is some evidence of higher ratio on the inside edges of the Raman emission peaks.  But this is only clear in the SW bar. Elsewhere it is very messy.
 
+
+### Ratios with respect to Ha
+
 ```python
 r_ram_ha = imRaman / im6563
 r_oi_ha = im8446 / im6563
@@ -789,10 +792,66 @@ r_oin_ha.plot(vmin=0, vmax=0.03, colorbar="v", cmap=cm.neutral_r)
 
 So O I/Ha is similar to Raman/Ha, but slightly more concentrated near the fronts, as would be expected.
 
-Also, on the E side, there are strange filaments of 6300, whereas 8446 is more diffuse.
+Also, on the E side, there are strange filaments of 6300, whereas 8446 is more diffuse.  I am wondering if this might be affected by stellar absorption of the 6300 line. 
 
 
-### Look at molecular hydrogen line too
+## Compare the nebula [O I] and fluorescent O I
+
+```python
+r_oin_oi = im6300 / im8446 
+#for ratio in r_oin_oi, :
+#    ratio.mask = ratio.mask | (i_ha.data < 1e4) | (starmask)
+#
+```
+
+I am not masking out the stars, since they do not seem to be the problem here.
+
+Now plot the ratio with a divergent color map, to show positive and negative values.
+
+```python
+fig, ax = plt.subplots(figsize=(12, 12))
+
+r_oin_oi.plot(vmin=-6, vmax=6, colorbar="v", cmap=cm.fusion)
+```
+
+This shows there is a serious problem with one or both of the lines.  Panels B and D look more or less OK, but panels A and C have lots of negative values. 
+
+This is probably due to the sky subtraction in those panels, which we need to investigate further.
+
+
+
+```python
+fig, [ax, axx] = plt.subplots(1, 2, figsize=(18, 7), sharex=True, sharey=True)
+
+scale = 400
+im6300.plot(ax=ax, vmin=-scale, vmax=scale, cmap=cm.fusion)
+im = im8446.plot(ax=axx, vmin=-scale, vmax=scale, cmap=cm.fusion)
+fig.colorbar(im, ax=[ax, axx])
+ax.set_title("6300")
+axx.set_title("8446")
+fig.suptitle("Comparison of [O I] and O I lines")
+...;
+```
+
+```python
+fig, ax = plt.subplots(figsize=(15, 6))
+ax.plot(np.median(im6300.data[500:550, :], axis=0))
+ax.plot(np.median(im8446.data[500:550, :], axis=0))
+
+ax.plot(np.median(im6300.data[150:200, :], axis=0))
+ax.plot(np.median(im8446.data[150:200, :], axis=0))
+
+ax.set(
+    ylim=[-scale, 4*scale],
+    xlim=[200, 400],
+)
+...;
+```
+
+So, there are clear jumps in the profiles at the boundaries between fields.
+
+
+## Look at molecular hydrogen line and CO
 
 ```python
 im21200 = 1e20 * Image(str(DATADIR / "lmc-30dor-ABCD-h2-21200-reproject.fits"))
@@ -927,6 +986,11 @@ So, that is very similar really. The correlations are a bit higher in some cases
 
 Note also the correlations of Ha intensity with the ratios.  This is negative in all cases. Its magnitude is low for 6300, getting higher with each until reaching $-0.63$ for H2.  In principle, a low correlation of the ratio with Ha means that the other line is positively correlated with Ha. Whereas a negative correlation of the ration with Ha, coupled with a slope of $-1$ (which is what we see) implies that the other line intensity is *uncorrelated* with Ha.
 
+
+#### Look at correlations in the original intensities, rather than ratios
+
+This is probably what we should do first. It will give us a broad overview of the correlations between the different species.  Then we can look in more detail by taking ratios of adjacent (well-correlated) species.
+
 ```python
 from dataclasses import make_dataclass
 
@@ -993,7 +1057,42 @@ df.drop(columns="weight").corr()
 ```
 
 ```python
-apply_func_pairwise_to_dataframe_columns(df.drop(columns="weight"), lambda x, y: weighted_corr(x, y, df.weight))
+corr = apply_func_pairwise_to_dataframe_columns(
+    df.drop(columns="weight"), 
+    lambda x, y: weighted_corr(x, y, df.weight),
+).fillna(0.0)
+corr
+```
+
+We can make the table look prettier using the pandas Styler object.  For instance, coloring the numbers according to a diverging color map. 
+
+```python
+def make_pretty(styler):
+    styler.set_caption("Correlations between maps")
+    #styler.highlight_quantile(axis=1, q_left=0.8, props="font-weight:bold;")
+    styler.set_properties(**{"font-weight": "bold"})
+    styler.text_gradient(axis=None, vmin=-1.0, vmax=1.0, cmap=cm.fusion)
+    return styler
+
+corr.style.pipe(make_pretty)
+```
+
+As expected, the correlations are higher closer to the diagonal.  Remember that this is all weighted by the 8446 map, which means it will be deemphasising the higher ionization emission.
+
+However, it is not very different from the unweighted map, so it is probably not worthwhile worrying about it.:
+
+```python
+df.drop(columns="weight").corr().style.pipe(make_pretty)
+```
+
+We can even write it out as LaTeX format, although I haven't tested this. It would require some editing of the column names. 
+
+```python
+# corr.style.pipe(make_pretty).to_latex(convert_css=True, siunitx=True, hrules=True)
+```
+
+```python
+
 ```
 
 ```python
