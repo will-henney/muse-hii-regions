@@ -343,6 +343,28 @@ fig.colorbar(im, ax=axes)
 
 # Does that help? Maybe a bit, but probably not enough to be worth doing.
 
+# ### Look at the corner plots of the line moments in the different panels
+
+for label in "ABCD":
+    moments.moments_corner_plot(
+        oimomss[label], 
+        rebin=8,
+        hist_bins=50,
+        image_bins=25,
+        flabel=f"{label}-oi", 
+        ilabel=f"Field {label} [O I]",
+        label="6300",
+        restwav=wav0,
+        irange=[20, 8000],
+        vrange=[180, 320],
+        srange=[20, 120],
+    )
+...;
+
+# It is surprising how varied these are, but it is mainly because they are sampling different parts of brightness distribution: A and C are mainly bright parts and are all quite close to the V=+250 km/s and with narrow widths. B and D are mainly fainter emission, which has more variety of V and with generally higher sigma. 
+#
+# Quite similar behavior is seen in the Ha profiles that I looke at for the Javier project. 
+
 # ## Fluorescent O I lines
 #
 # The 8446 line had a similar problem but to a much smaller degree.
