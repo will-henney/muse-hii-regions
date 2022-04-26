@@ -10,9 +10,10 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from mpdaf.obj import Cube
 import astropy.units as u
+import astropy.constants as const
 import pandas as pd
 
-LIGHT_SPEED_KMS = 2.99792458e5
+LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 FIGPATH = Path(".")
 SAVEPATH = Path(".")
 

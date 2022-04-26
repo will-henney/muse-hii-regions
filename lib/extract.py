@@ -10,6 +10,10 @@ from numpy.polynomial import Chebyshev as T
 import itertools
 from astropy.wcs import WCS  # type: ignore
 from astropy.io import fits  # type: ignore
+import astropy.units as u  # type: ignore
+import astropy.constants as const  # type: ignore
+
+LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 
 
 def _am_i_special(i: int, j: int) -> bool:
@@ -189,6 +193,21 @@ class EmissionLine:
     name: str
     wav0: float
     vlim: tuple[float, float] = (-50.0, 500.0)
+
+    def wav2vel(self, wav):
+        return LIGHT_SPEED_KMS * (wav - self.wav0) / self.wav0
+
+    def vel2wav(self, vel):
+        return self.wav0 * (1.0 + vel / LIGHT_SPEED_KMS)
+
+    @property
+    def wavlim(self):
+        """Wavelength limits, synchronised with `vlim`"""
+        return tuple(map(self.vel2wav, self.vlim))
+
+    @wavlim.setter
+    def wavlim(self, value: tuple[float, float]):
+        self.vlim = tuple(map(self.wav2vel, value))
 
 
 @dataclass
