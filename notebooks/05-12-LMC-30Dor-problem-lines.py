@@ -35,8 +35,10 @@ import regions
 import sys
 import warnings
 sys.path.append("../lib")
+from linetools import EmissionLine, SpectralRange
 import moments
 import extract
+import sky
 
 import astropy.units as u
 import astropy.constants as const
@@ -58,6 +60,10 @@ corig = {
     Cube(f"../big-data/lmc-30dor-{label}-subcube-62-71.fits") 
     for label in labels
 }
+
+# Use the new classes in linetools
+
+SpectralRange(6300.30).wavlim
 
 # +
 C_KMS = const.c.to(u.km/u.s).value
