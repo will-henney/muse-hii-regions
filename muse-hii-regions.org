@@ -132,13 +132,27 @@ I have made a series of notebooks
   + tetrabloks is the only one that is used by whispy
   + but cloudytab and wcsfile are used by some of the jupyter notebooks
 + Plan of action:
-  1. [-] I am going to make a new project for whispy, which will probably use the Hypermodern Python template
+  1. [X] I am going to make a new project for whispy, which will probably use the Hypermodern Python template
      - It can just use tetrabloks as a dependency,  using pip to install  directly form  github
      - But it seems that the repo name is actually multibin-maps
      - So why is it called tetrabloks here?  Why did I not document this?
-  2. [ ] I can also install tetrabloks and the other libraries (wcsfile and cloudytab) directly in my default conda environment
+  2. [X] I can also install tetrabloks and the other libraries (wcsfile and cloudytab) directly in my default conda environment
+     - doing that now in py39 environment
+       #+begin_src sh
+         pip install git+https://github.com/will-henney/whispy.git
+       #+end_src
+     - This seemed to work, and it pulled in the tetrabloks package too
+     - It also upgraded a whole bunch of my other packages, such as numpy and astropy. Hopefully that will not cause me problems.
+     - Also, pip called out some inconsistencies it had failed to relove, so I did
+       #+begin_src sh
+         pip install "pillow>=8.3.2"  mimeparse
+       #+end_src
+       and everything seems to be OK
+     - [X] So I tried it out in the jupyter console, and I could import them fine
+     - [X] Test using these versions in the notebook
+     - Tested all except the sky line gaussian fitting, since that will be more involved.  But what I have tested is enough to show that the package import mechanism and basic funtionality does work.
   3. [ ] If that all works, then I can remove the git submodules entirely
-  4. [ ] Finally, I should really make a special virtual environment for this project that automatically pulls in the needed depoendencies
+  4. [ ] Finally, I should really make a special virtual environment for this project that automatically pulls in the needed dependencies
 
 
 

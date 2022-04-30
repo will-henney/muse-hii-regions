@@ -34,11 +34,10 @@ from mpdaf.obj import Cube
 import regions
 import sys
 import warnings
-sys.path.append("../lib")
-from linetools import EmissionLine, SpectralRange
-import moments
-import extract
-import sky
+from whispy.linetools import EmissionLine, SpectralRange
+from whispy import moments
+from whispy import extract
+from whispy import sky
 
 import astropy.units as u
 import astropy.constants as const
@@ -65,17 +64,15 @@ corig = {
 
 SpectralRange(6300.30).wavlim
 
-# +
-C_KMS = const.c.to(u.km/u.s).value
+# So, we should no longer need the following cell:
 
-def wavlimits(wav0, vlim=[100.0, 300.0]):
-    wav1 = wav0 * (1.0 + vlim[0] / C_KMS)
-    wav2 = wav0 * (1.0 + vlim[1] / C_KMS)
-    return wav1, wav2
+#C_KMS = const.c.to(u.km/u.s).value
+#
+#def wavlimits(wav0, vlim=[100.0, 300.0]):
+#    wav1 = wav0 * (1.0 + vlim[0] / C_KMS)
+#    wav2 = wav0 * (1.0 + vlim[1] / C_KMS)
+#    return wav1, wav2
       
-
-
-# -
 
 oi_window_median = {label: cube.select_lambda(6250, 6400).median(axis=(1, 2)) for label, cube in csub.items()}
 
@@ -86,8 +83,8 @@ for label, spec in oi_window_median.items():
 
 #wav1, wav2 = wavlimits(6300.30)
 for wav0 in 6300.30, 6363.78, 6312.06, 6347.11:
-    ax.axvspan(*wavlimits(wav0), alpha=0.2)
-    ax.axvspan(*wavlimits(wav0, vlim=[-50, 50]), alpha=0.1, color="k")
+    ax.axvspan(*SpectralRange(wav0, vlim=[100, 300]).wavlim, alpha=0.2)
+    ax.axvspan(*SpectralRange(wav0, vlim=[-50, 50]).wavlim, alpha=0.1, color="k")
 ax.legend()
 ax.set_title("Median spectra around [O I] 6300, 6363 lines")
 ...;
@@ -111,8 +108,8 @@ for label, spec in oi_window_median.items():
 
 newvlim = [125, 425]
 for wav0 in 6300.30,:
-    ax.axvspan(*wavlimits(wav0, vlim=newvlim), alpha=0.2)
-    ax.axvspan(*wavlimits(wav0, vlim=[-50, 50]), alpha=0.1, color="k")
+    ax.axvspan(*SpectralRange(wav0, vlim=newvlim).wavlim, alpha=0.2)
+    ax.axvspan(*SpectralRange(wav0, vlim=[-50, 50]).wavlim, alpha=0.1, color="k")
 ax.legend()
 ax.set_title(f"Improved extraction window for [O I] 6300: {newvlim}")
 ax.set(
@@ -125,7 +122,9 @@ ax.set(
 
 oimoms = {
     label:
-    moments.find_moments(cube.select_lambda(*wavlimits(wav0, vlim=newvlim)))
+    moments.find_moments(
+        cube.select_lambda(*SpectralRange(wav0, vlim=newvlim).wavlim)
+    )
     for label, cube in csub.items()
 }
 
@@ -166,7 +165,7 @@ medlam
 
 # We can convert to velocity to compare with our new window.
 
-C_KMS * (medlam - wav0) / wav0, newvlim
+const.c.to(u.km/u.s) * (medlam - wav0) / wav0, newvlim
 
 # So that is pretty well centered.  There does still seem to be a little bit of an effect of the sky still. For instance, there looks like there is a discontinuity between C and D
 
@@ -190,7 +189,9 @@ fig.colorbar(im, ax=axes)
 skyvlim = [-100, 100]
 oiskymoms = {
     label:
-    moments.find_moments(cube.select_lambda(*wavlimits(wav0, vlim=skyvlim)))
+    moments.find_moments(
+        cube.select_lambda(*SpectralRange(wav0, vlim=skyvlim).wavlim)
+    )
     for label, cube in csub.items()
 }
 
