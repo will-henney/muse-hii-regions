@@ -123,8 +123,35 @@ I have made a series of notebooks
 
 * Technical issues
 
+** TODO Improve the python packaging
++ [2022-04-28 Thu] What I have at the moment with the git subtrees is a bit of a mess
+  + For instance, extract.py uses the tetrabloks library
+    + Previously it used a relative import, but that only worked when it looked like they were both in the same package
+    + But now that I want to make my own whispy package, it is not going to work
++ Ideally, I should just have dependencies on the other packages
+  + tetrabloks is the only one that is used by whispy
+  + but cloudytab and wcsfile are used by some of the jupyter notebooks
++ Plan of action:
+  1. [-] I am going to make a new project for whispy, which will probably use the Hypermodern Python template
+     - It can just use tetrabloks as a dependency,  using pip to install  directly form  github
+     - But it seems that the repo name is actually multibin-maps
+     - So why is it called tetrabloks here?  Why did I not document this?
+  2. [ ] I can also install tetrabloks and the other libraries (wcsfile and cloudytab) directly in my default conda environment
+  3. [ ] If that all works, then I can remove the git submodules entirely
+  4. [ ] Finally, I should really make a special virtual environment for this project that automatically pulls in the needed depoendencies
+
+
+
 ** multibin-maps library included as git subtree
 
+*** Revisited [2022-04-29 Fri] to sort out the mess
+- This now seems to have been a bad idea on the whole, at least for tetrabloks
+  - I tried pushing the tetrabloks subrepo back to the upstream multibin-maps repo on github, but that did not work. I can make a new branch there to receive it, but the history has nothing in common with the actual repo, so I can't do a pull request to merge them
+- On the other hand, everything worked out fine when I did the same with the cloudytab repo
+  - Conclusion is that I must have messed something up with multibin-maps, either when I moved it to the lib folder,  or when I renamed it to tetrabloks
+- What I plan to do to fix things is to remove the subtree and then incorporate the changes made directly into the original multibin-maps repo again
+- After that, we can add it as a dependency and let pip, poetry or whatever deal with installing it from github
+- 
 *** How I first set it up
 + This was very easy to do with two command using magit
 + I added the github repo for multibin-maps as a remote with ~M a~
@@ -161,7 +188,7 @@ I have made a series of notebooks
     git fetch cloudytab HEAD
     From https://github.com/div-B-equals-0/cloudytab
      ,* branch            HEAD       -> FETCH_HEAD
-    Added dir 'lib/cloudytab'
+     Added dir 'lib/cloudytab'
   #+end_example
 
 
