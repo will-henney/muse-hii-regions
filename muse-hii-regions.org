@@ -151,8 +151,13 @@ I have made a series of notebooks
      - [X] So I tried it out in the jupyter console, and I could import them fine
      - [X] Test using these versions in the notebook
      - Tested all except the sky line gaussian fitting, since that will be more involved.  But what I have tested is enough to show that the package import mechanism and basic funtionality does work.
-  3. [ ] If that all works, then I can remove the git submodules entirely
-  4. [ ] Finally, I should really make a special virtual environment for this project that automatically pulls in the needed dependencies
+  3. [X] If that all works, then I can remove the git submodules entirely
+  4. [-] Finally, I should really make a special virtual environment for this project that automatically pulls in the needed dependencies
+     - [X] First step towards this is to make a [[file:requirements.txt]]
+       - I made this using pigar, which looks for all imports in a project, including jupyter notebooks
+       - I installed it with pipx
+       - It found most of the libraries, but I had to make some adjustments by hand
+     - [ ] Then I have to decide how to make a virtual environment and test it
 
 
 
