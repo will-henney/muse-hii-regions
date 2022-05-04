@@ -120,11 +120,30 @@ res["stage"] = [s.strip("[]").split()[-1] for s in res["SPECTRUM"]]
 
 res[res["stage"]=="I"].show_in_notebook()
 
+# So there are some partial overlaps with the observed wavelengths here. 
+#
+# For instance, 9020 might be [Co I] 9019.65
+#
+# But most of the wavelengths are misses.
+#
+#
+
 (1 * u.eV).to(1/u.cm, equivalencies=u.equivalencies.spectral())
 
-# +
-# ?
-# -
+# Next thing to try is to expand search to include permitted lines as well as forbidden ones. If they are excited by fluorescence of recombination, then they should have excitation energies less than the ionization potential of the neutral atom, which for these elements is about 6 eV.  
+
+res = AtomicLineList.query_object(
+    wavelength_range=wavelength_range,
+    wavelength_type='Air',
+    upper_level_energy_range=7 * u.eV,
+    element_spectrum="Fe",
+    #transitions=aa.Transition.nebular,
+)
+res["stage"] = [s.strip("[]").split()[-1] for s in res["SPECTRUM"]]
+
+res[res["stage"]=="I"].show_in_notebook()
+
+
 
 # # Look at the supposed Ca I lines
 #
