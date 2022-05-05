@@ -915,16 +915,26 @@ VelocityScale(9029).vel2wav(vel0)
 #
 # Then  after 9114, there is a weak one (NEW) at 9129 before a stronger one at 9146 (already known). There are  no more after that, The sky lines take over. 
 
+# And I found one more too. Very weak at 8284. It is on the red flank of an ionized line (possibly H I).  It seems to have a slightly different distribution from the others. Slightly less deep, similar to 8851.
+
 VelocityScale(9146).vel2wav(vel0)
 VelocityScale(9129).vel2wav(vel0)
 VelocityScale(8660).vel2wav(vel0)
 VelocityScale(8726).vel2wav(vel0)
+VelocityScale(8284).vel2wav(vel0)
 
 # ### Ah, no there are more!  I wrapped around and there are some I missed: 8660 is pretty strong
 #
 # Then we get to C I 8727 and there are no more until I hit 8790 again. 
 #
-# 8151 8660 8790 8851 8889 8946 9020 9029 9057 9100 9114 9129 9146
+# 8151 8284 8660 8790 8851 8889 8946 9020 9029 9057 9100 9114 9129 9146
 #
-# That is 13 lines!!! plus C I 8727
+# That is 14 lines!!! plus C I 8727
 #
+# And in addition, there is a possible very weak lines at 8810, 8920
+#
+# Nte that 9057 is also super weak and on the flank of an ionized line. 
+#
+# Finally, there are intermediate lines, such as 8696, which look deeper than Fe II but shallower than the deep neutral lines. We had flagged it as [Co II] in the Orion project, but I doubt that it really is
+
+
