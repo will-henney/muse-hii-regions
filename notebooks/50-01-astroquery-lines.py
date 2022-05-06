@@ -222,6 +222,21 @@ res
 
 # So it looks like the [Ni III] 7889.9 line is a very good candidate.  It is a nebular forbidden line, so would be expected to be strong. 
 
+# ## The 6104 high ionization line
+
+wavelength_range = (6102 * u.Angstrom, 1 * u.Angstrom)
+#wavelength_range = (6500 * u.Angstrom, 6600 * u.Angstrom)
+#AtomicLineList.FORM_URL = "https://www.pa.uky.edu/~peter/newpage/"
+res = AtomicLineList.query_object(
+    wavelength_range=wavelength_range,
+    wavelength_type='Air',
+    transitions=aa.Transition.nebular,
+)
+
+res.show_in_notebook()
+
+
+
 # +
 # AtomicLineList.query_object_async??
 # -

@@ -931,10 +931,26 @@ VelocityScale(8284).vel2wav(vel0)
 #
 # That is 14 lines!!! plus C I 8727
 #
-# And in addition, there is a possible very weak lines at 8810, 8920
+# And in addition, there is a possible very weak lines at 8560, 8810, 8920
 #
-# Nte that 9057 is also super weak and on the flank of an ionized line. 
+# Nolte that 9057 is also super weak and on the flank of an ionized line. 
 #
-# Finally, there are intermediate lines, such as 8696, which look deeper than Fe II but shallower than the deep neutral lines. We had flagged it as [Co II] in the Orion project, but I doubt that it really is
+# Finally, there are intermediate lines, such as 8696, which look deeper than Fe II but shallower than the deep neutral lines. We had flagged it as [Co II] in the Orion project, but I doubt that it really is.   
+
+# # Other interesting lines
+
+# ## [Ni III] 7890 clumpy line
+
+VelocityScale(7890).vel2wav(vel0)
+
+# This line has a unique appearance. It is very clumpy and shows big changes in morphology across the line profile, suggesting high velocities
+#
+# Note, this is not Ca I although it was initially classified asw such
+
+# ## High ionization [K IV] 6102 line
+
+VelocityScale(6102).vel2wav(vel0)
+
+# This must be it – why have I never seen this line before?
 
 
