@@ -66,13 +66,13 @@ SpectralRange(6300.30).wavlim
 
 # So, we should no longer need the following cell:
 
-#C_KMS = const.c.to(u.km/u.s).value
+# C_KMS = const.c.to(u.km/u.s).value
 #
-#def wavlimits(wav0, vlim=[100.0, 300.0]):
+# def wavlimits(wav0, vlim=[100.0, 300.0]):
 #    wav1 = wav0 * (1.0 + vlim[0] / C_KMS)
 #    wav2 = wav0 * (1.0 + vlim[1] / C_KMS)
 #    return wav1, wav2
-      
+
 
 oi_window_median = {label: cube.select_lambda(6250, 6400).median(axis=(1, 2)) for label, cube in csub.items()}
 
@@ -933,7 +933,7 @@ VelocityScale(8284).vel2wav(vel0)
 #
 # And in addition, there is a possible very weak lines at 8560, 8810, 8920
 #
-# Nolte that 9057 is also super weak and on the flank of an ionized line. 
+# Note that 9057 is also super weak and on the flank of an ionized line. 
 #
 # Finally, there are intermediate lines, such as 8696, which look deeper than Fe II but shallower than the deep neutral lines. We had flagged it as [Co II] in the Orion project, but I doubt that it really is.   
 
