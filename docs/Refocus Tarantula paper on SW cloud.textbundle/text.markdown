@@ -15,6 +15,18 @@ We already looked at this in one of the notebooks.  There are two aspects that p
 1. Is there any hidden ionized gas behind the molecular cloud in the bottom right?  If so, does this invalidated the idea of it being an edge-on geometry.
    - *It seems like there is, given that the radio continuum brightness has excess over Paschen alpha in that zone*
 
+> **3-color H line image for 2.16, 0.92, 0.49 micron, which nicely shows the effects of extinction.**
+
+![CleanShot 2022-07-04 at 15.08.45.jpeg](assets/CleanShot%202022-07-04%20at%2015.08.45.jpeg)
+
+> The blue-white bits have the lowest extinction. Yellow is moderate extinction that shows up in the optical, while redder parts are higher extinction that saturate in the optical but show up in the infrared.  These mainly show up as reddish brown filaments. Some of them are absorption filaments in both optical and NIR, such as the ones that cross the center of the star cluster. But some of them are *emission* filaments, such as the one that passes directly under the molecular globule (marked *NIR filament*) in the figure. l
+
+> The black contours are the 21cm radio continuum emission, while the white contours are 13CO.
+
+> In general, the radio free-free continuum follows the H lines, but right on top of the CO emission there is a radio peak, which is completely invisible in the H lines, even at 2 micron.  It is right behind where the NIR filament crosses the CO filament.
+
+> Also, we can see a protrusion of the CO globule, marked *overlap*, which seems to produce extinction of the main ionized shell.  This corresponds to a region where the radio emission extends to a slightly greeter radius than the optical/ir, which is consistent with overlapping extinction. For the main globule though, at the point where our cut crosses it, which is marked *no overlap*, it seems that the ionization front is seen roughly edge-on since the radio emission falls just as fast as the optical emission (although we really need to get our hands on the 3 cm maps to be sure, since the 20 cm map is too low resolution).
+
 > **Dust x-section per H atom in LMC**
 
 > The metallicity is roughly half solar
@@ -65,6 +77,20 @@ Find a supposed supernova remnant at the same place that I had identified anomal
 
 On the left is the 3 cm map from Lazendic. On the right is the 21 cm map that I got.  The green circle is the “source” **MCRX J053831.8–690620** from Lazendic. They think that this is an SNR rather than high extinction but this seems unlikely for the following reasons:
 
+1. The association with the CO cloud.
+2. The spectral index between 3 cm and 21 cm looks very flat. At least, from comparing the above two maps, the contrast between this source and the diffuse ionized emission is very similar at the two wavelengths.
+3. It coincides with a feature in the 2 micron to 1 micron reddening, see below.
+
+![CleanShot 2022-07-04 at 12.28.15.jpeg](assets/CleanShot%202022-07-04%20at%2012.28.15.jpeg)
+
+![CleanShot 2022-07-04 at 12.56.18.jpeg](assets/CleanShot%202022-07-04%20at%2012.56.18.jpeg)
+
+![CleanShot 2022-07-04 at 13.30.20.jpeg](assets/CleanShot%202022-07-04%20at%2013.30.20.jpeg)
+
+![CleanShot 2022-07-04 at 12.54.29.jpeg](assets/CleanShot%202022-07-04%20at%2012.54.29.jpeg)
+
+The first panel is from the Lazendic paper and shows the radio-optical extinction. The remaining panels are from one of my notebooks and show the optical-infrared reddening.  The supposed source coincides with high reddening between 2.15 and 0.92 microns, but nothing at shorter wavelengths. This suggests very high extinction so it is not seen at visual wavelengths.
+
 ## Kinematics
 
 It looks like there is quite a simple velocity structure
@@ -82,6 +108,20 @@ Range is 210 to 310 heliocentric in each case.
 ![CleanShot 2022-06-25 at 00.19.50.jpeg](assets/CleanShot%202022-06-25%20at%2000.19.50.jpeg)
 
 ![CleanShot 2022-06-25 at 00.25.36.jpeg](assets/CleanShot%202022-06-25%20at%2000.25.36.jpeg)
+
+## Scattering by dust
+
+I can think of two techniques for looking at this:
+
+1. The visual continuum after subtracting a scaled version of the hydrogen lines to account for the bound-free.  The best thing here would be to get the continuum just redward of the Paschen jump. Maybe around 8500 Å
+2. The He II lines. Specifically 4686 looks like it has 3 parts to it:
+   1. The emission from the WR stars and early O stars, which is far brighter than the diffuse emission by a factor of 1000
+   2. The intrinsic diffuse emission, which is associate with the ArIV and other high ionization lines
+   3. The scattered diffuse emission, which seems to trace the PDRs. ***Possibly these last two could be separated better by trying to isolate the narrow and broad components of the line.***
+
+## The compact inner globule
+
+This is a small cometary globule that is best seen in the the Br-gamma, [O I], and 3 cm radio emission.  It is quite heavily extincted in the optical lines, suggesting it is foreground to the cluster and illuminated from behind.
 
 ## X rays
 

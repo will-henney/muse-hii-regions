@@ -324,7 +324,7 @@ rsmooth = convolve(im7751.data, kernel) / convolve(im7136.data, kernel)
 axes[1, 1].contour(rsmooth, levels=[0.266], colors="r")
 axes[1, 1].set_title("7751 / 7136")
 
-(im21661 / im9229).plot(
+((im21661 - 15) / im9229).plot(
     vmin=0.035, vmax=0.15, 
     cmap=cm.ghostlight_r,
     ax=axes[2, 0],
@@ -530,6 +530,19 @@ im8046.plot(vmin=0, vmax=1000)
 # -
 
 im4740.plot(vmin=0, vmax=1500)
+
+n = 8
+im1, im2 = im8046.copy(), im4740.copy()
+im1.mask = im1.mask | (im1.data < 60) | (im2.data < 60)| (imcont.data > 1e3)
+im2.mask = im1.mask
+r = ((im1 - 15).rebin(n) / im2.rebin(n))
+r.plot(vmin=0.2, vmax=2, cmap=cm.ghostlight_r, colorbar="v")
+plt.gcf().axes[0].set_title("8046 / 4740")
+...;
+
+# The above plot is an attempt to measure the extinction from the ClIV/ArIV ratio, which works amazingly well, considering.  I had to subtract a constant from the ClIV to avoid zero point problems. 
+#
+# It works especially well in the bottom right quadrant, where the pattern looks very much like the one obtained from the H lines. 
 
 r_cii_oiii = ((im7231 + im7236 - 300) / im6563)
 fig, ax = plt.subplots(figsize=(10, 10))

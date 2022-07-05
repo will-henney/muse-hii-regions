@@ -387,7 +387,7 @@ rsmooth = convolve(im7751.data, kernel) / convolve(im7136.data, kernel)
 axes[1, 1].contour(rsmooth, levels=[0.266], colors="r")
 axes[1, 1].set_title("7751 / 7136")
 
-(im21661 / im9229).plot(
+((im21661 - 15) / im9229).plot(
     vmin=0.035, vmax=0.15, 
     cmap=cm.ghostlight_r,
     ax=axes[2, 0],
@@ -621,6 +621,21 @@ im4740.plot(vmin=0, vmax=1500)
 ```
 
 ```python
+n = 8
+im1, im2 = im8046.copy(), im4740.copy()
+im1.mask = im1.mask | (im1.data < 60) | (im2.data < 60)| (imcont.data > 1e3)
+im2.mask = im1.mask
+r = ((im1 - 15).rebin(n) / im2.rebin(n))
+r.plot(vmin=0.2, vmax=2, cmap=cm.ghostlight_r, colorbar="v")
+plt.gcf().axes[0].set_title("8046 / 4740")
+...;
+```
+
+The above plot is an attempt to measure the extinction from the ClIV/ArIV ratio, which works amazingly well, considering.  I had to subtract a constant from the ClIV to avoid zero point problems. 
+
+It works especially well in the bottom right quadrant, where the pattern looks very much like the one obtained from the H lines. 
+
+```python
 r_cii_oiii = ((im7231 + im7236 - 300) / im6563)
 fig, ax = plt.subplots(figsize=(10, 10))
 r_cii_oiii.plot(vmin=0.0, vmax=0.004, cmap=cm.arctic_r, colorbar="v")
@@ -768,8 +783,8 @@ r_oin_ha = 0.00 + im6300 / im6563
 i_ha = im6563
 for ratio in r_ram_ha, r_oi_ha, r_oin_ha:
     ratio.mask = ratio.mask | (i_ha.data < 1e4) | (starmask)
-
 ```
+
 
 ```python
 fig, ax = plt.subplots(figsize=(12, 12))
@@ -916,8 +931,6 @@ g = sns.pairplot(
         color=cmap(0.4),
     ),
 );
-
-
 ```
 
 So that shows that there is a very good correlation between Raman and O I 8446.  
@@ -951,6 +964,8 @@ def apply_func_pairwise_to_dataframe_columns(df, func):
     for (label1, column1), (label2, column2) in itertools.combinations(df.items(), 2):
         results.loc[label1, label2] = results.loc[label2, label1] = func(column1, column2)
     return results
+
+
 
 ```
 
@@ -1090,7 +1105,6 @@ We can even write it out as LaTeX format, although I haven't tested this. It wou
 ```python
 # corr.style.pipe(make_pretty).to_latex(convert_css=True, siunitx=True, hrules=True)
 ```
-
 ```python
 
 ```
@@ -1098,3 +1112,4 @@ We can even write it out as LaTeX format, although I haven't tested this. It wou
 ```python
 
 ```
+
