@@ -39,7 +39,11 @@ $$
 
 ## Geometry and densities
 
-> At a distance of 50 kpc: **1 arcsec = 0.242 parsec**
+> At a distance to LMC of 50 kpc:
+
+> **1 arcsec = 0.242 parsec**
+
+> **1 arcmin = 14.5 parsec** (size of single MUSE field)
 
 ### To what extent is the IF/PDR seen edge-on?
 
@@ -69,7 +73,7 @@ I got a map at 21 cm from CASDA
 
 Find a supposed supernova remnant at the same place that I had identified anomalous radio emission in the 21 cm maps
 
-> This makes me wonder whether the similar excess in Orion may also be a SNR
+> This makes me wonder whether the similar excess in Orion may also be a SNR. **NO, this is very unlikely**
 
 ![CleanShot 2022-07-04 at 11.26.57.jpeg](assets/CleanShot%202022-07-04%20at%2011.26.57.jpeg)
 
@@ -90,6 +94,12 @@ On the left is the 3 cm map from Lazendic. On the right is the 21 cm map that I 
 ![CleanShot 2022-07-04 at 12.54.29.jpeg](assets/CleanShot%202022-07-04%20at%2012.54.29.jpeg)
 
 The first panel is from the Lazendic paper and shows the radio-optical extinction. The remaining panels are from one of my notebooks and show the optical-infrared reddening.  The supposed source coincides with high reddening between 2.15 and 0.92 microns, but nothing at shorter wavelengths. This suggests very high extinction so it is not seen at visual wavelengths.
+
+In fact, it turns out that this was already known.  The following paragraph is from Indebetouw et al (2009):
+
+![CleanShot 2022-07-05 at 12.56.55.jpeg](assets/CleanShot%202022-07-05%20at%2012.56.55.jpeg)
+
+Chu et al (2004) look at it in detail and conclude that it cannot be a SNR.
 
 ## Kinematics
 
@@ -121,7 +131,53 @@ I can think of two techniques for looking at this:
 
 ## The compact inner globule
 
-This is a small cometary globule that is best seen in the the Br-gamma, [O I], and 3 cm radio emission.  It is quite heavily extincted in the optical lines, suggesting it is foreground to the cluster and illuminated from behind.
+This is a small cometary globule that is best seen in the the Br-gamma, [O I], and 3 cm radio emission.  It is quite heavily extinguished in the optical lines, suggesting it is foreground to the cluster and illuminated from behind.
+
+![CleanShot 2022-07-05 at 08.49.39.jpeg](assets/CleanShot%202022-07-05%20at%2008.49.39.jpeg)
+
+It turns out that the globule is associated with a YSO supposedly in the catalog of Gruendl & Chu (2009).  But it does not make the top-ten list for YSO sources in Walborn et al (2013). It is source **118** in Rubio et al (1998), which SIMBAD has as [`[RBW98]`](https://cds.unistra.fr/cgi-bin/Dic-Simbad?%5bRBW98%5d) `IRSW-118` associates with the O9.5 star `[P93] 702` (see Parker 1993), which is `VFTS 464` in the *VLT-FLAMES Tarantula Survey* (this is the number used in all the Walborn papers, for instance) and has designation `IRSF J05383928-6905527` in the InfraRed Survey Facility Catalog (Kato et al 2007). The *V*=16.8 magnitude is too faint to make Parker’s cut-off (*V* < 16) for the bright blue stars in his Table 11.
+
+![CleanShot 2022-07-05 at 20.53.38.jpeg](assets/CleanShot%202022-07-05%20at%2020.53.38.jpeg)
+
+The above table is from the first VFTS paper (Evans et al 2011).  Note that the offset from the GC09 position is excessively large (1.2 arcsec), which would make me suspect that the star is not the same as the IR source. **However, I have compared the positions myself and find the distance to be only 0.5 arcsec (0.13 pc).** The star is just in front of the globule, with the IR YSO candidate position corresponding to the center of the CO emission. The star position coincides approximately with the peak of the Br-gamma emission, so maybe some of that is from the star (although we would not expect an O9 star to have a H line in emission unless it was a supergiant, so I do not actually believe this).
+
+![CleanShot 2022-07-05 at 22.18.44.jpeg](assets/CleanShot%202022-07-05%20at%2022.18.44.jpeg)
+
+![CleanShot 2022-07-05 at 22.50.19.jpeg](assets/CleanShot%202022-07-05%20at%2022.50.19.jpeg)
+
+This is from Campbell et al (2010) who did NIR adaptive optics imaging, so much higher resolution than we have.  This shows that the stellar source is in fact double, and it is indeed just in front of the globule. It is most likely that the star is foreground to the globule and is not the dominant ionizing source (I should work out the total equivalent Ha luminosity from it). They comment on it being a bow-shock but of course it is not a bow shock, it is clearly an ionization front. In fact, if I had carried on reading the Evans et al (2011) paper, I would have found the figure shown at the right.  In that paper, they already realize that it is not a bow shock: *“Indeed, as noted by Campbell et al. (2010), the bow shock is orientated towards R136 (and Brey 75/BAT99-100), suggesting it might well be related to an ionization front (with associated triggered star-formation) rather than a dynamical shock.”*
+
+More recent observations with adaptive optics of the core of the cluster have a resolution of 12.25 mas/pixel (Khorrami et al 2021). But I am not sure if they go out as far as our source – *I need to check ….*
+
+- Distance from R134 to globule: 8.4 arcsec = 2 pc
+- Distance from R136 to globule: 20.5 arcsec = 5 pc
+- Distance from R136 to bar i-front: 48 arcsec = 12 pc
+
+The *Stapler Clouds* are named and described in Kalari et al (2018). They have them as being 10 to 20 pc in front of the cluster, but that seems a bit too close given that they have no strong radio continuum emission.
+
+![CleanShot 2022-07-05 at 12.22.53.jpeg](assets/CleanShot%202022-07-05%20at%2012.22.53.jpeg)
+
+### Other globules in the SW region
+
+![CleanShot 2022-07-05 at 22.56.22.jpeg](assets/CleanShot%202022-07-05%20at%2022.56.22.jpeg)
+
+These are bright in low ionization lines, but they have a diffuse peak of high ionization emission associated with them too
+
+![CleanShot 2022-07-05 at 22.59.50.jpeg](assets/CleanShot%202022-07-05%20at%2022.59.50.jpeg)
+
+Velocities are similar to the bar in O I, and also in CO
+
+![CleanShot 2022-07-05 at 23.11.39.jpeg](assets/CleanShot%202022-07-05%20at%2023.11.39.jpeg)
+
+## Stellar census
+
+This Table is from Crowther et al (2016).  In R136 there is a 1e7 Lsun star, plus 8 others that are on average 3e6, so that is getting on for 4e7, or 200 times luminosity of Orion.  The factor in QH will be even larger, since these are hotter, say 300, which would make it 3e51.  In the Javier paper, we have L(Ha) being 200 times higher, so that just about checks out.
+
+![CleanShot 2022-07-05 at 23.35.38.jpeg](assets/CleanShot%202022-07-05%20at%2023.35.38.jpeg)
+
+So the globule being 5 pc away from the cluster would be the same ionizing flux as 0.3 pc away from the Trapezium. This is only slightly farther than the distance to the Orion Bar.  Radius of globule is about 1 arcsec, so 0.24 pc, as opposed to radius of Orion Bar, which is about 10 arcsec, or 0.02 pc, which is 10 times smaller.  The ionized density should go as `sqrt(F/R)`, so that will be 3 times smaller in the Tarantula globule than in Orion Bar.  At the same time, the ionization parameter will  be 3 times higher.
+
+The W filament region is 2.4 times further away, which would be equivalent of 0.7 pc away in Orion, which is about 360 arcsec, which is roughly LL2 distance, I think.  So that is a 10 times smaller ionizing flux than the Orion Bar. The thickness of the ionized filament is about 12 arcsec, or 3 pc, which is 150 times larger than Orion Bar. So density should be `sqrt(1500)=40` times smaller. This would mean about 100 pcc.
 
 ## X rays
 
@@ -166,6 +222,14 @@ Next the Chandra image (right panel).  Original paper was Townsley+ (2006) but t
 This map shows the ionization stratification from highly ionized [S IV] to PDR [C II].
 
 The top-left part of Region G corresponds to the bottom right corner of our map.
+
+Their modeling strategy is to use plane parallel static constant pressure PDR models (assuming face-on illumination and viewing angle I guess) and to derive a pressure *P* and a radiation field (*G*_FUV) from line ratios of [O I] and [C II] lines and the dust continuum (all in the FIR). Then comparing predicted/observed absolute fluxes gives an area filling factor Phi_A, which if smaller than one means that the individual clouds are smaller than the beam, or if bigger than one indicate crowding along the line of sight, which is sort-of-like limb brightening.
+
+There is a further parameter, which is the maximum depth of the model AV(max), which they find has a value of 1 to 3 from comparison with CO observations.  Then they explain the higher observed extinctions as being due to the crowding effect:
+
+![CleanShot 2022-07-05 at 13.49.35.jpeg](assets/CleanShot%202022-07-05%20at%2013.49.35.jpeg)
+
+This is possibly reasonable when considering spatial averages over 15 arcsec, which is the resolution of their observations. I am not sure it makes sense at smaller scale though, since the CO is concentrated in small clouds, whereas the neutral gas isn’t . On the other hand, there are only a few places where the extinction is super-high
 
 ### Spitzer maps from Indebetouw et al 2009
 
