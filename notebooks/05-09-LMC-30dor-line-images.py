@@ -549,8 +549,27 @@ fig, ax = plt.subplots(figsize=(10, 10))
 r_cii_oiii.plot(vmin=0.0, vmax=0.004, cmap=cm.arctic_r, colorbar="v")
 ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
 
-
 # So there is slight evidence for an excess of C II over Ha on the inside rim, but we would have to do a much better job of the sky subtraction to be sure. 
+
+# ## Look at Chlorine ratios
+
+im5538 = Image(p("cliii-5538"))
+im5517 = Image(p("cliii-5517"))
+
+
+r_cliii_den = (im5538 / im5517)
+fig, ax = plt.subplots(figsize=(10, 10))
+r_cliii_den.plot(vmin=0.3, vmax=1.0, cmap=cm.arctic_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
+
+r_cliv_cliii = im8046 / (im5538 + im5517)
+fig, ax = plt.subplots(figsize=(10, 10))
+r_cliv_cliii.plot(vmin=0.0, vmax=0.6, cmap=cm.neutral_r, colorbar="v")
+ax.contour(im4959.data, levels=[1e5, 2e5, 4e5], linewidths=[1.0, 2.0, 3.0], colors="r")
+
+
+
+
 
 # ## Look at the Raman wings
 
