@@ -407,10 +407,14 @@ pos = (np.arange(nx) - ix0) * 0.2
 
 ax.plot(pos, heii_profile, label="He II", lw=4)
 ax.plot(pos, 1.00 * ariv_profile, label="[Ar IV]", lw=3)
-ax.plot(pos, 3 * 0.0019 * oiii_profile, label="[O III]", lw=2.0)
-ax.plot(pos, 3 * 0.13 * ariii_profile, label="[Ar III]", lw=1.5)
-ax.plot(pos, 3 * 0.100 * hei_profile, label="He I", lw=1.0)
-ax.plot(pos, 3 * 0.011 * hb_profile, label="Hβ", lw=0.5)
+fac = 3 * 0.0019 
+ax.plot(pos, fac * oiii_profile, label=f"[O III] / {1/fac:.1f}", lw=2.0)
+fac = 3 * 0.13 
+ax.plot(pos, fac * ariii_profile, label=f"[Ar III] / {1/fac:.1f}", lw=1.5)
+fac = 3 * 0.100
+ax.plot(pos, fac * hei_profile, label=f"He I / {1/fac:.1f}", lw=1.0)
+fac = 3 * 0.011
+ax.plot(pos, fac * hb_profile, label=f"Hβ / {1/fac:.1f}", lw=0.5)
 
 
 ax.axhline(0, color="k")
@@ -432,6 +436,7 @@ fig.savefig("../figs/ngc346-bow-shock-brightness-cuts.pdf");
 # From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
 
 peak_heii = muse_bright_unit * 400
+peak_heii
 
 # From the image, the chord length through the bow is about 60 pixels.  We can assume that the line-of-sight depth is similar:
 
