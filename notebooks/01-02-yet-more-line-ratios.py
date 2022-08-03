@@ -427,7 +427,7 @@ ax.set(
     xlabel="Offset west from W 3, arcsec",
     ylabel="Surface brightness",
     xlim=[-12, 22],
-    ylim=[-30, 1300],
+    ylim=[-199, 1400],
 )
 sns.despine()
 fig.savefig("../figs/ngc346-bow-shock-brightness-cuts.pdf");
