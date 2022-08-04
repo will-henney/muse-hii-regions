@@ -618,6 +618,29 @@ Try this in a notebook
   2. (First in notebook).  Use peak He II brightness to estimate the electron density
   3. (Not in notebook, but see [[id:CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2][Consistency check on the ionization fraction and thickness of the He II zone]] in this file). Estimate the thickness of the He++ zone. 
 
+
+**** Ionization state based upon multiple lines
+From the analysis of the
+
+
+**** New lines
+- At about 7262 angstrom
+  - No, of course this is Ar IV 7263
+- At about 7500
+  - He I 7499.85
+  - But it seems more bow shock-y than the other He I lines
+- Cl IV 7531 looks pretty strong
+- Cl IV 8046 is contaminated, but it could be removed, perhaps by N I
+- [K IV] 6101.79 ( ^3P_2 - ^1D_2 )
+  - Weaker than the [Ar IV] lines, but definitely detected from the bow shock
+  - There is another line of same multiplet at 6795.1 that we should look for
+    - ^3P_1 - ^1D_2
+    - Strangely, we do not seem to have a continuum-subtracted cube that covers this wavelength. The Ha raman wing section stops at 6800
+    - Now we have it, and the line is detected, but it is very weak
+    - Weaker than 6101.79 by a factor of 4 *as expected*
+  - This is isoelectronic to [Ar III]
+    - Equivalent lines are 7135.8 and 7751.1
+    - Of which the redder one is also 4 times weaker (unlike what I first thought)
 **** Density and/or dust opacity from the infrared emission
 + From section 2 of Paper III
   + \Sigma = \tau / \kappa

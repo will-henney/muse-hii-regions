@@ -20,9 +20,9 @@ The previous notebook has grown too long, so I am starting a new one.  What I pl
 
 1. [X] [Cl III] density ratio. *Conclusion:* [Cl III] is useless
 2. [X] [S II] density - this is the best
-3. [ ] He II analysis – ionizing luminosity and density
-    *This has a mistake at the moment, which I need to track down*
-4. [ ] [Ar IV] and [Ar III] ionization balance
+3. [X] He II analysis – ionizing luminosity and density
+    *This has a mistake at the moment, which I need to track down* Now fixed in Org file
+4. [X] [Ar IV] and [Ar III] ionization balance
 2. [ ] Maybe tetrablok binning and make figure
 3. [X] Profile cuts across the bow shock
 4. [ ] Analysis of average line velocities 
@@ -456,20 +456,20 @@ oiii_profile = make_profile(imoiii)
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(heii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
 
 ax.plot(pos, heii_profile, label="He II", lw=4)
 ax.plot(pos, 1.00 * ariv_profile, label="[Ar IV]", lw=3)
-fac = 3 * 0.0019 
+fac = 3 * 0.0022 
 ax.plot(pos, fac * oiii_profile, label=f"[O III] / {1/fac:.1f}", lw=2.0)
-fac = 3 * 0.13 
+fac = 3 * 0.145
 ax.plot(pos, fac * ariii_profile, label=f"[Ar III] / {1/fac:.1f}", lw=1.5)
 fac = 3 * 0.100
 ax.plot(pos, fac * hei_profile, label=f"He I / {1/fac:.1f}", lw=1.0)
-fac = 3 * 0.011
+fac = 3 * 0.0105
 ax.plot(pos, fac * hb_profile, label=f"Hβ / {1/fac:.1f}", lw=0.5)
 
 
@@ -632,6 +632,63 @@ $$
 Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
 ```
+
+## Also do profiles of low ionization lines
+
+
+Looks like we have only oi that is of much use. We could maybe do some other lines like permitted oi, ci, ni, etc
+
+```python
+im6300 = Image("../data/ngc346-oi-6300-bin01-sum.fits")
+im5518 = Image("../data/ngc346-cliii-5518-bin01-sum.fits")
+im5538 = Image("../data/ngc346-cliii-5538-bin01-sum.fits")
+im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+```
+
+```python
+oi_profile = make_profile(im6300)
+cliiis_profile = make_profile(im5518)
+cliiil_profile = make_profile(im5538)
+siis_profile = make_profile(im6716)
+siil_profile = make_profile(im6731)
+siii_profile = make_profile(im9069)
+
+sii_profile = 0.5 * (siis_profile + siil_profile)
+cliii_profile = 0.5 * (cliiis_profile + cliiil_profile)
+```
+
+
+```python
+fig, ax = plt.subplots(figsize=(15, 6))
+ix0 = 227.5
+nx = len(oi_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, 1.0 * oi_profile / np.median(oi_profile), label="[O I] brightness", lw=3)
+ax.plot(pos, 1.0 * sii_profile / np.median(sii_profile), label="[S II] brightness", lw=3)
+ax.plot(pos, 1.7 * cliii_profile / np.median(cliii_profile), label="[Cl III] brightness", lw=3)
+ax.plot(pos, 1.7 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3)
+
+
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=2,loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    xlim=[-12, 22],
+    ylim=[0, 3.9],
+)
+sns.despine()
+fig.savefig("../figs/ngc346-bow-shock-lowion-cuts.pdf")
+```
+```python
+
+```
+
 
 ## Ar ionization balance
 
@@ -820,7 +877,7 @@ hei_5876_profile = make_profile(im5876)
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(hei_profile)
 pos = (np.arange(nx) - ix0) * 0.2
@@ -875,16 +932,45 @@ siii_profile = make_profile(im9069)
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(15, 6))
+ix0 = 227.5
+nx = len(hei_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(pos, 0.01 * n_sii_profile, ds="steps-mid", label="$n$([S II]) / 100 cm$^{-3}$", lw=2)
+ax.plot(pos, 0.0001 * T_siii_profile, ds="steps-mid", label="$T$([S III]) / 10,000 K", lw=2)
+ax.plot(pos, 1.0 * sii_profile / np.median(sii_profile), label="[S II] brightness", lw=3)
+ax.plot(pos, 1.8 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=2,loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    xlim=[-12, 22],
+    ylim=[0, 3.45],
+)
+sns.despine()
+fig.savefig("../figs/ngc346-bow-shock-sii-siii-ne-te.pdf");
+```
+
+<!-- #region tags=["temperature"] -->
+So the [S III] temperature is significantly larger than the [O III] temperature from the nebula. It is around 14000 K and has a drop towards W 3 coming from the east side, and then a step and a very constant region.  But the step occurs before the bow shock, so is probably unrelated. 
+<!-- #endregion -->
+
+```python
+fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(hei_profile)
 pos = (np.arange(nx) - ix0) * 0.2
 
 ax.plot(pos, 0.01 * n_sii_profile, label="$n$([S II]) / 100 cm$^{-3}$", lw=4)
 ax.plot(pos, 0.0001 * T_siii_profile, label="$T$([S III]) / 10,000 K", lw=3)
-ax.plot(pos, 1.0 * sii_profile / np.median(sii_profile), label="[S II] brightness", lw=3)
-ax.plot(pos, 1.7 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3)
-
+ax.plot(pos, 1.0 * sii_profile / siii_profile, label="[S II] / [S III]", lw=3)
+ax.plot(pos, 4.0 * oi_profile / sii_profile, label="[O I] / [S II]", lw=3)
 
 
 ax.axhline(0, color="k")
@@ -896,15 +982,11 @@ ax.legend(ncol=2,loc="upper left")
 ax.set(
     xlabel="Offset west from W 3, arcsec",
     xlim=[-12, 22],
-    ylim=[0, 3.4],
+    ylim=[0, 2.1],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-sii-siii-ne-te.pdf");
+fig.savefig("../figs/ngc346-bow-shock-sii-siii-ratio-ne-te.pdf");
 ```
-
-<!-- #region tags=["temperature"] -->
-So the [S III] temperature is significantly larger than the [O III] temperature from the nebula. It is around 14000 K and has a drop towards W 3 coming from the east side, and then a step and a very constant region.  But the step occurs before the bow shock, so is probably unrelated. 
-<!-- #endregion -->
 
 ## Plot the He I / H I ratio
 
@@ -933,22 +1015,22 @@ heii_c_profile = make_profile(imheii_c)
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(hei_profile)
 pos = (np.arange(nx) - ix0) * 0.2
 
 ax.plot(pos, heii_c_profile / hi_c_profile, 
-        label="He II λ4686 / H I λ4861", lw=3)
+        ds="steps-mid", label="He II λ4686 / H I λ4861", lw=2)
 ax.plot(pos, hei_c_profile / hi_c_profile - 0.10, 
-        label="(He I λ5875 / H I λ4861) – 0.1", lw=4)
+        ds="steps-mid", label="(He I λ5875 / H I λ4861) – 0.1", lw=2)
 
 ax.axhline(0, color="k")
 
 ax.axvline(0, color="k", lw=1, ls="dashed")
 ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
 ax.legend(ncol=1,loc="upper right")
-
+ax.set_yticks([0.0, 0.005, 0.010])
 ax.set(
     xlabel="Offset west from W 3, arcsec",
     xlim=[-12, 22],
@@ -1041,7 +1123,7 @@ g.fig.suptitle("Correlation between [Cl III] 5538 and 5518 brightness");
 ```
 
 ```python
-n = 4
+n = 32
 
 imx = imha.rebin(n)
 imy = im5518.rebin(n) / im5538.rebin(n)
@@ -1078,7 +1160,7 @@ g.fig.suptitle("Correlation between [Cl III] 5538, 5518 sum and ratio");
 ```python
 xslice, yslice = slice(230, 300), slice(144, 245)
 
-n = 4
+n = 2
 
 imx = imha[yslice, xslice].rebin(n)
 imy = im5518[yslice, xslice].rebin(n) / im5538[yslice, xslice].rebin(n)
@@ -1162,6 +1244,12 @@ e5538 = cl3.getEmissivity(tem=8000, den=[1, 10, 100, 1000], wave=5538)
 e5518 / e5538
 ```
 
-```python
+Check the 2 sigma lower limit
 
+```python
+cl3.getTemDen(R2 - 5*dR2, tem=15000, wave1=5518, wave2=5538)
+```
+
+```python
+cl3.getTemDen(R2 - 5*dR2, tem=1000, wave1=5518, wave2=5538)
 ```

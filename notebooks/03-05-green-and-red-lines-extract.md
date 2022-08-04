@@ -1,6 +1,7 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
@@ -28,8 +29,8 @@ from mpdaf.obj import Cube
 import regions
 import sys
 sys.path.append("../lib")
-import moments
-import extract
+from whispy import moments
+from whispy import extract
 
 sns.set_context("talk")
 sns.set_color_codes()
@@ -105,8 +106,6 @@ sboxes = {
         iymin=ybb-m, iymax=ybb+m, ixmin=xbb-m, ixmax=xbb+m,
     ),
 }
-
-
 ```
 
 ## Start with the green range
@@ -525,7 +524,7 @@ moments.save_moments_to_fits(
 ## Second, the red range
 
 ```python
-wavmin, wavmax = 7000, 7800
+wavmin, wavmax = 6750, 7800
 cube = cube2.select_lambda(wavmin, wavmax)
 mcube = cube1.select_lambda(wavmin, wavmax)
 ```
@@ -537,6 +536,7 @@ avspec = cube.mean(axis=(1, 2))
 
 ```python
 wavranges = [
+    (6750, 6770), (6810, 6820),(6960, 6980),
     (7010, 7030), (7080, 7090), (7115, 7125),
     (7200, 7220),
     (7342, 7355),
