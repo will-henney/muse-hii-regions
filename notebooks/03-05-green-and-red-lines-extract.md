@@ -51,6 +51,9 @@ cube1 = Cube(str(datapath / file1))
 cube2 = Cube(str(datapath / file2))
 ```
 
+Note that `cube1` is the co-added data of various exposures, which has better s/n but slightly degraded angular resolution.  This is the better choice for the weak lines. 
+
+
 Get all the regions from previous notebooks:
 
 ```python
@@ -115,6 +118,8 @@ wavmin, wavmax = 5300, 6100
 cube = cube2.select_lambda(wavmin, wavmax)
 mcube = cube1.select_lambda(wavmin, wavmax)
 ```
+
+So `mcube` is the one with better s/n, which we will generally be using.
 
 ```python
 wavranges = [
@@ -822,7 +827,7 @@ sns.despine()
 
 ```python
 mom7531 = moments.find_moments(
-    mcsubcube.select_lambda(7531, 7539)
+    mcsubcube.select_lambda(7532.5, 7537.5)
 )
 ```
 
@@ -830,7 +835,7 @@ mom7531 = moments.find_moments(
 mom7531[0].rebin(4).plot(vmin=-3.0, vmax=30.0, scale="linear")
 ```
 
-We can see a clear contamination by C II 7530.57, which comes from the filaments.  
+We can see a slight contamination by C II 7530.57, which comes from the filaments. **But this is much better than before, now that I have reduced the wavelength range**
 
 ```python
 moments.save_moments_to_fits(
