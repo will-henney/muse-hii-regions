@@ -125,6 +125,24 @@
 | Ar^{+3} |   59.58 | 4.381 |
 #+TBLFM: $3=$2 / 13.5984;f3
 + So this might explain why [O III] does not overlap with He II, but [Ar IV] does
+|   IP | Edge     | H        | He         | S       | Ar       | O       |
+|------+----------+----------+------------+---------+----------+---------|
+| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |
+|------+----------+----------+------------+---------+----------+---------|
+| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  |
+| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  |
+| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  |
+|------+----------+----------+------------+---------+----------+---------|
+| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  |
+| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  |
+| 34.9 | S +2     | H I 4861 | He I 5875  |         | [Ar III] | [O II]  |
+| 35.1 | O +      | H I 4861 | He I 5875  |         | [Ar III] | [O III] |
+| 40.7 | Ar +2    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |
+| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |
+|------+----------+----------+------------+---------+----------+---------|
+| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |
+| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |
+| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |
 **** General thoughts on the ionization structure
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
