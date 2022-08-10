@@ -217,6 +217,47 @@
 :    7530.8          [Cl IV] E2 3s2.3p2-3s2.3p2  3P-1D    1 - 2   1.13e-04    19 0.061060 - 1.706960 006
 :    8046.3          [Cl IV] M1 3s2.3p2-3s2.3p2  3P-1D    2 - 2   1.64e-01    19 0.166500 - 1.706960 006
 :    8046.3          [Cl IV] E2 3s2.3p2-3s2.3p2  3P-1D    2 - 2   5.75e-04    19 0.166500 - 1.706960 006
+
+
+*** Other diagnostic ratios
+- [ ] [Ar III] 5192 is extremely weak, but we can maybe make a measurement of Te
+- [Cl III] lines are too noisy to be useful
+*** Look at fractional excess in different features
+- Compare the following
+  - medium ionization peak
+  - globules
+  - bow shock
+- In a bunch of different lines
+  - measure in DS9
+
+| Line      | sii 6731        | hei 5875        | hi 4861         | siii 9069       | ariii 7136      | oiii 5007       |
+|-----------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------|
+| BG left   | 380 +/- 30      | 1200 +/- 100    | 12000 +/- 1000  | 1490 +/- 90     | 980 +/- 60      | 83800 +/- 3900  |
+| Med Peak  | 620             | 1630            | 15600           | 2200            | 1300            | 98200           |
+| BG mid    | 770 +/- 30      | 1590 +/- 50     | 15500 +/- 380   | 1590 +/- 90     | 1170 +/- 40     | 99700 +/- 1500  |
+| Bow shock | 990             | 2210            | 21120           | 1910            | 1530            | 135600          |
+| BG Glob   | 1420 +/- 115    | 2160 +/- 60     | 20600 +/- 330   | 1750 +/- 90     | 1500 +/- 50     | 129000 +/- 3000 |
+| Globule   | 1940            | 2480            | 23000           | 2360            | 1760            | 136600          |
+| BG right  | 590 +/- 100     | 1800 +/- 100    | 17200 +/- 930   | 1910 +/- 100    | 1410 +/- 50     | 115500 +/- 2800 |
+|-----------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------|
+| Med Peak  | 0.078 +/- 0.037 | 0.168 +/- 0.041 | 0.135 +/- 0.039 | 0.429 +/- 0.045 | 0.209 +/- 0.034 | 0.070 +/- 0.023 |
+| Bow Shock | 0.286 +/- 0.041 | 0.390 +/- 0.034 | 0.363 +/- 0.026 | 0.201 +/- 0.058 | 0.308 +/- 0.036 | 0.360 +/- 0.016 |
+| Globule   | 0.930 +/- 0.104 | 0.253 +/- 0.030 | 0.217 +/- 0.027 | 0.290 +/- 0.038 | 0.210 +/- 0.025 | 0.117 +/- 0.017 |
+#+TBLFM: @9$7..@9$2=2 (@3 - (@2 + @4)/2)/(@2 + @4);f3::@10$7..@10$2=(@5 - @4)/@4;f3::@11$7..@11$2=2 (@7 - (@6 + @8)/2)/(@6 + @8);f3
+
+- Final table of the contrasts for each line and each feature
+  - I have omitted sii from bow shock, since that is clearly the flank of the second globule peak
+  - I have also omitted Hi and Hei since they do not really add anything
+
+| Line       | Med Peak        | Bow Shock       | Globule         |
+|------------+-----------------+-----------------+-----------------|
+| sii 6731   | 0.078 +/- 0.037 |                 | 0.930 +/- 0.104 |
+| siii 9069  | 0.429 +/- 0.045 | 0.201 +/- 0.058 | 0.290 +/- 0.038 |
+| ariii 7136 | 0.209 +/- 0.034 | 0.308 +/- 0.036 | 0.210 +/- 0.025 |
+| oiii 5007  | 0.070 +/- 0.023 | 0.360 +/- 0.016 | 0.117 +/- 0.017 |
+
+- [ ] Next job is to plot this
+
 *** Stellar parameters of W 3
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
