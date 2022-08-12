@@ -129,6 +129,29 @@
     + C I looks more promising, but we have to see if we see the other component at 9095, which in principle should be stronger
     + Looks like I had identified a Ca I 9095 line
 *** Sky emission and absorption spectrum
+** Absorption lines and DIBs
+- The DIBs are tracing the foreground absorption of /something/, presumably small molecules
+  - They can be correlated with the reddening for instance
+  - There are 3 possible DIBs that I have spotted so far
+    - The classic 5781 DIB, which gets to an absorption depth of about 0.1
+      - This seems to be slightly correlated with reddening
+        - At least I can see the pattern of the stapler cloud in panel 
+    - There is a weak DIB at 6612 in the Raman wing, close to the absorption feature 6634
+    - There is a strange feature at 5900 that seems to be DIB-like
+      - We have to be careful with a couple of weak Na I sky lines at 5890 and 5896, but they do not get in the way much
+      - *Actually it turns out that the absorption line is the Na I line*
+        - These are the Na I D lines
+      - There are N III photospheric lines at 5896.1, 5901.2, 5918.5
+        - although that is a very miscellaneous collection of lines
+        - If we take the same multiplet then we get 5896.1 5913.5 5954.4
+- Previous work on this
+  - van-Loon:2013z studies both DIBs and Na I (and Ca II) in 30 Doradus
+    - They have better spectral resolution than we do
+    - But they have terrible spatial resolution since they are only looking at stars
+    - They separate out the Galactic and LMC contributions to the DIBs
+      - We can see this also for DIB 5781, despite our poor spectral resolution
+    - For Na I, they find multiple kinematic components
+    - 
 ** Full spectrum of selected regions
 - [2022-06-23 Thu] I am losing track of all the lines that we want to study in this project
 - So I am going to try and make a plot of the full spectrum for selected regions of the nebula
