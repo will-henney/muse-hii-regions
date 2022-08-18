@@ -250,7 +250,7 @@ So the density is about 50 +/- 30 pcc in the diffuse gas.  We get ten times high
 
 ### Make a map of [S II] density
 
-```python
+```python tags=[]
 r_s2_grid = np.linspace(0.5, 1.44, 1001)
 n_s2_grid = s2.getTemDen(r_s2_grid, tem=12000.0, wave1=6716, wave2=6731)
 ```
@@ -285,7 +285,7 @@ im_n_sii.data[~fixmask] = np.interp(
 im_n_sii.mask = im_n_sii.mask | ~np.isfinite(im_n_sii.data)
 ```
 
-```python
+```python jupyter={"source_hidden": true} tags=[]
 fig, ax = plt.subplots(figsize=(12, 12))
 im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax=3000.); 
 ```

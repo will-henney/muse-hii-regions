@@ -237,8 +237,10 @@ s2.getTemDen([1.4, 1.3, 0.8], tem=12000, wave1=6716, wave2=6731)
 
 # ### Make a map of [S II] density
 
+# + tags=[]
 r_s2_grid = np.linspace(0.5, 1.44, 1001)
 n_s2_grid = s2.getTemDen(r_s2_grid, tem=12000.0, wave1=6716, wave2=6731)
+# -
 
 n_s2_grid
 
@@ -262,10 +264,11 @@ im_n_sii.data[~fixmask] = np.interp(
     left=np.nan, right=np.nan,
 )
 im_n_sii.mask = im_n_sii.mask | ~np.isfinite(im_n_sii.data)
-# -
 
+# + jupyter={"source_hidden": true} tags=[]
 fig, ax = plt.subplots(figsize=(12, 12))
 im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax=3000.); 
+# -
 
 # This seems to be good enough in some of the diffuse regions. although it is way to noisy in the faint parts. 
 

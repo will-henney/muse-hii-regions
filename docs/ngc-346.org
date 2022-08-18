@@ -11,7 +11,56 @@
     + Mass = 26 \pm 5 M_sun
     + Log Age / yr = 4.25 \pm 1.0
     + Class I (massive protostellar disk)
+    + 20 times brighter than any other source in O I 8446
++ The central globule star
+  + That is, center of the MUSE field
+  + SSN 17
+  + 0:59:02.9347 -72:10:34.976
+  + It has a mini star cluster around it (Sc 2)
+  + This has no low ionization line emission
+  + The star must be in front of the globule, possibly far from it
+  + Evidence for some [Fe III] emission, possibly jet source
++ The Sc 1 globule star
+  + 0:59:05.9596 -72:10:30.145
+  + Star is 1 arcsec south of SSN 62 (O9V), which is probably unrelated foreground
+  + Globule is just 3 arcsec north of W 2 (O8.5III), which is brightest star in central cluster
+  + Bright O I 8446 centered on star, which is at head of globule
+    + Also cometary tail-like extension along tail of globule
+  + Based on Ha brightness around the edge, globule seems ionized principally from South (by W 2) but also to a lesser extent from the West (similar to the fainter globules to south of Sc 1)
++ The East globule star
+  + The globule that is just north of the bow shock
+    + Along the chain of filaments
+  + 0:58:59.7724 -72:10:16.596
+  + Very bright in O I 8446, second only to mYSO-C
++ The Sc 5 globule
+  + 0:59:00.4173 -72:10:04.941
+  + This has the highest density ionized gas apart from the globule around mYSO-C
+  + Is it ionized by a nearby O star?
+  + Or is it just at a similar z-position to one of the bright ones, such as W2 or W1?
+    + Seems to be pointing more closely at W2
+  + Double source in O I
++ The Sc 4 globule
+  + 0:59:02.5807 -72:10:07.095
+  + Tiny globule with star in its tip
+  + Bright unresolved source in O I 8446
++ South East Foreground globule star A
+  + 
++ South East Foreground globule star B
+  + Just visible on bottom edge of MUSE field
+  + 0:59:08.5152 -72:11:03.105
+  + Projected on or inside a high extinction globule
+  + Bright in O I 8446
++ South foreground ridge star
+  + 0:59:02.0775 -72:11:02.425
 
+
+** General points about the globules and filaments
+- The background globules show bright heads and less bright flanks
+  - This is evidence for the local anisotropy of the radiation field
+  - And that the tail axis is aligned with the radiation
+  - Suggesting that the globules have been sculpted to some extent (unless it is simply chance)
+- The foreground ridge, on the other hand, does not look like this
+  - It seems more to be illuminated from the side
 ** Lines of interest
 + Still to do:
   + [O I] 6300, 6363
@@ -288,7 +337,23 @@
 [[file:emline-excess-plot.pdf]]
 
 
-- [ ] Next job is to plot this
+- [X] Next job is to plot this
+*** References for pyneb calculations
+
+#+begin_src python :results output verbatim
+  import pyneb as pn
+  print(pn.atomicData.getDataFile(atom="S2"))
+  pn.atomicData.printAllSources(at_set=["S2"])
+#+end_src
+
+#+RESULTS:
+: warng _ManageAtomicData: rec data not available for S2
+: warng _ManageAtomicData: trc data not available for S2
+: ('s_ii_atom_RGJ19.dat', 's_ii_coll_TZ10.dat', None, None)
+: S2: All A-values for levels 1-5: Rynkun, P., Gaigalas, G., & Jonsson, P. 2019, Astronomy and Astrophysics, 623, A155: 
+: S2: Energy levels: 
+:     Ref. 7237 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=7237&comment_code=&element=S&spectr_charge=2&): 
+: S2: collision strengths: Tayal & Zatsarinny 2010, ApJ 188, 32: 
 
 *** Stellar parameters of W 3
 :PROPERTIES:
@@ -714,7 +779,56 @@ Try this in a notebook
 From the analysis of the
 
 
+
+**** Other diagnostics
+- We can use the [Fe III] density from 4986/4658
+  - Mabel did this for the entire nebula, getting about unity => n = 100 +/- 20
+  - The lines are very weak, but it looks to me like we have 4986/4658 = 2, implying a lower density
+    - That is in the E of nebula, it is more like unity around the bow shock area
+- We also have the [Fe III] 5270 line, which can possibly be used as  T indicator
+- Strangely, the [Fe III] lines are stronger in the NE and S edge than in the NW region
 **** New lines
+- UNIDENTIFIED at 8660 approx
+  - There are a few N I lines around here, but this seems different
+  - Aha, it is one of the unidentified lines from the Tarantula cubes too
+  - Look for more of these lines
+    - 8151 is there - very strong in the filaments
+    - Si I 8035 clearly detected in filaments, but not in YSO
+      - But now I think 8039 is the wavelength, so probably not Si I
+      - Note that 30 Dor has a line around here, but it is clearly ionized
+    - *Have these filaments had a SNR pass through them?*
+    - Line at 8044 from filaments that blends with [Cl IV] 8045
+      - perhaps 8039 is from same multiplet, in which case it can be removed
+      - In 30 Dor there is no sign of this line at all
+    - More from the 7800-8200 range
+      - 7802, 7838, 7891, 7959, 8009, 8039, 8069 super weak, 8083, 8193 weak
+    - Comparison with 30 Dor
+      - The 8083 line seems there, BUT at 8083.5 and it traces ionized gas
+        - It is next to a much stronger sky line
+      - Another line at 8034.5 (observed 8041.24) is also ionized and might correspond to the 8039 line, but the wavelength does not seem right
+      - 8009 (observed 8016) has a sky line right on top (how come this was not an issue for NGC 346?)
+      - 7999 is strong in PDR in 30 Dor but we only see it in YSO in NGC 346
+    - 6750-7800
+      - 7463.5, 7238.5,
+      - very weak: 7179, 7144, 7111, 7106
+  - YSO only
+    - 7999 (maybe [Fe II] 7999.47) maybe also from jet (?) in globule
+    - 8107, 8111, 8115 (maybe seen in Orion)
+    - 8126 maybe Ca I 8125.31
+      - seen faintly in 3 globules in addition to YSO, including one of the foreground globules
+    - 8188
+      - observed in Orion but unidentified?
+      - also seen in lower globule (different one from above)
+    - 7468.5 similar to 8188, likely to be N I 7468.3
+    - 7452 probably [Fe II] 7452.54
+    - 7442 probably N I 7442.30
+    - 7412 probably [Ni II] 7411.61
+    - 7378 probably [Ni II] 7377.83
+    - 7172 probably [Fe II] 7172.00
+- Si II 5041
+  - This is very weak
+  - But with a strange clump in the bottom left corner
+    - Just north of the star at 0:59:08.5822 -72:10:57.667
 - At about 7262 angstrom
   - No, of course this is Ar IV 7263
 - At about 7500
