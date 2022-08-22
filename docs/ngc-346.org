@@ -383,12 +383,34 @@
 
 - [X] Next job is to plot this
 *** References for pyneb calculations
-
+#+name: pyneb-refs
+#+header: :var ATOM="S2"
 #+begin_src python :results output verbatim
   import pyneb as pn
-  print(pn.atomicData.getDataFile(atom="S2"))
-  pn.atomicData.printAllSources(at_set=["S2"])
+  print(pn.atomicData.getDataFile(atom=ATOM))
+  pn.atomicData.printAllSources(at_set=[ATOM])
 #+end_src
+
+**** Cl IV
+#+call: pyneb-refs("Cl4")
+
+#+RESULTS:
+#+begin_example
+warng _ManageAtomicData: rec data not available for Cl4
+warng _ManageAtomicData: trc data not available for Cl4
+('cl_iv_atom_KS86-MZ82-EM84.dat', 'cl_iv_coll_GMZ95.dat', None, None)
+Cl4: Calculated energy value of 6-1: Huang, 1985, ADNDT, 32, 503: 
+Cl4: All other A-values: Kaufman & Sugar, 1986, JPCRD, 15, 341: 
+Cl4: A-values for 3-1, 4-1 & 5-3: Mendoza & Zeippen, 1982, 199, 1025: 
+Cl4: A-values for 6-2, 6-3: Ellis & Martinson, 1984, Phys. Scr., 30, 255: 
+Cl4: Energy levels: 
+    Ref. uang 1985 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=uang 1985&comment_code=&element=Cl&spectr_charge=4&)
+  + Ref. 495 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=495&comment_code=&element=Cl&spectr_charge=4&): 
+Cl4: All collision strengths: Galavis, Mendoza & Zeippen, 1995, A&A Supp., 111, 347: 
+#+end_example
+
+**** S II
+#+call: pyneb-refs()
 
 #+RESULTS:
 : warng _ManageAtomicData: rec data not available for S2
@@ -398,6 +420,32 @@
 : S2: Energy levels: 
 :     Ref. 7237 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=7237&comment_code=&element=S&spectr_charge=2&): 
 : S2: collision strengths: Tayal & Zatsarinny 2010, ApJ 188, 32: 
+
+*** Cl IV diagnostics
+
+#+begin_src python :results output verbatim
+  import pyneb as pn
+  cl4 = pn.Atom("Cl", 4)
+  Ts = [10000, 15000, 20000]
+  dens = [1.0, 10.0, 100.0]
+  e8046 = cl4.getEmissivity(tem=Ts, den=dens, wave=8046)
+  e7531 = cl4.getEmissivity(tem=Ts, den=dens, wave=7531)
+  e5323 = cl4.getEmissivity(tem=Ts, den=dens, wave=5323)
+  print("8046", e8046)
+  print("7531/8046", e7531 / e8046)
+  print("5323/7531", e5323 / e7531)
+#+end_src
+
+#+RESULTS:
+: 8046 [[1.67869951e-20 1.67889008e-20 1.68077082e-20]
+:  [2.67346244e-20 2.67362017e-20 2.67518043e-20]
+:  [3.31965858e-20 3.31978359e-20 3.32102162e-20]]
+: 7531/8046 [[0.28610481 0.28610481 0.28610481]
+:  [0.28610481 0.28610481 0.28610481]
+:  [0.28610481 0.28610481 0.28610481]]
+: 5323/7531 [[0.08643893 0.08643919 0.08644182]
+:  [0.22672898 0.22673009 0.22674121]
+:  [0.35442452 0.35442619 0.35444295]]
 
 *** Stellar parameters of W 3
 :PROPERTIES:
@@ -825,6 +873,20 @@ From the analysis of the
 
 
 **** Other diagnostics
+- We have the [Cl IV] lines
+  - 7530.8
+    - This is well detected, peak is about 7 over BG of about 1
+  - 8045.62 
+    - Wavelength from NIST but Atomic Line List has 8046.3
+    - Blended with low ionization, but recoverable
+    - Peak is about 15 over BG of 1
+    - Maybe 7531/8046 is density sensitive?
+      - *no* it should be 0.286 always
+      - I measure 7/13 = 0.538, which seems rather high
+  - 5323.2 auroral line
+    - Wavelength is from Young:2011b
+    - ALL has 5322.99
+    - Very weak, but maybe detected with peak of about 1
 - We can use the [Fe III] density from 4986/4658
   - Mabel did this for the entire nebula, getting about unity => n = 100 +/- 20
   - The lines are very weak, but it looks to me like we have 4986/4658 = 2, implying a lower density
@@ -842,11 +904,15 @@ From the analysis of the
       - But now I think 8039 is the wavelength, so probably not Si I
       - Note that 30 Dor has a line around here, but it is clearly ionized
     - *Have these filaments had a SNR pass through them?*
-    - Line at 8044 from filaments that blends with [Cl IV] 8045
-      - perhaps 8039 is from same multiplet, in which case it can be removed
+    - Line at 8047 from filaments that blends with [Cl IV] 8046
+      - perhaps 8038 is from same multiplet, in which case it can be removed
       - In 30 Dor there is no sign of this line at all
     - More from the 7800-8200 range
-      - 7802, 7838, 7891, 7959, 8009, 8039, 8069 super weak, 8083, 8193 weak
+      - 7802, 7838, 7891, 7959, 7997 weak, 8009, 8039, 8069 super weak, 8083, 8151 strong, 8193 weak
+      - Fourth one could be [Fe I] 7959.0029 
+        - 3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 3
+        - Same multiplet as 8151 (2-2) and 7709 (4-2)
+        - But why is 7964 (3-2) missing?
     - Comparison with 30 Dor
       - The 8083 line seems there, BUT at 8083.5 and it traces ionized gas
         - It is next to a much stronger sky line
@@ -855,12 +921,58 @@ From the analysis of the
       - 7999 is strong in PDR in 30 Dor but we only see it in YSO in NGC 346
     - 6750-7800
       - 7463.5, 7238.5,
-      - very weak: 7179, 7144, 7111, 7106
-      - 7708 weak
+        - Second one might be [V I] 7238.64
+        - First one might be [Ni I] 7464.367 except wavelength is not close enough
+      - very weak: 7195, 7179, 7144, 7111, 7106
+      - 7092.5, 7057.5 very weak
+      - 7044
+        - not a deep neutral line, but a very weird distribution
+      - 7039 very weak
+        - looks like a neutral fluorescence line
+      - 7011 very weak
+      - 7002 very weak except for YSO
+        - clearly is O I 7001.92
+      - 7791, 7782, 7768, 7741 weak
+      - 7663, 7637 weak, 7628 weak
+        - these look slightly more diffuse than the other lines, maybe
+      - 7527 weak, 7488.5 weak
+        - also diffuse
+      - 7468.5, 7442 very weak, 7254
+        - Clearly these are
+          - N I 7468.31, 7442.30
+          - O I 7254.15
+        - Distribution much smoother than the other lines
+        - Bright from mYSO-C and from Raman clump
+      - 7707 weak
         - This is close to Fe I 7708.8389, which is same multiplet as 8151
-        - /It must be the same line!/
+        - /Is this the same line?/ It is off by nearly 2 angstrom
         - *It turns out I was using the wrong velocity*
           - Should be +160 for the BG filaments or 150 for the foreground ones
+    - 6000 to 6530
+      - 6503 very weak
+      - 6460 very weak
+        - This is certainly not C II 6462, which is perhaps detected from the bow shock region, but is even weaker
+      - 6451.5 weak, 6448 very weak
+      - 6434 very weak
+      - 6371.5 ionized
+        - probably Si II 6371.36
+      - 6347
+        - likely to be Si II 6347.11
+        - Note that this looks like Si II 5978.93 and 5957.56 in its spatial distribution
+      - 6270.3 very weak
+      - 6221.6 very weak
+      - 6084.2 weakest ever
+      - 6046 also very weak
+        - clearly is O I 6046.23
+      - 6038 extremely weak
+      - 5979, 5958 weak
+        - Clearly Si II 5978.93 and 5957.56
+      - 5740 very weak
+        - Probably Si III 5739.73
+        - Only seen in *bow shock area*, to W of W 3
+      - 5577 badly affected by sky
+        - But we can just about detect the redshifted [O I] line from the nebula, especially in the globules just south of W 2
+      - 5412 He II emission from inside edge of bow shock, but affected by stellar absorption
   - YSO only
     - 7999 (maybe [Fe II] 7999.47) maybe also from jet (?) in globule
     - 8107, 8111, 8115 (maybe seen in Orion)
