@@ -57,6 +57,59 @@
 
 ** Deep neutral/molecular lines
 
+*** Possible molecular candidates
+- Diffuse clouds are known to show optical/IR absorption in lines of CN, C_2, CH, CH+, NH, C_3
+  - See Table 2 of Snow:2006e ARAA review
+- Emission lines are only seen in comets and the Red Rectangle
+
+
+
+**** Molecular line databases
+- ExoMol
+  - https://www.exomol.com
+  - This has OH+ lines
+    - See Wang:2020g
+**** How to calculate wavelengths
+- We can use the data from Huber & Herzberg (1979) for calculating the transition energies
+  - Earlier version in Appendix of Herzberg (1950)
+- The equations to use are in Chapter III of Herzberg (1950)
+  #+begin_example
+    From the data of Table.39, the positions of the rotational and vibrational levels in any of the electronic states may be derived with the aid of the formulae (III, 116) and (III, 121) or, for multiplet states, of the formulae given in Chapter V. The same data may also be used for a calculation of the potential curves either using the Morse function (III, 98) or more involved functions (see p. 102). Furthermore, from these data the positions of the bands and of the lines within the bands may be derived according to the formulae developed in Chapters III, IV, and V. For the wavelengths of the observed bands of the various molecules, the reader is referred to the extensive tables of Pearse and Gaydon (47).
+  #+end_example
+						
+- 
+**** OH lines
+- These are a major component of the night sky airglow spectrum
+  - Osterbrock:1996a, Osterbrock:1997a
+- But SMC is at sufficiently high velocity (+160) that any emission from the nebula should be shifted away from the sky line
+- I looked at the
+**** Molecular ions
+- CH+ is detected by mm emission lines in Orion Bar
+  - Nagy:2013a
+  - Could it have optical/ir lines too?
+- OH- 
+**** C_2 lines
+- There is the (2-0) band at 8751, but these are very weak and narrow  when seen in absorption, and are separated by 2 to 4 Angstrom
+  | J" |     R (J") |       |      Q(J") |       |    P(J') |       |
+  |----+------------+-------+------------+-------+----------+-------|
+  |  0 | * 8757.686 | 1.000 |            |       |          |       |
+  |  2 |   8753.949 | 0.400 | * 8761.194 | 0.500 | 8766.031 | 0.100 |
+  |  4 |   8751.685 | 0.334 | * 8763.751 | 0.500 | 8773.430 | 0.166 |
+  |  6 |   8750.848 | 0.308 | * 8767.759 | 0.500 | 8782.308 | 0.192 |
+  |  8 |   8751.486 | 0.294 | * 8773.221 | 0.499 | 8792.648 | 0.205 |
+  | 10 |   8753.578 | 0.286 |   8780.141 | 0.499 | 8804.499 | 0.213 |
+  | 12 |   8757.127 | 0.280 |   8788.559 | 0.498 | 8817.826 | 0.219 |
+  | 14 |   8762.145 | 0.276 |   8798.459 | 0.498 | 8832.679 | 0.222 |
+  | 16 |   8768.627 | 0.272 |   8809.841 | 0.497 | 8849.071 | 0.225 |
+  | 18 |   8776.607 | 0.270 |   8822.725 | 0.496 | 8866.993 | 0.227 |
+  - But we see nothing around there at all until 8790
+  
+**** CN lines
+
+- Some in violet, some in IR, but also in far red
+- Best recent paper is Syme:2021y
+- Seems there is a band that peaks in the Red
+  - Lines at 9124.0, 9127.4, seem to close together
 *** 6400 to 6800 Angstrom
 - These are in the same range as the Ha Raman wings
 - 6626.5
@@ -924,6 +977,11 @@ From the analysis of the
         - Second one might be [V I] 7238.64
         - First one might be [Ni I] 7464.367 except wavelength is not close enough
       - very weak: 7195, 7179, 7144, 7111, 7106
+        - Second one could be Fe I 7179.9948
+          - 3d7.(4F).4s-3d6.(5D).4s.4p.(3Po)
+          - a3F-z5Do
+          - 4 - 4
+          - A = 8.463e+02 /s, which is largest for its multiplet
       - 7092.5, 7057.5 very weak
       - 7044
         - not a deep neutral line, but a very weird distribution
