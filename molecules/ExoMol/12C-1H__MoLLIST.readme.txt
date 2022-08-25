@@ -1,0 +1,40 @@
+================================================================================
+ExoMol converted CH database - Geronimo Villanueva (NASA/GSFC) Feb/2019
+================================================================================
+CH in stellar atmospheres: an extensive linelist.
+    Masseron T., Plez B., Van Eck S., Colin R., Daoutidis I., Godefroid M.,
+    Coheur P.-F., Bernath P., Jorissen A., Christlieb N.
+   <Astron. Astrophys. 571, A47 (2014)>
+   =2014A&A...571A..47M
+================================================================================
+
+Format description of states files: XXCH.states
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+ID      I12     ---     state ID
+E       F13.6   cm-1    state energy
+gtot    I8      ---     total state degeneracy
+J       I8      ---     total angular momentum quantum number
+F       I4      ---     F quantum number
+p       A4      ---     parity: 'e' or 'f'
+v       I3      ---     vibrational quantum number
+eS      A11     ---     electronic state   
+
+Format description of partition-function files: XXCH.pf
+Nuclear statistical weight is gnuc=2 for 12CH and gnuc=4 for 13CH, gtot=gnuc*(2J+1)
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+Temp    F8.1    K       Temperature
+Qtot    F17.4   ---     Total partition function
+
+Format description of transitions files: XXCH.trans
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+IDu     I12     ---     upper state ID
+IDl     I13     ---     lower state ID
+Aul     E11.4   s-1     Einstein A-factor
+freq    F17.6   cm-1    Frequency of the transition in air
+

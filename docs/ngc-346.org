@@ -65,11 +65,29 @@
 
 
 **** Molecular line databases
-- ExoMol
-  - https://www.exomol.com
-  - This has OH+ lines
-    - See Wang:2020g
+- Best overview paper by far
+  - McKemmish:2021z
+  - [McK21] Laura K. McKemmish. Molecular diatomic spectroscopy data. WIREs Computational Molecular Science, 11(5):e1520, March 2021.
+  - Explains all the different sorts of data sources and calculations. Gives list of all available line lists with advantages ans limitations of each of them
+***** ExoMol
+- https://www.exomol.com
+- This has OH+ lines
+  - See Hodges:2017j, Wang:2020g
+- I have downloaded some of the data
+  - [[file:../molecules/ExoMol/]]
+    - for smaller files
+    - All the ~.def~ and ~.states~ files
+      - CN, CH, C_2, NH, OH, OH^{+}, H_2
+      - Common isotopes only
+    - ~.trans~ files where they are smaller than 10 MB
+  - [[file:../big-data/ExoMol/]]
+    - for big files to keep them out of git
+    - ~.trans~ files for C_2 and CN
+    - Opacity files if I ever bother with them
+      - So far I only have OH^{+}
+      - These assume LTE I think, but might still be useful
 **** How to calculate wavelengths
+- Although this is interesting to understand, it would be better to use the line lists from modern databases instead. 
 - We can use the data from Huber & Herzberg (1979) for calculating the transition energies
   - Earlier version in Appendix of Herzberg (1950)
 - The equations to use are in Chapter III of Herzberg (1950)
@@ -87,6 +105,7 @@
 - CH+ is detected by mm emission lines in Orion Bar
   - Nagy:2013a
   - Could it have optical/ir lines too?
+    - Yes, see ExoMol section above
 - OH- 
 **** C_2 lines
 - There is the (2-0) band at 8751, but these are very weak and narrow  when seen in absorption, and are separated by 2 to 4 Angstrom
@@ -110,6 +129,10 @@
 - Best recent paper is Syme:2021y
 - Seems there is a band that peaks in the Red
   - Lines at 9124.0, 9127.4, seem to close together
+
+
+**** CH lines
+- Data in ExoMol comes from Masseron:2014n but these are all in blue
 *** 6400 to 6800 Angstrom
 - These are in the same range as the Ha Raman wings
 - 6626.5
@@ -242,6 +265,104 @@
 + Si II 5041.03 - mYSO and SE clump (which may be another mYSO)
 + [N I] 5200 comes from filaments and clumps, but not from ionized gas
 + 
++
+**** RGB velocity images in 3 channels for each line
+
+| siii | 9074.94 | 
+***** Script to grab the channel limits
+#+begin_src sh :results output verbatim
+  for RGB in red green blue; do
+      xpaset -p smc rgb $RGB
+      xpaget smc file
+      xpaget smc scale limits
+  done
+#+end_src
+
+#+RESULTS:
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8732_24.fits[DATA]
+: -3 35
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8731_19.fits[DATA]
+: -3 30
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8729_94.fits[DATA]
+: -2 15
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8051_19.fits[DATA]
+: -2 10
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8049_94.fits[DATA]
+: -2 20
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8048_69.fits[DATA]
+: -2 10
+
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5011_22.fits[DATA]
+: -10000 25000
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5009_97.fits[DATA]
+: -25000 65000
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5008_72.fits[DATA]
+: -25000 60000
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8043_69.fits[DATA]
+: -1 10
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8042_44.fits[DATA]
+: -1 12
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8041_19.fits[DATA]
+: -1 10
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8156_19.fits[DATA]
+: -1 25
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8154_94.fits[DATA]
+: -2 35
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8153_69.fits[DATA]
+: -1 25
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6368_69.fits[DATA]
+: -15 60
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6367_44.fits[DATA]
+: -25 150
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6366_19.fits[DATA]
+: -15 150
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4743_72.fits[DATA]
+: -10 70
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4742_47.fits[DATA]
+: -15 90
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4741_22.fits[DATA]
+: -10 40.5837
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8452_44.fits[DATA]
+: 0 30
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8451_19.fits[DATA]
+: 0 40
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8449_94.fits[DATA]
+: 0 30
+
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4962_47.fits[DATA]
+: -6000 15000
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4961_22.fits[DATA]
+: -7000 20000
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4959_97.fits[DATA]
+: -3000 8000
+
+
+
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9074_94.fits[DATA]
+: -200 2000
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9073_69.fits[DATA]
+: -400 3500
+: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9072_44.fits[DATA]
+: -300 2000
+
 **** Ionization potentials
 |      |      eV |   Ryd |
 |------+---------+-------|
@@ -318,6 +439,8 @@
 :PROPERTIES:
 :ID:       8B4C1164-B47D-47BE-9012-7DD0B661E014
 :END:
++ This is now done better in one of the notebook files
+  + But might be worth revisiting now I have better idea of the zero levels
 + From just visual inspection of the spectra I get
   | 4711.37 |  85 |
   | 4740.17 |  60 |
@@ -333,9 +456,11 @@
     + implies T a bit bigger than 20,000 K !!!
     + *this one is bad* it is contaminated by C II 7236.19 or something
       + The map shows that most of the emission comes from the filament not from the bow shock
-  + R_3 = 7263 / (4711 + 4730) =  2.5 / (60 + 85) = 0.01724 -> -1.763
+      + The contamination is not with C II, but is a deep neutral line at 7238.6, which seems slightly to red of the Ar IV emission
+      + We could actually probably still extract the Ar IV line in the golden triangle
+  + R_3 = 7263 / (4711 + 4740) =  2.5 / (60 + 85) = 0.01724 -> -1.763
     + gives T = 17500 K, approx
-  + R_4 = 7171 / (4711 + 4730) = 3 / (60 + 85) = 0.02069 -> -1.684
+  + R_4 = 7171 / (4711 + 4740) = 3 / (60 + 85) = 0.02069 -> -1.684
     + but theoretically R_4 / R_2 = 1.33
     + We find R_4/R_2 = 7171 / 7238 = 3 / 3.5 = 0.8571, which must be due to contamination of 7238
     + So assuming R_2 = R_4 / 1.33, then R_2 = 0.02069 / 1.33 = 0.01556 -> -1.808

@@ -1,0 +1,41 @@
+================================================================================
+ExoMol converted NH database - Geronimo Villanueva (NASA/GSFC) Feb/2019
+================================================================================
+X-X based on "Note: Improved line strengths of rovibrational and rotational transitions
+within the X3Σ− ground state of NH", James S. A. Brooke, Peter F. Bernath, and Colin M. Western
+THE JOURNAL OF CHEMICAL PHYSICS 143, 026101 (2015), http://dx.doi.org/10.1063/1.4923422
+
+A-X based on diatomic line lists from Bernath lab (bernath.uwaterloo.ca)
+================================================================================
+
+Format description of states files: NH.states
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+ID      I12     ---     state ID
+E       F13.6   cm-1    state energy
+gtot    I8      ---     total state degeneracy
+J       F8.1    ---     total angular momentum quantum number: half-odd integer
+N       I4      ---     N quantum number
+F       I4      ---     F quantum number
+p       A2      ---     parity: 'e' or 'f'
+v       I3      ---     vibrational quantum number
+eS      A4      ---     electronic state   
+
+
+Format description of partition-function files: NH.pf
+Nuclear statistical weight = 6 -> gtot=6(2J+1)
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+Temp    F8.1    K       Temperature
+Qtot    F17.4   ---     Total partition function
+
+Format description of transitions files: NH.trans
+--------------------------------------------------------------------------------
+Label   Format  Unit    Explanations
+--------------------------------------------------------------------------------
+IDu     I12     ---     upper state ID
+IDl     I13     ---     lower state ID
+Aul     E11.4   s-1     Einstein A-factor
+freq    F17.6   cm-1    Frequency of the transition in air
