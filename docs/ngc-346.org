@@ -268,7 +268,6 @@
 +
 **** RGB velocity images in 3 channels for each line
 
-| siii | 9074.94 | 
 ***** Script to grab the channel limits
 #+begin_src sh :results output verbatim
   for RGB in red green blue; do
@@ -279,65 +278,6 @@
 #+end_src
 
 #+RESULTS:
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8732_24.fits[DATA]
-: -3 35
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8731_19.fits[DATA]
-: -3 30
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ci-8729_94.fits[DATA]
-: -2 15
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8051_19.fits[DATA]
-: -2 10
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8049_94.fits[DATA]
-: -2 20
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-cliv-8048_69.fits[DATA]
-: -2 10
-
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5011_22.fits[DATA]
-: -10000 25000
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5009_97.fits[DATA]
-: -25000 65000
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-5008_72.fits[DATA]
-: -25000 60000
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8043_69.fits[DATA]
-: -1 10
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8042_44.fits[DATA]
-: -1 12
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8041_19.fits[DATA]
-: -1 10
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8156_19.fits[DATA]
-: -1 25
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8154_94.fits[DATA]
-: -2 35
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-xxx-8153_69.fits[DATA]
-: -1 25
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6368_69.fits[DATA]
-: -15 60
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6367_44.fits[DATA]
-: -25 150
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-6366_19.fits[DATA]
-: -15 150
-
-
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4743_72.fits[DATA]
-: -10 70
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4742_47.fits[DATA]
-: -15 90
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-ariv-4741_22.fits[DATA]
-: -10 40.5837
-
-
 : /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8452_44.fits[DATA]
 : 0 30
 : /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8451_19.fits[DATA]
@@ -346,22 +286,383 @@
 : 0 30
 
 
+***** Table generated from getting the channels 
 
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4962_47.fits[DATA]
-: -6000 15000
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4961_22.fits[DATA]
-: -7000 20000
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oiii-4959_97.fits[DATA]
-: -3000 8000
+#+name: rgb-channels-by-hand
+| ci 8727.13    | ci   | 8732.24 |     -3 |    35 |
+|               | ci   | 8731.19 |     -3 |    30 |
+|               | ci   | 8729.94 |     -2 |    15 |
+| cliv 8045.62  | cliv | 8051.19 |     -2 |    10 |
+|               | cliv | 8049.94 |     -2 |    20 |
+|               | cliv | 8048.69 |     -2 |    10 |
+| oiii 5006.84  | oiii | 5011.22 | -10000 | 25000 |
+|               | oiii | 5009.97 | -25000 | 65000 |
+|               | oiii | 5008.72 | -25000 | 60000 |
+| xxx 8037.0    | xxx  | 8043.69 |     -1 |    10 |
+|               | xxx  | 8042.44 |     -1 |    12 |
+|               | xxx  | 8041.19 |     -1 |    10 |
+| xxx 8151.3424 | xxx  | 8156.19 |     -1 |    25 |
+|               | xxx  | 8154.94 |     -2 |    35 |
+|               | xxx  | 8153.69 |     -1 |    25 |
+| oi 6363.78    | oi   | 6368.69 |    -15 |    60 |
+|               | oi   | 6367.44 |    -25 |   150 |
+|               | oi   | 6366.19 |    -15 |   150 |
+| ariv 4740.17  | ariv | 4743.72 |    -10 |    70 |
+|               | ariv | 4742.47 |    -15 |    90 |
+|               | ariv | 4741.22 |    -10 |    40 |
+| oi 8446.36    | oi   | 8452.44 |      0 |    30 |
+|               | oi   | 8451.19 |      0 |    40 |
+|               | oi   | 8449.94 |      0 |    30 |
+| oiii 4958.91  | oiii | 4962.47 |  -6000 | 15000 |
+|               | oiii | 4961.22 |  -7000 | 20000 |
+|               | oiii | 4959.97 |  -3000 |  8000 |
+| siii 9068.90  | siii | 9074.94 |   -200 |  2000 |
+|               | siii | 9073.69 |   -400 |  3500 |
+|               | siii | 9072.44 |   -300 |  2000 |
 
 
+- Adjustments
+  - oiii 4959 
 
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9074_94.fits[DATA]
-: -200 2000
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9073_69.fits[DATA]
-: -400 3500
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-siii-9072_44.fits[DATA]
-: -300 2000
+***** Process the table to calculate mean wavelength maps
+#+header: :var TABLE=rgb-channels-by-hand
+#+begin_src python :eval no :tangle ../scripts/rgb-meanwavs.py
+  from pathlib import Path
+  import numpy as np
+  from astropy.io import fits
+  import astropy.units as u
+  from astropy.constants import c as light_speed
+
+  DATADIR = Path.cwd().parent / "data"
+  data = {}
+  for maybe_lineid, ion, wav, fmin, fmax in TABLE:
+       # Reorganize input data
+       wavstring = f"{wav:.2f}".replace(".", "_")
+       filename = f"ngc346-slice-{ion}-{wavstring}"
+       if maybe_lineid:
+            lineid = maybe_lineid
+            wav0 = float(lineid.split()[-1])
+            prefix = f"{ion}-{round(wav0)}"
+            data[lineid] = {
+                 "ion": ion,
+                 "prefix": prefix,
+                 "wavs": [wav],
+                 "wav0": wav0,
+                 "fmins": [fmin],
+                 "fmaxs": [fmax],
+                 "filenames": [filename],
+            }
+       else:
+            data[lineid]["wavs"].append(wav)
+            data[lineid]["fmins"].append(fmin)
+            data[lineid]["fmaxs"].append(fmax)
+            data[lineid]["filenames"].append(filename)
+
+  for lineid, d in data.items():
+       # Get list of HDUs, one for each channel
+       hdus = [
+            fits.open(DATADIR / (fname + ".fits"))[0]
+            for fname in d["filenames"]
+       ]
+       # Stack the three data arrays in a cube
+       imstack = np.stack([hdu.data for hdu in hdus], axis=0)
+       # Make matching stacks of the min fluxes and wavelengths
+       fmins = np.array(d["fmins"]).reshape((3, 1, 1))
+       wavs = np.array(d["wavs"]).reshape((3, 1, 1))
+       wav0 = d["wav0"]
+       # Correct zeropoint in each channel
+       imstack -= fmins
+       # Calculate maps of total flux and mean wavelength
+       imsum = np.sum(imstack, axis=0)
+       imwav = np.sum(imstack * wavs, axis=0) / imsum
+       imvel = (((imwav - wav0) / wav0) * light_speed).to(u.km / u.s).value
+       # Write out the results
+       header = hdus[0].header
+       prefix = "ngc346-rgbchan-" + d["prefix"] 
+       fits.PrimaryHDU(header=header, data=imsum).writeto(
+            DATADIR / f"{prefix}-sum.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imwav).writeto(
+            DATADIR / f"{prefix}-mean-wav.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imvel).writeto(
+            DATADIR / f"{prefix}-mean-vel.fits", overwrite=True,
+       )
+
+
+#+end_src
+
+#+begin_src sh :results verbatim
+python ../scripts/rgb-meanwavs.py
+#+end_src
+
+#+RESULTS:
+
+
+***** The bias in the 3 channel method and how to overcome it
+
+****** Theory of 3-wav method
+- We can use erf function to describe gaussian contribution to the three channels
+- If we assume that channel intensities are A, B, C where B is peak and C > A
+  - Say that C > A (if necessary invert velocity scale) so that mean velocity is between B and C
+  - Then we can use C/A and (A+C)/B to characterise width and offset
+  - Use a velocity scale {-1, 0, +1} for centers of channels A, B, C
+    - Channel edges are [-1.5, -0.5], [-0.5, +0.5], [+0.5, +1.5]
+  - Gaussian profile g(x, x0, sig) with x0 in range [0, +1]
+  - So we can find the flux in each channel as
+    - A = Int(g, -1.5 - x0, -0.5 - x0)
+    - B = Int(g, -0.5 - x0, +0.5 - x0)
+    - C = Int(g, +0.5 - x0, +1.5 - x0)
+  - The integrals can be expressed as error functions:
+    - Int(g, p - x0, q - x0) = (1/2) (erf((q  - x0)/ sig sqrt(2)) - erf((p - x0) / sig sqrt(2)))
+    - Or Int(g, p - x0, q - x0) = E(q) - E(p)
+      - with E(x) = (1/2) erf((x - x0) / sig sqrt(2))
+    - If the profiles are not Gaussian, we can just replace erf by the CDF of the profile shape
+  - So we get our two diagnostic ratios as
+    - C/A = [E(+1.5) - E(+0.5)] / [E(-0.5) - E(-1.5)]
+    - (A+C)/B = [E(-0.5) - E(-1.5) + E(+1.5) - E(+0.5)] / [E(+0.5) - E(-0.5)]
+  - Alternatively, we could define moment-like linear functions
+    - M_k = Sum(x^k F) = (-1)^k A + (0)^k B + (+1)^k C
+    - M_0 = A + B + C
+      - E(+1.5) - E(-1.5)
+      - Signature -00+ 
+    - M_1 = C - A (and same for all odd moments)
+      - E(+1.5) + E(-1.5) - E(+0.5) - E(-0.5)
+      - Signature +--+
+    - M_2 = A + C (and same for all even moments)
+      - E(-0.5) + E(+1.5) - E(-1.5) - E(+0.5)
+      - Signature -+-+
+  - Then we have the normalized moments
+    - m_1 = M_1 / M_0
+      - [+E(-1.5)-E(-0.5)-E(+0.5)+E(+1.5)] / [E(+1.5) - E(-1.5)]
+      - This is exactly the same as the mean wavelength over the 3 channels
+    - m_2 = M_2 / M_0
+      - [-E(-1.5)+E(-0.5)-E(+0.5)+E(+1.5)] / [E(+1.5) - E(-1.5)]
+      - This is the broadness parameter
+
+
+****** Implementation of 3-wav method
+
+******* Library file to calculate the moments
+#+begin_src python :eval no :tangle ../lib/three_wav_moments.py
+  import numpy as np
+  from scipy.special import erf
+  import scipy.stats as ss
+  def _E_erf(x, x0, sig):
+      "Special case of erf for gaussian profile"
+      return 0.5 * erf((x - x0) / (sig * np.sqrt(2)))
+
+  _PROFILE = ss.norm       # Gaussian
+  #_PROFILE = ss.cauchy            # Lorentzian
+  def _E_cdf(x, x0, sig):
+      "General case of any profile via the CDF"
+      return _PROFILE.cdf(x, loc=x0, scale=sig)
+
+  # Use the general CDF form so that functional form of profile can be
+  # changed (see the _PROFILE variable above)
+  E = _E_cdf
+
+  def M0(x0, sig):
+      return E(1.5, x0, sig) - E(-1.5, x0, sig)
+
+  def M1(x0, sig):
+      return E(1.5, x0, sig) + E(-1.5, x0, sig) - E(0.5, x0, sig) - E(-0.5, x0, sig)
+
+  def M2(x0, sig):
+      return E(1.5, x0, sig) + E(-0.5, x0, sig) - E(0.5, x0, sig) - E(-1.5, x0, sig)
+
+#+end_src
+******* Graphs of moments as function of mean wave and sigma
+
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+
+  plotfile = "3wav-test.pdf"
+  fig, axes = plt.subplots(3, 1, sharex=True, figsize=(5, 6.5))
+  x0grid = np.linspace(0.0, 1.0)
+  sigs = [0.1, 0.25, 0.5, 1.0, 1.5]
+
+  ax = axes[0]
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      ax.plot(x0grid, M1(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.legend()
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      ylabel="m1 = (C - A) / (A + B + C)",
+  )
+
+  ax = axes[1]
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      ax.plot(x0grid, M2(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      ylabel="m2 = (A + C) / (A + B + C)",
+  )
+
+  ax = axes[2]
+
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      ax.plot(x0grid, M0(x0grid, sig), label=label)
+
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      xlabel="mu",
+      ylabel="M0 = (A + B + C)",
+  )
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-test.pdf]]
+
+******* Contours of moments in (mu, sigma) plane
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import cmasher as cmr
+
+  NMU, NSIG = 200, 200
+  mu, sig = np.meshgrid(
+      np.linspace(0.0, 1.0, NMU),
+      np.linspace(0.0, 1.5, NSIG),
+  )
+
+  m1 = M1(mu, sig) / M0(mu, sig)
+  m2 = M2(mu, sig) / M0(mu, sig)
+
+  plotfile = "3wav-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.fall", 0.25, 0.75)
+  cmap2 = cmr.get_sub_cmap("cmr.horizon_r", 0.25, 0.75)
+  c1 = ax.contour(
+      mu, sig, m1,
+      levels=levels,
+      cmap=cmap1,
+      label="m1",
+  )
+  c2 = ax.contour(
+      mu, sig, m2,
+      levels=levels,
+      linestyles="dashed",
+      cmap=cmap2,
+      label="m2",
+  )
+  ax.clabel(c1, c1.levels[::2], inline=True)
+  ax.clabel(c2, c2.levels[1::2], inline=True)
+
+  ax.set(
+      xlabel="mu",
+      ylabel="sigma",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-contours.pdf]]
+
+
+******* Finding mean wave and sigma from moments
+For this we can use interpolation
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  from scipy.interpolate import griddata
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import cmasher as cmr
+
+  N = 200
+  mu_grid, sig_grid = np.meshgrid(
+      np.linspace(0.0, 1.0, N),
+      np.linspace(0.0, 5.0, 5*N),
+  )
+
+  m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  mask = np.isfinite(m1 * m2)
+
+
+  m1_grid, m2_grid = np.meshgrid(
+      np.linspace(0.0, 1.0, 2 * N),
+      np.linspace(0.0, 1.0, 2 * N),
+  )
+
+  points = (m1[mask], m2[mask])
+  xi = (m1_grid, m2_grid)
+  mu = griddata(points, mu_grid[mask], xi, method="nearest")
+  sig = griddata(points, sig_grid[mask], xi, method="nearest")
+  mu[m1_grid > m2_grid] = np.nan
+  sig[m1_grid > m2_grid] = np.nan
+  mu[mu >= 1.0] = np.nan
+
+  plotfile = "3wav-inverse-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
+  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  c2 = ax.contourf(
+      m1_grid, m2_grid, sig,
+      levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0],
+      #linestyles="dashed",
+      cmap=cmap2,
+      alpha=0.5,
+  )
+  c1 = ax.contour(
+      m1_grid, m2_grid, mu,
+      levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      cmap=cmap1,
+      alpha=1.0,
+  )
+  fig.colorbar(c2, label=r"$\sigma$")
+  artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  #ax.clabel(c1, c1.levels, inline=True)
+  #ax.clabel(c2, c2.levels, inline=True)
+
+  ax.set(
+      xlabel="m1",
+      ylabel="m2",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-inverse-contours.pdf]]
 
 **** Ionization potentials
 |      |      eV |   Ryd |
