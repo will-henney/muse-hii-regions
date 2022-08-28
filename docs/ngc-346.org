@@ -295,9 +295,9 @@
 | cliv 8045.62  | cliv | 8051.19 |     -2 |    10 |
 |               | cliv | 8049.94 |     -2 |    20 |
 |               | cliv | 8048.69 |     -2 |    10 |
-| oiii 5006.84  | oiii | 5011.22 | -10000 | 25000 |
-|               | oiii | 5009.97 | -25000 | 65000 |
-|               | oiii | 5008.72 | -25000 | 60000 |
+| oiii 5006.84  | oiii | 5011.22 |  -8500 | 25000 |
+|               | oiii | 5009.97 | -17500 | 65000 |
+|               | oiii | 5008.72 | -14000 | 60000 |
 | xxx 8037.0    | xxx  | 8043.69 |     -1 |    10 |
 |               | xxx  | 8042.44 |     -1 |    12 |
 |               | xxx  | 8041.19 |     -1 |    10 |
@@ -313,16 +313,16 @@
 | oi 8446.36    | oi   | 8452.44 |      0 |    30 |
 |               | oi   | 8451.19 |      0 |    40 |
 |               | oi   | 8449.94 |      0 |    30 |
-| oiii 4958.91  | oiii | 4962.47 |  -6000 | 15000 |
-|               | oiii | 4961.22 |  -7000 | 20000 |
-|               | oiii | 4959.97 |  -3000 |  8000 |
-| siii 9068.90  | siii | 9074.94 |   -200 |  2000 |
-|               | siii | 9073.69 |   -400 |  3500 |
-|               | siii | 9072.44 |   -300 |  2000 |
+| oiii 4958.91  | oiii | 4962.47 |  -5200 | 15000 |
+|               | oiii | 4961.22 |  -5500 | 20000 |
+|               | oiii | 4959.97 |  -2600 |  8000 |
+| siii 9068.90  | siii | 9074.94 |   -320 |  2000 |
+|               | siii | 9073.69 |   -475 |  3500 |
+|               | siii | 9072.44 |   -250 |  2000 |
 
 
 - Adjustments
-  - oiii 4959 
+  - oiii 4959 do not worry about the black bits at the bottom since they have artefacts due to being close to the edge
 
 ***** Process the table to calculate mean wavelength maps
 #+header: :var TABLE=rgb-channels-by-hand
@@ -376,6 +376,10 @@
        imsum = np.sum(imstack, axis=0)
        imwav = np.sum(imstack * wavs, axis=0) / imsum
        imvel = (((imwav - wav0) / wav0) * light_speed).to(u.km / u.s).value
+       bfrac = imstack[2] / imsum
+       rfrac = imstack[0] / imsum
+       imm1 = rfrac - bfrac
+       imm2 = bfrac + rfrac
        # Write out the results
        header = hdus[0].header
        prefix = "ngc346-rgbchan-" + d["prefix"] 
@@ -388,6 +392,18 @@
        fits.PrimaryHDU(header=header, data=imvel).writeto(
             DATADIR / f"{prefix}-mean-vel.fits", overwrite=True,
        )
+       fits.PrimaryHDU(header=header, data=bfrac).writeto(
+            DATADIR / f"{prefix}-3wav-b.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=rfrac).writeto(
+            DATADIR / f"{prefix}-3wav-r.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imm1).writeto(
+            DATADIR / f"{prefix}-3wav-m1.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imm2).writeto(
+            DATADIR / f"{prefix}-3wav-m2.fits", overwrite=True,
+       )
 
 
 #+end_src
@@ -399,6 +415,18 @@ python ../scripts/rgb-meanwavs.py
 #+RESULTS:
 
 
+
+***** Comments on the velocity patterns
+- The siii 9069 line looks great now
+- It shows more variation than the oiii lines, but they are correlated
+  - It seems like the oiii has an additional diffuse component that has less variation
+  - *AHA* that is not it at all - it is just that the d\lambda is smaller for the green lines than for the red lines, given the same velocity shift.  And our velocity pixels are fixed width in \lambda
+    - If we shrink the range on the oiii then 4959 looks very similar to 9069 but with added artefacts
+    - And 5007 also looks similar but with even more artefacts
+  - The oi lines show even more variation than siii (and this is not explained by the different wavelengths)
+- Things seem consistent wit the majority of the variation being due to brightness variations coupled with a general expansion along the line of sight
+  - For instance, there are places where an apparent dust absorption causes the velocity to get bluer, which seems to be because the redder emission from the background layer is blocked
+  - But there are other regions where a reduction in brightness is associated with redder velocities, which seems to be due to a gap between foreground blueshifted emission filaments
 ***** The bias in the 3 channel method and how to overcome it
 
 ****** Theory of 3-wav method
@@ -439,6 +467,14 @@ python ../scripts/rgb-meanwavs.py
     - m_2 = M_2 / M_0
       - [-E(-1.5)+E(-0.5)-E(+0.5)+E(+1.5)] / [E(+1.5) - E(-1.5)]
       - This is the broadness parameter
+  - [ ] Third alternative: use A and C directly
+    - A / (A + B + C) = (m_2 - m_1) / 2
+    - C / (A + B + C) = (m_2 + m_1) / 2
+    - These have the advantage that they can be called Left and Right, or even Blue Fraction and Red Fraction
+    - They tend to 1/3 when sigma is large
+    - And they are both positive definite
+    - The only disadvantage is that they do not separate into the significant and insignificant variations
+    - And that we lose the approximate proportionality between \mu and m_1
 
 
 ****** Implementation of 3-wav method
@@ -485,40 +521,44 @@ python ../scripts/rgb-meanwavs.py
   plotfile = "3wav-test.pdf"
   fig, axes = plt.subplots(3, 1, sharex=True, figsize=(5, 6.5))
   x0grid = np.linspace(0.0, 1.0)
-  sigs = [0.1, 0.25, 0.5, 1.0, 1.5]
+  #sigs = [0.1, 0.25, 0.5, 1.0, 1.5]
+  sigs = [0.6, 0.8, 1.0, 1.2]
 
   ax = axes[0]
   for sig in sigs:
       label = f"sigma = {sig:.2f}"
       ax.plot(x0grid, M1(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [0, 1], color='k', linestyle='dashed')
   ax.legend()
   ax.set(
       xlim=[0, 1],
       ylim=[-0.01, 1.01],
-      ylabel="m1 = (C - A) / (A + B + C)",
+      ylabel="$m_1 = (C - A) / (A + B + C)$",
   )
 
   ax = axes[1]
   for sig in sigs:
       label = f"sigma = {sig:.2f}"
       ax.plot(x0grid, M2(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [2/3, 2/3], color='k', linestyle='dashed')
   ax.set(
       xlim=[0, 1],
       ylim=[-0.01, 1.01],
-      ylabel="m2 = (A + C) / (A + B + C)",
+      ylabel="$m_2 = (A + C) / (A + B + C)$",
   )
 
   ax = axes[2]
 
   for sig in sigs:
-      label = f"sigma = {sig:.2f}"
+      label = fr"$\sigma = {sig:.2f}$"
       ax.plot(x0grid, M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [1, 1], color='k', linestyle='dashed')
 
   ax.set(
       xlim=[0, 1],
       ylim=[-0.01, 1.01],
-      xlabel="mu",
-      ylabel="M0 = (A + B + C)",
+      xlabel=r"$\mu$",
+      ylabel="$M_0 = (A + B + C)$",
   )
   sns.despine()
   fig.tight_layout()
@@ -538,43 +578,50 @@ python ../scripts/rgb-meanwavs.py
   import seaborn as sns
   import cmasher as cmr
 
-  NMU, NSIG = 200, 200
+  NMU, NSIG = 400, 400
   mu, sig = np.meshgrid(
       np.linspace(0.0, 1.0, NMU),
-      np.linspace(0.0, 1.5, NSIG),
+      np.logspace(-1.5, 1.5, NSIG),
   )
 
   m1 = M1(mu, sig) / M0(mu, sig)
   m2 = M2(mu, sig) / M0(mu, sig)
-
+  m1[m1 < 0.0] = 0.0
   plotfile = "3wav-contours.pdf"
-  fig, ax = plt.subplots(1, 1, figsize=(4, 4))
-  levels = [
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels1 = [
+      0.0, 0.001,
       0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
       0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+      0.999, 1.0,
+  ]
+  levels2 = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.65, 0.66, 0.666, 0.7, 0.8, 0.9, 0.95, 0.99,
   ]
 
-  cmap1 = cmr.get_sub_cmap("cmr.fall", 0.25, 0.75)
-  cmap2 = cmr.get_sub_cmap("cmr.horizon_r", 0.25, 0.75)
-  c1 = ax.contour(
+  cmap1 = cmr.get_sub_cmap("cmr.fall", 0.25, 0.95)
+  cmap2 = cmr.get_sub_cmap("cmr.horizon_r", 0.2, 0.95)
+  c1 = ax.contourf(
       mu, sig, m1,
-      levels=levels,
+      levels=levels1,
       cmap=cmap1,
-      label="m1",
+      alpha=0.8,
   )
   c2 = ax.contour(
       mu, sig, m2,
-      levels=levels,
-      linestyles="dashed",
+      levels=levels2,
+      #linestyles="dashed",
       cmap=cmap2,
       label="m2",
   )
-  ax.clabel(c1, c1.levels[::2], inline=True)
-  ax.clabel(c2, c2.levels[1::2], inline=True)
-
+  #ax.clabel(c1, c1.levels[::2], inline=True, fontsize=6)
+  ax.clabel(c2, c2.levels, inline=True, fontsize=6, inline_spacing=1)
+  fig.colorbar(c1, label=r"$m_1$")
   ax.set(
       xlabel="mu",
       ylabel="sigma",
+      yscale="log",
   )
 
   sns.despine()
@@ -593,34 +640,55 @@ For this we can use interpolation
   import numpy as np
   from scipy.interpolate import griddata
   sys.path.append("../lib")
+  import three_wav_moments
   from three_wav_moments import M0, M1, M2
   from matplotlib import pyplot as plt
+  import scipy.stats as ss
   import seaborn as sns
   import cmasher as cmr
+
+  #three_wav_moments._PROFILE = ss.cauchy
 
   N = 200
   mu_grid, sig_grid = np.meshgrid(
       np.linspace(0.0, 1.0, N),
-      np.linspace(0.0, 5.0, 5*N),
+      np.concatenate(
+          (np.linspace(0.0, 2.0, N, endpoint=False),
+           np.linspace(2.0, 10.0, N)),
+      ),
   )
+
 
   m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
   m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m1[m1 < 0.0] = 0.0
+  m2[m2 < 0.0] = 0.0
   mask = np.isfinite(m1 * m2)
 
 
   m1_grid, m2_grid = np.meshgrid(
-      np.linspace(0.0, 1.0, 2 * N),
-      np.linspace(0.0, 1.0, 2 * N),
+      np.linspace(0.0, 0.8, 4*N),
+      np.linspace(0.0, 0.8, 4*N),
   )
 
+
+  # Two-dimensional interpolation from (mu, sig) -> (m1, m2) plane
   points = (m1[mask], m2[mask])
   xi = (m1_grid, m2_grid)
-  mu = griddata(points, mu_grid[mask], xi, method="nearest")
-  sig = griddata(points, sig_grid[mask], xi, method="nearest")
+  mu = griddata(points, mu_grid[mask], xi, method="linear")
+  sig = griddata(points, sig_grid[mask], xi, method="linear")
   mu[m1_grid > m2_grid] = np.nan
   sig[m1_grid > m2_grid] = np.nan
   mu[mu >= 1.0] = np.nan
+  sig[mu >= 1.0] = np.nan
+
+
+  # Find upper envelope of m2, which corresponds to mu = 1
+  m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
+  outside = m2_grid > m2_max
+  mu[outside] = np.nan
+  sig[outside] = np.nan
+
 
   plotfile = "3wav-inverse-contours.pdf"
   fig, ax = plt.subplots(1, 1, figsize=(6, 5))
@@ -631,9 +699,11 @@ For this we can use interpolation
 
   cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
   cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  sigmax = 2.0
   c2 = ax.contourf(
-      m1_grid, m2_grid, sig,
-      levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0],
+      m1_grid, m2_grid, np.where(sig > sigmax, sigmax, sig),
+      vmin=0, vmax=sigmax, 
+      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
       #linestyles="dashed",
       cmap=cmap2,
       alpha=0.5,
@@ -644,16 +714,23 @@ For this we can use interpolation
       cmap=cmap1,
       alpha=1.0,
   )
-  fig.colorbar(c2, label=r"$\sigma$")
-  artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
-  labels = [lab.replace("x =", r"\mu =") for lab in labels]
-  ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
-  #ax.clabel(c1, c1.levels, inline=True)
+  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  # labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  ax.clabel(
+      c1,
+      c1.levels[::2],
+      fmt=lambda x: fr"$\mu = {x:.1f}$",
+      inline=True,
+      inline_spacing=2,
+  )
   #ax.clabel(c2, c2.levels, inline=True)
-
+  #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
+  #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
   ax.set(
-      xlabel="m1",
-      ylabel="m2",
+      xlabel=r"$m_1 = (C - A) / (A + B + C)$",
+      ylabel=r"$m_2 = (A + C) / (A + B + C)$",
   )
 
   sns.despine()
