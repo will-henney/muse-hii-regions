@@ -267,7 +267,11 @@
 + 
 +
 **** RGB velocity images in 3 channels for each line
-
+- [ ] I need to compare this against the moment-based velocities that I used earlier and to find out whether it truly is better or not
+  - These are in
+    - [[file:../notebooks/03-01-oiii-moment-maps.py]] etc
+    - [[file:../notebooks/03-02-sii-moment-maps.py]]
+    - 
 ***** Script to grab the channel limits
 #+begin_src sh :results output verbatim
   for RGB in red green blue; do
@@ -304,9 +308,9 @@
 | xxx 8151.3424 | xxx  | 8156.19 |     -1 |    25 |
 |               | xxx  | 8154.94 |     -2 |    35 |
 |               | xxx  | 8153.69 |     -1 |    25 |
-| oi 6363.78    | oi   | 6368.69 |    -15 |    60 |
+| oi 6363.78    | oi   | 6368.69 |    -13 |    60 |
 |               | oi   | 6367.44 |    -25 |   150 |
-|               | oi   | 6366.19 |    -15 |   150 |
+|               | oi   | 6366.19 |    -18 |   150 |
 | ariv 4740.17  | ariv | 4743.72 |    -10 |    70 |
 |               | ariv | 4742.47 |    -15 |    90 |
 |               | ariv | 4741.22 |    -10 |    40 |
@@ -332,6 +336,7 @@
   from astropy.io import fits
   import astropy.units as u
   from astropy.constants import c as light_speed
+  import json
 
   DATADIR = Path.cwd().parent / "data"
   data = {}
@@ -357,6 +362,9 @@
             data[lineid]["fmins"].append(fmin)
             data[lineid]["fmaxs"].append(fmax)
             data[lineid]["filenames"].append(filename)
+
+  with open("rgb-channels-data.json", "w") as f:
+       json.dump(data, f, indent=3)
 
   for lineid, d in data.items():
        # Get list of HDUs, one for each channel
@@ -427,6 +435,10 @@ python ../scripts/rgb-meanwavs.py
 - Things seem consistent wit the majority of the variation being due to brightness variations coupled with a general expansion along the line of sight
   - For instance, there are places where an apparent dust absorption causes the velocity to get bluer, which seems to be because the redder emission from the background layer is blocked
   - But there are other regions where a reduction in brightness is associated with redder velocities, which seems to be due to a gap between foreground blueshifted emission filaments
+- [Cl IV] 8046
+  - [[file:CleanShot 2022-08-28 at 15.01.34.jpg]]
+  - [[file:CleanShot 2022-08-28 at 15.01.34.cleanshot]] editable version
+
 ***** The bias in the 3 channel method and how to overcome it
 
 ****** Theory of 3-wav method
@@ -740,6 +752,114 @@ For this we can use interpolation
 
 #+RESULTS:
 [[file:3wav-inverse-contours.pdf]]
+
+
+******* Apply algorithm to a particular line
+#+begin_src python :return plotfile :results file
+  import sys
+  import json
+  from pathlib import Path
+  import numpy as np
+  from scipy.interpolate import griddata
+  sys.path.append("../lib")
+  import three_wav_moments
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import scipy.stats as ss
+  import seaborn as sns
+  import cmasher as cmr
+  from astropy.io import fits
+
+  lineid = "siii-9069"
+
+  N = 200
+  mu_grid, sig_grid = np.meshgrid(
+      np.linspace(0.0, 1.0, N),
+      np.concatenate(
+          (np.linspace(0.0, 2.0, N, endpoint=False),
+           np.linspace(2.0, 10.0, N)),
+      ),
+  )
+
+
+  m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m1[m1 < 0.0] = 0.0
+  m2[m2 < 0.0] = 0.0
+  mask = np.isfinite(m1 * m2)
+
+
+  m1_grid, m2_grid = np.meshgrid(
+      np.linspace(0.0, 0.8, 4*N),
+      np.linspace(0.0, 0.8, 4*N),
+  )
+
+
+  # Two-dimensional interpolation from (mu, sig) -> (m1, m2) plane
+  points = (m1[mask], m2[mask])
+  xi = (m1_grid, m2_grid)
+  mu = griddata(points, mu_grid[mask], xi, method="linear")
+  sig = griddata(points, sig_grid[mask], xi, method="linear")
+  mu[m1_grid > m2_grid] = np.nan
+  sig[m1_grid > m2_grid] = np.nan
+  mu[mu >= 1.0] = np.nan
+  sig[mu >= 1.0] = np.nan
+
+
+  # Find upper envelope of m2, which corresponds to mu = 1
+  m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
+  outside = m2_grid > m2_max
+  mu[outside] = np.nan
+  sig[outside] = np.nan
+
+
+  plotfile = "3wav-inverse-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
+  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  sigmax = 2.0
+  c2 = ax.contourf(
+      m1_grid, m2_grid, np.where(sig > sigmax, sigmax, sig),
+      vmin=0, vmax=sigmax, 
+      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
+      #linestyles="dashed",
+      cmap=cmap2,
+      alpha=0.5,
+  )
+  c1 = ax.contour(
+      m1_grid, m2_grid, mu,
+      levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      cmap=cmap1,
+      alpha=1.0,
+  )
+  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  # labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  ax.clabel(
+      c1,
+      c1.levels[::2],
+      fmt=lambda x: fr"$\mu = {x:.1f}$",
+      inline=True,
+      inline_spacing=2,
+  )
+  #ax.clabel(c2, c2.levels, inline=True)
+  #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
+  #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
+  ax.set(
+      xlabel=r"$m_1 = (C - A) / (A + B + C)$",
+      ylabel=r"$m_2 = (A + C) / (A + B + C)$",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
 
 **** Ionization potentials
 |      |      eV |   Ryd |
