@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -7,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -306,16 +305,4 @@ ax.set(
 
 # ## Try getting stars from Hubble Source Catalog instead
 #
-# This is based off the notebook example at https://archive.stsci.edu/hst/hsc/help/api/hscv3_smc_api.html
-#
-# But I have taken the HSC API routines and put them in a file.  I had to do a `conda install requests`. 
-
-import sys
-sys.path.append("../lib")
-import hubble_source_catalog as hsc
-
-target = 'NGC 346'
-ra, dec = hsc.resolve(target)
-print(target, ra, dec)
-
-
+# This is now in a separate notebook: `04-01-ngc-346-hsc-sources.ipynb`

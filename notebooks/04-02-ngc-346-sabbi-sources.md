@@ -1,12 +1,13 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -463,8 +464,8 @@ for data in subclusters:
         fontweight="black",
         transform=ax.get_transform("world"),
     )
-
 ```
+
 
 ```python
 fig = plt.figure(figsize=(20, 20))
@@ -1063,10 +1064,10 @@ ax.set(
 fig.tight_layout()
 fig.savefig("../figs/ngc-346-star-map-zoom-B.pdf")
 ```
-
 ```python
 
 ```
+
 
 ```python
 dx, dy = 100, 100

@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -112,8 +112,8 @@ core_ha = (
     cube2.select_lambda(6560.0, 6572.0)
     - cont
 ).sum(axis=0)
+# -
 
-# +
 fig, axes = plt.subplots(
     2, 2, 
     sharex=True,
@@ -845,15 +845,12 @@ ax.set(
     yscale="log",
 )
 sns.despine();
+# -
 
-# +
 bg_b = cube2.select_lambda(b1, b2).mean(axis=0)
 bg_r = cube2.select_lambda(r1, r2).mean(axis=0)
 bg_6300 = 0.5*(bg_b + bg_r)
 wide_6300 = cube2.select_lambda(b1, r2) - bg_6300
-
-
-# -
 
 s1, s2 = 6311, 6321
 fig, ax = plt.subplots()
@@ -898,15 +895,12 @@ ax.set(
     yscale="log",
 )
 sns.despine();
+# -
 
-# +
 bg_b = cube2.select_lambda(b1, b2).mean(axis=0)
 bg_r = cube2.select_lambda(r1, r2).mean(axis=0)
 bg_6363 = 0.5*(bg_b + bg_r)
 wide_6363 = cube2.select_lambda(b1, r2) - bg_6363
-
-
-# -
 
 s1, s2 = 6345, 6355
 fig, ax = plt.subplots()

@@ -1,12 +1,13 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -107,8 +108,8 @@ class IRim:
         
     def __repr__(self):
         return f"IRim({self.label}, {self.wav})"
-
 ```
+
 
 ```python
 irdata = {}

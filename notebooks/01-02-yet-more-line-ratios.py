@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -342,7 +342,9 @@ f"He++/H+ = {10**(8.30 - 12.0):.3e}; He++/He+ = {10**(8.30 - 10.915):.3e}"
 
 # In the bow shock I measure 4686 / 4861 = 0.015 or so, which would be 1.5 on a scale of Hβ = 100.  Mabel's Table 2 gives 0.24, which is 6 times less. This is consistent with the general value we find away from the bow's inner edge. 
 #
-# So, I can work out my own He++/H+ abundance: 
+# So, I can work out my own He++/H+ abundance:
+
+#
 
 y_heiii_hii = 0.015 / (e4686 / e4861)
 y_heiii_heii = y_heiii_hii / 0.08167471

@@ -1,12 +1,13 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -160,8 +161,8 @@ raman_r.plot(
 #    colorbar="v",
 )
 
-
 ```
+
 
 ```python
 fig, axes = plt.subplots(
@@ -217,8 +218,8 @@ axes[0, 0].set(
     xlim=[50, 150],
     ylim=[110, 210],
 );
-
 ```
+
 
 ```python
 m = 3
@@ -574,7 +575,6 @@ ax.set(
     ylim=[None, None],
 );
 ```
-
 ```python
 
 ```
@@ -586,6 +586,7 @@ ax.set(
 ```python
 
 ```
+
 
 ```python
 fig, ax = plt.subplots(figsize=(12, 12))
@@ -779,8 +780,8 @@ fig.savefig(
 );
 
 
-
 ```
+
 
 ```python
 fig, ax = plt.subplots(figsize=(8, 8))
@@ -908,8 +909,6 @@ bg_b = cube2.select_lambda(b1, b2).mean(axis=0)
 bg_r = cube2.select_lambda(r1, r2).mean(axis=0)
 bg_6300 = 0.5*(bg_b + bg_r)
 wide_6300 = cube2.select_lambda(b1, r2) - bg_6300
-
-
 ```
 
 ```python
@@ -967,8 +966,6 @@ bg_b = cube2.select_lambda(b1, b2).mean(axis=0)
 bg_r = cube2.select_lambda(r1, r2).mean(axis=0)
 bg_6363 = 0.5*(bg_b + bg_r)
 wide_6363 = cube2.select_lambda(b1, r2) - bg_6363
-
-
 ```
 
 ```python

@@ -1,12 +1,13 @@
 ---
 jupyter:
   jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
     formats: ipynb,py:light,md
     text_representation:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -211,8 +212,8 @@ wavranges = [
     (5120, 5145), (5220, 5260), (5330, 5390), (5450, 5510),
     (5700, 5850), (5950, 5980),
 ]
-
 ```
+
 
 ```python
 fig, ax = plt.subplots(

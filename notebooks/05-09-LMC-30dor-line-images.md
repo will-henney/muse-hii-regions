@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -650,8 +650,8 @@ So there is slight evidence for an excess of C II over Ha on the inside rim, but
 ```python
 im5538 = Image(p("cliii-5538"))
 im5517 = Image(p("cliii-5517"))
-
 ```
+
 
 ```python
 r_cliii_den = (im5538 / im5517)

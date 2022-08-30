@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -169,8 +169,6 @@ axes[2, 0].set_title("[He I 5876")
     vmax=300,
 )
 axes[2, 1].set_title("Si II 5979")
-
-
 ```
 
 ## Now do the other fields

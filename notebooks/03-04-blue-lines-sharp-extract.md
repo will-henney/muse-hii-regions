@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -279,8 +279,8 @@ mboxes = {
         iymin=195, iymax=210, ixmin=155, ixmax=195,
     ),
 }
-
 ```
+
 
 ```python
 yslice, xslice = mboxes["bow shock"].slices
@@ -474,8 +474,8 @@ moments.save_moments_to_fits(
 )
 ```
 
-## Extract [Ar IV] line
 ```python
+# ## Extract [Ar IV] line
 mom4740 = moments.find_moments(
     mcsubcube.select_lambda(4740, 4746)
 )
@@ -733,8 +733,8 @@ core_4861[:, 300, 60].plot()
 core_4861[:, 10, 300].plot()
 core_4861[:, 150, 150].plot()
 core_4861[:, 260, 160].plot()
+# I am following the same procedure as with the [O I] lines, but with criteria similar to H alpha. 
 ```
-I am following the same procedure as with the [O I] lines, but with criteria similar to H alpha. 
 
 ```python
 msky = (imap.data < -4000) & (imap.data > -5000) & (bg_4861.data < 1000)

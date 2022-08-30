@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -355,8 +355,6 @@ def brightness(r, dr, e, nb):
     rgrid[rgrid <= bgrid] = np.nan
     sb = 2 * np.nansum(egrid * rgrid * drgrid / (drgrid + np.sqrt(rgrid**2 - bgrid**2)), axis=0)
     return b, sb
-        
-    
 ```
 
 ```python
@@ -416,7 +414,7 @@ axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
 sns.despine()
 fig.tight_layout();
 ```
-
 ```python
 
 ```
+

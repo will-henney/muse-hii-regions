@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -139,8 +139,8 @@ _files = write_subcubes(
     "lmc-30dor-B",
 )
 print(_files)
-
 ```
+
 
 That was even faster: 30 seconds.
 

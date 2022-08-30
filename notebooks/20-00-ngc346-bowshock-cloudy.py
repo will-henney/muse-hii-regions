@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -312,7 +312,6 @@ fig.tight_layout();
 # S(b) = 2 \int_b^\infty j(r) \, \frac{r}{(r^2 - b^2)^{1/2}} \, dr
 # $$
 
-# +
 nb = 200
 def brightness(r, dr, e, nb):
     b = np.linspace(0.0, r.max(), nb)
@@ -327,9 +326,7 @@ def brightness(r, dr, e, nb):
     rgrid[rgrid <= bgrid] = np.nan
     sb = 2 * np.nansum(egrid * rgrid * drgrid / (drgrid + np.sqrt(rgrid**2 - bgrid**2)), axis=0)
     return b, sb
-        
-    
-# -
+
 
 m = m8
 r = m.data["rad"]["radius"]

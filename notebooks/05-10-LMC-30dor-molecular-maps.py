@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -304,7 +304,7 @@ for line_id, dbdict in [["13co", data_13co], ["12co", data_12co]]:
             MUSE_DATAPATH / f"lmc-30dor-ABCD-{line_id}-21-reproject-{label}.fits", 
             overwrite=True,
         )
-                 
+
 
 # ### Do something with the spectra.
 

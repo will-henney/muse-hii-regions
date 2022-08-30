@@ -90,11 +90,11 @@ just subtract it from =im_ha=.
 #+begin_src python
   fig, ax = plt.subplots(figsize=(10, 10))
   im_ha_bgsub.plot(
-      use_wcs=True, 
+      use_wcs=True,
       vmin=-2.0e4,
       vmax=1.0e5,
-      cmap="gray_r", 
-      scale="linear", 
+      cmap="gray_r",
+      scale="linear",
       colorbar="v",
   );
 #+end_src
@@ -125,9 +125,9 @@ Strangely, though, the brightnesses go negative
   fig, ax = plt.subplots(figsize=(10, 10))
   im_ha_ew.plot(
       vmin=-10.0, vmax=10.0,
-      use_wcs=True, 
-      cmap="gray_r", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
       colorbar="v",
   );
 #+end_src
@@ -198,7 +198,7 @@ Subtract to isolate the two lines
   ).sum(axis=0) - im_sii16_00
 
   im_sii31_bgsub = (
-      cube.select_lambda(6730.0, 6740.0) 
+      cube.select_lambda(6730.0, 6740.0)
       - (im_c6731 - im_c6731_00)
   ).sum(axis=0)  - im_sii31_00
 #+end_src
@@ -208,9 +208,9 @@ Subtract to isolate the two lines
   (im_sii16_bgsub + im_sii31_bgsub).plot(
       vmin=0.0,
       vmax=20000.0,
-      use_wcs=True, 
-      cmap="magma", 
-      scale="sqrt", 
+      use_wcs=True,
+      cmap="magma",
+      scale="sqrt",
       colorbar="v",
   )
   fig.axes[0].set_title(
@@ -234,8 +234,8 @@ pandas and seaborn and plot some correlations:
   df = pd.DataFrame(
       {
           "6716": im_sii16_bgsub.data[m],
-          "6731": im_sii31_bgsub.data[m], 
-      }    
+          "6731": im_sii31_bgsub.data[m],
+      }
   )
 #+end_src
 
@@ -248,7 +248,7 @@ is, bad. Whereas I want a mask =m= for where the data are good, which is
 why I had to invert it: =~im_ha.mask=
 
 #+begin_src python
-  g = sns.pairplot(df, 
+  g = sns.pairplot(df,
                    kind="hist", height=4, corner=True,
                   )
   g.axes[1, 0].axvline(0.0, color="r")
@@ -270,10 +270,10 @@ side.
   df = pd.DataFrame(
       {
           "6716": im_sii16_bgsub.data[m] + 120,
-          "6731": im_sii31_bgsub.data[m] + 120/1.45 + 165, 
-      }    
+          "6731": im_sii31_bgsub.data[m] + 120/1.45 + 165,
+      }
   )
-  g = sns.pairplot(df, 
+  g = sns.pairplot(df,
                    kind="hist", height=4, corner=True,
                   )
   g.axes[1, 0].axvline(0.0, color="r")
@@ -292,9 +292,9 @@ side.
   (im_sii16_bgsub / im_sii31_bgsub).plot(
       vmin=0.8,
       vmax=1.5,
-      use_wcs=True, 
-      cmap="rocket", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="rocket",
+      scale="linear",
       colorbar="v",
   )
   fig.axes[0].set_title(
@@ -319,19 +319,19 @@ We will now investigate that indetail via the histograms.
   df = pd.DataFrame(
       {
           "log10 6716": np.log10(im_sii16_bgsub.data[m]),
-          "log10 6731": np.log10(im_sii31_bgsub.data[m]), 
-      }    
+          "log10 6731": np.log10(im_sii31_bgsub.data[m]),
+      }
   )
-  g = sns.pairplot(df, 
+  g = sns.pairplot(df,
                    kind="hist", height=4, corner=True,
                   )
   g.axes[1, 0].plot(
       np.log10([min_bright, max_bright]),
-      np.log10([min_bright/1.45, max_bright/1.45]), 
+      np.log10([min_bright/1.45, max_bright/1.45]),
       "--", color="r", label="1.45")
   g.axes[1, 0].plot(
       np.log10([min_bright, max_bright]),
-      np.log10([min_bright/0.45, max_bright/0.45]), 
+      np.log10([min_bright/0.45, max_bright/0.45]),
       ":", color="r", label="0.45")
   g.axes[1, 0].legend()
   g.fig.suptitle("High end of 6716 and 6731 brightness distributions");
@@ -362,10 +362,10 @@ near the high-density limit.
   df = pd.DataFrame(
       {
           "log10 (6716 + 6731)": np.log10(sum_sii[m]),
-          "ratio 6716/6731": r_sii[m], 
-      }    
+          "ratio 6716/6731": r_sii[m],
+      }
   )
-  g = sns.pairplot(df, 
+  g = sns.pairplot(df,
                    kind="hist", height=4, corner=True,
                   )
   g.axes[1, 0].axhline(1.45, ls="--", color="r")
@@ -426,9 +426,9 @@ but it is very close to the low-density limit.
   ((im_sii16_bgsub - 450) / im_sii31_bgsub).plot(
       vmin=0.9,
       vmax=1.5,
-      use_wcs=True, 
-      cmap="rocket", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="rocket",
+      scale="linear",
       colorbar="v",
   )
   fig.axes[0].set_title(
@@ -494,9 +494,9 @@ but it is very close to the low-density limit.
   im_siii9069_bgsub.plot(
       vmin=0.0,
       vmax=10000.0,
-      use_wcs=True, 
-      cmap="gray_r", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
       colorbar="v",
   );
 #+end_src
@@ -506,9 +506,9 @@ but it is very close to the low-density limit.
   (im_siii6312_bgsub / im_siii9069_bgsub).plot(
       vmin=0.0,
       vmax=0.1,
-      use_wcs=True, 
-      cmap="gray_r", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
       colorbar="v",
   );
 #+end_src
@@ -518,9 +518,9 @@ but it is very close to the low-density limit.
   (im_siii9069_bgsub / im_sii31_bgsub).plot(
       vmin=0.0,
       vmax=12.0,
-      use_wcs=True, 
-      cmap="gray_r", 
-      scale="linear", 
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
       colorbar="v",
   )
   ax = fig.axes[0]

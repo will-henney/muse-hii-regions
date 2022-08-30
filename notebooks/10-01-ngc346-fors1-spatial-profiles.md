@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.11.1
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -748,8 +748,8 @@ dengrid = np.linspace(1.0, 5000.0, 1000)[::-1]
 e4711d = ar4.getEmissivity(tem=14500, den=dengrid, wave=4711)
 e4740d = ar4.getEmissivity(tem=14500, den=dengrid, wave=4740)
 R1grid = e4711d / e4740d
-
 ```
+
 
 ```python
 den_R1 = unc.Distribution(np.interp(R1.distribution, R1grid, dengrid))
@@ -761,8 +761,8 @@ R1
 
 ```python
 print(f"n_e([Ar IV] R1) = {den_R1.pdf_mean():.4f} +/- {den_R1.pdf_std():.4f}")
-
 ```
+
 
 ```python
 fig, ax = plt.subplots(figsize=(7, 5))
@@ -799,10 +799,10 @@ fig, ax = plt.subplots()
 ax.plot(prof4711 / prof4740)
 ax.plot((prof4711 + prof4740) / 400)
 ```
-
 ```python
 
 ```
+
 
 ## More graphs
 

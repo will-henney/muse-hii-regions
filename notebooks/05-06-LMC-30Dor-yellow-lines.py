@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.14.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -117,7 +117,6 @@ ax.set(ylim=[0, 800])
 
 # ### Look at some line images
 
-# +
 fig, axes = plt.subplots(3, 2, figsize=(12, 18), sharex=True, sharey=True)
 (cubeA - contA).select_lambda(5517, 5527).sum(axis=0).plot(
     ax=axes[0, 0],
@@ -155,9 +154,6 @@ axes[2, 0].set_title("[He I 5876")
     vmax=300,
 )
 axes[2, 1].set_title("Si II 5979")
-
-
-# -
 
 # ## Now do the other fields
 
