@@ -1,0 +1,537 @@
+* Extracting subregions from a MUSE cube
+  :PROPERTIES:
+  :CUSTOM_ID: extracting-subregions-from-a-muse-cube
+  :END:
+I want to learn how to extract regions along the spatial and wavelength
+axes and manipulate them to do things continuum subtraction.
+
+#+begin_src python
+  from pathlib import Path
+  import numpy as np
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  from mpdaf.obj import Cube
+#+end_src
+
+#+begin_src python
+  datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
+  fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
+  cube = Cube(str(fitsfilepath))
+  cube.info()
+#+end_src
+
+** Extracting wavelength slices
+   :PROPERTIES:
+   :CUSTOM_ID: extracting-wavelength-slices
+   :END:
+We make a summed spectrum of the entire field again, just like in the
+previous notebook.
+
+#+begin_src python
+  sp0 = cube.sum(axis=(1, 2))
+#+end_src
+
+Now, we take a look at the region around the H alpha line. The
+=Spectrum.subspec= method allows us to use Å instead of pixels.
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 4))
+  sp0.subspec(6520.0, 6620.0).plot()
+  ax.set(yscale="log");
+#+end_src
+
+This shows that a good range for extracting Ha would be 6560 to 6575 Å.
+So, we just do a simple-minded sum of that range. For some reason, the
+equivalent of =Spectrum.subspec= for a =Cube= has a different name,
+=Cube.select_lambda=:
+
+#+begin_src python
+  im_ha = cube.select_lambda(6560.0, 6575.0).sum(axis=0)
+#+end_src
+
+And we have a look at it:
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  im_ha.plot(use_wcs=True, cmap="gray_r", scale="log", colorbar="v");
+#+end_src
+
+So, that looks good, but it includes the continuum. A very simple-minded
+way of removing the continuum would just be to take an average value in
+line-free wavelength ranges.
+
+We can use 6555-60 and 6575-80:
+
+#+begin_src python
+  im_blue_cont = cube.select_lambda(6555.0, 6560.0).mean(axis=0)
+  im_red_cont = cube.select_lambda(6575.0, 6580.0).mean(axis=0)
+  im_mean_cont = (im_blue_cont + im_red_cont) / 2.0
+#+end_src
+
+So we have a map of the average continuum from the red and blue sides of
+the line, which we will now visualize:
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  im_mean_cont.plot(use_wcs=True, cmap="gray_r", scale="log", colorbar="v");
+#+end_src
+
+Now I subtract the average continuum level before summing again to find
+the BG-subtracted line map. We have to do it this way because
+=im_mean_cont= still has the per-Å units since it is a mean, so we can't
+just subtract it from =im_ha=.
+
+#+begin_src python
+  im_ha_bgsub = (
+      cube.select_lambda(6560.0, 6575.0) - im_mean_cont
+  ).sum(axis=0)
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  im_ha_bgsub.plot(
+      use_wcs=True,
+      vmin=-2.0e4,
+      vmax=1.0e5,
+      cmap="gray_r",
+      scale="linear",
+      colorbar="v",
+  );
+#+end_src
+
+So. now we can see beautiful details of the Hα emission. There are
+chains of globules and elephant-trunk structures that cross the nebula.
+These are physically quite large -- about 2 arcsec, which is about 0.5
+parsec. The entire field is about 15 pc square.
+
+The white dots are presumably from the underlying photospheric
+absorption from some of the stars. Other stars are seen in emission.
+
+Strangely, though, the brightnesses go negative
+
+#+begin_src python
+  im_ha.data.min()
+#+end_src
+
+#+begin_src python
+  im_mean_cont.data.min()
+#+end_src
+
+#+begin_src python
+  im_ha_ew = (im_ha_bgsub - im_ha.data.min()) / (im_mean_cont - im_mean_cont.data.min())
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  im_ha_ew.plot(
+      vmin=-10.0, vmax=10.0,
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
+      colorbar="v",
+  );
+#+end_src
+
+** Look at different emission lines and calculate some ratios
+   :PROPERTIES:
+   :CUSTOM_ID: look-at-different-emission-lines-and-calculate-some-ratios
+   :END:
+#+begin_src python
+  sns.set_context("talk")
+#+end_src
+
+The previous setting for seaborn makes the graph labels more readable.
+
+*** The density-sensitive [S II] doublet at 6716, 6731 Å
+    :PROPERTIES:
+    :CUSTOM_ID: the-density-sensitive-s-ii-doublet-at-6716-6731-å
+    :END:
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 4))
+  sp0.subspec(6700.0, 6750.0).plot(ax=ax, linewidth=2)
+  ax.set(
+      yscale="log",
+      title="[S II] red lines",
+  )
+  sns.despine();
+#+end_src
+
+Find background continuum values.
+
+#+begin_src python
+  im_c1 = cube.select_lambda(6710.0, 6715.0).mean(axis=0)
+  im_c2 = cube.select_lambda(6725.0, 6730.0).mean(axis=0)
+  im_c6716 = (im_c1 + im_c2) / 2.0
+  im_c3 = cube.select_lambda(6740.0, 6745.0).mean(axis=0)
+  im_c6731 = (im_c3 + im_c2) / 2.0
+#+end_src
+
+The following is a hack to try and resolve the negative intensity
+problem. I subtract the minimum value (which is negative) from each map.
+The reason that it is a hack is that we have no way of knowing if the
+minimum value /is/ the true zero point of the data. It seems to work OK
+for the [S II] lines, but less well for other lines, as we will see
+below.
+
+#+begin_src python
+  im_c6716_00 = im_c6716.data.min()
+  im_c6731_00 = im_c6731.data.min()
+  im_sii16_00 = (cube
+                 .select_lambda(6715.0, 6725.0)
+                 .sum(axis=0)
+                 .data.min()
+                )
+  im_sii31_00 = (cube
+                 .select_lambda(6730.0, 6740.0)
+                 .sum(axis=0)
+                 .data.min()
+                )
+  im_c6716_00, im_c6731_00, im_sii16_00, im_sii31_00
+#+end_src
+
+Subtract to isolate the two lines
+
+#+begin_src python
+  im_sii16_bgsub = (
+      cube.select_lambda(6715.0, 6725.0)
+      - (im_c6716 - im_c6716_00)
+  ).sum(axis=0) - im_sii16_00
+
+  im_sii31_bgsub = (
+      cube.select_lambda(6730.0, 6740.0)
+      - (im_c6731 - im_c6731_00)
+  ).sum(axis=0)  - im_sii31_00
+#+end_src
+
+#+begin_src python
+  fig = plt.figure(figsize=(10, 10))
+  (im_sii16_bgsub + im_sii31_bgsub).plot(
+      vmin=0.0,
+      vmax=20000.0,
+      use_wcs=True,
+      cmap="magma",
+      scale="sqrt",
+      colorbar="v",
+  )
+  fig.axes[0].set_title(
+      label="[S II] 6716 + 6731 brightness",
+      pad=25,
+      fontsize="large",
+  );
+#+end_src
+
+Drastic measures are called for to sort this out. We will break out
+pandas and seaborn and plot some correlations:
+
+#+begin_src python
+  import pandas as pd
+  sns.set_color_codes()
+#+end_src
+
+#+begin_src python
+  m = im_sii31_bgsub.data + im_sii16_bgsub.data < 20000.0
+  m = m & ~im_ha.mask
+  df = pd.DataFrame(
+      {
+          "6716": im_sii16_bgsub.data[m],
+          "6731": im_sii31_bgsub.data[m],
+      }
+  )
+#+end_src
+
+We have made a dataframe with two columns, one for 6716 and one for
+6731. We select only those up to a certain brightness, and eliminate the
+pixels around the border where there is no data. Somehow, most of our
+images have lost their mask at this point, but =im_ha= still has it. We
+have to remember that the mask is True when the data /are/ masked, that
+is, bad. Whereas I want a mask =m= for where the data are good, which is
+why I had to invert it: =~im_ha.mask=
+
+#+begin_src python
+  g = sns.pairplot(df,
+                   kind="hist", height=4, corner=True,
+                  )
+  g.axes[1, 0].axvline(0.0, color="r")
+  g.axes[1, 0].axhline(0.0, color="r")
+  g.axes[1, 0].plot([0, 1e4], [0, 1e4/1.45], "--", color="r")
+  g.fig.suptitle("Correlation between 6716 and 6731 brightness");
+#+end_src
+
+I am plotting a corner plot with the histograms of the two brightnesses
+plus the joint correlation. We can see that the relation is closely
+linear at low brightness, but does not quite pass through the origin as
+it should. And also, both histograms stray slightly onto the negative
+side.
+
+#+begin_src python
+  max_bright = 1000.0
+  m = im_sii31_bgsub.data + im_sii16_bgsub.data < 2*max_bright
+  m = m & ~im_ha.mask
+  df = pd.DataFrame(
+      {
+          "6716": im_sii16_bgsub.data[m] + 120,
+          "6731": im_sii31_bgsub.data[m] + 120/1.45 + 165,
+      }
+  )
+  g = sns.pairplot(df,
+                   kind="hist", height=4, corner=True,
+                  )
+  g.axes[1, 0].axvline(0.0, color="r")
+  g.axes[1, 0].axhline(0.0, color="r")
+  g.axes[1, 0].plot([0, max_bright], [0, max_bright/1.45], "--", color="r")
+  g.fig.suptitle("Correction to 6716 and 6731 brightnesses");
+#+end_src
+
+#+begin_src python
+  im_sii16_bgsub += 120
+  im_sii31_bgsub += 120/1.45 + 165
+#+end_src
+
+#+begin_src python
+  fig = plt.figure(figsize=(10, 10))
+  (im_sii16_bgsub / im_sii31_bgsub).plot(
+      vmin=0.8,
+      vmax=1.5,
+      use_wcs=True,
+      cmap="rocket",
+      scale="linear",
+      colorbar="v",
+  )
+  fig.axes[0].set_title(
+      label="[S II] 6716 / 6731 ratio",
+      pad=25,
+      fontsize="large",
+  );
+#+end_src
+
+So, there is quite a lot of apparent density variation. The density
+seems to be positively correlated with surface brightness, which is to
+be expected on physical grounds.
+
+We will now investigate that indetail via the histograms.
+
+#+begin_src python
+  max_bright = 5e4
+  min_bright = 100.0
+  m = im_sii31_bgsub.data + im_sii16_bgsub.data < 2*max_bright
+  m = m & (im_sii31_bgsub.data + im_sii16_bgsub.data > 2*min_bright)
+  m = m & ~im_ha.mask
+  df = pd.DataFrame(
+      {
+          "log10 6716": np.log10(im_sii16_bgsub.data[m]),
+          "log10 6731": np.log10(im_sii31_bgsub.data[m]),
+      }
+  )
+  g = sns.pairplot(df,
+                   kind="hist", height=4, corner=True,
+                  )
+  g.axes[1, 0].plot(
+      np.log10([min_bright, max_bright]),
+      np.log10([min_bright/1.45, max_bright/1.45]),
+      "--", color="r", label="1.45")
+  g.axes[1, 0].plot(
+      np.log10([min_bright, max_bright]),
+      np.log10([min_bright/0.45, max_bright/0.45]),
+      ":", color="r", label="0.45")
+  g.axes[1, 0].legend()
+  g.fig.suptitle("High end of 6716 and 6731 brightness distributions");
+#+end_src
+
+So, here we are looking at the bright end of the distributions on a
+logarithmic scale from 100 to 100,000 in summed brightness of 6716 and
+6731.
+
+The brightness distributions look approximately log-normal and the
+correlation is good across the whole range. There is clear evidence of
+curving away from the low-density limit of the ratio at high brightness.
+The low-density limit is plotted as the red dashed line and the
+high-density limit is the red dotted line. The points never get anywhere
+near the high-density limit.
+
+#+begin_src python
+  max_bright = 1e6
+  min_bright = 100.0
+  sum_sii = im_sii31_bgsub.data + im_sii16_bgsub.data
+  r_sii = im_sii16_bgsub.data / im_sii31_bgsub.data
+
+  m = sum_sii < 2*max_bright
+  m = m & (sum_sii > 2*min_bright)
+  m = m & ~im_ha.mask
+  m = m & np.isfinite(r_sii) & (r_sii > 0.3) & (r_sii < 1.7)
+
+  df = pd.DataFrame(
+      {
+          "log10 (6716 + 6731)": np.log10(sum_sii[m]),
+          "ratio 6716/6731": r_sii[m],
+      }
+  )
+  g = sns.pairplot(df,
+                   kind="hist", height=4, corner=True,
+                  )
+  g.axes[1, 0].axhline(1.45, ls="--", color="r")
+  g.axes[1, 0].axhline(0.45, ls=":", color="r")
+  g.fig.suptitle("[S II] 6716/6731 ratio versus summed brightness");
+#+end_src
+
+Now, we plot the joint distribution of the ratio and the sum. This shows
+more clearly the reduction in ratio at high brightness.
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 5))
+
+  # Partition pixels into 4 groups according to brightness
+  mpart01 = (sum_sii < 1000.0)
+  mpart02 = (sum_sii >= 1000.0) & (sum_sii < 3000.0)
+  mpart03 = (sum_sii >= 3000.0) & (sum_sii < 10000.0)
+  mpart04 = (sum_sii >= 10000.0)
+
+  sns.histplot(
+      {
+          "very faint: <1000": r_sii[m & mpart01],
+          "faint: 1000–3000": r_sii[m & mpart02],
+          "bright: 3000–10000": r_sii[m & mpart03],
+          "very bright: >10000": r_sii[m & mpart04],
+      },
+      cumulative=True,
+      binrange=(0.4,1.8),
+      bins=200,
+      stat="probability",
+      common_norm=False,
+      element="poly",
+      fill=False,
+      alpha=0.8,
+      linewidth=4,
+  )
+  ax.axvline(0.45, ls="--", color="k")
+  ax.axvline(1.45, ls="--", color="k")
+  ax.axhline(0.5, ls=":", color="k");
+  ax.set(
+      xlabel="[S II] ratio: 6716 / 6731",
+      ylabel="CDF",
+      title="Cumulative $n_\mathrm{e}$ distribution, partitioned by [S II] brightness",
+  );
+#+end_src
+
+Finally, we calculate the cumulative distribution of the ratios for four
+different brightness classes.
+
+For the faintest class (blue line), the noise is dominant, which is why
+the distribution is broad and encroaches into the forbidden region
+($R > 1.45$ -- the low-density and high-density limits are shown by
+vertical dashed lines). The median value is a tiny bit less than 1.45,
+but it is very close to the low-density limit.
+
+#+begin_src python
+  fig = plt.figure(figsize=(10, 10))
+  ((im_sii16_bgsub - 450) / im_sii31_bgsub).plot(
+      vmin=0.9,
+      vmax=1.5,
+      use_wcs=True,
+      cmap="rocket",
+      scale="linear",
+      colorbar="v",
+  )
+  fig.axes[0].set_title(
+      label="Zero-point-corrected [S II] 6716 / 6731 ratio",
+      pad=25,
+      fontsize="large",
+  );
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 4))
+  sp0.subspec(5720.0, 5820.0).plot(ax=ax, linewidth=2)
+  ax.set(
+      yscale="log",
+      title="[N II] 5755 Å",
+  )
+  sns.despine();
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 4))
+  sp0.subspec(6270.0, 6390.0).plot(ax=ax, linewidth=2)
+  ax.set(
+      yscale="log",
+      title="[O I] 6300,6363 Å and [S III] 6312 Å",
+  )
+  sns.despine();
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 4))
+  sp0.subspec(9050, 9100).plot(ax=ax, linewidth=2)
+  ax.set(
+      yscale="log",
+      title="[S III] 9069 Å",
+  )
+  sns.despine();
+#+end_src
+
+#+begin_src python
+  im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
+  im_c2 = cube.select_lambda(9065.0, 9070.0).mean(axis=0)
+  im_c3 = cube.select_lambda(9080.0, 9085.0).mean(axis=0)
+  im_c9069 = (im_c3 + im_c2) / 2.0
+#+end_src
+
+#+begin_src python
+  im_siii6312_bgsub = (
+      cube.select_lambda(6310.0, 6320.0) - im_c6312
+  ).sum(axis=0)
+  im_siii9069_bgsub = (
+      cube.select_lambda(9070.0, 9080.0) - im_c9069
+  ).sum(axis=0)
+#+end_src
+
+#+begin_src python
+  im_siii6312_bgsub += 150.0
+  im_siii9069_bgsub -= im_siii9069_bgsub.data.min()
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  im_siii9069_bgsub.plot(
+      vmin=0.0,
+      vmax=10000.0,
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
+      colorbar="v",
+  );
+#+end_src
+
+#+begin_src python
+  fig, ax = plt.subplots(figsize=(10, 10))
+  (im_siii6312_bgsub / im_siii9069_bgsub).plot(
+      vmin=0.0,
+      vmax=0.1,
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
+      colorbar="v",
+  );
+#+end_src
+
+#+begin_src python
+  fig = plt.figure(figsize=(10, 10))
+  (im_siii9069_bgsub / im_sii31_bgsub).plot(
+      vmin=0.0,
+      vmax=12.0,
+      use_wcs=True,
+      cmap="gray_r",
+      scale="linear",
+      colorbar="v",
+  )
+  ax = fig.axes[0]
+  ax.set(
+      title="[S III] 9069 / [S II] 6731",
+  );
+#+end_src
+
+#+begin_src python
+  fig.axes
+#+end_src
+
+#+begin_src python
+#+end_src
