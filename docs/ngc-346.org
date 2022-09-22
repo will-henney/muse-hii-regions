@@ -859,7 +859,7 @@ For this we can use interpolation
   sns.despine()
   fig.tight_layout()
   fig.savefig(plotfile)
-#+end_src
+      #+end_src
 
 **** Ionization potentials
 |      |      eV |   Ryd |
@@ -991,6 +991,19 @@ For this we can use interpolation
 *** Other diagnostic ratios
 - [ ] [Ar III] 5192 is extremely weak, but we can maybe make a measurement of Te
 - [Cl III] lines are too noisy to be useful
+
+
+*** Extraction of Spitzer spectra
+- [2022-09-21 Wed] This is being done by Jesús
+- I have provided him with a DS9 regions file with the following regions that correspond to the same regions that I have used to calculate the optical line excesses below
+  - BS :: Bow Shock
+    - Note that I have moved this a bit to the left to make sure that we include the He II emission zone
+  - MIP :: Medium Ionization Peak
+  - GLOB :: Globule
+  - Each region has its associated BG background region
+- Also I have added a couple of extra regions
+  - YSO :: This is mYSO-C from Rubio et al 2018
+  - FIL :: A clean section of neutral filament in a region where nebula and stellar emission is weak
 *** Look at fractional excess in different features
 - Compare the following
   - medium ionization peak
@@ -1020,8 +1033,8 @@ For this we can use interpolation
 
 
 #+name: emline-excess-table
-| Line             |    MP |   eMP |    BS |   eBS |    BG |   eBG |
-| "[S II]\n6731"   | 0.078 | 0.037 |     0 |     0 | 0.930 | 0.104 |
+| Line             |    MP |   eMP |    BS |   eBS |    BG |   eBG" |
+| [S II]\n6731"   | 0.078 | 0.037 |     0 |     0 | 0.930 | 0.104 |
 | "[S III]\n9069"  | 0.429 | 0.045 | 0.201 | 0.058 | 0.290 | 0.038 |
 | "[Ar III]\n7136" | 0.209 | 0.034 | 0.308 | 0.036 | 0.210 | 0.025 |
 | "H I\n4861"      | 0.135 | 0.039 | 0.363 | 0.026 | 0.217 | 0.027 |
