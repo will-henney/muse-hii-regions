@@ -490,7 +490,7 @@ r.mask = r.mask | (r.data < 0.0) | starmask | (redsum.data < 10.0) | faintmask
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
 
-r.rebin(2).plot(vmin=0, vmax=0.002, cmap="gray_r", scale="linear")
+r.rebin(2).plot(vmin=0, vmax=0.002, cmap="gray_r", scale="linear", cb="v")
 ax.contour(
     hacore.sum(axis=0).rebin(2).data,
     levels=[8e4, 12e4, 16e4, 32e4],

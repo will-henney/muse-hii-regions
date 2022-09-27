@@ -20,11 +20,11 @@
 
 # + pycharm={"name": "#%%\n"}
 from pathlib import Path
-
+import numpy as np
 import regions as rg
 import seaborn as sns
 from matplotlib import pyplot as plt
-from mpdaf.obj import Image
+from mpdaf.obj import Image, Cube
 
 sns.set_context("talk")
 
@@ -110,6 +110,13 @@ axes[2].set_title("mask.multiply()")
 
 # + pycharm={"name": "#%%\n"}
 (slice(None, None),) + slices_large
+
+# + pycharm={"name": "#%%\n"}
+c = Cube(data=np.ones((2, 2, 2)))
+c
+
+# + pycharm={"name": "#%%\n"}
+(c * np.asarray([[1, 0], [0, 0]])).data
 
 # + pycharm={"name": "#%%\n"}
 
