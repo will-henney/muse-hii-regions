@@ -66,57 +66,22 @@ cubeP = Cube(str(data_path / "PeterZeidler" / "DATACUBE_FINAL_fwhm_cor.fits"))
 # + [markdown] pycharm={"name": "#%% md\n"}
 # Also load the standard ESO cube for comparison.
 # The ESO cube needs the astrometry adjusting slightly to align with gaia frame.
-# It is easier to fix that at the FITS header level before the `Cube` is created
+# I originally did this by reading in a file I had made in DS9, but it is easier to just copy the Peter WCS.
 
 # + pycharm={"name": "#%%\n"}
-hdulist = fits.open(data_path / "ADP.2017-10-16T11_04_19.247.fits")
-hdulist.info()
+cubeE = Cube(str(data_path / "ADP.2017-10-16T11_04_19.247.fits"))
 
 # + pycharm={"name": "#%%\n"}
-WCS(hdulist['DATA'].header)
+cubeE.set_wcs(wcs=cubeP.wcs)
+
+# + [markdown] pycharm={"name": "#%% md\n"}
+# The only slight problem is that the data arrays are slightly different shapes. This does not matter so long as the lower left pixel is aligned.
+
+# + pycharm={"name": "#%%\n"}
+cubeE.wcs, cubeP.wcs
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # Read my hand-tweaked WCS that I exported from DS9
-
-# + pycharm={"name": "#%%\n"}
-eso_gaia_hdr = fits.Header(wcsfile.read(small_data_path / "ngc346-muse-deep-3d-gaia.wcs"))
-eso_gaia_hdr
-
-# + [markdown] pycharm={"name": "#%% md\n"}
-# Update the header info in both the `DATA` and `STAT` HDUs
-
-# + pycharm={"name": "#%%\n"}
-hdulist[1].header.update(eso_gaia_hdr)
-hdulist[2].header.update(eso_gaia_hdr)
-
-# + pycharm={"name": "#%%\n"}
-cubeE = Cube(hdulist=hdulist)
-
-# + [markdown] pycharm={"name": "#%% md\n"}
-# Find offset between the two frames
-
-# + pycharm={"name": "#%%\n"}
-(cubeE.wcs.wcs
- .array_index_to_world(0, 0)
- .separation(
-    cubeP.wcs.wcs
-    .array_index_to_world(0, 0)
-).arcsec)
-
-# + [markdown] pycharm={"name": "#%% md\n"}
-# That is about 0.3 pixels,  which should be good enough. On the other hand, maybe it would be better to just copy the Peter WCS to the ESO cube. Another day maybe.
-
-# + pycharm={"name": "#%%\n"}
-cubeE.wave
-
-# + pycharm={"name": "#%%\n"}
-cubeP.wave
-
-# + pycharm={"name": "#%%\n"}
-300000 * (4599.97314453125 - 4599.94482421875) / 4599.97314453125
-
-# + pycharm={"name": "#%%\n"}
-
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # Extract full-cube spectra. This next cell takes several seconds to execute.
@@ -163,7 +128,7 @@ avratio
 # + [markdown] pycharm={"name": "#%% md\n"}
 # ### Split into multiple wavelength sections
 #
-# Choose 12 sections, which means that each section spans about 400 Angstrom.
+# If we choose 12 sections, then each section spans about 400 Angstrom.
 
 # + pycharm={"name": "#%%\n"}
 def split_spectrum(spec, n_sections):
@@ -205,15 +170,23 @@ fig.tight_layout()
 # The Peter cube is also higher at the position of real nebula lines, such as H beta and [O III].  In these cases, I think it is not true night sky emission, but is rather the outer parts of the nebula that are being picked up. These are over-subtracted in the ESO cube, resulting in the lines being apparently seen in absorption in fainter spaxels of the cube,  The Peter cube does not have this problem.
 
 # + [markdown] pycharm={"name": "#%% md\n"}
-# Next, we look at the ratio of the two cubes, zooming in on the range +/-20% so we can see the weak night sky lines and atmospheric absorption.
+# Next, we look on a linear scale at the two cubes after normalizing by the median in each spectral interval.  We zoom in on the range +/-20% so we can see the weak night sky lines and atmospheric absorption.
 
 # + pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(n_sections, 1, figsize=(12,  2 * n_sections))
 for section_P, section_E, ax in zip(spec_sections_P, spec_sections_E,  axes):
-    (section_P / section_E ).plot(ax=ax)
+    (section_P / np.median(section_P.data) ).plot(ax=ax, label='Peter')
+    (section_E / np.median(section_E.data) ).plot(ax=ax, label='ESO')
+    # Put a finer wavelength grid with lines every 10 AA
+    ax.minorticks_on()
+    ax.grid(which='minor', axis='x', color='y', lw=0.5, alpha=0.5)
     ax.set(ylim=[0.8, 1.2], ylabel="", xlabel="")
-axes[0].set_title("Ratio: Peter / ESO")
+axes[0].set_title("Peter cube versus ESO cube: summed spectrum")
+axes[0].legend()
 fig.tight_layout()
+
+# + pycharm={"name": "#%%\n"}
+fig.savefig('peter-eso-comparison-spectra-full-cube.pdf')
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # We see a lot of weak absorption features with EW of less than an Angstrom. Also, lots of emission lines. In most sections, it is possible to distinguish the two, but at longer wavelengths this is more difficult.
@@ -380,6 +353,7 @@ mask_stars_E = ha_frac_E.data < 0.04
 
 # + pycharm={"name": "#%%\n"}
 mask_yso_P = region_dict['YSO'].to_pixel(ha_map_P.wcs.wcs).to_mask().to_image(ha_map_P.data.shape).astype(bool)
+mask_yso_E = region_dict['YSO'].to_pixel(ha_map_E.wcs.wcs).to_mask().to_image(ha_map_E.data.shape).astype(bool)
 mask_yso_P
 
 # + [markdown] pycharm={"name": "#%% md\n"}
@@ -399,13 +373,52 @@ spec_mean_P_stars = cube_P_stars.mean(axis=(1, 2))
 
 # + pycharm={"name": "#%%\n"}
 cube_E_neb = cubeE.copy()
-cube_E_neb.mask = cube_E_neb.mask | mask_stars_E
+cube_E_neb.mask = cube_E_neb.mask | mask_stars_E | mask_yso_E
 spec_mean_E_neb = cube_E_neb.mean(axis=(1, 2))
 
 # + pycharm={"name": "#%%\n"}
 cube_E_stars = cubeE.copy()
 cube_E_stars.mask = cube_E_stars.mask | (~mask_stars_E)
 spec_mean_E_stars = cube_E_stars.mean(axis=(1, 2))
+
+# + [markdown] pycharm={"name": "#%% md\n"}
+# Now repeat the graphs that compare Peter with ESO, but this time for the nebula and stars separately
+
+# + pycharm={"name": "#%%\n"}
+fig, axes = plt.subplots(n_sections, 1, figsize=(12,  2 * n_sections))
+for section_P, section_E, ax in zip(
+        [spec_mean_P_neb.subspec(w0, w0 + d_wave) for w0 in start_waves],
+        [avratio * spec_mean_E_neb.subspec(w0, w0 + d_wave) for w0 in start_waves],
+        axes
+):
+    (section_P / np.median(section_P.data) ).plot(ax=ax, label='Peter')
+    (section_E / np.median(section_E.data) ).plot(ax=ax, label='ESO')
+    # Put a finer wavelength grid with lines every 10 AA
+    ax.minorticks_on()
+    ax.grid(which='minor', axis='x', color='y', lw=0.5, alpha=0.5)
+    ax.set(ylim=[0.8, 1.2], ylabel="", xlabel="")
+axes[0].set_title("Peter cube versus ESO cube: Nebular spectrum")
+axes[0].legend()
+fig.tight_layout()
+fig.savefig('peter-eso-comparison-spectra-nebula-mean.pdf')
+
+# + pycharm={"name": "#%%\n"}
+fig, axes = plt.subplots(n_sections, 1, figsize=(12,  2 * n_sections))
+for section_P, section_E, ax in zip(
+        [spec_mean_P_stars.subspec(w0, w0 + d_wave) for w0 in start_waves],
+        [avratio * spec_mean_E_stars.subspec(w0, w0 + d_wave) for w0 in start_waves],
+        axes
+):
+    (section_P / np.median(section_P.data) ).plot(ax=ax, label='Peter')
+    (section_E / np.median(section_E.data) ).plot(ax=ax, label='ESO')
+    # Put a finer wavelength grid with lines every 10 AA
+    ax.minorticks_on()
+    ax.grid(which='minor', axis='x', color='y', lw=0.5, alpha=0.5)
+    ax.set(ylim=[0.8, 1.2], ylabel="", xlabel="")
+axes[0].set_title("Peter cube versus ESO cube: Star spectrum")
+axes[0].legend()
+fig.tight_layout()
+fig.savefig('peter-eso-comparison-spectra-star-mean.pdf')
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # ### Test the function for obtaining 1D spectrum from region
