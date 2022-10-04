@@ -1600,12 +1600,12 @@ From the analysis of the
       - perhaps 8038 is from same multiplet, in which case it can be removed
       - In 30 Dor there is no sign of this line at all
     - More from the 7800-8200 range
-      - 7802, 7838, 7891, 7959, 7997 weak, 8009, 8039, 8069 super weak, 8083, 8151 strong, 8193 weak
+      - 7802, 7838, 7848 anf 7863 both weak with sky contam, 7891, 7926 super weak, 7959, 7997 super weak, 8009, 8017 super weak, 8039, 8069 super weak, 8083, 8151 strong, 8193 weak
       - Fourth one could be [Fe I] 7959.0029 
         - 3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 3
         - Same multiplet as 8151 (2-2) and 7709 (4-2)
         - But why is 7964 (3-2) missing?
-    - Comparison with 30 Dor
+    - Comparison with 30 Dor 
       - The 8083 line seems there, BUT at 8083.5 and it traces ionized gas
         - It is next to a much stronger sky line
       - Another line at 8034.5 (observed 8041.24) is also ionized and might correspond to the 8039 line, but the wavelength does not seem right
@@ -1614,24 +1614,45 @@ From the analysis of the
     - 6750-7800
       - 7463.5, 7238.5,
         - Second one might be [V I] 7238.64
+          - Overlaps with C II 7236.42
         - First one might be [Ni I] 7464.367 except wavelength is not close enough
-      - very weak: 7195, 7179, 7144, 7111, 7106
+      - 7221 extremely weak
+      - very weak: 7195, 7179, 7144 (broad), 7111, 7106
         - Second one could be Fe I 7179.9948
           - 3d7.(4F).4s-3d6.(5D).4s.4p.(3Po)
           - a3F-z5Do
           - 4 - 4
           - A = 8.463e+02 /s, which is largest for its multiplet
-      - 7092.5, 7057.5 very weak
+      - 7092.5 (blend with red wing), 7057.5 very weak
       - 7044
         - not a deep neutral line, but a very weird distribution
       - 7039 very weak
-        - looks like a neutral fluorescence line
+        - looks like a neutral fluorescence line (except not seen from YSO)
       - 7011 very weak
       - 7002 very weak except for YSO
         - clearly is O I 7001.92
-      - 7791, 7782, 7768, 7741 weak
-      - 7663 (broad multiplet/band), 7637 weak, 7628 weak
-        - these look slightly more diffuse than the other lines, maybe
+      - 6987 weak
+      - 6945 neutral only, 6963 super weak
+      - Nothing much can be seen in range 6860-6940 due to O_2 telluric band
+      - 6817 super weak, 6847 very weak
+      - 6795 highly ionized bow shock line
+        - This is [K IV] 6795.1, which is the weaker doublet member to 6101.79
+        - It is good that I found this again independently
+      - 6776, 6698 very weak, 6656 very weak, 6646 very weak
+        - [Ni II] 6667 only from YSO
+      - 6636, 6628
+        - These flank either side of the 6634 Raman O I absorption feature
+      - 7791, 7782 (blended wing to blue), 7768
+      - 7747 (in blue wing of [Ar III] 7751), 7741 very weak
+      - 7707 very weak,  7724 super super weak
+      - These are in range 7590-7700 that is affected by telluric O_2 absorption band, so I am not sure how real they are:
+        - But they do show up cleanly in the GLOB sample, so there must be something there
+        - 7663 (broad multiplet/band), 7637 weak, 7628 weak
+          - these look slightly more diffuse than the other lines, maybe
+      - 7577 super weak
+      - 7567 has something in FIL and NEUT-C, but I do not know if it is real
+        - *No, this is sky*
+      - 7531 [Cl IV] in bow shock
       - 7527 weak, 7488.5 weak
         - also diffuse
       - 7468.5, 7442 very weak, 7254
@@ -1640,12 +1661,17 @@ From the analysis of the
           - O I 7254.15
         - Distribution much smoother than the other lines
         - Bright from mYSO-C and from Raman clump
+      - 7463 is a clear deep neutral lines, right in the midst of those fluorescent lines
       - 7707 weak
         - This is close to Fe I 7708.8389, which is same multiplet as 8151
         - /Is this the same line?/ It is off by nearly 2 angstrom
         - *It turns out I was using the wrong velocity*
           - Should be +160 for the BG filaments or 150 for the foreground ones
         - [2022-09-23 Fri] But there are at least two lines here. We  need to investigate further
+        - [2022-10-03 Mon] And these lines are strong from neutral regions, that is if they are not sky
+          - Turns out that longer wave one is sky, at 7718.69 observed
+          - Shorter one is certainly a neutral line, but also seems contaminated by sky
+      - 7724 very weak
     - 6000 to 6530
       - 6503 very weak
       - 6460 very weak
@@ -1811,7 +1837,7 @@ From the analysis of the
         2. Extended fractal component
 + near-IR observations
   + Rubio:2000k present 2.12 H_2 and 2.14 micron continuum
-  + They find several "embedded sources"
+  + They find" several embedded sources"
   + Numbered 1-5 and associated with mid-IR peaks as follows:
     1. Tip of plume
     2. I
