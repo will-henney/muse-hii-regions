@@ -211,6 +211,7 @@
   from mpdaf.obj import Cube, Spectrum, Image
   import typer
   import regions as rg
+  import slugify
 
   def get_spectrum_from_region(
           cube: Cube,
@@ -219,14 +220,14 @@
           extra_image_mask: Union[np.ndarray, None] = None,
           debug: bool = False,
   ) -> Spectrum:
-      """Extract 1D spectrum from region"""
+      """Extract 1D spectrum from region in an efficient way"""
       try:
           region_mask = region.to_mask()
       except AttributeError:
           region_mask = region.to_pixel(cube.wcs.wcs).to_mask()
       nv, ny, nx = cube.shape
       if extra_image_mask is not None:
-          assert extra_image_mask.shape = ny, nx
+          assert extra_image_mask.shape == ny, nx
       # Slices into 2D arrays
       slices_large, slices_small = (
           region_mask
@@ -240,7 +241,7 @@
           # extra_image_mask should be true for pixels that we want to
           # include
           image_mask_large[~extra_image_mask] = np.nan
-        
+
       image_mask_small = image_mask_large[slices_large]
       cube_cutout = cube.data[slices_cube]
       cube_cutout[cube.mask[slices_cube]] = np.nan
@@ -258,22 +259,39 @@
               Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346"
           ),
           cube_name: str="ADP.2017-10-16T11_04_19.247.fits",
-          star_mask_file: Union[str, None]=None,
+          out_path: Path=Path.cwd(),
+          exclude_mask_file: Union[str, None]=typer.Option(
+              None,
+              help="Optional file with image to mask out data. Only pixels with zero will be included."
+          ),
   ):
       """Extract 1D spectra from cube for each region in file"""
 
       sky_regions = rg.Regions.read(region_file)
       region_dict = {reg.meta["label"]: reg for reg in sky_regions}
 
-
-      if star_mask_file is not None:
-          star_mask = np.where(
-              Image(star_mask_file).data == 0.0,
+      cube = Cube(str(data_path / cube_name))
+    
+      # Set the extra image mask to be true where the exclude_mask_file image is zero
+      if exclude_mask_file is not None:
+          extra_image_mask = np.where(
+              Image(exclude_mask_file).data == 0.0,
               True,
               False
           )
-        
-    
+      else:
+          extra_image_mask = None
+
+      # Now do the work to get the spectra
+      spec_dict = {
+          label: get_spectrum_from_region(cube, reg, extra_image_mask=extra_image_mask)
+          for label, reg in region_dict.items()
+      }
+
+      # And save them all
+      for label, spec in spec_dict.items():
+          spec.write(str(out_path / f"{out_prefix}-{slugify.slugify(label)}.fits"))
+
 
   if __name__ == "__main__":
       typer.run(main)
@@ -297,22 +315,30 @@ Arguments:
   REGION_FILE  [required]
 
 Options:
-  --out-prefix TEXT      [default: n346-muse]
-  --data-path PATH       [default: /Users/will/Work/Muse-
-                         Hii-Data/SMC-NGC-346]
+  --out-prefix TEXT         [default: n346-muse]
+  --data-path PATH          [default:
+                            /Users/will/Work/Muse-Hii-
+                            Data/SMC-NGC-346]
 
-  --cube-name TEXT       [default:
-                         ADP.2017-10-16T11_04_19.247.fits]
+  --cube-name TEXT          [default: ADP.2017-10-16T11_04
+                            _19.247.fits]
 
-  --star-mask-file TEXT
-  --install-completion   Install completion for the
-                         current shell.
+  --out-path PATH           [default:
+                            /Users/will/Dropbox/muse-hii-
+                            regions/scripts]
 
-  --show-completion      Show completion for the current
-                         shell, to copy it or customize
-                         the installation.
+  --exclude-mask-file TEXT  Optional file with image to
+                            mask out data. Only pixels
+                            with zero will be included.
 
-  --help                 Show this message and exit.
+  --install-completion      Install completion for the
+                            current shell.
+
+  --show-completion         Show completion for the
+                            current shell, to copy it or
+                            customize the installation.
+
+  --help                    Show this message and exit.
 #+end_example
 
 *** Step 1: identify peaks
