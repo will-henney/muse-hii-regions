@@ -177,6 +177,165 @@
 
 
 
+** TODO Automatic line finding
+- Started work on this [2022-10-04 Tue]
+  - Early tests and proof of concept in notebook
+    - [[file:../notebooks/ngc346-new/02-find-peaks.ipynb]]
+    - [[file:../notebooks/ngc346-new/02-find-peaks.py]]
+  - Also relevant is all the work on extracting spectra in
+    - [[file:../notebooks/ngc346-new/00-check-peter-cube.ipynb]]
+    - [[file:../notebooks/ngc346-new/00-check-peter-cube.py]]
+- General approach here is to split up functionality from notebook into independent scripts, and make sure that intermediate results are stored
+- Scripts should be python files in [[file:../scripts/]], either directly written or tangled from this file
+*** [0/1] Step 0: prepare 1D spectra
+- We can use different samples to get a range of physical conditions
+- So far I have
+  - The whole cube with masked out stars
+  - The region of YSO-C
+- I should also do
+  - The bow shock
+  - One or more samples for the neutral filaments and globules
+- Question is, should I background-subtract these or not? Probably not necessary
+- It might be easier to just write out spectra once and for all for all the regions
+- [ ] First, I should combine the regions into one file
+**** Script to extract 1D spectra for each region
+:PROPERTIES:
+:header-args:python: :tangle ../scripts/extract-region-spectra.py
+:header-args:sh: :results output verbatim :dir ../scripts
+:END:
+
+#+begin_src python
+  from typing import Union
+  from pathlib import Path
+  import numpy as np
+  from mpdaf.obj import Cube, Spectrum, Image
+  import typer
+  import regions as rg
+
+  def get_spectrum_from_region(
+          cube: Cube,
+          region: Union[rg.PixelRegion, rg.SkyRegion],
+          reduction_method: callable = np.nanmean,
+          extra_image_mask: Union[np.ndarray, None] = None,
+          debug: bool = False,
+  ) -> Spectrum:
+      """Extract 1D spectrum from region"""
+      try:
+          region_mask = region.to_mask()
+      except AttributeError:
+          region_mask = region.to_pixel(cube.wcs.wcs).to_mask()
+      nv, ny, nx = cube.shape
+      if extra_image_mask is not None:
+          assert extra_image_mask.shape = ny, nx
+      # Slices into 2D arrays
+      slices_large, slices_small = (
+          region_mask
+          .get_overlap_slices((ny, nx))
+      )
+      if debug:
+          print('2D slice:', slices_large)
+      slices_cube = (slice(None, None),) + slices_large
+      image_mask_large = region_mask.to_image((ny, nx))
+      if extra_image_mask is not None:
+          # extra_image_mask should be true for pixels that we want to
+          # include
+          image_mask_large[~extra_image_mask] = np.nan
+        
+      image_mask_small = image_mask_large[slices_large]
+      cube_cutout = cube.data[slices_cube]
+      cube_cutout[cube.mask[slices_cube]] = np.nan
+      spec = reduction_method(
+          cube_cutout * image_mask_small[None, :, :],
+          axis=(1, 2),
+      )
+      return Spectrum(wave=cube.wave, data=spec, unit=cube.unit)
+
+
+  def main(
+          region_file: str,
+          out_prefix: str="n346-muse",
+          data_path: Path=(
+              Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346"
+          ),
+          cube_name: str="ADP.2017-10-16T11_04_19.247.fits",
+          star_mask_file: Union[str, None]=None,
+  ):
+      """Extract 1D spectra from cube for each region in file"""
+
+      sky_regions = rg.Regions.read(region_file)
+      region_dict = {reg.meta["label"]: reg for reg in sky_regions}
+
+
+      if star_mask_file is not None:
+          star_mask = np.where(
+              Image(star_mask_file).data == 0.0,
+              True,
+              False
+          )
+        
+    
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+Usage of script. Note setting of ~COLUMNS~ to make sure output is not too wide
+#+header: :prologue "COLUMNS=60 exec 2>&1" :epilogue ":"
+#+begin_src sh
+  python extract-region-spectra.py --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Usage: extract-region-spectra.py [OPTIONS] REGION_FILE
+
+  Extract 1D spectra from cube for each region in file
+
+Arguments:
+  REGION_FILE  [required]
+
+Options:
+  --out-prefix TEXT      [default: n346-muse]
+  --data-path PATH       [default: /Users/will/Work/Muse-
+                         Hii-Data/SMC-NGC-346]
+
+  --cube-name TEXT       [default:
+                         ADP.2017-10-16T11_04_19.247.fits]
+
+  --star-mask-file TEXT
+  --install-completion   Install completion for the
+                         current shell.
+
+  --show-completion      Show completion for the current
+                         shell, to copy it or customize
+                         the installation.
+
+  --help                 Show this message and exit.
+#+end_example
+
+*** Step 1: identify peaks
+- This uses ~scipy.signal.find_peaks()~
+- Various parameters can be tweaked
+  - ~prominence~ is height above local baseline
+  - ~distance~ is minimum horizontal distance between peaks in pixels
+  - Others, that we haven't used yet:
+    - ~height~, ~threshold~, ~width~
+*** Step 2: extract line maps
+- We can extract the 3 pixels around the peak
+- Maybe use the 3-wav method that I developed earlier
+  - That can give correction to line flux for the missing wings
+*** Step 3: filter out the false positives
+- This is probably best done by visual inspection of the maps
+- That should be able to identify the ones that are just
+  - sky lines, or
+  - noise
+- Although, we could maybe have an automated method that looks at correlation with specific templates
+  - It woulds probably help to do a re-binning or median filtering first, since the important variation will be on larger scales
+*** Step 4: classify different line types
+- This would be a natural by-product of the correlations
+
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
   - This is evidence for the local anisotropy of the radiation field
@@ -491,6 +650,11 @@ python ../scripts/rgb-meanwavs.py
     - The only disadvantage is that they do not separate into the significant and insignificant variations
     - And that we lose the approximate proportionality between \mu and m_1
 
+
+****** TODO Sensitivity to noise of 3-wav method
+- How does it compare with summing over a broader wave window?
+- This will be different for strong lines or weak lines (as compared with the continuum)
+- And also will depend on whether the "noise" in the continuum is independent in each pixel or not
 
 ****** Implementation of 3-wav method
 

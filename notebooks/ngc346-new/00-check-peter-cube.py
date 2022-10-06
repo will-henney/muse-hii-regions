@@ -255,6 +255,10 @@ ha_map_E = cubeE.get_image((6555.0, 6573.0), method="sum", subtract_off=True)
 ha_map_P.shape, ha_map_E.shape
 
 # + pycharm={"name": "#%%\n"}
+ha_map_E -= ha_map_E.data.min()
+white_map_E -= white_map_E.data.min()
+
+# + pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(2, 3, sharex="all", sharey="all", figsize=(12, 8))
 ha_map_P.plot(scale="sqrt", ax=axes[0, 0])
 ha_map_E.plot(scale="sqrt", ax=axes[1, 0])
@@ -394,6 +398,20 @@ mask_stars_E = ha_frac_E.data < 0.04
 mask_yso_P = region_dict['YSO'].to_pixel(ha_map_P.wcs.wcs).to_mask().to_image(ha_map_P.data.shape).astype(bool)
 mask_yso_E = region_dict['YSO'].to_pixel(ha_map_E.wcs.wcs).to_mask().to_image(ha_map_E.data.shape).astype(bool)
 mask_yso_P
+
+# + [markdown] pycharm={"name": "#%% md\n"}
+# #### Save the masks to fits files
+#
+
+# + pycharm={"name": "#%%\n"}
+Image(data=mask_stars_E.astype(int), wcs=ha_frac_E.wcs).write(
+    small_data_path / "n346-mask-stars.fits",
+    savemask="none",
+)
+Image(data=mask_yso_E.astype(int), wcs=ha_frac_E.wcs).write(
+    small_data_path / "n346-mask-yso.fits",
+    savemask="none",
+)
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # #### Calculate mean spectra for stars and for diffuse nebula
