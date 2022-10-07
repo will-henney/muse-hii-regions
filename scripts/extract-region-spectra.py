@@ -20,7 +20,7 @@ def get_spectrum_from_region(
         region_mask = region.to_pixel(cube.wcs.wcs).to_mask()
     nv, ny, nx = cube.shape
     if extra_image_mask is not None:
-        assert extra_image_mask.shape == ny, nx
+        assert extra_image_mask.shape == (ny, nx)
     # Slices into 2D arrays
     slices_large, slices_small = (
         region_mask
@@ -47,15 +47,12 @@ def get_spectrum_from_region(
 
 def main(
         region_file: str,
-        out_prefix: str="n346-muse",
-        data_path: Path=(
-            Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346"
-        ),
-        cube_name: str="ADP.2017-10-16T11_04_19.247.fits",
-        out_path: Path=Path.cwd(),
+        cube_file: str,
+        out_prefix: str="spec1d/n346",
         exclude_mask_file: Union[str, None]=typer.Option(
             None,
-            help="Optional file with image to mask out data. Only pixels with zero will be included."
+            help=("Optional file with image to mask out data. "
+                  "Only pixels with zero will be included.")
         ),
 ):
     """Extract 1D spectra from cube for each region in file"""
@@ -63,9 +60,10 @@ def main(
     sky_regions = rg.Regions.read(region_file)
     region_dict = {reg.meta["label"]: reg for reg in sky_regions}
 
-    cube = Cube(str(data_path / cube_name))
+    cube = Cube(cube_file)
 
-    # Set the extra image mask to be true where the exclude_mask_file image is zero
+    # Set the extra image mask to be true where the exclude_mask_file
+    # image is zero
     if exclude_mask_file is not None:
         extra_image_mask = np.where(
             Image(exclude_mask_file).data == 0.0,
@@ -77,13 +75,18 @@ def main(
 
     # Now do the work to get the spectra
     spec_dict = {
-        label: get_spectrum_from_region(cube, reg, extra_image_mask=extra_image_mask)
+        label: get_spectrum_from_region(
+            cube, reg, extra_image_mask=extra_image_mask)
         for label, reg in region_dict.items()
     }
 
-    # And save them all
+    # Make sure the output folder exists
+    Path(out_prefix).parent.mkdir(parents=True, exist_ok=True)
+    # And save each spectrum as a separate FITS file
     for label, spec in spec_dict.items():
-        spec.write(str(out_path / f"{out_prefix}-{slugify.slugify(label)}.fits"))
+        label_string = slugify.slugify(label)
+        spec.write(
+            str(f"{out_prefix}-{label_string}.fits"))
 
 
 if __name__ == "__main__":

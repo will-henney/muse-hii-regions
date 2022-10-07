@@ -200,11 +200,11 @@
 - [ ] First, I should combine the regions into one file
 **** Script to extract 1D spectra for each region
 :PROPERTIES:
-:header-args:python: :tangle ../scripts/extract-region-spectra.py
 :header-args:sh: :results output verbatim :dir ../scripts
 :END:
 
-#+begin_src python
+
+#+begin_src python :tangle ../scripts/extract-region-spectra.py 
   from typing import Union
   from pathlib import Path
   import numpy as np
@@ -227,7 +227,7 @@
           region_mask = region.to_pixel(cube.wcs.wcs).to_mask()
       nv, ny, nx = cube.shape
       if extra_image_mask is not None:
-          assert extra_image_mask.shape == ny, nx
+          assert extra_image_mask.shape == (ny, nx)
       # Slices into 2D arrays
       slices_large, slices_small = (
           region_mask
@@ -254,15 +254,12 @@
 
   def main(
           region_file: str,
-          out_prefix: str="n346-muse",
-          data_path: Path=(
-              Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346"
-          ),
-          cube_name: str="ADP.2017-10-16T11_04_19.247.fits",
-          out_path: Path=Path.cwd(),
+          cube_file: str,
+          out_prefix: str="spec1d/n346",
           exclude_mask_file: Union[str, None]=typer.Option(
               None,
-              help="Optional file with image to mask out data. Only pixels with zero will be included."
+              help=("Optional file with image to mask out data. "
+                    "Only pixels with zero will be included.")
           ),
   ):
       """Extract 1D spectra from cube for each region in file"""
@@ -270,9 +267,10 @@
       sky_regions = rg.Regions.read(region_file)
       region_dict = {reg.meta["label"]: reg for reg in sky_regions}
 
-      cube = Cube(str(data_path / cube_name))
-    
-      # Set the extra image mask to be true where the exclude_mask_file image is zero
+      cube = Cube(cube_file)
+
+      # Set the extra image mask to be true where the exclude_mask_file
+      # image is zero
       if exclude_mask_file is not None:
           extra_image_mask = np.where(
               Image(exclude_mask_file).data == 0.0,
@@ -284,13 +282,18 @@
 
       # Now do the work to get the spectra
       spec_dict = {
-          label: get_spectrum_from_region(cube, reg, extra_image_mask=extra_image_mask)
+          label: get_spectrum_from_region(
+              cube, reg, extra_image_mask=extra_image_mask)
           for label, reg in region_dict.items()
       }
 
-      # And save them all
+      # Make sure the output folder exists
+      Path(out_prefix).parent.mkdir(parents=True, exist_ok=True)
+      # And save each spectrum as a separate FITS file
       for label, spec in spec_dict.items():
-          spec.write(str(out_path / f"{out_prefix}-{slugify.slugify(label)}.fits"))
+          label_string = slugify.slugify(label)
+          spec.write(
+              str(f"{out_prefix}-{label_string}.fits"))
 
 
   if __name__ == "__main__":
@@ -299,7 +302,8 @@
 #+end_src
 
 
-Usage of script. Note setting of ~COLUMNS~ to make sure output is not too wide
+***** Usage of script
+Note setting of ~COLUMNS~ to make sure output is not too wide
 #+header: :prologue "COLUMNS=60 exec 2>&1" :epilogue ":"
 #+begin_src sh
   python extract-region-spectra.py --help
@@ -308,25 +312,16 @@ Usage of script. Note setting of ~COLUMNS~ to make sure output is not too wide
 #+RESULTS:
 #+begin_example
 Usage: extract-region-spectra.py [OPTIONS] REGION_FILE
+                                 CUBE_FILE
 
   Extract 1D spectra from cube for each region in file
 
 Arguments:
   REGION_FILE  [required]
+  CUBE_FILE    [required]
 
 Options:
-  --out-prefix TEXT         [default: n346-muse]
-  --data-path PATH          [default:
-                            /Users/will/Work/Muse-Hii-
-                            Data/SMC-NGC-346]
-
-  --cube-name TEXT          [default: ADP.2017-10-16T11_04
-                            _19.247.fits]
-
-  --out-path PATH           [default:
-                            /Users/will/Dropbox/muse-hii-
-                            regions/scripts]
-
+  --out-prefix TEXT         [default: spec1d/n346]
   --exclude-mask-file TEXT  Optional file with image to
                             mask out data. Only pixels
                             with zero will be included.
@@ -339,6 +334,174 @@ Options:
                             customize the installation.
 
   --help                    Show this message and exit.
+#+end_example
+
+***** Have a look at the results
+#+begin_src python :tangle ../scripts/spec1d-compare.py
+  from mpdaf.obj import Spectrum
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import MaxNLocator
+  import typer
+
+  def main(region: str, linthresh: float=20.0):
+      """Comparison plot of with/without stars, plus BG"""
+      fig, ax = plt.subplots(figsize=(50, 3))
+      figfile = f"spec1d-compare-{region}.pdf"
+      spec = Spectrum(f"n346-nostar-{region}.fits")
+      spec_nomask = Spectrum(f"n346-all-{region}.fits")
+      spec_bg = Spectrum(f"n346-nostar-{region}-bg.fits")
+      spec_bgsub = spec - spec_bg
+      spec.plot(label="star mask", linewidth=2)
+      spec_nomask.plot(label="no mask", linewidth=1)
+      spec_bg.plot(label="BG star mask", linewidth=0.5)
+      spec_bgsub.plot(label="BG-subtracted", linewidth=0.5)
+      ax.legend(ncol=4)
+      ax.minorticks_on()
+      ax.grid(which="major", linewidth=0.5)
+      ax.grid(which="minor", linewidth=0.2)
+      ax.set_yscale("symlog", linthresh=linthresh)
+      ax.xaxis.set_major_locator(MaxNLocator(100))
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py glob-c
+#+end_src
+
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-c.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py bs
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-bs.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil --linthresh=2.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil-c --linthresh=2.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-c.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil-b --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-b.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py glob --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py neut --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-neut.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py yso --linthresh=100.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-yso.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/spec1d-compare.py glob-e --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-e.pdf]]
+
+***** TODO Runs with the star mask
+#+begin_src sh :dir ../data
+  time python ../scripts/extract-region-spectra.py \
+       ngc346-extra-icrs.reg \
+       ../big-data/ngc346new/n346-muse-csub-101.fits \
+       --out-prefix spec1d/n346-nostar \
+       --exclude-mask-file n346-mask-stars.fits 
+#+end_src
+
+
+
+
+***** DONE Runs without any star mask
+CLOSED: [2022-10-06 Thu 18:36]
+#+begin_src sh :dir ../data
+  time python ../scripts/extract-region-spectra.py \
+       ngc346-jesus-icrs.reg \
+       ../big-data/ngc346new/n346-muse-csub-101.fits \
+       --out-prefix spec1d/n346-all
+#+end_src
+
+And a similar one for ~ngc346-extra-icrs.reg~. These gave the following:
+#+begin_src sh :dir ../data
+ls spec1d/n346-all-*.fits
+#+end_src
+
+#+RESULTS:
+#+begin_example
+spec1d/n346-all-bs-bg.fits
+spec1d/n346-all-bs.fits
+spec1d/n346-all-fil-b-bg.fits
+spec1d/n346-all-fil-b.fits
+spec1d/n346-all-fil-bg.fits
+spec1d/n346-all-fil-c-bg.fits
+spec1d/n346-all-fil-c.fits
+spec1d/n346-all-fil-d-bg.fits
+spec1d/n346-all-fil-d.fits
+spec1d/n346-all-fil.fits
+spec1d/n346-all-glob-b-bg.fits
+spec1d/n346-all-glob-b.fits
+spec1d/n346-all-glob-bg.fits
+spec1d/n346-all-glob-c-bg.fits
+spec1d/n346-all-glob-c.fits
+spec1d/n346-all-glob-d-bg.fits
+spec1d/n346-all-glob-d.fits
+spec1d/n346-all-glob-e-bg.fits
+spec1d/n346-all-glob-e.fits
+spec1d/n346-all-glob-f-bg.fits
+spec1d/n346-all-glob-f.fits
+spec1d/n346-all-glob-g-bg.fits
+spec1d/n346-all-glob-g.fits
+spec1d/n346-all-glob.fits
+spec1d/n346-all-mip-b-bg.fits
+spec1d/n346-all-mip-b.fits
+spec1d/n346-all-mip-bg.fits
+spec1d/n346-all-mip.fits
+spec1d/n346-all-neut-b-bg.fits
+spec1d/n346-all-neut-b.fits
+spec1d/n346-all-neut-bg.fits
+spec1d/n346-all-neut-c-bg.fits
+spec1d/n346-all-neut-c.fits
+spec1d/n346-all-neut-d-bg.fits
+spec1d/n346-all-neut-d.fits
+spec1d/n346-all-neut.fits
+spec1d/n346-all-yso-bg.fits
+spec1d/n346-all-yso.fits
 #+end_example
 
 *** Step 1: identify peaks
