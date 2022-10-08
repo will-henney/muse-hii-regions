@@ -1,3 +1,4 @@
+#+OPTIONS: ^:{}
 * MUSE cube of N66/NGC 346 in the SMC
 
 
@@ -80,12 +81,12 @@
   - [[file:../molecules/ExoMol/]]
     - for smaller files
     - All the ~.def~ and ~.states~ files
-      - CN, CH, C_2, NH, OH, OH^{+}, H_2
+      - CN, CH, C_{2}, NH, OH, OH^{+}, H_{2}
       - Common isotopes only
     - ~.trans~ files where they are smaller than 10 MB
   - [[file:../big-data/ExoMol/]]
     - for big files to keep them out of git
-    - ~.trans~ files for C_2 and CN
+    - ~.trans~ files for C_{2} and CN
     - Opacity files if I ever bother with them
       - So far I only have OH^{+}
       - These assume LTE I think, but might still be useful
@@ -110,7 +111,7 @@
   - Could it have optical/ir lines too?
     - Yes, see ExoMol section above
 - OH- 
-**** C_2 lines
+**** C_{2} lines
 - There is the (2-0) band at 8751, but these are very weak and narrow  when seen in absorption, and are separated by 2 to 4 Angstrom
   | J" |     R (J") |       |      Q(J") |       |    P(J') |       |
   |----+------------+-------+------------+-------+----------+-------|
@@ -178,6 +179,9 @@
 
 
 ** TODO Automatic line finding
+:PROPERTIES:
+:header-args:sh: :results output verbatim :dir ../scripts
+:END:
 - Started work on this [2022-10-04 Tue]
   - Early tests and proof of concept in notebook
     - [[file:../notebooks/ngc346-new/02-find-peaks.ipynb]]
@@ -187,7 +191,8 @@
     - [[file:../notebooks/ngc346-new/00-check-peter-cube.py]]
 - General approach here is to split up functionality from notebook into independent scripts, and make sure that intermediate results are stored
 - Scripts should be python files in [[file:../scripts/]], either directly written or tangled from this file
-*** [0/1] Step 0: prepare 1D spectra
+*** DONE [1/1] Step 0: prepare 1D spectra
+CLOSED: [2022-10-06 Thu 23:14]
 - We can use different samples to get a range of physical conditions
 - So far I have
   - The whole cube with masked out stars
@@ -197,11 +202,9 @@
   - One or more samples for the neutral filaments and globules
 - Question is, should I background-subtract these or not? Probably not necessary
 - It might be easier to just write out spectra once and for all for all the regions
-- [ ] First, I should combine the regions into one file
+- [X] First, I should combine the regions into one file
+  - Actually, there is no need to do this, since the program to make the 1d spectra is accumulatiive
 **** Script to extract 1D spectra for each region
-:PROPERTIES:
-:header-args:sh: :results output verbatim :dir ../scripts
-:END:
 
 
 #+begin_src python :tangle ../scripts/extract-region-spectra.py 
@@ -336,107 +339,8 @@ Options:
   --help                    Show this message and exit.
 #+end_example
 
-***** Have a look at the results
-#+begin_src python :tangle ../scripts/spec1d-compare.py
-  from mpdaf.obj import Spectrum
-  from matplotlib import pyplot as plt
-  from matplotlib.ticker import MaxNLocator
-  import typer
-
-  def main(region: str, linthresh: float=20.0):
-      """Comparison plot of with/without stars, plus BG"""
-      fig, ax = plt.subplots(figsize=(50, 3))
-      figfile = f"spec1d-compare-{region}.pdf"
-      spec = Spectrum(f"n346-nostar-{region}.fits")
-      spec_nomask = Spectrum(f"n346-all-{region}.fits")
-      spec_bg = Spectrum(f"n346-nostar-{region}-bg.fits")
-      spec_bgsub = spec - spec_bg
-      spec.plot(label="star mask", linewidth=2)
-      spec_nomask.plot(label="no mask", linewidth=1)
-      spec_bg.plot(label="BG star mask", linewidth=0.5)
-      spec_bgsub.plot(label="BG-subtracted", linewidth=0.5)
-      ax.legend(ncol=4)
-      ax.minorticks_on()
-      ax.grid(which="major", linewidth=0.5)
-      ax.grid(which="minor", linewidth=0.2)
-      ax.set_yscale("symlog", linthresh=linthresh)
-      ax.xaxis.set_major_locator(MaxNLocator(100))
-      fig.tight_layout()
-      fig.savefig(figfile)
-      print(figfile, end="")
-
-
-  if __name__ == "__main__":
-      typer.run(main)
-
-#+end_src
-
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py glob-c
-#+end_src
-
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-c.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py bs
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-bs.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py fil --linthresh=2.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py fil-c --linthresh=2.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-c.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py fil-b --linthresh=10.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-b.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py glob --linthresh=10.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py neut --linthresh=10.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-neut.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/spec1d-compare.py yso --linthresh=100.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-yso.pdf]]
-
-#+begin_src sh :dir ../data/spec1d :results output file
-  python ../../scripts/spec1d-compare.py glob-e --linthresh=10.0
-#+end_src
-
-#+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-e.pdf]]
-
-***** TODO Runs with the star mask
+***** DONE Runs with the star mask
+CLOSED: [2022-10-06 Thu 23:13]
 #+begin_src sh :dir ../data
   time python ../scripts/extract-region-spectra.py \
        ngc346-extra-icrs.reg \
@@ -504,13 +408,268 @@ spec1d/n346-all-yso-bg.fits
 spec1d/n346-all-yso.fits
 #+end_example
 
-*** Step 1: identify peaks
+**** Inspect the 1d spectra results
+- The following script graphs a comparison of the extracted spectrum from a single region, comparing the result with/without (blue/orange) the star mask and then the BG (blue) and BG-subtracted (red) spectra
+- I make it a very long strip in the wavelength (x) axis.
+- The y-axis is on a ~symlog~ scale, so as to the high peaks but still show the weak emission and absorption  features
+  - The parameter ~linthresh~ specifies how much of the range is linear
+  - 
+#+begin_src python :tangle ../scripts/spec1d-compare.py
+  from mpdaf.obj import Spectrum
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import MaxNLocator
+  import typer
+
+  def main(region: str, linthresh: float=20.0):
+      """Comparison plot of with/without stars, plus BG"""
+      fig, ax = plt.subplots(figsize=(50, 3))
+      figfile = f"spec1d-compare-{region}.pdf"
+      spec = Spectrum(f"n346-nostar-{region}.fits")
+      spec_nomask = Spectrum(f"n346-all-{region}.fits")
+      spec_bg = Spectrum(f"n346-nostar-{region}-bg.fits")
+      spec_bgsub = spec - spec_bg
+      spec.plot(label="star mask", linewidth=2)
+      spec_nomask.plot(label="no mask", linewidth=1)
+      spec_bg.plot(label="BG star mask", linewidth=0.5)
+      spec_bgsub.plot(label="BG-subtracted", linewidth=0.5)
+      ax.legend(ncol=4)
+      ax.minorticks_on()
+      ax.grid(which="major", linewidth=0.5)
+      ax.grid(which="minor", linewidth=0.2)
+      ax.set_yscale("symlog", linthresh=linthresh)
+      ax.xaxis.set_major_locator(MaxNLocator(100))
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+RESULTS:
+
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py glob-c
+#+end_src
+
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-c.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py bs
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-bs.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil --linthresh=2.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil-c --linthresh=2.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-c.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py fil-b --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-fil-b.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py glob --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py neut --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-neut.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-compare.py yso --linthresh=100.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-yso.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/spec1d-compare.py glob-e --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-e.pdf]]
+
+*** TODO Step 1: identify peaks
 - This uses ~scipy.signal.find_peaks()~
 - Various parameters can be tweaked
   - ~prominence~ is height above local baseline
   - ~distance~ is minimum horizontal distance between peaks in pixels
   - Others, that we haven't used yet:
     - ~height~, ~threshold~, ~width~
+
+
+**** Script to identify all peaks in spectrum
+#+begin_src python :tangle ../scripts/spec1d-find-peaks.py
+  from mpdaf.obj import Spectrum
+  import numpy as np
+  import scipy.signal as si
+  from  astropy.table import Table
+  import typer
+
+  def fmt_float(x):
+      return f"{int(10*x):04d}"
+
+
+  def main(
+          spec_file: str,
+          min_prominence: float=3.0,
+          min_distance: float=3.0,
+  ):
+      """Find peaks in a 1D spectrum"""
+      assert spec_file.endswith(".fits")
+      spec = Spectrum(spec_file)
+      # Find pixel positions of peaks
+      peaks, props = si.find_peaks(
+          spec.data,
+          prominence=min_prominence,
+          distance=min_distance,
+          # FWHM must be between 2 and 5 pixels
+          width=(1.5, 5.0),
+      )
+      # Convert to wavelengths
+      waves = spec.wave.coord()[peaks]
+      # Make a table of the results
+      tab = Table(
+          {"Wavelength": waves, "Pixel": peaks, **props}
+      )
+      # Do not use too many decimal places for the float columns
+      for col in [
+              "Wavelength", "prominences", "widths",
+              "width_heights", "left_ips", "right_ips",
+      ]:
+          tab[col] = np.round(tab[col], 4)
+      # And save it as CSV format
+      suffix = ("-peaks"
+                f"-p{fmt_float(min_prominence)}"
+                f"-d{fmt_float(min_distance)}.csv")
+      tab_file = spec_file.replace(".fits", suffix)
+      tab.write(tab_file, format="ascii.ecsv", overwrite=True)
+      print(tab_file)
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+***** Usage for spec1d-find-peaks.py script
+#+header: :prologue "COLUMNS=60 exec 2>&1" :epilogue ":"
+#+begin_src sh 
+python spec1d-find-peaks.py --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Usage: spec1d-find-peaks.py [OPTIONS] SPEC_FILE
+
+  Find peaks in a 1D spectrum
+
+Arguments:
+  SPEC_FILE  [required]
+
+Options:
+  --min-prominence FLOAT  [default: 3.0]
+  --min-distance FLOAT    [default: 3.0]
+  --install-completion    Install completion for the
+                          current shell.
+
+  --show-completion       Show completion for the current
+                          shell, to copy it or customize
+                          the installation.
+
+  --help                  Show this message and exit.
+#+end_example
+
+**** Use script to identify lines from different regions
+
+***** Utility function to convert from observed wavelength to rest wavelength
+- I set this up as a named source block, so I can call it as a function.
+  - The first argument is the observed wavelength.
+  - The second argument is the assumed systemic velocity
+    - (default of 170 km/s should be close enough for all regions in  NGC 346 field)
+      
+#+name: rest
+#+begin_src python :var wave=6000.0 vsys=170.0 :return rslt
+rslt = round(wave / (1.0 + vsys / 3e5), 3)
+#+end_src
+
+Example of calling the function inline: call_rest(7000) {{{results(=6996.036=)}}}
+
+Example of calling in block
+
+#+call: rest(4688.69482421875)
+
+#+RESULTS:
+: 4686.039
+
+***** Bow shock region
+- We use the default parameters, which includes a minimum prominence of 3.0
+- I am hoping that this will be low enough to get all the real lines, but high enough to avoid detecting noise peaks
+#+begin_src sh :dir ../data/spec1d 
+python ../../scripts/spec1d-find-peaks.py n346-nostar-bs.fits
+#+end_src
+
+#+RESULTS:
+: n346-nostar-bs-peaks-p0030-d0030.csv
+
+- This has found 101 lines in all
+  - Fewer than before, now that I have put restrictions on the width
+- Let's look at the first few and calculate the rest wavelengths
+  - call_rest(4643.6948) {{{results(=4641.065=)}}}
+    - This is first of several weak lines, which may or may not be real
+    - Maybe it is O II 4641.81, but the wavelength is off by nearly an angstrom, although we would have to look at the mean wavelength to get a more precise estimate
+    - It is a particularly broad line: 4.4 pixels, presumably because it is a blend with N II and N III, as in Orion. 
+    - Note that the bg-subtracted spectrum in this wave range has some spurious lines, which are due to absorption features in the BG spectrum
+      - Maybe we could fix this by moving the bg region a bit
+  - call_rest(4652.4448) {{{results(=4649.81=)}}}
+    - This is certainly O II 4650
+  - call_rest(4688.6948) {{{results(=4686.039=)}}}
+    - This one is clearly He II
+- Now look for some of the lines that we are expecting
+  - call_rest(6104.9448) {{{results(=6101.487=)}}}
+    - Clearly a [K IV] line
+      : LAB-WAVL-ANG-AIR-|-SPC--|TT|-CONFIGURATION-|TERM-|J_i-J_k|--A_ki---|-TPF-|---LVL-EN--CM-1---|-REF---|
+      : 6101.79         [K IV] M1 3s2.3p4-3s2.3p4 3P-1D  2 - 2                     0.00 - 16384.10 029,ASD
+      : 6795.1          [K IV] M1 3s2.3p4-3s2.3p4 3P-1D  1 - 2  2.010e-01   ASD 1671.70 - 16384.10 029,ASD
+      : 7108.9          [K IV] E2 3s2.3p4-3s2.3p4 3P-1D  0 - 2                  2321.20 - 16384.10 ASD
+
+
+***** Globule region
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-glob.fits
+#+end_src
+
+#+RESULTS:
+: n346-nostar-glob-peaks-p0030-d0030.csv
+
 *** Step 2: extract line maps
 - We can extract the 3 pixels around the peak
 - Maybe use the 3-wav method that I developed earlier
