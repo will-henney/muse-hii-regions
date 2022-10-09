@@ -515,13 +515,19 @@ python ../../scripts/spec1d-compare.py yso --linthresh=100.0
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-compare-glob-e.pdf]]
 
-*** TODO Step 1: identify peaks
+*** DONE Step 1: identify peaks
+CLOSED: [2022-10-08 Sat 22:32]
 - This uses ~scipy.signal.find_peaks()~
 - Various parameters can be tweaked
   - ~prominence~ is height above local baseline
+    - Calculated with respect to the higher of the two bases, which are the minima on each of the two sides
+    - The positions of the bases are returned as ~right_bases~, ~left_bases~
   - ~distance~ is minimum horizontal distance between peaks in pixels
+  - ~width~ is the full width at half-maximum prominence (by default, but can be changed with ~rel_height~ argument)
+    - The interpolated positions of the half-maximum points are returned as ~left_ips~ and ~right_ips~
+    - In principal, we could use these to look at the asymmetry of the peak
   - Others, that we haven't used yet:
-    - ~height~, ~threshold~, ~width~
+    - ~height~, ~threshold~, 
 
 
 **** Script to identify all peaks in spectrum
@@ -632,16 +638,20 @@ Example of calling in block
 
 ***** Bow shock region
 - We use the default parameters, which includes a minimum prominence of 3.0
-- I am hoping that this will be low enough to get all the real lines, but high enough to avoid detecting noise peaks
+  - I am hoping that this will be low enough to get all the real lines, but high enough to avoid detecting noise peaks
+  - Update [2022-10-08 Sat]: Since we failed to detect a weak [K IV] line I knew should be there, I have run it again with a lower minimum prominence
+  - This has now found all the lines I think, but there are also a lot of spurious lines that need to be weeded out
+    
 #+begin_src sh :dir ../data/spec1d 
-python ../../scripts/spec1d-find-peaks.py n346-nostar-bs.fits
+python ../../scripts/spec1d-find-peaks.py n346-nostar-bs.fits  --min-prominence 1.0
 #+end_src
 
 #+RESULTS:
-: n346-nostar-bs-peaks-p0030-d0030.csv
+: n346-nostar-bs-peaks-p0010-d0030.csv
 
-- This has found 101 lines in all
+- With minimum prominence of 3, this has found 101 lines in all
   - Fewer than before, now that I have put restrictions on the width
+- With minimum prominence of 1.0, it has found 241 lines
 - Let's look at the first few and calculate the rest wavelengths
   - call_rest(4643.6948) {{{results(=4641.065=)}}}
     - This is first of several weak lines, which may or may not be real
@@ -660,15 +670,169 @@ python ../../scripts/spec1d-find-peaks.py n346-nostar-bs.fits
       : 6101.79         [K IV] M1 3s2.3p4-3s2.3p4 3P-1D  2 - 2                     0.00 - 16384.10 029,ASD
       : 6795.1          [K IV] M1 3s2.3p4-3s2.3p4 3P-1D  1 - 2  2.010e-01   ASD 1671.70 - 16384.10 029,ASD
       : 7108.9          [K IV] E2 3s2.3p4-3s2.3p4 3P-1D  0 - 2                  2321.20 - 16384.10 ASD
-
+    - However, we do not find the 6795.1 counterpart at this level, so I will try again with a lower minimum prominence
+  - call_rest(6798.6948) {{{results(=6794.844=)}}}
+    - /Hurray!/ Now we have found the other [K IV] multiplet component
+    - Prominence: 1.0637
+      - so that is very close to the cut-off
+      - still, this is just about the weakest high ionization line that I am expecting
+- And other random samples of the lines
+  - call_rest(6829.9448) {{{results(=6826.077=)}}}
+    - This is the next one after that [K IV] line.
+    - I had expected it to be He I 6827.97 but the wavelength is way off.
+    - Does not even match [Kr III] 6826.7 very well, but it could be that, given the uncertainties
+  - call_rest(6871.1948) {{{results(=6867.303=)}}}
+    - This is in a region affected by telluric O_{2} absorption, so probably spurious
+  - call_rest(6948.6948) {{{results(=6944.759=)}}}
+    - This is outside the telluric range, but is probably a sky emission line
+  - call_rest(7174.9448) {{{results(=7170.881=)}}}
+    - Looks real, could it really be [Fe II]?
+    - NO, this is an [Ar IV] 7170.5 line, which we were expecting
+    - Prominence: 3.1
+  - call_rest(7241.1948) {{{results(=7237.094=)}}}
+    - This is the other [Ar IV] 7237.4 line
+    - Prominence: 4.34
+  - call_rest(7267.4448) {{{results(=7263.329=)}}}
+    - This is the third [Ar IV] 7262.7 line
+    - Prominence: 3.21
+  - call_rest(7334.9448) {{{results(=7330.791=)}}}
+    - Prominence: 41.2
+    - This is mainly the [O II] 7330.73 line
+    - Which is why we do not see the [Ar IV] 7331.4 line, although it must be contributing at the 10% level
+  - call_rest(7246.1948) {{{results(=7242.091=)}}}
+    - Prominence: 1.94
+    - I am not sure what this is, maybe sky
+  - call_rest(7277.4448) {{{results(=7273.323=)}}}
+    - Prominence: 5.86
+    - Also probably sky
+  - call_rest(7284.9448) {{{results(=7280.819=)}}}
+    - Prominence: 30.9
+    - Certainly He I 7281.35
+  - call_rest(7534.9448) {{{results(=7530.677=)}}}
+    - Prominence: 6.66
+    - Certainly [Cl IV] 7530.80
 
 ***** Globule region
+
+- [2022-10-08 Sat] To get most of the interesting neutral lines, it is necessary to reduce the prominence threshold a bit. I will try 1.0
 #+begin_src sh :dir ../data/spec1d 
-    python ../../scripts/spec1d-find-peaks.py n346-nostar-glob.fits
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-glob.fits --min-prominence 1.0
 #+end_src
 
 #+RESULTS:
-: n346-nostar-glob-peaks-p0030-d0030.csv
+: n346-nostar-glob-peaks-p0010-d0030.csv
+
+Let's look at the range around Ha, where I  know there should be some lines
+
+- call_rest(6633.6948) {{{results(=6629.938=)}}}
+- call_rest(6641.1948) {{{results(=6637.434=)}}}
+  - This and the previous one are the ones that flank the Raman absorption feature
+- call_rest(6648.6948) {{{results(=6644.929=)}}}
+- call_rest(6659.9448) {{{results(=6656.173=)}}}
+
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-glob-e.fits --min-prominence 0.2
+#+end_src
+
+#+RESULTS:
+: n346-nostar-glob-e-peaks-p0002-d0030.csv
+
+***** Filament regions
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-fil.fits --min-prominence 0.2
+#+end_src
+
+#+RESULTS:
+: n346-nostar-fil-peaks-p0002-d0030.csv
+
+I had to reduce the minimum prominence to 0.3, but this gave me 372 lines.
+
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-fil-d.fits --min-prominence 0.2
+#+end_src
+
+#+RESULTS:
+: n346-nostar-fil-d-peaks-p0002-d0030.csv
+
+**** Plot identified lines on top of the spectrum
+#+begin_src python :tangle ../scripts/spec1d-plot-peaks.py
+  from mpdaf.obj import Spectrum
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import MaxNLocator
+  import typer
+
+  def main(
+          region: str,
+          peak_suffix: str="p0010-d0030",
+          linthresh: float=20.0,
+  ):
+      """Plot of spectra with identified peaks"""
+      fig, ax = plt.subplots(figsize=(50, 3))
+      figfile = f"spec1d-peaks-{region}-{peak_suffix}.pdf"
+
+
+      spec = Spectrum(f"n346-nostar-{region}.fits")
+      spec_bg = Spectrum(f"n346-nostar-{region}-bg.fits")
+      spec.plot(label=region, linewidth=1)
+      spec_bg.plot(label=f"{region} BG", linewidth=0.5)
+
+      tab = Table.read(
+          f"n346-nostar-{region}-peaks-{peak_suffix}.csv",
+          format="ascii.ecsv",
+      )
+      ax.scatter("Wavelength", "prominences", data=tab,
+                 marker="x", color="r", s=15)
+      ax.legend(ncol=4)
+      ax.minorticks_on()
+      ax.grid(which="major", linewidth=0.5)
+      ax.grid(which="minor", linewidth=0.2)
+      ax.set_yscale("symlog", linthresh=linthresh)
+      ax.xaxis.set_major_locator(MaxNLocator(100))
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py glob --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-glob-p0010-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py bs --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-bs-p0010-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py fil --peak-suffix p0002-d0030 --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-fil-p0002-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py fil-d --peak-suffix p0002-d0030 --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-fil-d-p0002-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-glob-e-p0002-d0030.pdf]]
 
 *** Step 2: extract line maps
 - We can extract the 3 pixels around the peak
@@ -1379,18 +1543,18 @@ For this we can use interpolation
 **** Ionization potentials
 |      |      eV |   Ryd |
 |------+---------+-------|
-| S^0   | 10.3600 | 0.762 |
-| Cl^0  | 12.9676 | 0.954 |
+| S^0  | 10.3600 | 0.762 |
+| Cl^0 | 12.9676 | 0.954 |
 |------+---------+-------|
-| H^0   | 13.5984 | 1.000 |
-| O^0   | 13.6181 | 1.001 |
-| N^0   | 14.5341 | 1.069 |
-| Ar^0  | 15.7596 | 1.159 |
+| H^0  | 13.5984 | 1.000 |
+| O^0  | 13.6181 | 1.001 |
+| N^0  | 14.5341 | 1.069 |
+| Ar^0 | 15.7596 | 1.159 |
 | S^{+}   |  23.338 | 1.716 |
 | Cl^{+}  |  23.814 | 1.751 |
 | C^{+}   |  24.385 | 1.793 |
 |------+---------+-------|
-| He^0  | 24.5874 | 1.808 |
+| He^0 | 24.5874 | 1.808 |
 | Ar^{+}  |  27.630 | 2.032 |
 | N^{+}   |  29.601 | 2.177 |
 | S^{+2}  |   34.86 | 2.564 |
@@ -1548,8 +1712,8 @@ For this we can use interpolation
 
 
 #+name: emline-excess-table
-| Line             |    MP |   eMP |    BS |   eBS |    BG |   eBG" |
-| [S II]\n6731"   | 0.078 | 0.037 |     0 |     0 | 0.930 | 0.104 |
+| Line             |    MP |   eMP |    BS |   eBS |    BG |  eBG" |
+| [S II]\n6731"    | 0.078 | 0.037 |     0 |     0 | 0.930 | 0.104 |
 | "[S III]\n9069"  | 0.429 | 0.045 | 0.201 | 0.058 | 0.290 | 0.038 |
 | "[Ar III]\n7136" | 0.209 | 0.034 | 0.308 | 0.036 | 0.210 | 0.025 |
 | "H I\n4861"      | 0.135 | 0.039 | 0.363 | 0.026 | 0.217 | 0.027 |
@@ -2598,29 +2762,29 @@ CLOSED: [2021-05-29 Sat 00:16]
 :PROPERTIES:
 :ID:       903F97D6-AF67-4C78-8011-C7DDD449B546
 :END:
-| Name    | SSN | MPG | Sp. Type    | T_eff, kK |           V |    BC |   M_bol | L/Lsun | R/Rsun | log q_0 |     Q_0 | d (") |   F_bol | L_glob/L_sun | Q_0(glob) |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| W 1     |   7 | 435 | O4If+O5-6   |       43 |        12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |  24.46 | 8.0e49 | 11.56 |   3.72 |      2.6e3 |   1.5e47 |
-| W 2     | 14* | 470 | O8.5 III    |       36 |        14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |  24.04 | 9.2e48 |  3.04 |   8.06 |      5.7e3 |   2.5e47 |
-| W 3     |   9 | 355 | O2 III(f)   |     52.5 |       13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |   24.9 | 7.7e49 | 22.68 |   0.76 |      5.3e2 |   3.7e46 |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| SSN 168 | 168 |     | B0?         |       30 |    16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |   23.2 | 4.0e47 |   0.2 | 266.05 |          0 |        0 |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| Sk 80   |   5 | 789 | O7 Iaf+     |       36 |       12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |  24.07 | 5.2e49 | 122.4 |   0.03 |      1.8e1 |   8.7e44 |
-| HD 5980 |     | 755 | WR+WR+O     |       43 | 11.6 + 0.75 | -3.98 | -10.88 |  1.8e6 |  24.14 |      X |   1e50 | 105.7 |   0.06 |      4.0e1 |   2.2e45 |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| W 4     |  11 | 342 | O5-6 V((f)) |       43 |        13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |  24.47 | 3.2e49 | 24.85 |   0.32 |      2.2e2 |   1.3e46 |
-| SSN 13  |  13 | 324 | O4 V((f+))  |       48 |       14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |   24.8 | 3.7e49 | 36.99 |   0.12 |      8.4e1 |   6.8e45 |
-| SSN 15  |  15 | 368 | O6: V((f))  |     42.5 |        14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |   24.4 | 1.8e49 | 17.15 |   0.41 |      2.9e2 |   1.5e46 |
-| SSN 17  |  17 | 396 | O7V         |       38 |      14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |  24.15 | 8.7e48 | 11.53 |   0.51 |      3.6e2 |   1.6e46 |
-| SSN 18  |  18 | 487 | O8V         |       36 |       14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |  23.94 | 5.2e48 |  8.37 |   0.76 |      5.4e2 |   1.9e46 |
-| SSN 46  |  46 | 500 | O6V:        |     42.5 |      15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |   24.4 | 6.2e48 | 16.39 |   0.16 |      1.1e2 |   5.8e45 |
-| SSN 22  |  22 | 476 | O7?V?       |       38 |      14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |  24.15 | 7.3e48 |  4.06 |   3.44 |      2.4e3 |   1.1e47 |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-| SSN 26  |  26 | 655 | OC5-6Vz     |       43 |       14.90 | -3.98 |  -8.33 |  1.7e5 |   7.42 |  24.47 | 9.9e48 |    60 |   0.02 |      1.2e1 |   6.9e44 |
-| SSN 37  |  37 | 593 | O5.5V       |       43 |       15.07 | -3.98 |  -8.16 |  1.4e5 |   6.73 |  24.47 | 8.1e48 |    40 |   0.03 |      2.2e1 |   1.3e45 |
-|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
-|         |     |     |             |          |             |     X |      X |  7.6e6 |      X |      X | 4.3e50 |     X |      X |      1.3e4 |   6.3e47 |
+| Name    | SSN | MPG | Sp. Type    | T_eff, kK |           V |    BC |  M_bol | L/Lsun | R/Rsun | log q_0 |    Q_0 | d (") |  F_bol | L_glob/L_sun | Q_0(glob) |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+| W 1     |   7 | 435 | O4If+O5-6   |        43 |        12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |   24.46 | 8.0e49 | 11.56 |   3.72 |        2.6e3 |    1.5e47 |
+| W 2     | 14* | 470 | O8.5 III    |        36 |        14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |   24.04 | 9.2e48 |  3.04 |   8.06 |        5.7e3 |    2.5e47 |
+| W 3     |   9 | 355 | O2 III(f)   |      52.5 |       13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |    24.9 | 7.7e49 | 22.68 |   0.76 |        5.3e2 |    3.7e46 |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+| SSN 168 | 168 |     | B0?         |        30 |    16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |    23.2 | 4.0e47 |   0.2 | 266.05 |            0 |         0 |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+| Sk 80   |   5 | 789 | O7 Iaf+     |        36 |       12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |   24.07 | 5.2e49 | 122.4 |   0.03 |        1.8e1 |    8.7e44 |
+| HD 5980 |     | 755 | WR+WR+O     |        43 | 11.6 + 0.75 | -3.98 | -10.88 |  1.8e6 |  24.14 |       X |   1e50 | 105.7 |   0.06 |        4.0e1 |    2.2e45 |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+| W 4     |  11 | 342 | O5-6 V((f)) |        43 |        13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |   24.47 | 3.2e49 | 24.85 |   0.32 |        2.2e2 |    1.3e46 |
+| SSN 13  |  13 | 324 | O4 V((f+))  |        48 |       14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |    24.8 | 3.7e49 | 36.99 |   0.12 |        8.4e1 |    6.8e45 |
+| SSN 15  |  15 | 368 | O6: V((f))  |      42.5 |        14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |    24.4 | 1.8e49 | 17.15 |   0.41 |        2.9e2 |    1.5e46 |
+| SSN 17  |  17 | 396 | O7V         |        38 |      14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |   24.15 | 8.7e48 | 11.53 |   0.51 |        3.6e2 |    1.6e46 |
+| SSN 18  |  18 | 487 | O8V         |        36 |       14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |   23.94 | 5.2e48 |  8.37 |   0.76 |        5.4e2 |    1.9e46 |
+| SSN 46  |  46 | 500 | O6V:        |      42.5 |      15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |    24.4 | 6.2e48 | 16.39 |   0.16 |        1.1e2 |    5.8e45 |
+| SSN 22  |  22 | 476 | O7?V?       |        38 |      14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |   24.15 | 7.3e48 |  4.06 |   3.44 |        2.4e3 |    1.1e47 |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+| SSN 26  |  26 | 655 | OC5-6Vz     |        43 |       14.90 | -3.98 |  -8.33 |  1.7e5 |   7.42 |   24.47 | 9.9e48 |    60 |   0.02 |        1.2e1 |    6.9e44 |
+| SSN 37  |  37 | 593 | O5.5V       |        43 |       15.07 | -3.98 |  -8.16 |  1.4e5 |   6.73 |   24.47 | 8.1e48 |    40 |   0.03 |        2.2e1 |    1.3e45 |
+|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
+|         |     |     |             |           |             |     X |      X |  7.6e6 |      X |       X | 4.3e50 |     X |      X |        1.3e4 |    6.3e47 |
 #+TBLFM: $7=-6.9 log10(1000 $5) + 27.99 ; f2::$8=$6 + $7 - 0.3 - 18.95;f2::$9=10**(-0.4 ($8 - 4.73));s2::$10=sqrt($9 $lsun / 4 $pi $sigma (1000 $5)**4) / $rsun ; f2::$12=4 $pi ($10 $rsun)**2 10**($11);s2::$14=$9 $lsun / 4 $pi (0.3 $pc $13)**2 ; f2::$15=$13 > 1 ? $9 (1 / 2 $13)**2 : 0 ;s2::$16=$13 > 1 ? $12 (1 / 2 $13)**2 : 0 ;s2::@7$12=1e50::@17$7..@17$8=X::@17$9=vsum(@I..@IIIII);s2::@17$10..@17$11=X::@17$12=vsum(@I..@IIIII);s2::@17$13..@17$14=X::@17$15..@17$16=vsum(@I..@IIIII);s2
 
 + M_bol = V + BC - AV - DM
@@ -2812,35 +2976,35 @@ CLOSED: [2021-05-29 Sat 00:16]
   + The higher gravity model (50-44) would require a slightly stronger wind (intermediate between I and II) to get the right Q_2
   + The lower temperature model (49-42) would require the strong wind (SMC-OB-II), which has Mdot = 2.3e-6
 | Grid       | Model | log L | V_inf | log M_dot |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 | 1e4 Q2/Q0 | Q3/Q0 |   Q0' |   Q2' | Mdot' |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| OB-I       | 56-42 | 6.230 | 4136 |       -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |
-| OB-I       | 54-42 | 6.150 | 4077 |       -7 | 50.00 | 49.52 | 45.79 | 48.85 | 0.331 |     0.617 | 0.071 | 49.83 | 45.62 | -7.37 |
-| OB-I       | 53-42 | 6.070 | 4001 |       -7 | 49.92 | 49.41 | 45.53 | 48.74 | 0.309 |     0.407 | 0.066 | 49.83 | 45.44 | -7.30 |
-| OB-I       | 52-42 | 5.980 | 3898 |       -7 | 49.81 | 49.34 | 45.93 | 48.72 | 0.339 |     1.318 | 0.081 | 49.81 | 45.93 | -7.22 |
-| OB-I       | 51-42 | 5.910 | 3835 |       -7 | 49.75 | 49.20 | 45.23 | 48.50 | 0.282 |     0.302 | 0.056 | 49.82 |  45.3 | -7.15 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 50-44 | 5.520 | 3311 |   -5.891 | 49.33 | 48.82 | 45.28 | 48.23 | 0.309 |     0.891 | 0.079 | 49.79 | 45.74 | -5.66 |
-| SMC-OB-I   | 50-44 | 5.520 | 3311 |   -6.891 | 49.32 | 48.82 | 44.80 | 48.24 | 0.316 |     0.302 | 0.083 | 49.78 | 45.26 | -6.66 |
-| SMC-OB-III | 50-44 |  5.52 | 3311 |   -7.891 | 49.33 | 48.79 | 44.75 | 48.10 | 0.288 |     0.263 | 0.059 | 49.79 | 45.21 | -7.66 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 50-42 | 5.760 | 3020 |   -5.771 | 49.58 | 49.07 | 45.52 | 48.46 | 0.309 |     0.871 | 0.076 |  49.8 | 45.74 | -5.66 |
-| OB-I       | 50-42 | 5.830 | 3800 |       -7 | 49.66 | 49.08 | 45.49 | 48.37 | 0.263 |     0.676 | 0.051 | 49.81 | 45.64 | -7.09 |
-| SMC-OB-I   | 50-42 |  5.76 | 3020 |   -6.771 | 49.58 | 49.07 | 45.19 | 48.47 | 0.309 |     0.407 | 0.078 |  49.8 | 45.41 | -6.66 |
-| SMC-OB-III | 50-42 |  5.76 | 3020 |   -7.771 | 49.59 | 49.05 | 44.63 | 48.34 | 0.288 |     0.110 | 0.056 | 49.81 | 44.85 | -7.66 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| OB-I       | 50-40 | 6.240 | 3578 |       -7 | 50.09 | 49.52 | 45.37 | 48.80 | 0.269 |     0.191 | 0.051 | 49.83 | 45.11 | -7.35 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 49-44 | 5.450 | 3234 |   -5.933 | 49.25 | 48.72 | 45.02 | 48.12 | 0.295 |     0.589 | 0.074 | 49.78 | 45.55 | -5.63 |
-| SMC-OB-I   | 49-44 | 5.450 | 3234 |   -6.933 | 49.24 | 48.73 | 44.36 | 48.14 | 0.309 |     0.132 | 0.079 | 49.77 | 44.89 | -6.63 |
-| SMC-OB-III | 49-44 | 5.450 | 3234 |   -7.933 | 49.26 | 48.70 | 44.65 | 48.01 | 0.275 |     0.245 | 0.056 | 49.79 | 45.18 | -7.63 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 49-42 | 5.700 | 2978 |   -5.799 | 49.51 | 48.98 | 45.32 | 48.36 | 0.295 |     0.646 | 0.071 | 49.79 |  45.6 | -5.63 |
-| OB-I       | 49-42 | 5.750 | 3695 |       -7 | 49.57 | 48.97 | 44.79 | 48.24 | 0.251 |     0.166 | 0.047 |  49.8 | 45.02 | -7.01 |
-| SMC-OB-I   | 49-42 | 5.700 | 2978 |   -6.799 | 49.51 | 48.99 | 44.65 | 48.38 | 0.302 |     0.138 | 0.074 | 49.79 | 44.93 | -6.63 |
-| SMC-OB-III | 49-42 | 5.700 | 2978 |   -7.799 | 49.52 | 48.96 | 44.68 | 48.24 | 0.275 |     0.145 | 0.052 |  49.8 | 44.96 | -7.63 |
-|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-I   | 36-38 | 5.260 | 1979 |   -6.993 | 48.82 | 47.81 | 42.06 | 46.54 | 0.098 |     0.002 | 0.005 | 49.54 | 42.78 | -6.23 |
-| SMC-OB-II  | 42-38 | 5.800 | 2316 |   -5.687 | 49.57 | 48.85 | 41.43 | 48.09 | 0.191 |   7.24e-5 | 0.033 | 49.75 | 41.61 | -5.43 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| OB-I       | 56-42 | 6.230 |  4136 |        -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |
+| OB-I       | 54-42 | 6.150 |  4077 |        -7 | 50.00 | 49.52 | 45.79 | 48.85 | 0.331 |     0.617 | 0.071 | 49.83 | 45.62 | -7.37 |
+| OB-I       | 53-42 | 6.070 |  4001 |        -7 | 49.92 | 49.41 | 45.53 | 48.74 | 0.309 |     0.407 | 0.066 | 49.83 | 45.44 | -7.30 |
+| OB-I       | 52-42 | 5.980 |  3898 |        -7 | 49.81 | 49.34 | 45.93 | 48.72 | 0.339 |     1.318 | 0.081 | 49.81 | 45.93 | -7.22 |
+| OB-I       | 51-42 | 5.910 |  3835 |        -7 | 49.75 | 49.20 | 45.23 | 48.50 | 0.282 |     0.302 | 0.056 | 49.82 |  45.3 | -7.15 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 50-44 | 5.520 |  3311 |    -5.891 | 49.33 | 48.82 | 45.28 | 48.23 | 0.309 |     0.891 | 0.079 | 49.79 | 45.74 | -5.66 |
+| SMC-OB-I   | 50-44 | 5.520 |  3311 |    -6.891 | 49.32 | 48.82 | 44.80 | 48.24 | 0.316 |     0.302 | 0.083 | 49.78 | 45.26 | -6.66 |
+| SMC-OB-III | 50-44 |  5.52 |  3311 |    -7.891 | 49.33 | 48.79 | 44.75 | 48.10 | 0.288 |     0.263 | 0.059 | 49.79 | 45.21 | -7.66 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 50-42 | 5.760 |  3020 |    -5.771 | 49.58 | 49.07 | 45.52 | 48.46 | 0.309 |     0.871 | 0.076 |  49.8 | 45.74 | -5.66 |
+| OB-I       | 50-42 | 5.830 |  3800 |        -7 | 49.66 | 49.08 | 45.49 | 48.37 | 0.263 |     0.676 | 0.051 | 49.81 | 45.64 | -7.09 |
+| SMC-OB-I   | 50-42 |  5.76 |  3020 |    -6.771 | 49.58 | 49.07 | 45.19 | 48.47 | 0.309 |     0.407 | 0.078 |  49.8 | 45.41 | -6.66 |
+| SMC-OB-III | 50-42 |  5.76 |  3020 |    -7.771 | 49.59 | 49.05 | 44.63 | 48.34 | 0.288 |     0.110 | 0.056 | 49.81 | 44.85 | -7.66 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| OB-I       | 50-40 | 6.240 |  3578 |        -7 | 50.09 | 49.52 | 45.37 | 48.80 | 0.269 |     0.191 | 0.051 | 49.83 | 45.11 | -7.35 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 49-44 | 5.450 |  3234 |    -5.933 | 49.25 | 48.72 | 45.02 | 48.12 | 0.295 |     0.589 | 0.074 | 49.78 | 45.55 | -5.63 |
+| SMC-OB-I   | 49-44 | 5.450 |  3234 |    -6.933 | 49.24 | 48.73 | 44.36 | 48.14 | 0.309 |     0.132 | 0.079 | 49.77 | 44.89 | -6.63 |
+| SMC-OB-III | 49-44 | 5.450 |  3234 |    -7.933 | 49.26 | 48.70 | 44.65 | 48.01 | 0.275 |     0.245 | 0.056 | 49.79 | 45.18 | -7.63 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 49-42 | 5.700 |  2978 |    -5.799 | 49.51 | 48.98 | 45.32 | 48.36 | 0.295 |     0.646 | 0.071 | 49.79 |  45.6 | -5.63 |
+| OB-I       | 49-42 | 5.750 |  3695 |        -7 | 49.57 | 48.97 | 44.79 | 48.24 | 0.251 |     0.166 | 0.047 |  49.8 | 45.02 | -7.01 |
+| SMC-OB-I   | 49-42 | 5.700 |  2978 |    -6.799 | 49.51 | 48.99 | 44.65 | 48.38 | 0.302 |     0.138 | 0.074 | 49.79 | 44.93 | -6.63 |
+| SMC-OB-III | 49-42 | 5.700 |  2978 |    -7.799 | 49.52 | 48.96 | 44.68 | 48.24 | 0.275 |     0.145 | 0.052 |  49.8 | 44.96 | -7.63 |
+|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-I   | 36-38 | 5.260 |  1979 |    -6.993 | 48.82 | 47.81 | 42.06 | 46.54 | 0.098 |     0.002 | 0.005 | 49.54 | 42.78 | -6.23 |
+| SMC-OB-II  | 42-38 | 5.800 |  2316 |    -5.687 | 49.57 | 48.85 | 41.43 | 48.09 | 0.191 |   7.24e-5 | 0.033 | 49.75 | 41.61 | -5.43 |
 #+TBLFM: $10=10**($7 - $6);f3::$11=10**(4 + $8 - $6);f3::$12=10**($9 - $6);f3::$13=$6 - ($3 - 5.98)::$14=$8 - ($3 - 5.98)::$15=$5 - 0.75 ($3 - 5.98) + 1.5 (log10(2800 / $4));f2
 ***** Correction for radius
 + The POWR models are a bit sub-luminous compared with W3
