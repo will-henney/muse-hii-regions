@@ -840,6 +840,20 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
   - That can give correction to line flux for the missing wings
 - At the same time, we can calculate the true mean wavelength for each
 
+
+**** TODO Comments and plans for the line maps
+- [2022-10-09 Sun] First attempt - works pretty well
+  - Things to improve
+    - [ ] Get a better-curated list of lines by combining several of the glob and fil regions, although glob-e is working pretty well
+    - [ ] Increase the maximum width allowed, since I think we are missing some lines that might be blends, for instance 7221
+    - [ ] Better scaling of the image brightness. Currently, we are using the prominence in the particular region, but we could try using the median and mad of the image itself
+    - [ ] Maybe try subtracting the hyper-local "continuum" by using the left_bases and right_bases values.
+      - Although this might increase the noise
+      - But it might improve the weak lines near Ha, which are currently affected by the Raman wings, which makes us see the neutral filaments in negative
+      - And the same thing happens around the Paschen jump
+    - [ ] Better color scheme. Choose a key color for each plot, based on the wavelength of the line, and then make a seaborn color palette based on that
+    - [ ] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
+    - 
 **** Apply 3-wav method to each identified line to extract images and plot them
 #+begin_src python :tangle ../scripts/peak-image-plot.py
   from  typing import Union
@@ -928,6 +942,12 @@ python ../../scripts/peak-image-plot.py ../../big-data/ngc346new/n346-muse-csub-
   - It woulds probably help to do a re-binning or median filtering first, since the important variation will be on larger scales
 *** Step 4: classify different line types
 - This would be a natural by-product of the correlations
+- [ ] But we could also make diagnostic plots, based on ratios of intensities in different regions
+  - For instance, for the ionized lines and i-front lines:
+    - Ratio between BS and MIP regions to distinguish IV from III
+    - Ratio between MIP and NEUT/FIL regions to distinguish III from II and possibly I
+  - For the neutral lines
+    - Ratio between NEUT and FIL/GLOB to distinguish shallow from deep 
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
