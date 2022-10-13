@@ -555,8 +555,8 @@ CLOSED: [2022-10-08 Sat 22:32]
           spec.data,
           prominence=min_prominence,
           distance=min_distance,
-          # FWHM must be between 2 and 5 pixels
-          width=(1.5, 5.0),
+          # FWHM must be between 2 and 10 pixels to allow blends
+          width=(1.5, 10.0),
       )
       # Convert to wavelengths
       waves = spec.wave.coord()[peaks]
@@ -841,19 +841,21 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
 - At the same time, we can calculate the true mean wavelength for each
 
 
-**** TODO Comments and plans for the line maps
+**** TODO [0/1] Comments and plans for the line maps
 - [2022-10-09 Sun] First attempt - works pretty well
-  - Things to improve
-    - [ ] Get a better-curated list of lines by combining several of the glob and fil regions, although glob-e is working pretty well
-    - [ ] Increase the maximum width allowed, since I think we are missing some lines that might be blends, for instance 7221
-    - [ ] Better scaling of the image brightness. Currently, we are using the prominence in the particular region, but we could try using the median and mad of the image itself
-    - [ ] Maybe try subtracting the hyper-local "continuum" by using the left_bases and right_bases values.
-      - Although this might increase the noise
-      - But it might improve the weak lines near Ha, which are currently affected by the Raman wings, which makes us see the neutral filaments in negative
-      - And the same thing happens around the Paschen jump
-    - [ ] Better color scheme. Choose a key color for each plot, based on the wavelength of the line, and then make a seaborn color palette based on that
-    - [ ] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
-    - 
+- [-] Things to improve
+  - [ ] Get a better-curated list of lines by combining several of the glob and fil regions, although glob-e is working pretty well
+  - [X] Increase the maximum width allowed, since I think we are missing some lines that might be blends, for instance 7221
+  - [X] Better scaling of the image brightness. Currently, we are using the prominence in the particular region, but we could try using the median and mad of the image itself
+    - We used percentile instead
+  - [X] Maybe try subtracting the hyper-local "continuum" by using the left_bases and right_bases values.
+    - Although this might increase the noise
+    - But it might improve the weak lines near Ha, which are currently affected by the Raman wings, which makes us see the neutral filaments in negative
+    - And the same thing happens around the Paschen jump
+    - Yes, this worked
+  - [X] Better color scheme. Choose a key color for each plot, based on the wavelength of the line, and then make a seaborn color palette based on that
+  - [ ] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
+  - 
 **** Apply 3-wav method to each identified line to extract images and plot them
 #+begin_src python :tangle ../scripts/peak-image-plot.py
   from  typing import Union
@@ -862,13 +864,43 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
   from astropy.table import Table
   from matplotlib import pyplot as plt
   from matplotlib.ticker import MaxNLocator
+  from matplotlib.colors import to_hex
+  from matplotlib.patches import BoxStyle
+  import matplotlib
+  import seaborn as sns
   import typer
+
+  def corners_text(
+          ax: matplotlib.axes.Axes,
+          texts: tuple[str, str, str, str],
+          pad: float=0.05,
+          ,**kwds,
+  ) -> None:
+      """Write 4 texts to 4 corners of graph"""
+      ax.text(pad, 1 - pad, texts[0],
+              ha="left", va="top", transform=ax.transAxes, **kwds)
+      ax.text(1 - pad, 1 - pad, texts[1],
+              ha="right", va="top", transform=ax.transAxes, **kwds)
+      ax.text(pad, pad, texts[2],
+              ha="left", va="bottom", transform=ax.transAxes, **kwds)
+      ax.text(1 - pad, pad, texts[3],
+              ha="right", va="bottom", transform=ax.transAxes, **kwds)
+
 
   def main(
           cube_file: str,
           peak_file: str,
           star_mask_file: Union[str, None]=None,
           vsys: float=170.0,
+          ncolumns: int=15,
+          subtract_base: bool=False,
+          wavelength_window_pad: float=1.5,
+          scale_by_percentile: bool=True,
+          use_rainbow_colors: bool=True,
+          rainbow_saturation: float=95.0,
+          rainbow_lightness: float=70.0,
+          rainbow_blue_red: tuple[float, float]=(270.0, -45.0),
+          extra_suffix: Union[str, None]=None,
   ):
       """Plot of images for each peak"""
 
@@ -881,35 +913,96 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
           star_mask = Image(star_mask_file).data > 0.0
 
       nlines = len(tab)
-      ncolumns = 15
       nrows = int(np.ceil(nlines / ncolumns))
       pane_size = 2
       fig, axes = plt.subplots(
           nrows, ncolumns,
           figsize=(ncolumns * pane_size, nrows * pane_size),
       )
-      suffix = peak_file.replace(".csv", ".pdf")
+      if extra_suffix is not None:
+          suffix = peak_file.replace(".csv", f"-{extra_suffix}.pdf")
+      else:
+          suffix = peak_file.replace(".csv", ".pdf")
       figfile = f"peak-images-{suffix}"
 
+      wavmin, wavmax = cube.wave.get_range()
       for row, ax in zip(tab, axes.flat):
-          wav1 = cube.wave.coord(row["left_ips"])
-          wav2 = cube.wave.coord(row["right_ips"])
-          im = cube.select_lambda(wav1, wav2).sum(axis=0)
+          # Take the half-maximum wave range and expand it by the padding on both sides
+          wav1 = cube.wave.coord(row["left_ips"]) - wavelength_window_pad
+          wav2 = cube.wave.coord(row["right_ips"]) + wavelength_window_pad
+          cube_window = cube.select_lambda(wav1, wav2)
+          if subtract_base:
+              # Subtract off average of channels from left and right bases
+              ib1, ib2 = row["left_bases"], row["right_bases"],
+              av_bases_image = 0.5 * (cube.data[ib1, :, :] + cube.data[ib2, :, :])
+              cube_window.data -= av_bases_image[None, :, :]
+          # Sum the window to get the extracted line image
+          im = cube_window.sum(axis=0)
           if star_mask_file is not None:
               im.mask = im.mask | star_mask
           scale = row["prominences"]
-          if scale < 2.0:
+
+          # For weak lines, rebin the pixels to get better s/n
+          if scale < 0.5:
+              im = im.rebin(8)
+          elif scale < 2.0:
               im = im.rebin(4)
           elif scale < 8.0:
               im = im.rebin(2)
-          im.plot(ax=ax, vmin=-0.5*scale, vmax=5*scale)
-          wav0 = 0.5 * (wav1 + wav2) / (1 + vsys / 300000)
-          title = f"{wav0:.2f} {scale:.4g}"
-          ax.set_title(title)
 
-      fig.tight_layout()
+          # Brightness scaling
+          if scale_by_percentile:
+              # First, take 5th to 95th percentile span
+              vmin, vmax = np.percentile(im.data[~im.mask], [5, 95])
+              vspan = vmax - vmin
+              # Then extend to by a certain fraction above and below
+              vmin -= 0.0 * vspan
+              vmax += 0.5 * vspan
+          else:
+              # If not using percentiles, just use the prominence data from find_peaks()
+              vmin, vmax = -0.5*scale, 5*scale
+
+          # Color map
+          if use_rainbow_colors:
+              # Fractional distance between blue and red ends of spectrum
+              xwav = (row["Wavelength"] - wavmin) /  (wavmax - wavmin)
+              # Convert to hue angle
+              blue, red = rainbow_blue_red
+              rainbow_hue = blue + (red - blue) * xwav
+              # Make a nice color map using this Hue as a key color
+              cmap = sns.light_palette(
+                  (rainbow_hue, rainbow_saturation, 100 - rainbow_lightness),
+                  input="husl",
+                  as_cmap=True,
+              )
+          else:
+              cmap = "gray_r"
+
+          im.plot(ax=ax, vmin=vmin, vmax=vmax, cmap=cmap.with_extremes(bad="0.5"))
+          wav0 = 0.5 * (wav1 + wav2) / (1 + vsys / 300000)
+          labels = (
+              f"λ{wav0:.2f}",
+              f"{vmax:.4g}", 
+              f"#{row['Pixel']:04d}",
+              f"δλ{row['widths']:.1f}",
+          )
+          corners_text(ax, labels, pad=0.02,
+                       color="k", fontweight="bold",
+                       bbox=dict(
+                           facecolor="w",
+                           boxstyle=BoxStyle.Round(pad=0.1),
+                           alpha=0.6,
+                       ),
+                       )
+
+      for ax in axes.flat:
+          ax.set(xticks=[], yticks=[])
+      sns.despine(left=True, bottom=True)
+      fig.tight_layout(h_pad=0.2, w_pad=0.2)
       fig.savefig(figfile)
       print(figfile, end="")
+
+
 
 
   if __name__ == "__main__":
@@ -919,19 +1012,166 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
 
 #+RESULTS:
 
+Run on the BS region to get the high-ionization lines
 #+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/peak-image-plot.py ../../big-data/ngc346new/n346-muse-csub-101.fits n346-nostar-bs-peaks-p0010-d0030.csv --star-mask-file ../n346-mask-stars.fits 
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --no-subtract-base
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030.pdf]]
 
+Run on the GLOB-E region to get the neutral lines
 #+begin_src sh :dir ../data/spec1d :results output file
-python ../../scripts/peak-image-plot.py ../../big-data/ngc346new/n346-muse-csub-101.fits n346-nostar-glob-e-peaks-p0002-d0030.csv --star-mask-file ../n346-mask-stars.fits 
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-glob-e-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-glob-e-peaks-p0002-d0030.pdf]]
+***** Multiple versions of the GLOB-E region
+I am investigating different options for the line extraction to see which is best:
+- Best value for wavelength window padding
+  - Larger values capture more of the line flux, but can also bring in neighboring lines
+  - For instance UIL 9019 is next to H I 9015, which leaks in when we use padding of 1.5 angstrom, but not when we use 0.5
+- Whether or not to subtract hyper-local continuum
+  - The utility of this varies a lot between lines
+  - This is estimated from the "bases" returned by the find_peaks() function
+  - At the blue and infrared ends, most lines are much better without it
+  - But around the Ha wings, and for a few other lines in the 7000 and 8000 range, it really helps
+    - For instance, the UILs at 6629, 6637, 6646 are quite invisible without it
+- Which median filtered cube to use
+  - So far I have been using the 101-pixel median
+  - But the 11-pixel median might work better and avoid the need to use the hyper-local continuum
+- Now I have added the option to use an extra suffix in the saved file, this will be easier to explore
+****** GLOB-E, csub 11, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-011.fits \
+         n346-nostar-glob-e-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB011-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-glob-e-peaks-p0002-d0030-CSUB011-PAD05.pdf]]
+****** GLOB-E, csub 101, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-glob-e-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-glob-e-peaks-p0002-d0030-CSUB101-PAD05.pdf]]
+
+****** GLOB-E, csub 101, pad 0.5, subtract base
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-glob-e-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05-SUBBASE
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-glob-e-peaks-p0002-d0030-CSUB101-PAD05-SUBBASE.pdf]]
+
+****** Earlier tries
+Save different versions of figure with different command line options. Do not run this again without changing the prefix to reflect current options.
+#+begin_src sh :dir ../data/spec1d :results silent
+  SUFFIX=NO-SUB-BASE-PAD05
+  cp peak-images-n346-nostar-glob-e-peaks-p0002-d0030.pdf  peak-images-n346-nostar-glob-e-peaks-p0002-d0030-$SUFFIX.pdf
+#+end_src
+
+[[file:../data/spec1d/peak-images-n346-nostar-glob-e-peaks-p0002-d0030-SUB-BASE-PAD15.pdf]]
+***** Multiple versions for the BS region
+
+****** BS, csub 11, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-011.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB011-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-CSUB011-PAD05.pdf]]
+
+
+****** BS, csub 101, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-CSUB101-PAD05.pdf]]
+
+***** Help for image extraction script
+#+begin_src sh :dir ../scripts
+python peak-image-plot.py --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Usage: peak-image-plot.py [OPTIONS] CUBE_FILE PEAK_FILE
+
+  Plot of images for each peak
+
+Arguments:
+  CUBE_FILE  [required]
+  PEAK_FILE  [required]
+
+Options:
+  --star-mask-file TEXT
+  --vsys FLOAT                    [default: 170.0]
+  --subtract-base / --no-subtract-base
+                                  [default: False]
+  --wavelength-window-pad FLOAT   [default: 1.5]
+  --scale-by-percentile / --no-scale-by-percentile
+                                  [default: True]
+  --use-rainbow-colors / --no-use-rainbow-colors
+                                  [default: True]
+  --rainbow-saturation FLOAT      [default: 95.0]
+  --rainbow-lightness FLOAT       [default: 70.0]
+  --rainbow-blue-red <FLOAT FLOAT>...
+                                  [default: 270.0, -45.0]
+  --extra-suffix TEXT
+  --install-completion            Install completion for the current shell.
+  --show-completion               Show completion for the current shell, to
+                                  copy it or customize the installation.
+
+  --help                          Show this message and exit.
+#+end_example
 
 *** Step 3: filter out the false positives
 - This is probably best done by visual inspection of the maps

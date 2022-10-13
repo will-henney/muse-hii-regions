@@ -21,8 +21,8 @@ def main(
         spec.data,
         prominence=min_prominence,
         distance=min_distance,
-        # FWHM must be between 2 and 5 pixels
-        width=(1.5, 5.0),
+        # FWHM must be between 2 and 10 pixels to allow blends
+        width=(1.5, 10.0),
     )
     # Convert to wavelengths
     waves = spec.wave.coord()[peaks]
