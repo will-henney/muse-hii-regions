@@ -221,7 +221,6 @@ def get_median_continuum_cube(cube: Cube, window_size=11):
 
 
 
-
 # + pycharm={"name": "#%%\n"}
 specP_cont = get_median_continuum(specP, 31)
 specE_cont = get_median_continuum(specE, 31)
@@ -249,7 +248,6 @@ white_map_E = cubeE.sum(axis=0)
 # ha_map_E = cubeE.select_lambda(6555.0, 6573.0).sum(axis=0)
 ha_map_P = cubeP.get_image((6555.0, 6573.0), method="sum", subtract_off=True)
 ha_map_E = cubeE.get_image((6555.0, 6573.0), method="sum", subtract_off=True)
-
 
 # + pycharm={"name": "#%%\n"}
 ha_map_P.shape, ha_map_E.shape
@@ -304,7 +302,6 @@ Table(rows=extra_region_dict.items())
 # + pycharm={"name": "#%%\n"}
 ha_frac_P = ha_map_P / white_map_P
 ha_frac_E = ha_map_E / white_map_E
-
 
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(8, 8))
@@ -547,7 +544,6 @@ def get_spectrum_from_region_slow(
 specBS_2 = get_spectrum_from_region_slow(cube_P_neb, region_dict['BS'])
 # specBSbg_2 = get_spectrum_from_region_slow(cube_P_neb, region_dict['BS bg'])
 
-
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots()
 (specBS_2 / specBS).plot()
@@ -590,7 +586,6 @@ ax.set(yscale='linear', ylim=[0.7, 1.1], xlim=[7100, 7400])
 specBS_cont = get_median_continuum(specBS, 31)
 specBSbg_cont = get_median_continuum(specBSbg, 31)
 
-
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(12, 6))
 specBS.plot()
@@ -629,7 +624,6 @@ ax.set(yscale='log', ylim=[1e0, 1e5])
 # + pycharm={"name": "#%%\n"}
 specBS_E_cont = get_median_continuum(specBS_E, 31)
 specBSbg_E_cont = get_median_continuum(specBSbg_E, 31)
-
 
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -678,7 +672,6 @@ spec_dict_extra_P_neb = {
     for label, reg in extra_region_dict.items()
 }
 
-
 # + pycharm={"name": "#%%\n"}
 spec_dict_E_neb = {
     label: get_spectrum_from_region(cube_E_neb, reg, reduction_method=np.nanmean)
@@ -688,7 +681,6 @@ spec_dict_extra_E_neb = {
     label: get_spectrum_from_region(cube_E_neb, reg, reduction_method=np.nanmean)
     for label, reg in extra_region_dict.items()
 }
-
 
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(12, 8))
@@ -1880,7 +1872,6 @@ fig.tight_layout()
 # + pycharm={"name": "#%%\n"}
 fig.savefig("peter-region-strip-ratio-spectra.pdf")
 
-
 # + pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(n_sections, 1, figsize=(12, 2 * n_sections))
 for w0, ax in zip(start_waves, axes):
@@ -1906,7 +1897,6 @@ fig.tight_layout()
 
 # + pycharm={"name": "#%%\n"}
 fig.savefig("eso-region-strip-ratio-spectra.pdf")
-
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # ### Even older, or at least less relevant
