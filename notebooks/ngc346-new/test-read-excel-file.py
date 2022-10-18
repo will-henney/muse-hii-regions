@@ -64,9 +64,28 @@ pd.DataFrame([[x.comment for x in row] for row in sheet.rows])
 # + [markdown] pycharm={"name": "#%% md\n"}
 # So, the above works for automatically extracting all the notes in the same shape as the original table
 
+# + [markdown] pycharm={"name": "#%% md\n"}
+# What happens when it is a Sheets "comment" rather than "note"?
+
 # + pycharm={"name": "#%%\n"}
+sheet['A468'].comment
 
 
+# + [markdown] pycharm={"name": "#%% md\n"}
+# The author is included in the content field, while the author field is still `None`
+
+# + [markdown] pycharm={"name": "#%% md\n"}
+# What happens when we have several comments on the same cell?
+
+# + pycharm={"name": "#%%\n"}
+x = sheet['F455'].comment
+x
+
+# + pycharm={"name": "#%%\n"}
+x.content
+
+# + [markdown] pycharm={"name": "#%% md\n"}
+# They all get concatenated into the `.content` field
 
 # + pycharm={"name": "#%%\n"}
 

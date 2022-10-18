@@ -155,6 +155,7 @@
 - This all looks very promising, as compared to the wavelengths that we have. However, we need to get some precise matches in order to be feasible
 **** TODO Finding C_2 wavelengths from ExoMol
 
+
   
 **** CN lines
 
@@ -885,7 +886,7 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
   - [X] Better color scheme. Choose a key color for each plot, based on the wavelength of the line, and then make a seaborn color palette based on that
   - [ ] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
   - 
-**** Apply 3-wav method to each identified line to extract images and plot them
+**** Sum between bases of each identified line to extract images and plot them
 #+begin_src python :tangle ../scripts/peak-image-plot.py
   from  typing import Union
   from mpdaf.obj import Spectrum, Cube, Image
@@ -1209,6 +1210,27 @@ Options:
   - noise
 - Although, we could maybe have an automated method that looks at correlation with specific templates
   - It woulds probably help to do a re-binning or median filtering first, since the important variation will be on larger scales
+
+
+
+**** TODO Classification in a big collaborative spreadsheet
+- I have made this in Google Sheets and am collaborating with Mabel to fill it in
+- [2022-10-13 Thu] Started work on it
+- [2022-10-16 Sun] First contributions from Mabel
+- [2022-10-18 Tue] Nearly finished
+  - I have left the interval 8000 to 9000 for Mabel to do
+  - Apart from that, the entire range from 6000 has been done completely in the sense that each peak detected in GLOB-E and BS has been fully investigated and classified
+  - At shorter wavelengths there are still some holes, but I think that they are all uninteresting
+  - And I have not done a study of the YSO-only lines yet, but I would rather leave those for now since they will just get in the way
+
+
+**** Reading in the spread sheet
+- I export it in excel format to [[file:../data/spec1d/All-Lines-MUSE-NGC-346.xlsx]]
+- Examples of reading it are in [[file:../notebooks/ngc346-new/test-read-excel-file.py]]
+  - Data can be read by pandas
+  - Comments and notes require use of the openpyxl library directly
+    
+
 *** Step 4: classify different line types
 - This would be a natural by-product of the correlations
 - [ ] But we could also make diagnostic plots, based on ratios of intensities in different regions
