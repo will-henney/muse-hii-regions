@@ -126,6 +126,35 @@
   | 16 |   8768.627 | 0.272 |   8809.841 | 0.497 | 8849.071 | 0.225 |
   | 18 |   8776.607 | 0.270 |   8822.725 | 0.496 | 8866.993 | 0.227 |
   - But we see nothing around there at all until 8790
+  - Update [2022-10-17 Mon]
+    - Mabel has found a possible match for 8809.841
+    - But we need to see if any other lines match up
+    - [ ] Most pressing question: are these vacuum or air wavelengths?
+    - [ ] And where did this table come from?
+- More on the C_2 lines [2022-10-17 Mon]
+  - Introduction to theory is given in van Dishoek & Black 1982ApJ...258..533V
+  - Lines are probably fluorescent
+    - Excitation is via the Phillips band system in optical/nir, which is the same one we might be seeing emission lines of
+    - Although this makes it hard to see how we can have very bright lines, as compared with the stellar continuum
+      - But maybe they are not that bright - we should work out the equivalent widths
+  - Excitation is from ground electronic state X to excited electronic state A
+    - All these are very approximate
+    - The v = 0-0 transition has wn = 8500 => 1.18 micron
+      - Interval of about 1500 cm^-1 between vibrational states of A
+    - The v = 1-0 transition has wn = 10000 => 1 micron
+    - The v = 2-0 transition has wn = 11500 => 8700 \AA
+    - The v = 3-0 transition has wn = 13000 => 7690 \AA
+    - The v = 4-0 transition has wn = 14500 => 6900 \AA
+    - The v = 5-0 transition has wn = 16000 => 6250 \AA
+    - Etc ...
+    - The v = 8-0 transition has wn = 20500 => 4880 \AA
+  - But there is also the rotational structure
+  - And we could also have return to a vibrationally excited state of X
+    - Interval of about 1800 cm^-1 between vibrational states of X
+    - So, for instance 8-3 would be wn = 20500 - 5400 = 15100 => 6620 \AA
+- This all looks very promising, as compared to the wavelengths that we have. However, we need to get some precise matches in order to be feasible
+**** TODO Finding C_2 wavelengths from ExoMol
+
   
 **** CN lines
 
