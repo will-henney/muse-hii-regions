@@ -38,16 +38,16 @@ df
 import openpyxl
 
 # + pycharm={"name": "#%%\n"}
-workbook = openpyxl.load_workbook(datapath / "All-Lines-MUSE-NGC-346.xlsx")
+workbook = openpyxl.load_workbook(datapath / "All-Lines-MUSE-NGC-346.xlsx", data_only=True)
 sheet = workbook.active
 sheet
 
 # + pycharm={"name": "#%%\n"}
-pd.DataFrame(sheet.values)
+pd.DataFrame(list(sheet.values)[1:], columns=list(sheet.values)[0])
 
 
 # + pycharm={"name": "#%%\n"}
-cf = sheet.conditional_formatting
+
 
 # + pycharm={"name": "#%%\n"}
 cell = sheet['A1']
@@ -59,7 +59,26 @@ cell.comment.text, cell.comment.author
 # Aha, so it turns out that the notes are called "Comments" in the excel file. OK, that is easy then.
 
 # + pycharm={"name": "#%%\n"}
-pd.DataFrame([[x.comment for x in row] for row in sheet.rows])
+pd.DataFrame(
+    [
+        [
+            # Take content from non-empty comments
+            x.comment.content if x.comment else ""
+            for x in row
+            # Only use the columns we want
+            if x.column_letter in "ABCDEFGHI"
+        ]
+        for row in sheet.rows
+        # And only use rows that have at least some data
+        if any(x.value for x in row)
+    ]
+)
+
+# + pycharm={"name": "#%%\n"}
+
+
+# + pycharm={"name": "#%%\n"}
+any(x.value for x in list(sheet.rows)[468])
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # So, the above works for automatically extracting all the notes in the same shape as the original table
