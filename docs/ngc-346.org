@@ -784,6 +784,32 @@ I had to reduce the minimum prominence to 0.3, but this gave me 372 lines.
 #+RESULTS:
 : n346-nostar-fil-d-peaks-p0002-d0030.csv
 
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-fil-b.fits --min-prominence 0.2
+#+end_src
+
+#+RESULTS:
+: n346-nostar-fil-b-peaks-p0002-d0030.csv
+
+***** Neutral regions
+
+
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-neut.fits --min-prominence 0.2
+#+end_src
+
+#+RESULTS:
+: n346-nostar-neut-peaks-p0002-d0030.csv
+
+
+***** YSO
+#+begin_src sh :dir ../data/spec1d 
+    python ../../scripts/spec1d-find-peaks.py n346-nostar-yso.fits --min-prominence 1.0
+#+end_src
+
+#+RESULTS:
+: n346-nostar-yso-peaks-p0010-d0030.csv
+
 **** Plot identified lines on top of the spectrum
 #+begin_src python :tangle ../scripts/spec1d-plot-peaks.py
   from mpdaf.obj import Spectrum
@@ -863,6 +889,28 @@ python ../../scripts/spec1d-plot-peaks.py glob-e --peak-suffix p0002-d0030 --lin
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-glob-e-p0002-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py neut --peak-suffix p0002-d0030 --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-neut-p0002-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py fil-b --peak-suffix p0002-d0030 --linthresh=1.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-fil-b-p0002-d0030.pdf]]
+
+#+begin_src sh :dir ../data/spec1d :results output file
+python ../../scripts/spec1d-plot-peaks.py YSO --peak-suffix p0010-d0030 --linthresh=10.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-YSO-p0010-d0030.pdf]]
+
 
 *** TODO Step 2: extract line maps
 - We can extract the 3 pixels around the peak
@@ -1165,6 +1213,38 @@ Save different versions of figure with different command line options. Do not ru
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-CSUB101-PAD05.pdf]]
+
+***** Other regions
+****** NEUT, csub 101, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-neut-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-neut-peaks-p0002-d0030-CSUB101-PAD05.pdf]]
+
+
+****** FIL-B, csub 101, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-fil-b-peaks-p0002-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-fil-b-peaks-p0002-d0030-CSUB101-PAD05.pdf]]
 
 ***** Help for image extraction script
 #+begin_src sh :dir ../scripts
