@@ -1246,6 +1246,22 @@ Save different versions of figure with different command line options. Do not ru
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-fil-b-peaks-p0002-d0030-CSUB101-PAD05.pdf]]
 
+
+****** YSO, csub 101, pad 0.5
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-csub-101.fits \
+         n346-nostar-yso-peaks-p0010-d0030.csv \
+         --star-mask-file ../n346-mask-stars.fits \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix CSUB101-PAD05
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-yso-peaks-p0010-d0030-CSUB101-PAD05.pdf]]
+
 ***** Help for image extraction script
 #+begin_src sh :dir ../scripts
 python peak-image-plot.py --help
