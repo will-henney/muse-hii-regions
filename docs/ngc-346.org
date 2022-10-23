@@ -1459,6 +1459,7 @@ Options:
   import openpyxl
   import yaml
   import slugify
+  from text_unidecode import unidecode
   from astropy.io import fits
   from astropy.wcs import WCS
 
@@ -1512,7 +1513,7 @@ Options:
               # Case that we do not
               return int(first_cont_method), False
 
-    
+
 
   def main(
           yaml_file : str,
@@ -1540,7 +1541,8 @@ Options:
           cube_window -= base
       image = np.sum(cube_window, axis=0)
       header = WCS(cube.header).celestial.to_header()
-      header.update({k: str(v) for k, v in metadata.items()})
+      # FITS headers allow only ASCII strings
+      header.update({k: unidecode(str(v)) for k, v in metadata.items()})
 
       fits_file = get_id_string(metadata) + ".fits"
       fits.PrimaryHDU(header=header, data=image).writeto(save_path / fits_file, overwrite=True)
@@ -1552,19 +1554,19 @@ Options:
 #+end_src
 
 #+begin_src sh :dir ../data/n346-lines :results verbaatim
-  python ../../scripts/make-one-map.py 1626.yaml
+  python ../../scripts/make-one-map.py 3736.yaml
 #+end_src
 
 #+RESULTS:
-: Image saved to type-deep-neutral/1626-uil-6628-89.fits
+: Image saved to type-deep-neutral/3736-uil-9262-16.fits
 
 
 #+begin_src sh :dir ../data/n346-lines :results verbaatim
-python ../../scripts/make-one-map.py 1987.yaml
+python ../../scripts/make-one-map.py 1547.yaml
 #+end_src
 
 #+RESULTS:
-: Image saved to type-deep-neutral/1987-uil-7078-89.fits
+: Image saved to type-low-neb/1547-uil-6529-50.fits
 
 
 
@@ -1589,6 +1591,17 @@ Options:
   --help                Show this message and exit.
 #+end_example
 
+
+**** Combine some maps of the same ion
+
+***** Combine all of the deep neutral maps
+
+
+***** Combine all the [Fe II] maps
+
+***** Combine some of the Si II maps
+
+***** Combine all of the N I maps
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
   - This is evidence for the local anisotropy of the radiation field
@@ -1671,7 +1684,21 @@ Options:
 + [ ] [S II] lines for density
   + This works much better - s/n is high and we are clearly away from the low-density limit
   + We can distinguish the denser gas close to ionization fronts on filaments from the lower-density diffuse component
-    + The latter has densities of order 
+    + The latter has densities of order
+**** Additional high ionization lines [2022-10-22 Sat]
+- This is a by-product of work on the deep neutral lines
+***** O II 4649 and 4642
+- 4649 looks like the other high ionization lines
+  - It looks very different from [O III], which makes me think that it *must be fluorescence*
+  - We should compare prediction of recombination contribution, given the O abundance determined from the forbidden lines
+  - I suspect that it may mainly be fluorescence though
+- 4642 looks a bit different, but that is mainly due to stars
+  - Doing a cut, you can see an increase at the bow shock
+***** Si III 5740
+- This also looks similar to the [Ar IV] and [Cl IV] lines, but a bit more diffuse
+- Not clear if it is recombination or fluorescence
+  
+
 **** Lines that that do NOT come from bow shock
 + [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
 + [Fe III] 4658.1 - weaker than 4987, but similar distribution
@@ -2282,52 +2309,71 @@ For this we can use interpolation
       #+end_src
 
 **** Ionization potentials
-|      |      eV |   Ryd |
-|------+---------+-------|
-| S^0  | 10.3600 | 0.762 |
-| Cl^0 | 12.9676 | 0.954 |
-|------+---------+-------|
-| H^0  | 13.5984 | 1.000 |
-| O^0  | 13.6181 | 1.001 |
-| N^0  | 14.5341 | 1.069 |
-| Ar^0 | 15.7596 | 1.159 |
-| S^{+}   |  23.338 | 1.716 |
-| Cl^{+}  |  23.814 | 1.751 |
-| C^{+}   |  24.385 | 1.793 |
-|------+---------+-------|
-| He^0 | 24.5874 | 1.808 |
-| Ar^{+}  |  27.630 | 2.032 |
-| N^{+}   |  29.601 | 2.177 |
-| S^{+2}  |   34.86 | 2.564 |
-| O^{+}   |  35.121 | 2.583 |
-| Cl^{+2} |   39.80 | 2.927 |
-| Ar^{+2} |  40.735 | 2.996 |
-| S^{+3}  |  47.222 | 3.473 |
-| Cl^{+3} |   53.24 | 3.915 |
-|------+---------+-------|
-| He^{+}  |  54.418 | 4.002 |
-| O^{+2}  |  54.936 | 4.040 |
-| Ar^{+3} |   59.58 | 4.381 |
+- Where did I get these from? [2022-10-22 Sat]
+  - Looks like https://en.wikipedia.org/wiki/Ionization_energies_of_the_elements_(data_page)
+     
+|      |       eV |   Ryd |
+|------+----------+-------|
+| K^0  |  4.34066 | 0.319 |
+| S^0  |  10.3600 | 0.762 |
+| Cl^0 |  12.9676 | 0.954 |
+|------+----------+-------|
+| H^0  |  13.5984 | 1.000 |
+| O^0  |  13.6181 | 1.001 |
+| N^0  |  14.5341 | 1.069 |
+| Ar^0 |  15.7596 | 1.159 |
+| Ne^0 |  21.5646 | 1.586 |
+| S^{+}   |   23.338 | 1.716 |
+| Cl^{+}  |   23.814 | 1.751 |
+| C^{+}   |   24.385 | 1.793 |
+|------+----------+-------|
+| He^0 |  24.5874 | 1.808 |
+| Ar^{+}  |   27.630 | 2.032 |
+| N^{+}   |   29.601 | 2.177 |
+| K^{+}   |    31.63 | 2.326 |
+| S^{+2}  |    34.86 | 2.564 |
+| O^{+}   |   35.121 | 2.583 |
+| Cl^{+2} |    39.80 | 2.927 |
+| Ne^{+}  | 40.96328 | 3.012 |
+| Ar^{+2} |   40.735 | 2.996 |
+| K^{+2}  |   45.806 | 3.368 |
+| S^{+3}  |   47.222 | 3.473 |
+| Cl^{+3} |    53.24 | 3.915 |
+|------+----------+-------|
+| He^{+}  |   54.418 | 4.002 |
+| O^{+2}  |   54.936 | 4.040 |
+| Ar^{+3} |    59.58 | 4.381 |
+| K^{+3}  |    60.91 | 4.479 |
+| Ne^{+2} |    63.45 | 4.666 |
+| K^{+4}  |    82.66 | 6.079 |
 #+TBLFM: $3=$2 / 13.5984;f3
 + So this might explain why [O III] does not overlap with He II, but [Ar IV] does
-|   IP | Edge     | H        | He         | S       | Ar       | O       |
-|------+----------+----------+------------+---------+----------+---------|
-| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |
-|------+----------+----------+------------+---------+----------+---------|
-| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  |
-| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  |
-| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  |
-|------+----------+----------+------------+---------+----------+---------|
-| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  |
-| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  |
-| 34.9 | S +2     | H I 4861 | He I 5875  |         | [Ar III] | [O II]  |
-| 35.1 | O +      | H I 4861 | He I 5875  |         | [Ar III] | [O III] |
-| 40.7 | Ar +2    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |
-| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |
-|------+----------+----------+------------+---------+----------+---------|
-| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |
-| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |
-| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |
+|   IP | Edge     | H        | He         | S       | Ar       | O       | Cl       | K      | Ne       |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |          |        |          |
+| 13.0 | Cl 0     |          |            | [S II]  |          | [O I]   | [Cl II]  |        |          |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  | [Cl II]  |        |          |
+| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  |        |          |
+| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl II]  |        |          |
+| 23.8 | Cl +     | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
+| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  | [Cl III] |        |          |
+| 34.9 | S +2     | H I 4861 | He I 5875  |         | [Ar III] | [O II]  | [Cl III] |        |          |
+| 35.1 | O +      | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl III] |        |          |
+| 39.8 | Cl +2    | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl IV]  |        |          |
+| 40.7 | Ar +2    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        |          |
+| 41.0 | Ne +     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        | [Ne III] |
+| 45.8 | K +2     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
+| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
+| 53.2 | Cl +3    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
+| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |          | [K IV] | [Ne III] |
+| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |          | [K IV] | [Ne III] |
+| 60.9 | K +3     | H I 4861 | He II 4686 |         |          |         |          |        | [Ne III] |
+| 63.5 | Ne +2    | H I 4861 | He II 4686 |         |          |         |          |        |          |
 **** General thoughts on the ionization structure
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att

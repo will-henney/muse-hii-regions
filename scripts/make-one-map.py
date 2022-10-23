@@ -5,6 +5,7 @@ import typer
 import openpyxl
 import yaml
 import slugify
+from text_unidecode import unidecode
 from astropy.io import fits
 from astropy.wcs import WCS
 
@@ -86,7 +87,8 @@ def main(
         cube_window -= base
     image = np.sum(cube_window, axis=0)
     header = WCS(cube.header).celestial.to_header()
-    header.update({k: str(v) for k, v in metadata.items()})
+    # FITS headers allow only ASCII strings
+    header.update({k: unidecode(str(v)) for k, v in metadata.items()})
 
     fits_file = get_id_string(metadata) + ".fits"
     fits.PrimaryHDU(header=header, data=image).writeto(save_path / fits_file, overwrite=True)
