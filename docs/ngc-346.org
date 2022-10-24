@@ -1553,15 +1553,15 @@ Options:
 
 #+end_src
 
-#+begin_src sh :dir ../data/n346-lines :results verbaatim
-  python ../../scripts/make-one-map.py 3736.yaml
+#+begin_src sh :dir ../data/n346-lines :results verbatim
+  python ../../scripts/make-one-map.py 3692.yaml
 #+end_src
 
 #+RESULTS:
-: Image saved to type-deep-neutral/3736-uil-9262-16.fits
+: Image saved to type-med-neb/3692-he-i-9210-28.fits
 
 
-#+begin_src sh :dir ../data/n346-lines :results verbaatim
+#+begin_src sh :dir ../data/n346-lines :results verbatim
 python ../../scripts/make-one-map.py 1547.yaml
 #+end_src
 
@@ -1594,14 +1594,132 @@ Options:
 
 **** Combine some maps of the same ion
 
-***** Combine all of the deep neutral maps
 
+***** Script to combine the maps
+
+#+begin_src python :tangle ../scripts/combine-maps.py
+  from pathlib import Path
+  import numpy as np
+  from astropy.io import fits
+  import typer
+
+  def combine_maps(
+          pattern: str="*-uil-*",
+          prefix: str="all-uil",
+          min_strength: float=0.0,
+  ):
+      """Make sum and median images by combining several maps"""
+    
+      fits_paths = sorted(Path.cwd().glob(f"{pattern}.fits"))
+
+      hdus = [fits.open(p)[0] for p in fits_paths]
+
+      data_stack = np.stack(
+          [
+              hdu.data for hdu in hdus
+              if (float(hdu.header["STRENGTH"]) if hdu.header["STRENGTH"] != "None" else 0.0) >= min_strength
+          ],
+          axis=0,
+      )
+
+      print(f"Combining {len(data_stack)} images")
+
+      fits.PrimaryHDU(
+          header=hdus[-1].header,
+          data=np.nansum(data_stack, axis=0),
+      ).writeto(
+          f"{prefix}-sum.fits",
+          overwrite=True,
+      )
+      fits.PrimaryHDU(
+          header=hdus[-1].header,
+          data=np.nanmedian(data_stack, axis=0),
+      ).writeto(
+          f"{prefix}-median.fits",
+          overwrite=True,
+      )
+
+
+  if __name__ == "__main__":
+      typer.run(combine_maps)
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines/type-deep-neutral :results verbatim
+python ../../../scripts/combine-maps.py --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Usage: combine-maps.py [OPTIONS]
+
+  Make sum and median images by combining several maps
+
+Options:
+  --pattern TEXT        [default: *-uil-*]
+  --prefix TEXT         [default: all-uil]
+  --min-strength FLOAT  [default: 0.0]
+  --install-completion  Install completion for the current shell.
+  --show-completion     Show completion for the current shell, to copy it or
+                        customize the installation.
+
+  --help                Show this message and exit.
+#+end_example
+
+***** Combine all of the deep neutral maps
+#+begin_src sh :dir ../data/n346-lines/type-deep-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-uil-*" --prefix all-uil --min-strength 5.0
+#+end_src
+
+#+RESULTS:
+: Combining 29 images
+
+***** Combine all the [Fe III] maps
+#+begin_src sh :dir ../data/n346-lines/type-fe-ni :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-fe-iii-*" --prefix fe-iii-all
+#+end_src
+
+#+RESULTS:
+: Combining 9 images
 
 ***** Combine all the [Fe II] maps
+#+begin_src sh :dir ../data/n346-lines/type-fe-ni :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-fe-ii-*" --prefix fe-ii-all
+#+end_src
+
+#+RESULTS:
+: Combining 7 images
 
 ***** Combine some of the Si II maps
+#+begin_src sh :dir ../data/n346-lines/type-med-perm :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-si-ii-*" --prefix si-ii-all
+#+end_src
 
-***** Combine all of the N I maps
+#+RESULTS:
+: Combining 7 images
+
+***** Combine some of the O I maps
+#+begin_src sh :dir ../data/n346-lines/type-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-o-i-[67]*" --prefix o-i-short
+#+end_src
+
+#+RESULTS:
+: Combining 3 images
+
+***** Combine different sets of the N I maps
+#+begin_src sh :dir ../data/n346-lines/type-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-n-i-7*" --prefix n-i-7000
+#+end_src
+
+#+RESULTS:
+: Combining 2 images
+
+#+begin_src sh :dir ../data/n346-lines/type-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-n-i-8*" --prefix n-i-8000
+#+end_src
+
+#+RESULTS:
+: Combining 8 images
+
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
   - This is evidence for the local anisotropy of the radiation field
