@@ -1554,11 +1554,11 @@ Options:
 #+end_src
 
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-  python ../../scripts/make-one-map.py 3692.yaml
+  python ../../scripts/make-one-map.py 3711.yaml
 #+end_src
 
 #+RESULTS:
-: Image saved to type-med-neb/3692-he-i-9210-28.fits
+: Image saved to type-deep-neutral/3711-uil-9233-46.fits
 
 
 #+begin_src sh :dir ../data/n346-lines :results verbatim
@@ -1666,12 +1666,33 @@ Options:
 #+end_example
 
 ***** Combine all of the deep neutral maps
+
+Minimum strength 5
+
 #+begin_src sh :dir ../data/n346-lines/type-deep-neutral :results verbatim
-python ../../../scripts/combine-maps.py --pattern "*-uil-*" --prefix all-uil --min-strength 5.0
+python ../../../scripts/combine-maps.py --pattern "*-uil-*" --prefix uil-s05 --min-strength 5.0
 #+end_src
 
 #+RESULTS:
 : Combining 29 images
+
+Minimum strength 2
+
+#+begin_src sh :dir ../data/n346-lines/type-deep-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-uil-*" --prefix uil-s02 --min-strength 2.0
+#+end_src
+
+#+RESULTS:
+: Combining 60 images
+
+Minimum strength 9
+
+#+begin_src sh :dir ../data/n346-lines/type-deep-neutral :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-uil-*" --prefix uil-s09 --min-strength 9.0
+#+end_src
+
+#+RESULTS:
+: Combining 9 images
 
 ***** Combine all the [Fe III] maps
 #+begin_src sh :dir ../data/n346-lines/type-fe-ni :results verbatim
@@ -1719,6 +1740,36 @@ python ../../../scripts/combine-maps.py --pattern "*-n-i-8*" --prefix n-i-8000
 
 #+RESULTS:
 : Combining 8 images
+
+
+***** Combine groups of H I lines
+#+begin_src sh :dir ../data/n346-lines/type-med-neb :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-h-i-83*" --prefix h-i-8300
+#+end_src
+
+#+RESULTS:
+: Combining 5 images
+
+#+begin_src sh :dir ../data/n346-lines/type-med-neb :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-h-i-84*" --prefix h-i-8400
+#+end_src
+
+#+RESULTS:
+: Combining 3 images
+
+#+begin_src sh :dir ../data/n346-lines/type-med-neb :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-h-i-85*" --prefix h-i-8500
+#+end_src
+
+#+RESULTS:
+: Combining 3 images
+
+#+begin_src sh :dir ../data/n346-lines/type-med-neb :results verbatim
+python ../../../scripts/combine-maps.py --pattern "*-h-i-8[67]*" --prefix h-i-86-87
+#+end_src
+
+#+RESULTS:
+: Combining 2 images
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
