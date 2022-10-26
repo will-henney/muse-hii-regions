@@ -53,7 +53,7 @@ colorbar configure -font helvetica
 colorbar configure -fontsize 9
 colorbar configure -fontweight normal
 colorbar configure -fontslant roman
-colorbar colorbar 1 0.5 1 0
+colorbar colorbar 24 0.5 1 0
 colorbar tag "{}"
 colorbarrgb configure -size 20
 colorbarrgb configure -ticks 11
@@ -87,7 +87,7 @@ Frame1 bg color white
 Frame1 bg color 0
 Frame1 nan color #468
 Frame1 cube axes 123
-Frame1 update fits slice 1
+Frame1 update fits slice 1586
 CubeDialog
 Frame1 rgb channel red
 Frame1 rgb view 1 1 1
@@ -98,10 +98,10 @@ Frame1 bin filter {""}
 Frame1 bin buffer size 1024
 Frame1 bin about 0 0
 Frame1 bin function sum
-Frame1 colorscale log
+Frame1 colorscale linear
 Frame1 colorscale log 1000
 Frame1 datasec 1
-Frame1 clip user -100 20940.8
+Frame1 clip user 0 50
 Frame1 clip mode user
 Frame1 clip scope global
 Frame1 clip minmax mode scan
@@ -113,11 +113,11 @@ Frame1 block to 1 1
 Frame1 wcs wcs fk5 sexagesimal
 Frame1 pan preserve 0
 Frame1 pan to physical 174 164
-Frame1 zoom to 1.66667 1.66667
+Frame1 zoom to 1.38889 1.38889
 Frame1 rotate to 0
 Frame1 orient none
 Frame1 wcs align 0
-Frame1 zoom to 1.66667 1.66667
+Frame1 zoom to 1.38889 1.38889
 Frame1 3d view 0 0
 Frame1 3d scale 1
 Frame1 3d method mip
@@ -134,6 +134,7 @@ Frame1 mask system wcs
 Frame1 mask color red
 Frame1 mask mark nonzero
 Frame1 mask range 0 0
+Frame1 contour create green 2 0 smooth 5 2 log 1000 user global -100 20940.8 {"2500 5000 10000"}
 CreateNameNumberFrame Frame2 base
 global loadParam
 array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/big-data/ngc346new/n346-muse-cont-101.fits file,mode {} load,type mmapincr file,type fits]
@@ -155,7 +156,7 @@ Frame2 bg color white
 Frame2 bg color 0
 Frame2 nan color #468
 Frame2 cube axes 123
-Frame2 update fits slice 2838
+Frame2 update fits slice 1597
 CubeDialog
 Frame2 rgb channel red
 Frame2 rgb view 1 1 1
@@ -169,7 +170,7 @@ Frame2 bin function sum
 Frame2 colorscale linear
 Frame2 colorscale log 1000
 Frame2 datasec 1
-Frame2 clip user -10 100
+Frame2 clip user -10 1000
 Frame2 clip mode user
 Frame2 clip scope global
 Frame2 clip minmax mode scan
@@ -181,11 +182,11 @@ Frame2 block to 1 1
 Frame2 wcs wcs fk5 sexagesimal
 Frame2 pan preserve 1
 Frame2 pan to physical 174 164
-Frame2 zoom to 1.66667 1.66667
+Frame2 zoom to 1.38889 1.38889
 Frame2 rotate to 0
 Frame2 orient none
 Frame2 wcs align 0
-Frame2 zoom to 1.66667 1.66667
+Frame2 zoom to 1.38889 1.38889
 Frame2 3d view 0 0
 Frame2 3d scale 1
 Frame2 3d method mip
@@ -247,11 +248,11 @@ Frame4 block to 1 1
 Frame4 wcs wcs fk5 sexagesimal
 Frame4 pan preserve 1
 Frame4 pan to physical 174 164
-Frame4 zoom to 1.66667 1.66667
+Frame4 zoom to 1.38889 1.38889
 Frame4 rotate to 0
 Frame4 orient none
 Frame4 wcs align 0
-Frame4 zoom to 1.66667 1.66667
+Frame4 zoom to 1.38889 1.38889
 Frame4 3d view 0 0
 Frame4 3d scale 1
 Frame4 3d method mip
@@ -313,11 +314,11 @@ Frame6 block to 1 1
 Frame6 wcs wcs fk5 sexagesimal
 Frame6 pan preserve 0
 Frame6 pan to physical 174 164
-Frame6 zoom to 1.66667 1.66667
+Frame6 zoom to 1.38889 1.38889
 Frame6 rotate to 0
 Frame6 orient none
 Frame6 wcs align 0
-Frame6 zoom to 1.66667 1.66667
+Frame6 zoom to 1.38889 1.38889
 Frame6 3d view 0 0
 Frame6 3d scale 1
 Frame6 3d method mip
@@ -379,11 +380,11 @@ Frame9 block to 1 1
 Frame9 wcs wcs fk5 sexagesimal
 Frame9 pan preserve 0
 Frame9 pan to physical 174 164
-Frame9 zoom to 1.66667 1.66667
+Frame9 zoom to 1.38889 1.38889
 Frame9 rotate to 0
 Frame9 orient none
 Frame9 wcs align 0
-Frame9 zoom to 1.66667 1.66667
+Frame9 zoom to 1.38889 1.38889
 Frame9 3d view 0 0
 Frame9 3d scale 1
 Frame9 3d method mip
@@ -444,11 +445,11 @@ Frame11 block to 1 1
 Frame11 wcs wcs fk5 sexagesimal
 Frame11 pan preserve 0
 Frame11 pan to physical 174 164
-Frame11 zoom to 1.66667 1.66667
+Frame11 zoom to 1.38889 1.38889
 Frame11 rotate to 0
 Frame11 orient none
 Frame11 wcs align 0
-Frame11 zoom to 1.66667 1.66667
+Frame11 zoom to 1.38889 1.38889
 Frame11 3d view 0 0
 Frame11 3d scale 1
 Frame11 3d method mip
@@ -512,11 +513,11 @@ Frame3 block to 1 1
 Frame3 wcs wcs fk5 sexagesimal
 Frame3 pan preserve 0
 Frame3 pan to physical 174 164
-Frame3 zoom to 1.66667 1.66667
+Frame3 zoom to 1.38889 1.38889
 Frame3 rotate to 0
 Frame3 orient none
 Frame3 wcs align 0
-Frame3 zoom to 1.66667 1.66667
+Frame3 zoom to 1.38889 1.38889
 Frame3 3d view 0 0
 Frame3 3d scale 1
 Frame3 3d method mip
@@ -579,11 +580,11 @@ Frame29 block to 1 1
 Frame29 wcs wcs fk5 sexagesimal
 Frame29 pan preserve 0
 Frame29 pan to physical 174 164
-Frame29 zoom to 1.66667 1.66667
+Frame29 zoom to 1.38889 1.38889
 Frame29 rotate to 0
 Frame29 orient none
 Frame29 wcs align 0
-Frame29 zoom to 1.66667 1.66667
+Frame29 zoom to 1.38889 1.38889
 Frame29 3d view 0 0
 Frame29 3d scale 1
 Frame29 3d method mip
@@ -644,11 +645,11 @@ Frame8 block to 1 1
 Frame8 wcs wcs fk5 sexagesimal
 Frame8 pan preserve 0
 Frame8 pan to physical 174 164
-Frame8 zoom to 1.66667 1.66667
+Frame8 zoom to 1.38889 1.38889
 Frame8 rotate to 0
 Frame8 orient none
 Frame8 wcs align 0
-Frame8 zoom to 1.66667 1.66667
+Frame8 zoom to 1.38889 1.38889
 Frame8 3d view 0 0
 Frame8 3d scale 1
 Frame8 3d method mip
@@ -709,11 +710,11 @@ Frame13 block to 1 1
 Frame13 wcs wcs fk5 sexagesimal
 Frame13 pan preserve 0
 Frame13 pan to physical 174 164
-Frame13 zoom to 1.66667 1.66667
+Frame13 zoom to 1.38889 1.38889
 Frame13 rotate to 0
 Frame13 orient none
 Frame13 wcs align 0
-Frame13 zoom to 1.66667 1.66667
+Frame13 zoom to 1.38889 1.38889
 Frame13 3d view 0 0
 Frame13 3d scale 1
 Frame13 3d method mip
@@ -774,11 +775,11 @@ Frame10 block to 1 1
 Frame10 wcs wcs fk5 sexagesimal
 Frame10 pan preserve 0
 Frame10 pan to physical 174 164
-Frame10 zoom to 1.66667 1.66667
+Frame10 zoom to 1.38889 1.38889
 Frame10 rotate to 0
 Frame10 orient none
 Frame10 wcs align 0
-Frame10 zoom to 1.66667 1.66667
+Frame10 zoom to 1.38889 1.38889
 Frame10 3d view 0 0
 Frame10 3d scale 1
 Frame10 3d method mip
@@ -839,11 +840,11 @@ Frame14 block to 1 1
 Frame14 wcs wcs fk5 sexagesimal
 Frame14 pan preserve 0
 Frame14 pan to physical 174 164
-Frame14 zoom to 1.66667 1.66667
+Frame14 zoom to 1.38889 1.38889
 Frame14 rotate to 0
 Frame14 orient none
 Frame14 wcs align 0
-Frame14 zoom to 1.66667 1.66667
+Frame14 zoom to 1.38889 1.38889
 Frame14 3d view 0 0
 Frame14 3d scale 1
 Frame14 3d method mip
@@ -904,11 +905,11 @@ Frame15 block to 1 1
 Frame15 wcs wcs fk5 sexagesimal
 Frame15 pan preserve 0
 Frame15 pan to physical 174 164
-Frame15 zoom to 1.66667 1.66667
+Frame15 zoom to 1.38889 1.38889
 Frame15 rotate to 0
 Frame15 orient none
 Frame15 wcs align 0
-Frame15 zoom to 1.66667 1.66667
+Frame15 zoom to 1.38889 1.38889
 Frame15 3d view 0 0
 Frame15 3d scale 1
 Frame15 3d method mip
@@ -969,11 +970,11 @@ Frame7 block to 1 1
 Frame7 wcs wcs fk5 sexagesimal
 Frame7 pan preserve 0
 Frame7 pan to physical 174 164
-Frame7 zoom to 1.66667 1.66667
+Frame7 zoom to 1.38889 1.38889
 Frame7 rotate to 0
 Frame7 orient none
 Frame7 wcs align 0
-Frame7 zoom to 1.66667 1.66667
+Frame7 zoom to 1.38889 1.38889
 Frame7 3d view 0 0
 Frame7 3d scale 1
 Frame7 3d method mip
@@ -1035,11 +1036,11 @@ Frame16 block to 1 1
 Frame16 wcs wcs fk5 sexagesimal
 Frame16 pan preserve 0
 Frame16 pan to physical 174 164
-Frame16 zoom to 1.66667 1.66667
+Frame16 zoom to 1.38889 1.38889
 Frame16 rotate to 0
 Frame16 orient none
 Frame16 wcs align 0
-Frame16 zoom to 1.66667 1.66667
+Frame16 zoom to 1.38889 1.38889
 Frame16 3d view 0 0
 Frame16 3d scale 1
 Frame16 3d method mip
@@ -1100,11 +1101,11 @@ Frame17 block to 1 1
 Frame17 wcs wcs fk5 sexagesimal
 Frame17 pan preserve 0
 Frame17 pan to physical 174 164
-Frame17 zoom to 1.66667 1.66667
+Frame17 zoom to 1.38889 1.38889
 Frame17 rotate to 0
 Frame17 orient none
 Frame17 wcs align 0
-Frame17 zoom to 1.66667 1.66667
+Frame17 zoom to 1.38889 1.38889
 Frame17 3d view 0 0
 Frame17 3d scale 1
 Frame17 3d method mip
@@ -1166,11 +1167,11 @@ Frame18 block to 1 1
 Frame18 wcs wcs fk5 sexagesimal
 Frame18 pan preserve 0
 Frame18 pan to physical 174 164
-Frame18 zoom to 1.66667 1.66667
+Frame18 zoom to 1.38889 1.38889
 Frame18 rotate to 0
 Frame18 orient none
 Frame18 wcs align 0
-Frame18 zoom to 1.66667 1.66667
+Frame18 zoom to 1.38889 1.38889
 Frame18 3d view 0 0
 Frame18 3d scale 1
 Frame18 3d method mip
@@ -1232,11 +1233,11 @@ Frame19 block to 1 1
 Frame19 wcs wcs fk5 sexagesimal
 Frame19 pan preserve 0
 Frame19 pan to physical 174 164
-Frame19 zoom to 1.66667 1.66667
+Frame19 zoom to 1.38889 1.38889
 Frame19 rotate to 0
 Frame19 orient none
 Frame19 wcs align 0
-Frame19 zoom to 1.66667 1.66667
+Frame19 zoom to 1.38889 1.38889
 Frame19 3d view 0 0
 Frame19 3d scale 1
 Frame19 3d method mip
@@ -1298,11 +1299,11 @@ Frame20 block to 1 1
 Frame20 wcs wcs fk5 sexagesimal
 Frame20 pan preserve 0
 Frame20 pan to physical 174 164
-Frame20 zoom to 1.66667 1.66667
+Frame20 zoom to 1.38889 1.38889
 Frame20 rotate to 0
 Frame20 orient none
 Frame20 wcs align 0
-Frame20 zoom to 1.66667 1.66667
+Frame20 zoom to 1.38889 1.38889
 Frame20 3d view 0 0
 Frame20 3d scale 1
 Frame20 3d method mip
@@ -1364,11 +1365,11 @@ Frame21 block to 1 1
 Frame21 wcs wcs fk5 sexagesimal
 Frame21 pan preserve 0
 Frame21 pan to physical 174 164
-Frame21 zoom to 1.66667 1.66667
+Frame21 zoom to 1.38889 1.38889
 Frame21 rotate to 0
 Frame21 orient none
 Frame21 wcs align 0
-Frame21 zoom to 1.66667 1.66667
+Frame21 zoom to 1.38889 1.38889
 Frame21 3d view 0 0
 Frame21 3d scale 1
 Frame21 3d method mip
@@ -1430,11 +1431,11 @@ Frame22 block to 1 1
 Frame22 wcs wcs fk5 sexagesimal
 Frame22 pan preserve 0
 Frame22 pan to physical 174 164
-Frame22 zoom to 1.66667 1.66667
+Frame22 zoom to 1.38889 1.38889
 Frame22 rotate to 0
 Frame22 orient none
 Frame22 wcs align 0
-Frame22 zoom to 1.66667 1.66667
+Frame22 zoom to 1.38889 1.38889
 Frame22 3d view 0 0
 Frame22 3d scale 1
 Frame22 3d method mip
@@ -1496,11 +1497,11 @@ Frame23 block to 1 1
 Frame23 wcs wcs fk5 sexagesimal
 Frame23 pan preserve 0
 Frame23 pan to physical 174 164
-Frame23 zoom to 1.66667 1.66667
+Frame23 zoom to 1.38889 1.38889
 Frame23 rotate to 0
 Frame23 orient none
 Frame23 wcs align 0
-Frame23 zoom to 1.66667 1.66667
+Frame23 zoom to 1.38889 1.38889
 Frame23 3d view 0 0
 Frame23 3d scale 1
 Frame23 3d method mip
@@ -1562,11 +1563,11 @@ Frame24 block to 1 1
 Frame24 wcs wcs fk5 sexagesimal
 Frame24 pan preserve 0
 Frame24 pan to physical 174 164
-Frame24 zoom to 1.66667 1.66667
+Frame24 zoom to 1.38889 1.38889
 Frame24 rotate to 0
 Frame24 orient none
 Frame24 wcs align 0
-Frame24 zoom to 1.66667 1.66667
+Frame24 zoom to 1.38889 1.38889
 Frame24 3d view 0 0
 Frame24 3d scale 1
 Frame24 3d method mip
@@ -1628,11 +1629,11 @@ Frame25 block to 1 1
 Frame25 wcs wcs fk5 sexagesimal
 Frame25 pan preserve 0
 Frame25 pan to physical 174 164
-Frame25 zoom to 1.66667 1.66667
+Frame25 zoom to 1.38889 1.38889
 Frame25 rotate to 0
 Frame25 orient none
 Frame25 wcs align 0
-Frame25 zoom to 1.66667 1.66667
+Frame25 zoom to 1.38889 1.38889
 Frame25 3d view 0 0
 Frame25 3d scale 1
 Frame25 3d method mip
@@ -1695,11 +1696,11 @@ Frame26 block to 1 1
 Frame26 wcs wcs fk5 sexagesimal
 Frame26 pan preserve 0
 Frame26 pan to physical 174 164
-Frame26 zoom to 1.66667 1.66667
+Frame26 zoom to 1.38889 1.38889
 Frame26 rotate to 0
 Frame26 orient none
 Frame26 wcs align 0
-Frame26 zoom to 1.66667 1.66667
+Frame26 zoom to 1.38889 1.38889
 Frame26 3d view 0 0
 Frame26 3d scale 1
 Frame26 3d method mip
@@ -1760,11 +1761,11 @@ Frame12 block to 1 1
 Frame12 wcs wcs fk5 sexagesimal
 Frame12 pan preserve 0
 Frame12 pan to physical 174 164
-Frame12 zoom to 1.66667 1.66667
+Frame12 zoom to 1.38889 1.38889
 Frame12 rotate to 0
 Frame12 orient none
 Frame12 wcs align 0
-Frame12 zoom to 1.66667 1.66667
+Frame12 zoom to 1.38889 1.38889
 Frame12 3d view 0 0
 Frame12 3d scale 1
 Frame12 3d method mip
@@ -1825,11 +1826,11 @@ Frame27 block to 1 1
 Frame27 wcs wcs fk5 sexagesimal
 Frame27 pan preserve 0
 Frame27 pan to physical 174 164
-Frame27 zoom to 1.66667 1.66667
+Frame27 zoom to 1.38889 1.38889
 Frame27 rotate to 0
 Frame27 orient none
 Frame27 wcs align 0
-Frame27 zoom to 1.66667 1.66667
+Frame27 zoom to 1.38889 1.38889
 Frame27 3d view 0 0
 Frame27 3d scale 1
 Frame27 3d method mip
@@ -1890,11 +1891,11 @@ Frame28 block to 1 1
 Frame28 wcs wcs fk5 sexagesimal
 Frame28 pan preserve 0
 Frame28 pan to physical 174 164
-Frame28 zoom to 1.66667 1.66667
+Frame28 zoom to 1.38889 1.38889
 Frame28 rotate to 0
 Frame28 orient none
 Frame28 wcs align 0
-Frame28 zoom to 1.66667 1.66667
+Frame28 zoom to 1.38889 1.38889
 Frame28 3d view 0 0
 Frame28 3d scale 1
 Frame28 3d method mip
@@ -1955,11 +1956,11 @@ Frame30 block to 1 1
 Frame30 wcs wcs fk5 sexagesimal
 Frame30 pan preserve 0
 Frame30 pan to physical 174 164
-Frame30 zoom to 1.66667 1.66667
+Frame30 zoom to 1.38889 1.38889
 Frame30 rotate to 0
 Frame30 orient none
 Frame30 wcs align 0
-Frame30 zoom to 1.66667 1.66667
+Frame30 zoom to 1.38889 1.38889
 Frame30 3d view 0 0
 Frame30 3d scale 1
 Frame30 3d method mip
@@ -2020,11 +2021,11 @@ Frame36 block to 1 1
 Frame36 wcs wcs fk5 sexagesimal
 Frame36 pan preserve 0
 Frame36 pan to physical 174 164
-Frame36 zoom to 1.66667 1.66667
+Frame36 zoom to 1.38889 1.38889
 Frame36 rotate to 0
 Frame36 orient none
 Frame36 wcs align 0
-Frame36 zoom to 1.66667 1.66667
+Frame36 zoom to 1.38889 1.38889
 Frame36 3d view 0 0
 Frame36 3d scale 1
 Frame36 3d method mip
@@ -2085,11 +2086,11 @@ Frame33 block to 1 1
 Frame33 wcs wcs fk5 sexagesimal
 Frame33 pan preserve 0
 Frame33 pan to physical 174 164
-Frame33 zoom to 1.66667 1.66667
+Frame33 zoom to 1.38889 1.38889
 Frame33 rotate to 0
 Frame33 orient none
 Frame33 wcs align 0
-Frame33 zoom to 1.66667 1.66667
+Frame33 zoom to 1.38889 1.38889
 Frame33 3d view 0 0
 Frame33 3d scale 1
 Frame33 3d method mip
@@ -2152,11 +2153,11 @@ Frame37 block to 1 1
 Frame37 wcs wcs fk5 sexagesimal
 Frame37 pan preserve 0
 Frame37 pan to physical 174 164
-Frame37 zoom to 1.66667 1.66667
+Frame37 zoom to 1.38889 1.38889
 Frame37 rotate to 0
 Frame37 orient none
 Frame37 wcs align 0
-Frame37 zoom to 1.66667 1.66667
+Frame37 zoom to 1.38889 1.38889
 Frame37 3d view 0 0
 Frame37 3d scale 1
 Frame37 3d method mip
@@ -2219,11 +2220,11 @@ Frame43 block to 1 1
 Frame43 wcs wcs fk5 sexagesimal
 Frame43 pan preserve 0
 Frame43 pan to physical 174 164
-Frame43 zoom to 1.66667 1.66667
+Frame43 zoom to 1.38889 1.38889
 Frame43 rotate to 0
 Frame43 orient none
 Frame43 wcs align 0
-Frame43 zoom to 1.66667 1.66667
+Frame43 zoom to 1.38889 1.38889
 Frame43 3d view 0 0
 Frame43 3d scale 1
 Frame43 3d method mip
@@ -2286,11 +2287,11 @@ Frame38 block to 1 1
 Frame38 wcs wcs fk5 sexagesimal
 Frame38 pan preserve 0
 Frame38 pan to physical 174 164
-Frame38 zoom to 1.66667 1.66667
+Frame38 zoom to 1.38889 1.38889
 Frame38 rotate to 0
 Frame38 orient none
 Frame38 wcs align 0
-Frame38 zoom to 1.66667 1.66667
+Frame38 zoom to 1.38889 1.38889
 Frame38 3d view 0 0
 Frame38 3d scale 1
 Frame38 3d method mip
@@ -2352,11 +2353,11 @@ Frame41 block to 1 1
 Frame41 wcs wcs fk5 sexagesimal
 Frame41 pan preserve 0
 Frame41 pan to physical 174 164
-Frame41 zoom to 1.66667 1.66667
+Frame41 zoom to 1.38889 1.38889
 Frame41 rotate to 0
 Frame41 orient none
 Frame41 wcs align 0
-Frame41 zoom to 1.66667 1.66667
+Frame41 zoom to 1.38889 1.38889
 Frame41 3d view 0 0
 Frame41 3d scale 1
 Frame41 3d method mip
@@ -2418,11 +2419,11 @@ Frame40 block to 1 1
 Frame40 wcs wcs fk5 sexagesimal
 Frame40 pan preserve 0
 Frame40 pan to physical 174 164
-Frame40 zoom to 1.66667 1.66667
+Frame40 zoom to 1.38889 1.38889
 Frame40 rotate to 0
 Frame40 orient none
 Frame40 wcs align 0
-Frame40 zoom to 1.66667 1.66667
+Frame40 zoom to 1.38889 1.38889
 Frame40 3d view 0 0
 Frame40 3d scale 1
 Frame40 3d method mip
@@ -2484,11 +2485,11 @@ Frame35 block to 1 1
 Frame35 wcs wcs fk5 sexagesimal
 Frame35 pan preserve 0
 Frame35 pan to physical 174 164
-Frame35 zoom to 1.66667 1.66667
+Frame35 zoom to 1.38889 1.38889
 Frame35 rotate to 0
 Frame35 orient none
 Frame35 wcs align 0
-Frame35 zoom to 1.66667 1.66667
+Frame35 zoom to 1.38889 1.38889
 Frame35 3d view 0 0
 Frame35 3d scale 1
 Frame35 3d method mip
@@ -2550,11 +2551,11 @@ Frame39 block to 1 1
 Frame39 wcs wcs fk5 sexagesimal
 Frame39 pan preserve 0
 Frame39 pan to physical 174 164
-Frame39 zoom to 1.66667 1.66667
+Frame39 zoom to 1.38889 1.38889
 Frame39 rotate to 0
 Frame39 orient none
 Frame39 wcs align 0
-Frame39 zoom to 1.66667 1.66667
+Frame39 zoom to 1.38889 1.38889
 Frame39 3d view 0 0
 Frame39 3d scale 1
 Frame39 3d method mip
@@ -2616,11 +2617,11 @@ Frame49 block to 1 1
 Frame49 wcs wcs fk5 sexagesimal
 Frame49 pan preserve 0
 Frame49 pan to physical 174 164
-Frame49 zoom to 1.66667 1.66667
+Frame49 zoom to 1.38889 1.38889
 Frame49 rotate to 0
 Frame49 orient none
 Frame49 wcs align 0
-Frame49 zoom to 1.66667 1.66667
+Frame49 zoom to 1.38889 1.38889
 Frame49 3d view 0 0
 Frame49 3d scale 1
 Frame49 3d method mip
@@ -2682,11 +2683,11 @@ Frame34 block to 1 1
 Frame34 wcs wcs fk5 sexagesimal
 Frame34 pan preserve 0
 Frame34 pan to physical 174 164
-Frame34 zoom to 1.66667 1.66667
+Frame34 zoom to 1.38889 1.38889
 Frame34 rotate to 0
 Frame34 orient none
 Frame34 wcs align 0
-Frame34 zoom to 1.66667 1.66667
+Frame34 zoom to 1.38889 1.38889
 Frame34 3d view 0 0
 Frame34 3d scale 1
 Frame34 3d method mip
@@ -2748,11 +2749,11 @@ Frame44 block to 1 1
 Frame44 wcs wcs fk5 sexagesimal
 Frame44 pan preserve 0
 Frame44 pan to physical 174 164
-Frame44 zoom to 1.66667 1.66667
+Frame44 zoom to 1.38889 1.38889
 Frame44 rotate to 0
 Frame44 orient none
 Frame44 wcs align 0
-Frame44 zoom to 1.66667 1.66667
+Frame44 zoom to 1.38889 1.38889
 Frame44 3d view 0 0
 Frame44 3d scale 1
 Frame44 3d method mip
@@ -2815,11 +2816,11 @@ Frame45 block to 1 1
 Frame45 wcs wcs fk5 sexagesimal
 Frame45 pan preserve 0
 Frame45 pan to physical 174 164
-Frame45 zoom to 1.66667 1.66667
+Frame45 zoom to 1.38889 1.38889
 Frame45 rotate to 0
 Frame45 orient none
 Frame45 wcs align 0
-Frame45 zoom to 1.66667 1.66667
+Frame45 zoom to 1.38889 1.38889
 Frame45 3d view 0 0
 Frame45 3d scale 1
 Frame45 3d method mip
@@ -2881,11 +2882,11 @@ Frame46 block to 1 1
 Frame46 wcs wcs fk5 sexagesimal
 Frame46 pan preserve 0
 Frame46 pan to physical 174 164
-Frame46 zoom to 1.66667 1.66667
+Frame46 zoom to 1.38889 1.38889
 Frame46 rotate to 0
 Frame46 orient none
 Frame46 wcs align 0
-Frame46 zoom to 1.66667 1.66667
+Frame46 zoom to 1.38889 1.38889
 Frame46 3d view 0 0
 Frame46 3d scale 1
 Frame46 3d method mip
@@ -2947,11 +2948,11 @@ Frame48 block to 1 1
 Frame48 wcs wcs fk5 sexagesimal
 Frame48 pan preserve 0
 Frame48 pan to physical 174 164
-Frame48 zoom to 1.66667 1.66667
+Frame48 zoom to 1.38889 1.38889
 Frame48 rotate to 0
 Frame48 orient none
 Frame48 wcs align 0
-Frame48 zoom to 1.66667 1.66667
+Frame48 zoom to 1.38889 1.38889
 Frame48 3d view 0 0
 Frame48 3d scale 1
 Frame48 3d method mip
@@ -3081,7 +3082,7 @@ Frame47 rgb channel green
 Frame47 wcs wcs fk5 sexagesimal
 Frame47 pan preserve 0
 Frame47 pan to physical 174 164
-Frame47 zoom to 1.66667 1.66667
+Frame47 zoom to 1.38889 1.38889
 Frame47 rotate to 0
 Frame47 orient none
 Frame47 wcs align 0
@@ -3089,7 +3090,7 @@ Frame47 rgb channel red
 Frame47 rgb channel green
 Frame47 rgb channel blue
 Frame47 rgb channel green
-Frame47 zoom to 1.66667 1.66667
+Frame47 zoom to 1.38889 1.38889
 Frame47 3d view 0 0
 Frame47 3d scale 1
 Frame47 3d method mip
@@ -3116,6 +3117,72 @@ Frame47 rgb channel red
 Frame47 rgb channel green
 Frame47 rgb channel blue
 Frame47 rgb channel green
+CreateNameNumberFrame Frame60 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_indices.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame60 magnifier graphics 1
+Frame60 magnifier cursor 1
+Frame60 magnifier zoom 4
+Frame60 magnifier color white
+Frame60 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 24 0.5 1 0
+Frame60 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame60 precision 8 7 4 3 8 7 5 3 8
+Frame60 bg color white
+Frame60 bg color 0
+Frame60 nan color #468
+Frame60 cube axes 123
+Frame60 rgb channel red
+Frame60 rgb view 1 1 1
+Frame60 rgb system image
+Frame60 bin factor to 1 1
+Frame60 bin depth 1
+Frame60 bin filter {""}
+Frame60 bin buffer size 1024
+Frame60 bin about 0 0
+Frame60 bin function sum
+Frame60 colorscale linear
+Frame60 colorscale log 1000
+Frame60 datasec 1
+Frame60 clip user -0.5 4.5
+Frame60 clip mode user
+Frame60 clip scope global
+Frame60 clip minmax mode scan
+Frame60 clip minmax sample 25
+Frame60 clip zscale contrast 0.25
+Frame60 clip zscale sample 600
+Frame60 clip zscale line 120
+Frame60 block to 1 1
+Frame60 wcs wcs fk5 sexagesimal
+Frame60 pan preserve 0
+Frame60 pan to physical 174 164
+Frame60 zoom to 1.38889 1.38889
+Frame60 rotate to 0
+Frame60 orient none
+Frame60 wcs align 0
+Frame60 zoom to 1.38889 1.38889
+Frame60 3d view 0 0
+Frame60 3d scale 1
+Frame60 3d method mip
+Frame60 3d highlite 1
+Frame60 3d border 1
+Frame60 3d background none
+Frame60 3d view point 0 0 0 0 0
+Frame60 crosshair physical 174 164
+Frame60 marker centroid radius 10
+Frame60 marker centroid iteration 30
+Frame60 mask transparency 0
+Frame60 mask system wcs
+Frame60 mask color red
+Frame60 mask mark nonzero
+Frame60 mask range 0 0
+Frame60 contour load {"./ngc346-linemaps-2022-10-25.bck.dir/Frame60/aux.ctr"}
 CreateNameNumberFrame Frame42 rgb
 Frame42 rgb channel red
 global loadParam
@@ -3229,7 +3296,7 @@ Frame42 rgb channel blue
 Frame42 wcs wcs fk5 sexagesimal
 Frame42 pan preserve 0
 Frame42 pan to physical 174 164
-Frame42 zoom to 1.66667 1.66667
+Frame42 zoom to 1.38889 1.38889
 Frame42 rotate to 0
 Frame42 orient none
 Frame42 wcs align 0
@@ -3237,7 +3304,7 @@ Frame42 rgb channel red
 Frame42 rgb channel green
 Frame42 rgb channel blue
 Frame42 rgb channel blue
-Frame42 zoom to 1.66667 1.66667
+Frame42 zoom to 1.38889 1.38889
 Frame42 3d view 0 0
 Frame42 3d scale 1
 Frame42 3d method mip
@@ -3377,7 +3444,7 @@ Frame51 rgb channel red
 Frame51 wcs wcs fk5 sexagesimal
 Frame51 pan preserve 0
 Frame51 pan to physical 174 164
-Frame51 zoom to 1.66667 1.66667
+Frame51 zoom to 1.38889 1.38889
 Frame51 rotate to 0
 Frame51 orient none
 Frame51 wcs align 0
@@ -3385,7 +3452,7 @@ Frame51 rgb channel red
 Frame51 rgb channel green
 Frame51 rgb channel blue
 Frame51 rgb channel red
-Frame51 zoom to 1.66667 1.66667
+Frame51 zoom to 1.38889 1.38889
 Frame51 3d view 0 0
 Frame51 3d scale 1
 Frame51 3d method mip
@@ -3522,7 +3589,7 @@ Frame50 rgb channel red
 Frame50 wcs wcs fk5 sexagesimal
 Frame50 pan preserve 0
 Frame50 pan to physical 174 164
-Frame50 zoom to 1.66667 1.66667
+Frame50 zoom to 1.38889 1.38889
 Frame50 rotate to 0
 Frame50 orient none
 Frame50 wcs align 0
@@ -3530,7 +3597,7 @@ Frame50 rgb channel red
 Frame50 rgb channel green
 Frame50 rgb channel blue
 Frame50 rgb channel red
-Frame50 zoom to 1.66667 1.66667
+Frame50 zoom to 1.38889 1.38889
 Frame50 3d view 0 0
 Frame50 3d scale 1
 Frame50 3d method mip
@@ -3667,7 +3734,7 @@ Frame32 rgb channel red
 Frame32 wcs wcs fk5 sexagesimal
 Frame32 pan preserve 0
 Frame32 pan to physical 174 164
-Frame32 zoom to 1.66667 1.66667
+Frame32 zoom to 1.38889 1.38889
 Frame32 rotate to 0
 Frame32 orient none
 Frame32 wcs align 0
@@ -3675,7 +3742,7 @@ Frame32 rgb channel red
 Frame32 rgb channel green
 Frame32 rgb channel blue
 Frame32 rgb channel red
-Frame32 zoom to 1.66667 1.66667
+Frame32 zoom to 1.38889 1.38889
 Frame32 3d view 0 0
 Frame32 3d scale 1
 Frame32 3d method mip
@@ -3815,7 +3882,7 @@ Frame31 rgb channel blue
 Frame31 wcs wcs fk5 sexagesimal
 Frame31 pan preserve 0
 Frame31 pan to physical 174 164
-Frame31 zoom to 1.66667 1.66667
+Frame31 zoom to 1.38889 1.38889
 Frame31 rotate to 0
 Frame31 orient none
 Frame31 wcs align 0
@@ -3823,7 +3890,7 @@ Frame31 rgb channel red
 Frame31 rgb channel green
 Frame31 rgb channel blue
 Frame31 rgb channel blue
-Frame31 zoom to 1.66667 1.66667
+Frame31 zoom to 1.38889 1.38889
 Frame31 3d view 0 0
 Frame31 3d scale 1
 Frame31 3d method mip
@@ -3963,7 +4030,7 @@ Frame52 rgb channel red
 Frame52 wcs wcs fk5 sexagesimal
 Frame52 pan preserve 0
 Frame52 pan to physical 174 164
-Frame52 zoom to 1.66667 1.66667
+Frame52 zoom to 1.38889 1.38889
 Frame52 rotate to 0
 Frame52 orient none
 Frame52 wcs align 0
@@ -3971,7 +4038,7 @@ Frame52 rgb channel red
 Frame52 rgb channel green
 Frame52 rgb channel blue
 Frame52 rgb channel red
-Frame52 zoom to 1.66667 1.66667
+Frame52 zoom to 1.38889 1.38889
 Frame52 3d view 0 0
 Frame52 3d scale 1
 Frame52 3d method mip
@@ -4108,7 +4175,7 @@ Frame59 rgb channel green
 Frame59 wcs wcs fk5 sexagesimal
 Frame59 pan preserve 0
 Frame59 pan to physical 174 164
-Frame59 zoom to 1.66667 1.66667
+Frame59 zoom to 1.38889 1.38889
 Frame59 rotate to 0
 Frame59 orient none
 Frame59 wcs align 0
@@ -4116,7 +4183,7 @@ Frame59 rgb channel red
 Frame59 rgb channel green
 Frame59 rgb channel blue
 Frame59 rgb channel green
-Frame59 zoom to 1.66667 1.66667
+Frame59 zoom to 1.38889 1.38889
 Frame59 3d view 0 0
 Frame59 3d scale 1
 Frame59 3d method mip
@@ -4256,7 +4323,7 @@ Frame53 rgb channel red
 Frame53 wcs wcs fk5 sexagesimal
 Frame53 pan preserve 0
 Frame53 pan to physical 174 164
-Frame53 zoom to 1.66667 1.66667
+Frame53 zoom to 1.38889 1.38889
 Frame53 rotate to 0
 Frame53 orient none
 Frame53 wcs align 0
@@ -4264,7 +4331,7 @@ Frame53 rgb channel red
 Frame53 rgb channel green
 Frame53 rgb channel blue
 Frame53 rgb channel red
-Frame53 zoom to 1.66667 1.66667
+Frame53 zoom to 1.38889 1.38889
 Frame53 3d view 0 0
 Frame53 3d scale 1
 Frame53 3d method mip
@@ -4404,7 +4471,7 @@ Frame54 rgb channel blue
 Frame54 wcs wcs fk5 sexagesimal
 Frame54 pan preserve 0
 Frame54 pan to physical 174 164
-Frame54 zoom to 1.66667 1.66667
+Frame54 zoom to 1.38889 1.38889
 Frame54 rotate to 0
 Frame54 orient none
 Frame54 wcs align 0
@@ -4412,7 +4479,7 @@ Frame54 rgb channel red
 Frame54 rgb channel green
 Frame54 rgb channel blue
 Frame54 rgb channel blue
-Frame54 zoom to 1.66667 1.66667
+Frame54 zoom to 1.38889 1.38889
 Frame54 3d view 0 0
 Frame54 3d scale 1
 Frame54 3d method mip
@@ -4552,7 +4619,7 @@ Frame55 rgb channel blue
 Frame55 wcs wcs fk5 sexagesimal
 Frame55 pan preserve 0
 Frame55 pan to physical 174 164
-Frame55 zoom to 1.66667 1.66667
+Frame55 zoom to 1.38889 1.38889
 Frame55 rotate to 0
 Frame55 orient none
 Frame55 wcs align 0
@@ -4560,7 +4627,7 @@ Frame55 rgb channel red
 Frame55 rgb channel green
 Frame55 rgb channel blue
 Frame55 rgb channel blue
-Frame55 zoom to 1.66667 1.66667
+Frame55 zoom to 1.38889 1.38889
 Frame55 3d view 0 0
 Frame55 3d scale 1
 Frame55 3d method mip
@@ -4627,8 +4694,8 @@ Frame56 rgb channel green
 Frame56 cube axes 123
 Frame56 rgb channel blue
 Frame56 cube axes 123
-Frame56 rgb channel red
-Frame56 rgb channel red
+Frame56 rgb channel green
+Frame56 rgb channel green
 Frame56 rgb view 1 1 1
 Frame56 rgb system image
 Frame56 rgb channel red
@@ -4652,7 +4719,7 @@ Frame56 bin filter {""}
 Frame56 bin buffer size 1024
 Frame56 bin about 0 0
 Frame56 bin function sum
-Frame56 rgb channel red
+Frame56 rgb channel green
 Frame56 rgb channel red
 Frame56 colorscale sqrt
 Frame56 colorscale log 1000
@@ -4689,26 +4756,26 @@ Frame56 clip minmax sample 25
 Frame56 clip zscale contrast 0.25
 Frame56 clip zscale sample 600
 Frame56 clip zscale line 120
-Frame56 rgb channel red
+Frame56 rgb channel green
 Frame56 rgb channel red
 Frame56 block to 1 1
 Frame56 rgb channel green
 Frame56 block to 1 1
 Frame56 rgb channel blue
 Frame56 block to 1 1
-Frame56 rgb channel red
+Frame56 rgb channel green
 Frame56 wcs wcs fk5 sexagesimal
 Frame56 pan preserve 0
 Frame56 pan to physical 174 164
-Frame56 zoom to 1.66667 1.66667
+Frame56 zoom to 1.38889 1.38889
 Frame56 rotate to 0
 Frame56 orient none
 Frame56 wcs align 0
 Frame56 rgb channel red
 Frame56 rgb channel green
 Frame56 rgb channel blue
-Frame56 rgb channel red
-Frame56 zoom to 1.66667 1.66667
+Frame56 rgb channel green
+Frame56 zoom to 1.38889 1.38889
 Frame56 3d view 0 0
 Frame56 3d scale 1
 Frame56 3d method mip
@@ -4727,11 +4794,11 @@ Frame56 mask range 0 0
 Frame56 rgb channel red
 Frame56 rgb channel green
 Frame56 rgb channel blue
-Frame56 rgb channel red
+Frame56 rgb channel green
 Frame56 rgb channel red
 Frame56 rgb channel green
 Frame56 rgb channel blue
-Frame56 rgb channel red
+Frame56 rgb channel green
 CreateNameNumberFrame Frame57 rgb
 Frame57 rgb channel red
 global loadParam
@@ -4845,7 +4912,7 @@ Frame57 rgb channel blue
 Frame57 wcs wcs fk5 sexagesimal
 Frame57 pan preserve 0
 Frame57 pan to physical 174 164
-Frame57 zoom to 1.66667 1.66667
+Frame57 zoom to 1.38889 1.38889
 Frame57 rotate to 0
 Frame57 orient none
 Frame57 wcs align 0
@@ -4853,7 +4920,7 @@ Frame57 rgb channel red
 Frame57 rgb channel green
 Frame57 rgb channel blue
 Frame57 rgb channel blue
-Frame57 zoom to 1.66667 1.66667
+Frame57 zoom to 1.38889 1.38889
 Frame57 3d view 0 0
 Frame57 3d scale 1
 Frame57 3d method mip
@@ -4993,7 +5060,7 @@ Frame58 rgb channel red
 Frame58 wcs wcs fk5 sexagesimal
 Frame58 pan preserve 0
 Frame58 pan to physical 174 164
-Frame58 zoom to 1.66667 1.66667
+Frame58 zoom to 1.38889 1.38889
 Frame58 rotate to 0
 Frame58 orient none
 Frame58 wcs align 0
@@ -5001,7 +5068,7 @@ Frame58 rgb channel red
 Frame58 rgb channel green
 Frame58 rgb channel blue
 Frame58 rgb channel red
-Frame58 zoom to 1.66667 1.66667
+Frame58 zoom to 1.38889 1.38889
 Frame58 3d view 0 0
 Frame58 3d scale 1
 Frame58 3d method mip
@@ -5028,10 +5095,75 @@ Frame58 rgb channel red
 Frame58 rgb channel green
 Frame58 rgb channel blue
 Frame58 rgb channel red
+CreateNameNumberFrame Frame61 base
+global loadParam
+array set loadParam [list load,layer {} file,name /Users/will/Dropbox/muse-hii-regions/data/n346-mask-stars.fits file,mode {} load,type mmapincr file,type fits]
+if [BackupFindFile loadParam] {
+  ProcessLoad
+}
+Frame61 magnifier graphics 1
+Frame61 magnifier cursor 1
+Frame61 magnifier zoom 4
+Frame61 magnifier color white
+Frame61 colorbar tag "{}"
+colorbar tag "{}"
+set sav [colorbar get colorbar]
+colorbar colorbar 24 0.5 1 0
+Frame61 colormap [colorbar get colormap]
+colorbar colorbar $sav
+Frame61 precision 8 7 4 3 8 7 5 3 8
+Frame61 bg color white
+Frame61 bg color 0
+Frame61 nan color #468
+Frame61 cube axes 123
+Frame61 rgb channel red
+Frame61 rgb view 1 1 1
+Frame61 rgb system image
+Frame61 bin factor to 1 1
+Frame61 bin depth 1
+Frame61 bin filter {""}
+Frame61 bin buffer size 1024
+Frame61 bin about 0 0
+Frame61 bin function sum
+Frame61 colorscale linear
+Frame61 colorscale log 1000
+Frame61 datasec 1
+Frame61 clip user -0.5 4.5
+Frame61 clip mode user
+Frame61 clip scope global
+Frame61 clip minmax mode scan
+Frame61 clip minmax sample 25
+Frame61 clip zscale contrast 0.25
+Frame61 clip zscale sample 600
+Frame61 clip zscale line 120
+Frame61 block to 1 1
+Frame61 wcs wcs fk5 sexagesimal
+Frame61 pan preserve 0
+Frame61 pan to physical 174 164
+Frame61 zoom to 1.38889 1.38889
+Frame61 rotate to 0
+Frame61 orient none
+Frame61 wcs align 0
+Frame61 zoom to 1.38889 1.38889
+Frame61 3d view 0 0
+Frame61 3d scale 1
+Frame61 3d method mip
+Frame61 3d highlite 1
+Frame61 3d border 1
+Frame61 3d background none
+Frame61 3d view point 0 0 0 0 0
+Frame61 crosshair physical 174 164
+Frame61 marker centroid radius 10
+Frame61 marker centroid iteration 30
+Frame61 mask transparency 0
+Frame61 mask system wcs
+Frame61 mask color red
+Frame61 mask mark nonzero
+Frame61 mask range 0 0
 global pds9
 array set pds9 { dialog motif text,font courier samp 1 prec,linear 8 iraf 1 prec,len,arcsec 3 font,weight normal automarker 1 language locale text,font,weight normal dialog,all 0 nan #468 prec,angle 8 font,slant roman confirm 1 prec,deg 7 backup 0 language,dir {} font helvetica language,name {} bg white prec,len,deg 7 xpa 1 bg,use 0 prec,dms 3 theme black prec,len,arcmin 5 prec,len,linear 8 dialog,center 0 prec,hms 4 font,size 12 text,font,slant roman text,font,size 12 }
 global current
-array set current { colorbar colorbarrgb orient none zoom {1.66667 1.66667} mode region ext {} display single cursor {} align 0 rotate 0 rgb green frame Frame47 }
+array set current { colorbar colorbar orient none zoom {1.38889 1.38889} mode region ext {} display single cursor {} align 0 rotate 0 rgb red frame Frame60 }
 global pcurrent
 array set pcurrent { orient none zoom {1 1} mode none display single align 0 rotate 0 }
 global view
@@ -5039,7 +5171,7 @@ array set view { info,wcss 0 info,wcsc 0 info,wcst 0 info,wcsd 0 graph,horz 0 in
 global pview
 array set pview { info,wcss 0 info,wcsc 0 info,wcst 0 info,wcsd 0 graph,horz 0 info,wcsu 0 info,wcse 0 info,bunit 0 info,lowhigh 0 magnifier 1 info,wcsf 0 info,wcsv 0 info,frame 1 info,image 1 colorbar 1 info 1 info,wcsg 0 info,wcsw 0 info,keyword 0 info,wcs 1 info,wcsh 0 info,wcsx 0 info,physical 1 info,keyvalue {} info,wcsi 0 info,wcsy 0 info,object 1 buttons 1 info,wcsj 0 info,wcsz 0 info,wcsk 0 info,filename 1 info,wcsl 0 info,amplifier 0 info,minmax 0 info,wcsm 0 info,detector 0 info,wcsn 0 panner 1 info,wcso 0 info,wcsp 0 layout horizontal info,wcsa 0 info,wcsq 0 graph,vert 0 info,wcsb 0 info,wcsr 0 }
 global canvas
-array set canvas { gap 4 width 802 gap,bottom 14 height 492 }
+array set canvas { gap 4 width 657 gap,bottom 14 height 492 }
 global phttp
 array set phttp { auth,passwd {} proxy,host {} auth,user {} auth 0 proxy 0 proxy,port {} }
 global pbuttons
@@ -5049,7 +5181,7 @@ array set ppanner { compass 1 }
 global pmagnifier
 array set pmagnifier { region 1 zoom 4 cursor 1 color white }
 global colorbar
-array set colorbar { invert 0 lock 0 size 20 font,weight normal space 0 tag red font,slant roman map grey numerics 1 font helvetica orientation horizontal ticks 11 font,size 9 }
+array set colorbar { invert 0 lock 0 size 20 font,weight normal space 0 tag red font,slant roman map h5_dkbluered numerics 1 font helvetica orientation horizontal ticks 11 font,size 9 }
 global saveimage
 array set saveimage { tiff,compress none error {An error has occurred while creating the image. Please be sure that the ds9 window is in the upper left corner of the default screen and the entire window is visible.} jpeg,quality 75 }
 global debug
@@ -5061,7 +5193,7 @@ array set ps { scale 100 orient portrait height 11 size letter resolution 150 fi
 global pps
 array set pps { scale 100 orient portrait height 11 size letter resolution 150 filename,txt ds9.txt dest printer level 2 width 8.5 filename ds9.ps cmd lp color rgb }
 global rgb
-array set rgb { lock,block 0 blue 1 lock,wcs 0 frame Frame47 red 1 lock,slice 0 lock,axes 0 lock,scalelimits 0 green 1 lock,crop 0 lock,colorbar 0 system image lock,scale 0 lock,bin 0 lock,smooth 0 }
+array set rgb { lock,block 0 blue 1 lock,wcs 0 frame Frame60 red 1 lock,slice 0 lock,axes 0 lock,scalelimits 0 green 1 lock,crop 0 lock,colorbar 0 system image lock,scale 0 lock,bin 0 lock,smooth 0 }
 global threed
 array set threed { scale 1 lock 0 method mip highlite,color cyan border,color blue compass,color green az 0 highlite 1 border 1 compass 0 background none el 0 }
 global blink
@@ -5075,7 +5207,7 @@ array set ptile { grid,col 10 mode grid grid,dir x grid,row 10 grid,gap 4 grid,m
 global crosshair
 array set crosshair { skyformat degrees system wcs lock none sky fk5 }
 global cube
-array set cube { axes 123 system image axis 2 lock none lock,axes 0 frame Frame47 }
+array set cube { axes 123 system image axis 2 lock none lock,axes 0 frame Frame60 }
 global bin
 array set bin { wheel,factor 1.2 wheel 0 buffersize 1024 depth 1 lock 0 function sum factor {1 1} }
 global pbin
@@ -5087,7 +5219,7 @@ array set ppanzoom { wheel,factor 1.2 preserve 0 wheel 1 mode click }
 global crop
 array set crop { skyformat degrees rcoord wcs dformat degrees system wcs lock none dcoord wcs sky fk5 }
 global scale
-array set scale { lock 0 type linear scope global log 1000 min -10 bins 512 xaxis full mode user datasec 1 max 10 yaxis log lock,limits 0 }
+array set scale { lock 0 type linear scope global log 1000 min 0 bins 512 xaxis full mode user datasec 1 max 50 yaxis log lock,limits 0 }
 global pscale
 array set pscale { datasec 1 mode minmax scope local log 1000 type linear }
 global minmax
@@ -5105,7 +5237,7 @@ array set pmarker { panda,ang2 360 bpanda,ang1 0 shape circle show 1 bpanda,ang2
 global centroid
 array set centroid {  }
 global wcs
-array set wcs { load,fn {} load,sock {} skyformat sexagesimal system wcs frame Frame47 sky fk5 }
+array set wcs { load,fn {} load,sock {} skyformat sexagesimal system wcs frame Frame60 sky fk5 }
 global pwcs
 array set pwcs { skyformat sexagesimal load,sock {} load,fn {} system wcs sky fk5 }
 global graph
@@ -5119,11 +5251,11 @@ array set pexamine { zoom 4 mode new }
 global pixel
 array set pixel { size 5 }
 global mask
-array set mask { high 0 blend transparent system physical low 0 transparency 0 mark nonzero color red }
+array set mask { high 0 blend screen system wcs low 0 transparency 0 mark nonzero color red }
 global pmask
 array set pmask { high 0 system physical blend transparent transparency 0 low 0 color red mark nonzero }
 global contour
-array set contour { init,scale 0 numlevel 5 scale linear method smooth init,scope 0 scope global view 0 copy {} width 1 dash 0 init,limits 0 smooth 4 log 1000 min -20 init,mode 0 mode user max 150 color green }
+array set contour { init,scale 0 numlevel 5 scale linear method smooth init,scope 0 scope global view 0 copy Frame1 width 2 dash 0 init,limits 0 smooth 2 log 1000 min -0.5 init,mode 0 mode user max 4.5 color green }
 global pcontour
 array set pcontour { numlevel 5 dash 0 width 1 method smooth smooth 4 color green view 0 }
 global grid
@@ -5135,7 +5267,7 @@ array set block { lock 0 factor {1 1} }
 global pblock
 array set pblock { lock 0 factor {1 1} }
 global smooth
-array set smooth { radius 3 sigma 1.5 radius,minor 3 lock 0 sigma,minor 1.5 function gaussian angle 0 view 1 }
+array set smooth { radius 3 sigma 1.5 radius,minor 3 lock 0 sigma,minor 1.5 function gaussian angle 0 view 0 }
 global psmooth
 array set psmooth { radius 3 lock 0 radius,minor 3 sigma 1.5 function gaussian sigma,minor 1.5 view 0 angle 0 }
 global pnres
@@ -5167,4 +5299,4 @@ array set pap { layout,strip,scale 50 canvas,title,slant roman canvas,background
 global panalysis
 array set panalysis { user2 {} autoload 1 user3 {} log 0 user4 {} user {} }
 global active
-array set active { Frame32 1 Frame33 1 Frame34 1 Frame35 1 Frame36 1 Frame37 1 Frame38 1 Frame39 1 Frame40 1 Frame41 1 Frame42 1 Frame43 1 Frame44 1 Frame45 1 Frame46 1 Frame47 1 Frame48 1 Frame50 1 Frame49 1 Frame51 1 Frame52 1 Frame53 1 Frame54 1 Frame55 1 Frame56 1 Frame57 1 Frame58 1 Frame59 1 Frame1 1 Frame2 1 Frame3 1 Frame4 1 Frame6 1 Frame7 1 Frame8 1 Frame9 1 Frame10 1 Frame11 1 Frame12 1 Frame13 1 Frame14 1 Frame15 1 Frame16 1 Frame17 1 Frame18 1 Frame19 1 Frame20 1 Frame21 1 Frame22 1 Frame23 1 Frame24 1 Frame25 1 Frame26 1 Frame27 1 Frame28 1 Frame29 1 Frame30 1 Frame31 1 }
+array set active { Frame32 1 Frame33 1 Frame34 1 Frame35 1 Frame36 1 Frame37 1 Frame38 1 Frame39 1 Frame40 1 Frame41 1 Frame42 1 Frame43 1 Frame44 1 Frame45 1 Frame46 1 Frame47 1 Frame48 1 Frame50 1 Frame49 1 Frame51 1 Frame52 1 Frame53 1 Frame54 1 Frame55 1 Frame56 1 Frame57 1 Frame58 1 Frame60 1 Frame59 1 Frame61 1 Frame1 1 Frame2 1 Frame3 1 Frame4 1 Frame6 1 Frame7 1 Frame8 1 Frame9 1 Frame10 1 Frame11 1 Frame12 1 Frame13 1 Frame14 1 Frame15 1 Frame16 1 Frame17 1 Frame18 1 Frame19 1 Frame20 1 Frame21 1 Frame22 1 Frame23 1 Frame24 1 Frame25 1 Frame26 1 Frame27 1 Frame28 1 Frame29 1 Frame30 1 Frame31 1 }

@@ -1,4 +1,4 @@
-#+OPTIONS: ^:{}
++OPTIONS: ^:{}
 * MUSE cube of N66/NGC 346 in the SMC
 
 
@@ -460,6 +460,9 @@ spec1d/n346-all-yso.fits
 #+end_example
 
 **** Inspect the 1d spectra results
+:PROPERTIES:
+:ID:       E860E6DE-06FD-4DC2-AA8E-9869D5112ADB
+:END:
 - The following script graphs a comparison of the extracted spectrum from a single region, comparing the result with/without (blue/orange) the star mask and then the BG (blue) and BG-subtracted (red) spectra
 - I make it a very long strip in the wavelength (x) axis.
 - The y-axis is on a ~symlog~ scale, so as to the high peaks but still show the weak emission and absorption  features
@@ -832,6 +835,9 @@ I had to reduce the minimum prominence to 0.3, but this gave me 372 lines.
 : n346-nostar-yso-peaks-p0010-d0030.csv
 
 **** Plot identified lines on top of the spectrum
+:PROPERTIES:
+:ID:       BB8006B6-5B0F-487E-B35D-606D26B5C24F
+:END:
 #+begin_src python :tangle ../scripts/spec1d-plot-peaks.py
   from mpdaf.obj import Spectrum
   from astropy.table import Table
@@ -1479,6 +1485,9 @@ CLOSED: [2022-10-25 Tue 08:21]
 
 
 **** Do map of a single line 
+:PROPERTIES:
+:ID:       41A1CAB9-5D31-437B-9D67-B34EB234BB5B
+:END:
 #+begin_src python :tangle ../scripts/make-one-map.py
   import numpy as np
   import sys
@@ -1930,7 +1939,19 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 4. For each threshold, tag pixels for each zone whose normalized brightness exceeds the threshold
    - Do this in descending order of number of pixels that would be tagged
 
-*** Step 6: Final figures showing the spectra
+*** Step 6: Create spectra and sum each line for each map zone
+- This can be like the previous versions of 1D spectra
+  - [[id:E860E6DE-06FD-4DC2-AA8E-9869D5112ADB][Inspect the 1d spectra results]]
+  - [[id:BB8006B6-5B0F-487E-B35D-606D26B5C24F][Plot identified lines on top of the spectrum]]
+- But adding in the info from all the yaml files
+  - For example, [[id:41A1CAB9-5D31-437B-9D67-B34EB234BB5B][Do map of a single line]]
+- And maybe also drawing inspiration from the stacking that I did in the notebook work
+  - Although I am not sure if this can easily be combined with the ~symlog~ scale
+- I have now had an idea for a two-pass median filter, with a scything (or shaving) step in between: filter-shave-filter
+
+*** Step 7: Inter-zone ratios
+- Do diagnostic plots for the different lines
+*** Step 8: Final figures showing the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
   - Point out cases where we have blends
@@ -1939,6 +1960,7 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 - Add annotations for all the different types of lines
 - Include spectra from some of the partitions of the previous step
   - Also maybe add Orion and 30 Dor, but probably best not to
+
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks

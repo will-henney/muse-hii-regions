@@ -13,11 +13,7 @@ from pathlib import Path
 import numpy as np
 from astropy.io import fits
 import scipy.ndimage as ndi
-
-DATA_PATH = Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346"
-
-cubename = "ADP.2017-10-16T11_04_19.247.fits"
-outprefix = "n346-muse"
+import typer
 
 
 def get_median_continuum(data: np.ndarray, window_size=11):
@@ -28,24 +24,40 @@ def get_median_continuum(data: np.ndarray, window_size=11):
     return ndi.median_filter(data, size=size)
 
 
+def main(
+    window_size: int,
+    cube_name: str = "ADP.2017-10-16T11_04_19.247.fits",
+    out_prefix: str = "n346-muse",
+    data_path=Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346",
+    two_pass: bool = False,
+    first_window_size: int = 11,
+    shave_threshold: float = 1.0,
+):
+    """Find and remove continuum from cube by median filtering"""
+
+    hdulist = fits.open(data_path / cube_name)
+
+    if two_pass:
+        # First filter pass
+        cont_data = get_median_continuum(hdulist[1].data, first_window_size)
+        # Save off the lines that go more than shave_threshold above continuum
+        shaved_data = np.minimum(hdulist[1].data, cont_data + shave_threshold)
+        # Second filter pass
+        cont_data = get_median_continuum(shaved_data, window_size)
+    else:
+        cont_data = get_median_continuum(hdulist[1].data, window_size)
+
+    # Write out the new cubes
+    for data, label in [
+        (cont_data, "cont"),  # Continuum
+        (hdulist[1].data - cont_data, "csub"),  # Original minus continuum
+        (hdulist[1].data / cont_data, "cdiv"),  # Original over continuum
+    ]:
+        fits.PrimaryHDU(header=hdulist[1].header, data=data).writeto(
+            f"{out_prefix}-{label}-{window_size:03d}.fits",
+            overwrite=True,
+        )
+
+
 if __name__ == "__main__":
-
-    try:
-        window_size = int(sys.argv[1])
-    except (IndexError, ValueError):
-        sys.exit(f"Usage: {sys.argv[0]} WINDOW_SIZE")
-
-    hdulist = fits.open(DATA_PATH / cubename)
-    cont_data = get_median_continuum(hdulist[1].data, window_size)
-
-    fits.PrimaryHDU(header=hdulist[1].header, data=cont_data,).writeto(
-        f"{outprefix}-cont-{window_size:03d}.fits",
-        overwrite=True,
-    )
-    fits.PrimaryHDU(
-        header=hdulist[1].header,
-        data=hdulist[1].data - cont_data,
-    ).writeto(
-        f"{outprefix}-csub-{window_size:03d}.fits",
-        overwrite=True,
-    )
+    typer.run(main)
