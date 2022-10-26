@@ -197,16 +197,37 @@
 *** Absorption lines
 
 **** The O I lines
-
+- These are seen only in the globule spectrum with any certainty
+  - Note that the csub-101 spectrum loses the Raman wings, since they are more than 100 pixels wide
+- In other regions, they are too easily confused with the two Deep Neutral UILs on either side of them
 **** The Si II line
-
+- This is at 6480.811 \AA rest STP
+- Which is 6484.48 with systemic redshift
+- We do see absorption at that wavelength in the YSO spectrum
+  - Although it is less deep than the O I lines
 **** The He II lines
 - In the Ha profile, we see absorption at 6545, which may well be the Raman scattered counterpart of He II 1025.272, which is just to the blue of H I 1025.722
+  - 6547.4 observed wavelength in YSO means 6543.6 rest optical
+    - Difference in wave numbers from Ha is 45.2 /cm
+    - Which gives UV wavelength of 1 / (97492.283 + 45.2) = 1025.25, which is close enough
 - This line is seen in emission in the PNe NGC 6888 and NGC 6881
   - Choi:2020c
-
-
-
+**** The new broad absorptions [2022-10-24 Mon]
+- There are many more features in the near Raman wings, which can be seen most clearly around the GLOB-E region, but generally in the neutral gas
+- These are the approximate observed wavelengths (rest wavelengths)
+  - Red wing 6600 (6596)
+    - This is the strongest, with a parabolic shape in the near red wing
+    - In the csub-101 cube, the trough has negative values
+    - The spatial distribution /seems/ to track the Raman wings
+    - But it might just be tracking the shadow of the Ha core emission (the depression halo around the strong line due to subtracting the median-filtered continuum)
+    - We should try a 1001 pixel median filter to see if it works better
+    - Note that there is maybe even a hint that we are seeing a very shallow version of this in Orion
+  - Red wing 6612 (6608)
+    - Just a bit further out in the red wing, and might be a bit broader
+    - The gap between this one and the last one is classified as a candidate emission line #1603 in the spreadsheet, but if I am right about the two absorption lines, then it is not really an emission line but will just be showing a little bit of the Raman wing.
+  - Blue wing XXX
+    - There are some genuine emission lines, probably Deep Neutral, which complicate things on this side: #1524 (6505 observed) and #1547 (6534 observed)
+    - There may be some absorption here, but it is hard to tell
 
 ** TODO Automatic line finding
 :PROPERTIES:
@@ -912,17 +933,20 @@ python ../../scripts/spec1d-plot-peaks.py YSO --peak-suffix p0010-d0030 --linthr
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/spec1d-peaks-YSO-p0010-d0030.pdf]]
 
 
-*** TODO Step 2: extract line maps
+*** DONE Step 2: extract line maps
+CLOSED: [2022-10-25 Tue 08:20]
 - We can extract the 3 pixels around the peak
 - Maybe use the 3-wav method that I developed earlier
   - That can give correction to line flux for the missing wings
 - At the same time, we can calculate the true mean wavelength for each
 
 
-**** TODO [0/1] Comments and plans for the line maps
+**** DONE [1/1] Comments and plans for the line maps
+CLOSED: [2022-10-25 Tue 08:20]
 - [2022-10-09 Sun] First attempt - works pretty well
-- [-] Things to improve
-  - [ ] Get a better-curated list of lines by combining several of the glob and fil regions, although glob-e is working pretty well
+- [X] Things to improve
+  - [X] Get a better-curated list of lines by combining several of the glob and fil regions, although glob-e is working pretty wellf
+    - I have added in some from YSO and some by hand
   - [X] Increase the maximum width allowed, since I think we are missing some lines that might be blends, for instance 7221
   - [X] Better scaling of the image brightness. Currently, we are using the prominence in the particular region, but we could try using the median and mad of the image itself
     - We used percentile instead
@@ -932,7 +956,8 @@ python ../../scripts/spec1d-plot-peaks.py YSO --peak-suffix p0010-d0030 --linthr
     - And the same thing happens around the Paschen jump
     - Yes, this worked
   - [X] Better color scheme. Choose a key color for each plot, based on the wavelength of the line, and then make a seaborn color palette based on that
-  - [ ] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
+  - [X] Use a more aggressive star mask, to remove more pixels that might have starlight contamination. And also use a NaN color in keeping with the color scale, so that the masked pixels do not stand out so much
+    - /This is postponed for now/ [2022-10-25 Tue]
   - 
 **** Sum between bases of each identified line to extract images and plot them
 #+begin_src python :tangle ../scripts/peak-image-plot.py
@@ -1299,7 +1324,8 @@ Options:
   --help                          Show this message and exit.
 #+end_example
 
-*** Step 3: filter out the false positives
+*** DONE Step 3: filter out the false positives
+CLOSED: [2022-10-25 Tue 08:18]
 - This is probably best done by visual inspection of the maps
 - That should be able to identify the ones that are just
   - sky lines, or
@@ -1309,7 +1335,8 @@ Options:
 
 
 
-**** TODO Classification in a big collaborative spreadsheet
+**** DONE Classification in a big collaborative spreadsheet
+CLOSED: [2022-10-25 Tue 07:55]
 - I have made this in Google Sheets and am collaborating with Mabel to fill it in
 - [2022-10-13 Thu] Started work on it
 - [2022-10-16 Sun] First contributions from Mabel
@@ -1320,12 +1347,12 @@ Options:
   - And I have not done a study of the YSO-only lines yet, but I would rather leave those for now since they will just get in the way
 
 
-**** Read in data from the spreadsheet and write to individual JSON files
+**** Read in data from the spreadsheet and write to individual YAML files
 - I export it in excel format to [[file:../data/spec1d/All-Lines-MUSE-NGC-346.xlsx]]
 - Examples of reading it are in [[file:../notebooks/ngc346-new/test-read-excel-file.py]]
   - Data can be read by pandas
   - Comments and notes require use of the openpyxl library directly
-- Plan here is to read in excel file and to write out a bunch of little json or yaml files, one per emission line
+- Plan here is to read in excel file and to write out a bunch of little yaml files, one per emission line
     
 #+begin_src python :tangle ../scripts/spreadsheet-convert.py
   import pandas as pd
@@ -1440,7 +1467,8 @@ Options:
   --help                Show this message and exit.
 #+end_example
 
-*** Step 4: classify different line types
+*** DONE Step 4: classify different line types
+CLOSED: [2022-10-25 Tue 08:21]
 - This would be a natural by-product of the correlations
 - [ ] But we could also make diagnostic plots, based on ratios of intensities in different regions
   - For instance, for the ionized lines and i-front lines:
@@ -1770,6 +1798,147 @@ python ../../../scripts/combine-maps.py --pattern "*-h-i-8[67]*" --prefix h-i-86
 
 #+RESULTS:
 : Combining 2 images
+
+*** DONE Step 5: Partition the map into different zones by predominant line type
+CLOSED: [2022-10-25 Tue 19:22]
+- Have different zones, according to which Type dominates:
+  - 0 :: Deep Neutral
+  - I :: Neutral
+  - II :: Low Neb
+  - III :: Med Neb
+  - IV :: High Neb
+- Proceed via following algorithm:
+  1. Choose a representative map for each zone, either a single line or the sum over several lines
+     - Optionally, smooth the map if it is noisy
+  2. For each of the maps, rescale a suitable brightness range to the interval [0, 1]
+     - The brightness range might be min-max, or maybe 5-95 percentile, or whatever works best
+     - This yields a normalized brightness map for each zone
+  3. Each pixel gets tagged with the zone with the largest normalized brightness for that pixel
+  4. Finally, we can mask out the stars according to some criterion
+
+
+**** Script to partition the map
+
+#+begin_src python :tangle ../scripts/partition-by-zone.py
+  import numpy as np
+  from astropy.io import fits
+  from astropy.convolution import Gaussian2DKernel, convolve
+  import yaml
+  import typer
+
+  def main(
+          zone_file: str="zones.yaml",
+          output_file: str="zone_indices.fits",
+          smooth: float=1.5,
+  ):
+      """Divide map into different zones according to which line type predominates"""
+      with open(zone_file) as f:
+          zones = yaml.safe_load(f)
+
+      bright_maps = []
+      for zone in zones:
+          hdu = fits.open(zone["fits_file"])[0]
+          hdu.data = convolve(hdu.data, Gaussian2DKernel(smooth))
+          vmin, vmax = np.nanpercentile(hdu.data, zone["percentiles"])
+          bright_maps.append((hdu.data - vmin) / (vmax - vmin))
+      bright_map_stack = np.stack(bright_maps, axis=0)
+      izone_map = np.argmax(bright_map_stack, axis=0).astype(float)
+      bmax_map = np.max(bright_map_stack, axis=0)
+      izone_map[bmax_map < 0.0] = np.nan
+      fits.PrimaryHDU(header=hdu.header, data=izone_map).writeto(output_file, overwrite=True)
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines :results verbatim
+python ../../scripts/partition-by-zone.py --smooth 3.0
+#+end_src
+
+#+RESULTS:
+
+
+**** Make an image of the zones
+
+
+#+begin_src python :eval no :tangle ../scripts/make-image-figure.py
+  from matplotlib import pyplot as plt
+  import matplotlib as mpl
+  from astropy.io import fits
+  import numpy as np
+  from typing import Union
+  import typer
+
+  DPI = 150
+
+  def main(
+          fits_file: str,
+          mask_file: str="../n346-mask-stars.fits",
+          min_value: float=0.0,
+          max_value: float=4.0,
+          cmap: str="RdBu",
+          nan_color: str="0.5",
+          fig_file: str="",
+  ):
+      hdu = fits.open(fits_file)[0]
+      mhdu = fits.open(mask_file)["DATA"]
+      image = np.where(
+          mhdu.data == 0.0,
+          hdu.data,
+          np.nan
+      )
+      ny, nx = hdu.data.shape
+      fig, ax = plt.subplots(figsize=(nx/DPI, ny/DPI))
+      ax.imshow(
+          image,
+          origin="lower",
+          interpolation="none",
+          vmin=min_value,
+          vmax=max_value,
+          cmap=mpl.colormaps[cmap].with_extremes(bad=nan_color),
+      )
+      ax.set(xticks=[], yticks=[])
+      fig.subplots_adjust(0.0, 0.0, 1.0, 1.0)
+      if not fig_file:
+          fig_file = fits_file.replace(".fits", ".png")
+      fig.savefig(fig_file, dpi=DPI)
+      print(fig_file, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+
+
+#+end_src
+
+#+RESULTS:
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-color c
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_indices.png]]
+
+
+
+**** Complicated version that was not necessary
+3. Loop over a sequence of normalized brightness thresholds, in ascending order: e.g., 0.1, 0.5, 0.9
+4. For each threshold, tag pixels for each zone whose normalized brightness exceeds the threshold
+   - Do this in descending order of number of pixels that would be tagged
+
+*** Step 6: Final figures showing the spectra
+- We can show only those spectral ranges that have Deep Neutral lines
+- Show some of the different regions
+  - Point out cases where we have blends
+- Gray out the regions affected by sky and telluric absorption
+  - Get the theoretical sky models
+- Add annotations for all the different types of lines
+- Include spectra from some of the partitions of the previous step
+  - Also maybe add Orion and 30 Dor, but probably best not to
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
