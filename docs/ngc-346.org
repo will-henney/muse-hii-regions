@@ -192,6 +192,7 @@
 :END:
 - Most of this is in the globule around mYSO-C
   - All the other emission (for example, from the filaments) is very weak
+- [2022-10-26 Wed] I have done new continuum subtractions with a broader window, which work better for the Ha wings
 *** Extent of flat top to profile
 - This should tell us the wavelength where the profile becomes optically thin
 *** Absorption lines
@@ -242,6 +243,23 @@
     - [[file:../notebooks/ngc346-new/00-check-peter-cube.py]]
 - General approach here is to split up functionality from notebook into independent scripts, and make sure that intermediate results are stored
 - Scripts should be python files in [[file:../scripts/]], either directly written or tangled from this file
+*** DONE Step -1: Do the continuum subtraction
+CLOSED: [2022-10-27 Thu 07:56]
+- This is done in a two-pass filtering with intermediate shaving of emission lines
+- Uses the program [[file:../lib/median_continuum.py]]
+- Run it in  terminal because it can take a long time
+- Example
+  #+begin_example
+    $ time python ../../lib/median_continuum.py --two-pass --out-prefix n346-muse-2pass 501
+    python ../../lib/median_continuum.py --two-pass --out-prefix n346-muse-2pass   2091.67s user 36.80s system 99% cpu 35:40.92 total
+  #+end_example
+- Windows that we have tried:
+  - 11
+  - 101
+  - 501
+  - 7
+- The smaller windows do best for removing the stellar features, which tend to be broader
+- But the 501 window is necessary to see the Raman wings
 *** DONE [1/1] Step 0: prepare 1D spectra
 CLOSED: [2022-10-06 Thu 23:14]
 - We can use different samples to get a range of physical conditions
@@ -256,6 +274,9 @@ CLOSED: [2022-10-06 Thu 23:14]
 - [X] First, I should combine the regions into one file
   - Actually, there is no need to do this, since the program to make the 1d spectra is accumulatiive
 **** Script to extract 1D spectra for each region
+:PROPERTIES:
+:ID:       7876F071-7C10-45A1-9BE1-3330A523CE6B
+:END:
 
 
 #+begin_src python :tangle ../scripts/extract-region-spectra.py 
@@ -1939,19 +1960,145 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 4. For each threshold, tag pixels for each zone whose normalized brightness exceeds the threshold
    - Do this in descending order of number of pixels that would be tagged
 
-*** Step 6: Create spectra and sum each line for each map zone
+*** TODO Step 6: Create spectra and sum each line for each map zone
 - This can be like the previous versions of 1D spectra
   - [[id:E860E6DE-06FD-4DC2-AA8E-9869D5112ADB][Inspect the 1d spectra results]]
   - [[id:BB8006B6-5B0F-487E-B35D-606D26B5C24F][Plot identified lines on top of the spectrum]]
-- But adding in the info from all the yaml files
+- But adding in the info from all the YAML files
   - For example, [[id:41A1CAB9-5D31-437B-9D67-B34EB234BB5B][Do map of a single line]]
 - And maybe also drawing inspiration from the stacking that I did in the notebook work
   - Although I am not sure if this can easily be combined with the ~symlog~ scale
 - I have now had an idea for a two-pass median filter, with a scything (or shaving) step in between: filter-shave-filter
 
+
+**** Script to extract per-zone spectra from cubes and write FITS files
+- This is a lightly modified version of [[file:../scripts/extract-region-spectra.py]]
+  - See [[id:7876F071-7C10-45A1-9BE1-3330A523CE6B][Script to extract 1D spectra for each region]] in Step 0 above
+#+begin_src python :tangle ../scripts/extract-zone-spectra.py 
+  from typing import Union
+  from pathlib import Path
+  import numpy as np
+  from mpdaf.obj import Cube, Spectrum, Image
+  from astropy.io import fits
+  import typer
+  import regions as rg
+  import slugify
+
+  def get_spectrum_from_masked_cube(
+          cube: Cube,
+          spaxel_mask: np.ndarray,
+          reduction_method: callable = np.nanmean,
+          debug: bool = False,
+  ) -> Spectrum:
+      """Extract 1D spectrum from cube, but only spaxels where mask is True"""
+      nv, ny, nx = cube.shape
+      # Check that mask is 2D and the right size
+      assert spaxel_mask.shape == (ny, nx)
+      spec = reduction_method(
+          # If we index by the mask over last two axes, then we get a 1d
+          # array of spectra, which we can combine
+          cube.data[:, spaxel_mask],
+          axis=-1,
+      )
+      return Spectrum(wave=cube.wave, data=spec, unit=cube.unit)
+
+
+  def main(
+          zone_indices_file: str,
+          cube_file: str,
+          exclude_mask_file: str,
+          output_id: str,
+          output_dir: str="zone_spectra",
+          zone_list: str="0 I II III IV",
+  ):
+      """Extract 1D spectra from cube for each region in file"""
+
+      # Read in the map of zone indices
+      zone_index_map = fits.open(zone_indices_file)[0].data
+      # What zones do we have?
+      zone_labels = zone_list.split(" ")
+      # For each zone, make a mask that selects only that zone's pixels
+      zone_masks = [zone_index_map == izone for izone in range(len(zone_labels))]
+
+      # Read the spectral cube
+      cube = Cube(cube_file)
+      # Nan-ify the data array, since we do not use the mask array again later
+      cube.data[cube.mask] = np.nan
+
+      # Set the extra image mask to be true where the exclude_mask_file
+      # image is zero
+      extra_image_mask = np.where(
+          Image(exclude_mask_file).data == 0.0,
+          True,
+          False
+      )
+
+      # Now do the get the 1D spectrum for each zoen
+      spec_dict = {
+          label: get_spectrum_from_masked_cube(
+              cube,
+              zone_mask | extra_image_mask
+          )
+          for label, zone_mask in zip(zone_labels, zone_masks)
+      }
+
+      # Make sure the output folder exists
+      Path(output_dir).mkdir(parents=True, exist_ok=True)
+      # And save each spectrum as a separate FITS file
+      for label, spec in spec_dict.items():
+          spec.write(f"{output_dir}/zone-{label}-{output_id}-spec1d.fits")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+
+**** Runs of extract-zone-spectra.py
+Try it with different filter widths
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time python ../../scripts/extract-zone-spectra.py \
+       zone_indices.fits \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007.fits \
+       ../n346-mask-stars.fits \
+       c007
+#+end_src
+
+#+RESULTS:
+
+**** Help for extract-zone-spectra.py
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+python ../../scripts/extract-zone-spectra.py --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Usage: extract-zone-spectra.py [OPTIONS] ZONE_INDICES_FILE CUBE_FILE
+                               EXCLUDE_MASK_FILE OUTPUT_ID
+
+  Extract 1D spectra from cube for each region in file
+
+Arguments:
+  ZONE_INDICES_FILE  [required]
+  CUBE_FILE          [required]
+  EXCLUDE_MASK_FILE  [required]
+  OUTPUT_ID          [required]
+
+Options:
+  --output-dir TEXT     [default: zone_spectra]
+  --zone-list TEXT      [default: 0 I II III IV]
+  --install-completion  Install completion for the current shell.
+  --show-completion     Show completion for the current shell, to copy it or
+                        customize the installation.
+
+  --help                Show this message and exit.
+#+end_example
+
 *** Step 7: Inter-zone ratios
 - Do diagnostic plots for the different lines
-*** Step 8: Final figures showing the spectra
+*** Step 8: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
   - Point out cases where we have blends
@@ -2022,9 +2169,12 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
   + *none are usable* Or maybe they are
   + 4859.319 (4-8 Br \delta) - completely swamped by H\beta
   + 5411.52 (4-7 Br \gamma), which coincides with [Fe III]. Although that should not be a problem because there is no [Fe III] from the bow shock region (see below)
-    + But it shows no emission - just photospheric absorption 
+    + But it shows no emission - just photospheric absorption
+    + Update [2022-10-26 Wed] Yes it does show emission
   + 6560.1 (4-6 Br \beta)
     + Probably too blended with H\alpha
+
+  + 8236.78 (5-9) is clearly detected [2022-10-26 Wed]
 + [X] [Ar III] 5193.69
   - very weak and diffuse
   - does not seem to show any peak at the bow shock
