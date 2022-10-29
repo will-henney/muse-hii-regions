@@ -412,6 +412,11 @@ Options:
 #+end_example
 
 ***** DONE Runs with the star mask
+- Note that the original star mask was calculated in [[file:../notebooks/ngc346-new/00-check-peter-cube.py]] and corresponds to
+  : ha_frac < 0.04
+  where ~ha_frac~ is cont-subtracted Ha line flux divided by continuum. Supposedly, this corresponds to an equivalent width less than about 190 \AA
+- We could probably make some better ones, or at least, more flexible
+  
 CLOSED: [2022-10-06 Thu 23:13]
 #+begin_src sh :dir ../data
   time python ../scripts/extract-region-spectra.py \
@@ -1837,6 +1842,8 @@ CLOSED: [2022-10-25 Tue 19:22]
   - II :: Low Neb
   - III :: Med Neb
   - IV :: High Neb
+  - S :: stars
+  - MYSO :: MYSO-C
 - Proceed via following algorithm:
   1. Choose a representative map for each zone, either a single line or the sum over several lines
      - Optionally, smooth the map if it is noisy
@@ -1847,8 +1854,51 @@ CLOSED: [2022-10-25 Tue 19:22]
   4. Finally, we can mask out the stars according to some criterion
 
 
-**** Script to partition the map
+**** Make a continuum image
+- [2022-10-28 Fri] I am trying something new: make the stars a fully-fledged zone, which means we can finesse what counts as a star pixel by tweaking the percentiles
+#+begin_src python :eval no :tangle ../scripts/make-cont-image.py
+  from typing import Union
+  from pathlib import Path
+  import numpy as np
+  from mpdaf.obj import Cube, Spectrum, Image
+  from astropy.io import fits
+  import typer
+  import slugify
 
+  def main(
+          cube_file: str,
+          output_id: str,
+          wave_range: tuple[float, float]=(4600.0, 9300.0),
+          percentiles: tuple[float, float]=(5.0, 95.0),
+  ):
+      """Write a continuum image scaled between percentiles"""
+
+      # Read the spectral cube
+      cube = Cube(cube_file)
+      image = cube.get_image(wave_range)
+      vmin, vmax = np.nanpercentile(image.data, percentiles)
+      image = (image - vmin) / (vmax - vmin)
+      image.write(f"cont-image-{output_id}.fits")
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines :results verbatim
+  python ../../scripts/make-cont-image.py \
+       ../../big-data/ngc346new/n346-muse-2pass-cont-007.fits \
+       full-c007
+#+end_src
+
+#+RESULTS:
+
+**** Script to partition the map
+- New addition [2022-10-28 Fri]: save the normalized brightness maps, so we can use them later as an additional criterion for deciding which pixels to include in the mask
+- [2022-10-28 Fri 20:44] Also adding MYSO as a zone
+  - I have changed Zone I to use the [N I] 5200 line, while MYSO uses the O I 8446 line
+  - They are both similar brightness in the diffuse nebula, but in the MYSO the O I line is 10 times brighter
 #+begin_src python :tangle ../scripts/partition-by-zone.py
   import numpy as np
   from astropy.io import fits
@@ -1867,14 +1917,32 @@ CLOSED: [2022-10-25 Tue 19:22]
 
       bright_maps = []
       for zone in zones:
+          # Load typical brightness map for this zone
           hdu = fits.open(zone["fits_file"])[0]
+          if hdu.data is None:
+              hdu = fits.open(zone["fits_file"])[1]
+          # Smooth it a bit
           hdu.data = convolve(hdu.data, Gaussian2DKernel(smooth))
+          # Find brightness limits corresponding to per-zone specified percentiles
           vmin, vmax = np.nanpercentile(hdu.data, zone["percentiles"])
-          bright_maps.append((hdu.data - vmin) / (vmax - vmin))
+          # Linear rescaling of limits to range [0, 1]
+          bright_map = (hdu.data - vmin) / (vmax - vmin)
+          # Construct file name to save normalized brightness of this zone
+          bright_file = f"{zone['label']}-bright-map.fits"
+          # Save the normalized brightness map
+          fits.PrimaryHDU(header=hdu.header, data=bright_map).writeto(bright_file, overwrite=True)
+          # And add to the list
+          bright_maps.append(bright_map)
+
+      # Make three-dimensional stack of maps
       bright_map_stack = np.stack(bright_maps, axis=0)
+      # Find which map in the stack is brightest for each pixel
       izone_map = np.argmax(bright_map_stack, axis=0).astype(float)
+      # Make a combined map of all these maximum values
       bmax_map = np.max(bright_map_stack, axis=0)
+      # And use it to eliminate pixels that are very faint in ALL maps
       izone_map[bmax_map < 0.0] = np.nan
+      # Save the map of zone indices
       fits.PrimaryHDU(header=hdu.header, data=izone_map).writeto(output_file, overwrite=True)
 
 
@@ -1884,10 +1952,11 @@ CLOSED: [2022-10-25 Tue 19:22]
 #+end_src
 
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-python ../../scripts/partition-by-zone.py --smooth 3.0
+python ../../scripts/partition-by-zone.py --smooth 2.0
 #+end_src
 
 #+RESULTS:
+
 
 
 **** Make an image of the zones
@@ -1905,24 +1974,17 @@ python ../../scripts/partition-by-zone.py --smooth 3.0
 
   def main(
           fits_file: str,
-          mask_file: str="../n346-mask-stars.fits",
           min_value: float=0.0,
-          max_value: float=4.0,
+          max_value: float=6.0,
           cmap: str="RdBu",
           nan_color: str="0.5",
           fig_file: str="",
   ):
       hdu = fits.open(fits_file)[0]
-      mhdu = fits.open(mask_file)["DATA"]
-      image = np.where(
-          mhdu.data == 0.0,
-          hdu.data,
-          np.nan
-      )
       ny, nx = hdu.data.shape
       fig, ax = plt.subplots(figsize=(nx/DPI, ny/DPI))
       ax.imshow(
-          image,
+          hdu.data,
           origin="lower",
           interpolation="none",
           vmin=min_value,
@@ -1969,11 +2031,292 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 - And maybe also drawing inspiration from the stacking that I did in the notebook work
   - Although I am not sure if this can easily be combined with the ~symlog~ scale
 - I have now had an idea for a two-pass median filter, with a scything (or shaving) step in between: filter-shave-filter
+- Original try did not work right, so split it up into parts that can be individually tested
+  - Make masks for each zone
+  - Make a separate cube for each zone, with NaNs replacing all voxels outside the zone
+    - This seems very wasteful of space, but it is the most flexible way
+  - Finally, do the mean or sum to get the 1D spectrum
 
+
+**** DONE Script to write mask files for each zone
+CLOSED: [2022-10-27 Thu 18:25]
+- Update [2022-10-28 Fri]: add an additional criterion that the normalized brightness in the zone's key line should exceed a certain threshold
+- And also maybe trim off pixels around the edges that are particularly noisy
+- Second update [2022-10-28 Fri 17:53]: remove the extra image mask, since we are now including stars as first-class mask citizens
+#+begin_src python :tangle ../scripts/make-zone-masks.py 
+  from typing import Union
+  from pathlib import Path
+  import numpy as np
+  from mpdaf.obj import Cube, Spectrum, Image
+  from astropy.io import fits
+  import typer
+  import regions as rg
+  import slugify
+
+  def trim_pixel_border_from_mask(mask: np.ndarray, border: int) -> np.ndarray:
+      """Set to False all pixels within certain border of mask array"""
+      assert mask.ndim == 2
+      mask2 = np.zeros_like(mask)
+      # Easier to set the pixels that we do not want to set to FALSE
+      mask2[border:-border,  border:-border] = True
+      # and just AND it with the original
+      return mask & mask2
+    
+
+
+  def main(
+          zone_indices_file: str,
+          zone_list: str="0 I II III IV MYSO S",
+          bright_threshold: float=0.3,
+          trim_border: int=5,
+  ):
+      """Write a fits image file for each zone mask"""
+
+      # Read in the map of zone indices
+      zone_index_hdu = fits.open(zone_indices_file)[0]
+      # What zones do we have?
+      zone_labels = zone_list.split(" ")
+
+      # For each zone, make a mask that selects only that zone's pixels,
+      # then write it to a file
+      for izone, label in enumerate(zone_labels):
+          mask = (zone_index_hdu.data == izone) 
+          zone_bright_map = fits.open(f"zone-{label}-bright-map.fits")[0].data
+          # Additionally require brightness to exceed some threshold
+          mask = mask & (zone_bright_map > bright_threshold)
+          # And trim around the border to avoid noisy pixels
+          mask = trim_pixel_border_from_mask(mask, trim_border)
+          maskfilename = f"zone-{label}-mask.fits"
+          fits.PrimaryHDU(
+              header=zone_index_hdu.header,
+              data=mask.astype(int),
+          ).writeto(maskfilename, overwrite=True)
+          print("Saved mask to", maskfilename)
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+  #+end_src
+
+  #+RESULTS:
+
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  python ../../scripts/make-zone-masks.py \
+       zone_indices.fits \
+       --bright-threshold 0.5 \
+       --trim-border 5
+#+end_src
+
+#+RESULTS:
+: Saved mask to zone-0-mask.fits
+: Saved mask to zone-I-mask.fits
+: Saved mask to zone-II-mask.fits
+: Saved mask to zone-III-mask.fits
+: Saved mask to zone-IV-mask.fits
+: Saved mask to zone-MYSO-mask.fits
+: Saved mask to zone-S-mask.fits
+
+**** DONE Script to write masked cube for a single zone
+CLOSED: [2022-10-27 Thu 19:47]
+#+begin_src python :tangle ../scripts/make-masked-cube.py
+  from typing import Union
+  from pathlib import Path
+  import numpy as np
+  from mpdaf.obj import Cube, Spectrum, Image
+  from astropy.io import fits
+  import typer
+  import slugify
+
+  def main(
+          cube_file: str,
+          mask_file: str,
+          output_id: str,
+  ):
+      """Apply an image mask to a cube. Set voxels to NaN where mask is zero/False"""
+
+      # Read the spectral cube
+      cube = Cube(cube_file)
+
+      # Read the spaxel mask
+      mask_image = Image(mask_file)
+
+      # Extend cube mask to include everywhere that the spaxel mask is
+      # false
+      cube.mask = cube.mask | ~mask_image.data.astype(bool)[:, ...]
+      # Also, mask out strange values from cube
+      cube.mask = cube.mask | (cube.data == 0.0) | (cube.data == -1.0)
+
+      # Write the result to the same dir that the cube came from
+      cube.write(cube_file.replace(".fits", f"-{output_id}.fits"), savemask="nan")
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007.fits \
+       zone-0-mask.fits \
+       zone-0
+#+end_src
+
+#+RESULTS:
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: 
+: real	0m16.441s
+: user	0m10.080s
+: sys	0m7.853s
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time for z in I II III IV MYSO S; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+#+begin_example
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+
+real	1m43.162s
+user	0m58.223s
+sys	0m47.625s
+Last run:
+Fri Oct 28 21:26:41 CDT 2022
+#+end_example
+
+**** DONE Script to extract 1D spectrum from a single cube
+CLOSED: [2022-10-27 Thu 20:52]
+- This version completely dispenses with MPDAF, using only vanilla astropy
+#+begin_src python :tangle ../scripts/extract-zone-spectrum.py 
+  from pathlib import Path
+  import numpy as np
+  from astropy.io import fits
+  from astropy.wcs import WCS
+  import typer
+  import sys
+
+  def get_spectrum_from_cube(
+          cube: np.ndarray,
+          reduction_method: callable = np.nanmean,
+  ) -> np.ndarray:
+      """Extract 1D spectrum from cube"""
+      assert len(cube.shape) == 3
+      spec = reduction_method(
+          cube,
+          axis=(1, 2),
+      )
+      assert len(spec.shape) == 1 and len(spec) == cube.shape[0]
+      return spec
+
+
+  def main(
+          cube_file: str,
+          output_id: str,
+          output_dir: str="zone_spectra",
+          method: str="mean",
+  ):
+      """Extract 1D spectra from cube for each region in file"""
+
+      reduction_method_options = {
+          "mean": np.nanmean,
+          "median": np.nanmedian,
+      }
+      assert method in reduction_method_options
+
+      # Read the spectral cube
+      hdu = fits.open(cube_file)[1]
+      spec = get_spectrum_from_cube(
+          hdu.data,
+          reduction_method=reduction_method_options[method],
+      )
+    
+      # Make sure the output folder exists
+      Path(output_dir).mkdir(parents=True, exist_ok=True)
+      # And save spectrum as a FITS file
+      fits.PrimaryHDU(
+          header=WCS(hdu.header).spectral.to_header(),
+          data=spec,
+      ).writeto(f"{output_dir}/{output_id}-spec1d.fits", overwrite=True)
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+Test on Zone 0
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time python ../../scripts/extract-zone-spectrum.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007-zone-0.fits \
+       zone-0-c007-median \
+       --method median
+#+end_src
+
+#+RESULTS:
+: 
+: real	0m3.880s
+: user	0m3.818s
+: sys	0m0.813s
+
+Now loop over the all of the zones
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time for z in 0 I II III IV MYSO S; do
+      python ../../scripts/extract-zone-spectrum.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007-zone-$z.fits \
+       zone-$z-c007-mean
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: 
+: real	0m27.340s
+: user	0m22.593s
+: sys	0m10.676s
+: Last run:
+: Fri Oct 28 21:29:49 CDT 2022
+
+And again, but for the median
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time for z in 0 I II III IV MYSO S; do
+      python ../../scripts/extract-zone-spectrum.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-007-zone-$z.fits \
+       zone-$z-c007-median \
+       --method median
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: 
+: real	0m21.748s
+: user	0m22.211s
+: sys	0m5.468s
+: Last run:
+: Fri Oct 28 21:30:46 CDT 2022
 
 **** Script to extract per-zone spectra from cubes and write FITS files
 - This is a lightly modified version of [[file:../scripts/extract-region-spectra.py]]
   - See [[id:7876F071-7C10-45A1-9BE1-3330A523CE6B][Script to extract 1D spectra for each region]] in Step 0 above
+
 #+begin_src python :tangle ../scripts/extract-zone-spectra.py 
   from typing import Union
   from pathlib import Path
@@ -2054,9 +2397,11 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 
 #+end_src
 
+#+RESULTS:
 
 
-**** Runs of extract-zone-spectra.py
+
+***** Runs of extract-zone-spectra.py
 Try it with different filter widths
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
   time python ../../scripts/extract-zone-spectra.py \
@@ -2068,7 +2413,7 @@ Try it with different filter widths
 
 #+RESULTS:
 
-**** Help for extract-zone-spectra.py
+***** Help for extract-zone-spectra.py
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
 python ../../scripts/extract-zone-spectra.py --help
 #+end_src
@@ -2096,8 +2441,73 @@ Options:
   --help                Show this message and exit.
 #+end_example
 
+**** Plot the per-zone spectra
+#+begin_src python :tangle ../scripts/spec1d-plot-all-zones.py
+  from mpdaf.obj import Spectrum
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  from matplotlib.ticker import MaxNLocator
+  from pathlib import Path
+  import typer
+
+  def main(
+          id_label: str,
+          linthresh: float=20.0,
+          star_scale: float=5.0,
+  ):
+      """Plot of spectra from zones"""
+      fig, ax = plt.subplots(figsize=(50, 3))
+      figfile = f"spec1d-all-zones-{id_label}.pdf"
+
+      specfiles = sorted(Path.cwd().glob(f"zone-*-{id_label}-spec1d.fits"))
+      nzones = len(specfiles)
+      yspan = 1.5 * linthresh
+      dy = yspan / (nzones - 1)
+      offset = yspan / 2
+      for specfile in specfiles:
+          zone = specfile.stem.split("-")[1]
+          spec = Spectrum(str(specfile))
+          scale = star_scale if zone in ["S", "MYSO"] else 1.0
+          (spec / scale + offset).plot(label=f"Zone {zone}", linewidth=1)
+          offset -= dy
+
+      ax.legend(ncol=nzones)
+      ax.minorticks_on()
+      ax.grid(which="major", linewidth=0.5)
+      ax.grid(which="minor", linewidth=0.2)
+      ax.set_yscale("symlog", linthresh=linthresh, linscale=2.0)
+      ax.xaxis.set_major_locator(MaxNLocator(100))
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+RESULTS:
+
+#+begin_src sh :dir ../data/n346-lines/zone_spectra :results output file
+python ../../../scripts/spec1d-plot-all-zones.py c007-mean --linthresh=30.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_spectra/spec1d-all-zones-c007-mean.pdf]]
+
+#+begin_src sh :dir ../data/n346-lines/zone_spectra :results output file
+python ../../../scripts/spec1d-plot-all-zones.py c007-median --linthresh=10.0 --star-scale 3.0
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_spectra/spec1d-all-zones-c007-median.pdf]]
+
 *** Step 7: Inter-zone ratios
 - Do diagnostic plots for the different lines
+- One possibility would be to take the ratio of each zone to the sum of the zones
+  - This would keep the dimensionality to a minimum, since we have only 5 ratios
+  - Or maybe 6 if we want to separate out the YSO
 *** Step 8: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
@@ -2107,7 +2517,26 @@ Options:
 - Add annotations for all the different types of lines
 - Include spectra from some of the partitions of the previous step
   - Also maybe add Orion and 30 Dor, but probably best not to
+**** Choosing good microcosm ranges
+***** 7350-7600
+- This is an excellent range, which shows a great variety of weak lines
+  - Deep neutral lines 7463, 7488, 7528
+  - Several OH sky lines
+  - Some very weak [Ni II] lines, plus an apparently neutral UIL
+  - N I lines 7442, 7469
+  - He I 7500
+  - [Fe II] 7513, albeit only from compact sources
+  - High ionization line [Cl IV] 7531
+  - A sky OH line 7571.7 that may be blended with a deep neutral line
+  - Very weak line at 7345 that could be Deep Neutral or Low Nebular
+- It is marked purple in the spreadsheet
+- It is bounded to the blue by the strong [O II] lines 7320-7331
+- And bounded to the red by a telluric absorption band
+***** 7800-8300
+- Another good range
 
+***** 6200-6800
+- Shows all the lines around H alpha
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks

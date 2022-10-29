@@ -9,24 +9,17 @@ DPI = 150
 
 def main(
         fits_file: str,
-        mask_file: str="../n346-mask-stars.fits",
         min_value: float=0.0,
-        max_value: float=4.0,
+        max_value: float=6.0,
         cmap: str="RdBu",
         nan_color: str="0.5",
         fig_file: str="",
 ):
     hdu = fits.open(fits_file)[0]
-    mhdu = fits.open(mask_file)["DATA"]
-    image = np.where(
-        mhdu.data == 0.0,
-        hdu.data,
-        np.nan
-    )
     ny, nx = hdu.data.shape
     fig, ax = plt.subplots(figsize=(nx/DPI, ny/DPI))
     ax.imshow(
-        image,
+        hdu.data,
         origin="lower",
         interpolation="none",
         vmin=min_value,

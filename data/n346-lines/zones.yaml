@@ -1,10 +1,10 @@
 -
   label: zone-0
   fits_file: type-deep-neutral/uil-s09-sum.fits
-  percentiles: [10, 85]
+  percentiles: [10, 80]
 -
   label: zone-I
-  fits_file: type-neutral/3081-o-i-8446-48.fits
+  fits_file: type-neutral/0482-n-i-5199-00.fits
   percentiles: [10, 85]
 -
   label: zone-II
@@ -18,5 +18,13 @@
   label: zone-IV
   fits_file: type-high-neb/0114-ar-iv-4740-17.fits
   percentiles: [10, 99]
+-
+  label: zone-MYSO
+  fits_file: type-neutral/3081-o-i-8446-48.fits
+  percentiles: [10, 98]
+-
+  label: zone-S
+  fits_file: cont-image-full-c007.fits
+  percentiles: [10, 85]
 
   
