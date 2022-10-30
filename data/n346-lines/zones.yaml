@@ -2,29 +2,49 @@
   label: zone-0
   fits_file: type-deep-neutral/uil-s09-sum.fits
   percentiles: [10, 80]
+  min_bright: 0.5
+  max_bright: 4.0
+  husl: [0, 0, 0]               # black is black
 -
   label: zone-I
   fits_file: type-neutral/0482-n-i-5199-00.fits
   percentiles: [10, 85]
+  min_bright: 0.2
+  max_bright: 1.0
+  husl: [250, 90, 30]           # a deep blue
 -
   label: zone-II
   fits_file: type-low-neb/1696-s-ii-6716-44.fits
-  percentiles: [10, 85]
+  percentiles: [10, 80]
+  min_bright: 0.2
+  max_bright: 2.0
+  husl: [290, 70, 40]           # a medium purple
 -
   label: zone-III
   fits_file: type-med-neb/3579-s-iii-9068-90.fits
   percentiles: [10, 90]
+  min_bright: 0.2
+  max_bright: 2.0
+  husl: [352, 80, 50]           # a nice magenta
 -
   label: zone-IV
   fits_file: type-high-neb/0114-ar-iv-4740-17.fits
   percentiles: [10, 99]
+  min_bright: 0.2
+  max_bright: 1.0
+  husl: [20, 90, 60]            # an intense orange
 -
   label: zone-MYSO
   fits_file: type-neutral/3081-o-i-8446-48.fits
   percentiles: [10, 98]
+  min_bright: 0.5
+  max_bright: 5.0
+  husl: [10, 100, 50]           # a bright red
 -
   label: zone-S
   fits_file: cont-image-full-c007.fits
   percentiles: [10, 85]
-
+  min_bright: 0.5
+  max_bright: 15.0
+  husl: [200, 85, 70]           # a light blue-green
   

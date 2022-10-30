@@ -1,11 +1,8 @@
-from typing import Union
 from pathlib import Path
 import numpy as np
-from mpdaf.obj import Cube, Spectrum, Image
 from astropy.io import fits
+import yaml
 import typer
-import regions as rg
-import slugify
 
 def trim_pixel_border_from_mask(mask: np.ndarray, border: int) -> np.ndarray:
     """Set to False all pixels within certain border of mask array"""
@@ -20,24 +17,25 @@ def trim_pixel_border_from_mask(mask: np.ndarray, border: int) -> np.ndarray:
 
 def main(
         zone_indices_file: str,
-        zone_list: str="0 I II III IV MYSO S",
-        bright_threshold: float=0.3,
+        zone_file: str="zones.yaml",
         trim_border: int=5,
 ):
     """Write a fits image file for each zone mask"""
 
     # Read in the map of zone indices
     zone_index_hdu = fits.open(zone_indices_file)[0]
-    # What zones do we have?
-    zone_labels = zone_list.split(" ")
+    # And erad in the zone metadata
+    with open(zone_file) as f:
+        zones = yaml.safe_load(f)
 
     # For each zone, make a mask that selects only that zone's pixels,
     # then write it to a file
-    for izone, label in enumerate(zone_labels):
-        mask = (zone_index_hdu.data == izone) 
+    for izone, zone in enumerate(zones):
+        _, label = zone["label"].split("-")
+        mask = (zone_index_hdu.data == izone)
         zone_bright_map = fits.open(f"zone-{label}-bright-map.fits")[0].data
         # Additionally require brightness to exceed some threshold
-        mask = mask & (zone_bright_map > bright_threshold)
+        mask = mask & (zone_bright_map > zone["min_bright"])
         # And trim around the border to avoid noisy pixels
         mask = trim_pixel_border_from_mask(mask, trim_border)
         maskfilename = f"zone-{label}-mask.fits"

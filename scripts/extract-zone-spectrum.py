@@ -24,6 +24,7 @@ def main(
         output_id: str,
         output_dir: str="zone_spectra",
         method: str="mean",
+        jmin: int=0,
 ):
     """Extract 1D spectra from cube for each region in file"""
 
@@ -35,8 +36,9 @@ def main(
 
     # Read the spectral cube
     hdu = fits.open(cube_file)[1]
+    yslice = slice(jmin, None)
     spec = get_spectrum_from_cube(
-        hdu.data,
+        hdu.data[:, yslice, :],
         reduction_method=reduction_method_options[method],
     )
 
