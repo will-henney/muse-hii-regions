@@ -1471,7 +1471,7 @@ CLOSED: [2022-10-25 Tue 07:55]
 
 ***** Run the spreadsheet conversion script
 #+begin_src sh :dir ../data :results verbatim
-python ../scripts/spreadsheet-convert.py spec1d/All-Lines-MUSE-NGC-346.xlsx
+python ../scripts/spreadsheet-convert.py spec1d/All-Lines-MUSE-NGC-346.xlsx n346-lines/all-lines-orig
 #+end_src
 
 #+RESULTS:
@@ -1620,7 +1620,7 @@ CLOSED: [2022-10-25 Tue 08:21]
 #+end_src
 
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-  python ../../scripts/make-one-map.py 3711.yaml
+  python ../../scripts/make-one-map.py all-lines-orig/3711.yaml
 #+end_src
 
 #+RESULTS:
@@ -1628,7 +1628,7 @@ CLOSED: [2022-10-25 Tue 08:21]
 
 
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-python ../../scripts/make-one-map.py 1547.yaml
+python ../../scripts/make-one-map.py all-lines-orig/1547.yaml
 #+end_src
 
 #+RESULTS:
@@ -2028,7 +2028,8 @@ python ../../scripts/make-image-figure.py zone_indices.fits --cmap magma --nan-c
 4. For each threshold, tag pixels for each zone whose normalized brightness exceeds the threshold
    - Do this in descending order of number of pixels that would be tagged
 
-*** TODO Step 6: Create per-zone spectra
+*** DONE Step 6: Create per-zone spectra
+CLOSED: [2022-10-29 Sat 23:07]
 - This can be like the previous versions of 1D spectra
   - [[id:E860E6DE-06FD-4DC2-AA8E-9869D5112ADB][Inspect the 1d spectra results]]
   - [[id:BB8006B6-5B0F-487E-B35D-606D26B5C24F][Plot identified lines on top of the spectrum]]
@@ -2531,7 +2532,8 @@ Options:
   --help                Show this message and exit.
 #+end_example
 
-**** TODO Plot the per-zone spectra
+**** DONE Plot the per-zone spectra
+CLOSED: [2022-10-29 Sat 23:07]
 #+begin_src python :tangle ../scripts/spec1d-plot-all-zones.py
   from mpdaf.obj import Spectrum
   from astropy.table import Table
@@ -2604,7 +2606,65 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_spectra/spec1d-all-zones-c007-chop-median.pdf]]
 
 
-*** Step 7: Sum each line for each map zone
+*** TODO Step 7: Sum each line for each map zone
+- We could use various different approaches for doing this
+  1. Sum the 3 pixels, with or without the correction for the missing wing flux
+  2. Or we could use the strength and width from find_peaks
+  3. We can use the variations in the pixels just outside the 3 in order to estimate the uncertainty in the baseline
+- Important thing is to get started on something, we can always refine it later!
+
+#+begin_src python :eval no :tangle ../scripts/extract-lines-by-zone.py
+  from matplotlib import pyplot as plt
+  from astropy.io import fits
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+
+  INDEX_PATTERN = "[0-9]" * 4
+
+  def main(
+          zone_file: str="zones.yaml",
+          orig_data_dir: str="all-lines-orig",
+  ):
+      # First, get the zones
+      with open(zone_file) as f:
+          zones = yaml.safe_load(f)
+
+      # Next, get all the lines
+      line_files = sorted(Path(orig_data_dir).glob(f"{INDEX_PATTERN}.yaml"))
+      data = [
+          yaml.safe_load(path.open()) for path in line_files
+      ]
+      print(pd.DataFrame(data))
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+python ../../scripts/extract-lines-by-zone.py
+#+end_src
+
+#+RESULTS:
+#+begin_example
+     Index  ...                                              Notes
+0        4  ...                                                NaN
+1        7  ...                      {'ID': ['plus N II 4607.16']}
+2       11  ...                                                NaN
+3       14  ...                                                NaN
+4       22  ...                                                NaN
+..     ...  ...                                                ...
+511   3779  ...                                                NaN
+512   3785  ...                                                NaN
+513   3790  ...                                                NaN
+514   3817  ...  {'Index': ['Where did these last two rows come...
+515   3825  ...                                                NaN
+
+[516 rows x 10 columns]
+#+end_example
+  
 *** Step 8: Inter-zone ratios
 - Do diagnostic plots for the different lines
 - One possibility would be to take the ratio of each zone to the sum of the zones
