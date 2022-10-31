@@ -10,18 +10,21 @@ INDEX_PATTERN = "[0-9]" * 4
 
 def main(
         zone_file: str="zones.yaml",
-        orig_data_dir: str="all-lines-orig",
+        data_dir: str="all-lines-c007-chop-mean",
 ):
     # First, get the zones
     with open(zone_file) as f:
         zones = yaml.safe_load(f)
 
     # Next, get all the lines
-    line_files = sorted(Path(orig_data_dir).glob(f"{INDEX_PATTERN}.yaml"))
+    line_files = sorted(Path(data_dir).glob(f"{INDEX_PATTERN}-*.yaml"))
     data = [
         yaml.safe_load(path.open()) for path in line_files
     ]
-    print(pd.DataFrame(data))
+    print(pd.DataFrame(
+        {**{k: row[k] for k in ("Index", "ID")}, **row["Zones Strength"]}
+        for row in data if row["Type"] and "Deep" in row["Type"]
+    ))
 
 
 if __name__ == "__main__":

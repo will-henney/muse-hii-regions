@@ -2625,6 +2625,8 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
   import typer
   import slugify
 
+  INDEX_PATTERN = "[0-9]" * 4
+
   def get_id_string(data):
       s = f"{data['Index']:04d}-{str(data['Type']).rstrip('?')}"
       if data["ID"]:
@@ -2637,59 +2639,87 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
       return float(np.round(x, 4))
 
   def main(
-          line_file: str,
           spec_id_label: str="c007-chop-mean",
+          orig_data_dir: str="all-lines-orig",
           zone_file: str="zones.yaml",
           zone_spectra_dir: str="zone_spectra",
+          debug: bool=False,
   ):
-      """Find line strength of a single line from all zones"""
+      """Find line strength of all lines from all zones"""
 
-      with open(line_file) as f:
-          metadata = yaml.safe_load(f)
-      ipeak = metadata["Index"]
-      metadata["Zones Strength"] = {}
-      metadata["Zones BG"] = {}
-      metadata["Zones BG sig"] = {}
-
+      # First, get the zones
       with open(zone_file) as f:
           zones = yaml.safe_load(f)
-
+      # And load the corresponding spectra
       for zone in zones:
           specfile = f"{zone_spectra_dir}/{zone['label']}-{spec_id_label}-spec1d.fits"
-          spec = Spectrum(str(specfile))
-          line_window = spec.data[ipeak-1:ipeak+2]
-          bg_window = spec.data[[ipeak-3, ipeak-2, ipeak+2, ipeak+3]]
-          bg_mean = np.mean(bg_window)
-          bg_sig = np.std(bg_window)
-          line_sum = np.sum(line_window)
-          label = zone["label"]
-          metadata["Zones Strength"][label] = sanitize(line_sum)
-          # Average background extended over the line window
-          metadata["Zones BG"][label] = sanitize(bg_mean * len(line_window))
-          # Standard error of the same
-          metadata["Zones BG sig"][label] = sanitize(
-              bg_sig * len(line_window) / np.sqrt(len(bg_window) - 1)
-          )
+          zone["spec"] = Spectrum(str(specfile))
 
-      out_dir = Path(f"all-lines-{spec_id_label}")
-      out_dir.mkdir(parents=True, exist_ok=True)
-      out_path = out_dir / (get_id_string(metadata) + ".yaml")
-      print("Saving line data to", out_path)
-      with open(out_path, "w") as f:
-          yaml.dump(metadata, f)
+      # Next, get all the lines
+      line_files = sorted(Path(orig_data_dir).glob(f"{INDEX_PATTERN}.yaml"))
+
+      # Now loop over all lines
+      for line_file in line_files:
+          with open(line_file) as f:
+              metadata = yaml.safe_load(f)
+          ipeak = metadata["Index"]
+          metadata["Zones Strength"] = {}
+          metadata["Zones BG"] = {}
+          metadata["Zones BG sig"] = {}
+
+          # Get the strength for each zone
+          for zone in zones:
+              spec = zone["spec"]
+              line_window = spec.data[ipeak-1:ipeak+2]
+              bg_window = spec.data[[ipeak-3, ipeak-2, ipeak+2, ipeak+3]]
+              bg_mean = np.mean(bg_window)
+              bg_sig = np.std(bg_window)
+              line_sum = np.sum(line_window)
+              label = zone["label"]
+              metadata["Zones Strength"][label] = sanitize(line_sum)
+              # Average background extended over the line window
+              metadata["Zones BG"][label] = sanitize(bg_mean * len(line_window))
+              # Standard error of the same
+              metadata["Zones BG sig"][label] = sanitize(
+                  bg_sig * len(line_window) / np.sqrt(len(bg_window) - 1)
+              )
+
+          out_dir = Path(f"all-lines-{spec_id_label}")
+          out_dir.mkdir(parents=True, exist_ok=True)
+          out_path = out_dir / (get_id_string(metadata) + ".yaml")
+          if debug:
+              print("Saving line data to", out_path)
+          with open(out_path, "w") as f:
+              yaml.dump(metadata, f)
 
   if __name__ == "__main__":
       typer.run(main)
 
 #+end_src
 
+#+header: :prologue "exec 2>&1" :epilogue ":"
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-  for f in all-lines-orig/????.yaml; do
-      python ../../scripts/line-bright-all-zones.py $f
-  done
+  time python ../../scripts/line-bright-all-zones.py
+  echo "Last run:"
+  date
 #+end_src
 
 #+RESULTS:
+#+begin_example
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+
+real	0m5.386s
+user	0m5.751s
+sys	0m0.741s
+Last run:
+Sun Oct 30 21:43:49 CST 2022
+#+end_example
 
 
 
@@ -2699,17 +2729,16 @@ python ../../scripts/line-bright-all-zones.py --help
 
 #+RESULTS:
 #+begin_example
-Usage: line-bright-all-zones.py [OPTIONS] LINE_FILE
+Usage: line-bright-all-zones.py [OPTIONS]
 
   Find line strength of a single line from all zones
 
-Arguments:
-  LINE_FILE  [required]
-
 Options:
   --spec-id-label TEXT     [default: c007-chop-mean]
+  --orig-data-dir TEXT     [default: all-lines-orig]
   --zone-file TEXT         [default: zones.yaml]
   --zone-spectra-dir TEXT  [default: zone_spectra]
+  --debug / --no-debug     [default: False]
   --install-completion     Install completion for the current shell.
   --show-completion        Show completion for the current shell, to copy it
                            or customize the installation.
@@ -2719,6 +2748,7 @@ Options:
 
 **** Do something with all the lines at once
 - [2022-10-30 Sun] This line of thinking shelved for now. Maybe come back to it later when I do the plots of the ratios. For the moment, I will work on doing a single line at a time.
+- [2022-10-30 Sun 21:51] Actually, I did go back to treating all the lines at once, but I still worked with the individual YAML files. I will leave this here as an example of converting those little files to a big pandas dataframe
 #+begin_src python :eval no :tangle ../scripts/extract-lines-by-zone.py
   from matplotlib import pyplot as plt
   from astropy.io import fits
@@ -2732,43 +2762,47 @@ Options:
 
   def main(
           zone_file: str="zones.yaml",
-          orig_data_dir: str="all-lines-orig",
+          data_dir: str="all-lines-c007-chop-mean",
   ):
       # First, get the zones
       with open(zone_file) as f:
           zones = yaml.safe_load(f)
 
       # Next, get all the lines
-      line_files = sorted(Path(orig_data_dir).glob(f"{INDEX_PATTERN}.yaml"))
+      line_files = sorted(Path(data_dir).glob(f"{INDEX_PATTERN}-*.yaml"))
       data = [
           yaml.safe_load(path.open()) for path in line_files
       ]
-      print(pd.DataFrame(data))
+      print(pd.DataFrame(
+          {**{k: row[k] for k in ("Index", "ID")}, **row["Zones Strength"]}
+          for row in data if row["Type"] and "Deep" in row["Type"]
+      ))
 
 
   if __name__ == "__main__":
       typer.run(main)
 #+end_src
+
 #+begin_src sh :dir ../data/n346-lines :results output verbatim
-python ../../scripts/extract-lines-by-zone.py
+COLUMNS=100 python ../../scripts/extract-lines-by-zone.py
 #+end_src
 
 #+RESULTS:
 #+begin_example
-     Index  ...                                              Notes
-0        4  ...                                                NaN
-1        7  ...                      {'ID': ['plus N II 4607.16']}
-2       11  ...                                                NaN
-3       14  ...                                                NaN
-4       22  ...                                                NaN
-..     ...  ...                                                ...
-511   3779  ...                                                NaN
-512   3785  ...                                                NaN
-513   3790  ...                                                NaN
-514   3817  ...  {'Index': ['Where did these last two rows come...
-515   3825  ...                                                NaN
+     Index    ID   zone-0  zone-I  zone-II  zone-III  zone-IV  zone-MYSO   zone-S
+0      809   UIL   5.1494  4.8073   4.7287    4.3605   4.1077     9.6405   8.3744
+1     1146   UIL   4.3953  3.4410   3.4123    3.1135   2.5559     7.3462   7.1130
+2     1153   UIL   4.3742  3.0831   3.2290    2.7541   3.1434     5.7033   3.8505
+3     1268   UIL   3.5797  2.8320   3.1258    2.7901   2.3934     4.5156   6.1575
+4     1300   UIL   4.7802  2.5236   3.3479    2.6018   2.4650     9.2132   6.1158
+..     ...   ...      ...     ...      ...       ...      ...        ...      ...
+115   3649   UIL   6.5941  2.8811   4.1904    2.3319   2.3899    11.0754   5.4106
+116   3654   UIL   3.9402  2.0889   3.0218    2.2850   2.0370     5.0585   3.7059
+117   3711  UIL+  -2.5618  4.0243  -2.1790   -5.0012  -2.5422    -7.4650  -8.0434
+118   3736   UIL   3.7476  2.4520   3.0255    2.2911   2.1809     6.8280   5.4082
+119   3762   UIL  14.2620  3.4208   4.5903    5.3720   2.0096    40.5786  16.5563
 
-[516 rows x 10 columns]
+[120 rows x 9 columns]
 #+end_example
   
 *** Step 8: Inter-zone ratios
@@ -2776,6 +2810,126 @@ python ../../scripts/extract-lines-by-zone.py
 - One possibility would be to take the ratio of each zone to the sum of the zones
   - This would keep the dimensionality to a minimum, since we have only 5 ratios
   - Or maybe 6 if we want to separate out the YSO
+- Alternatively, we can normalize the strengths to H beta and plot then plot them directly
+
+
+**** DONE Line strengths normalized to H beta
+CLOSED: [2022-10-31 Mon 13:13]
+
+- We write out to CSV tables
+  - line_fluxes.csv
+  - line_uncertainties.csv
+#+begin_src python :eval no :tangle ../scripts/make-line-flux-table.py
+  from matplotlib import pyplot as plt
+  from astropy.io import fits
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+
+  INDEX_PATTERN = "[0-9]" * 4
+
+  def main(
+          zone_file: str="zones.yaml",
+          data_dir: str="all-lines-c007-chop-mean",
+  ):
+      # First, get the zones
+      with open(zone_file) as f:
+          zones = yaml.safe_load(f)
+
+      # Next, get all the lines into a big list of dicts
+      line_files = sorted(Path(data_dir).glob(f"{INDEX_PATTERN}-*.yaml"))
+      data = [
+          yaml.safe_load(path.open()) for path in line_files
+      ]
+
+      # # Now make some dataframes, trying different techniques
+
+      # # This one gives a flat dataframe with columns for all the nested
+      # # dicts, but with long ugly column names like 'Zones Strength.zone-III'
+      # df0 = pd.json_normalize(data).set_index("Index")
+      # # Switch the long names to tuples. We cannot use a MultiIndex
+      # # since that would require all columns to be tuples, which they
+      # # are not
+      # df0 = df0.rename(
+      #     columns={
+      #         s: tuple(x.replace("Zones ", "") for x in s.split(".")[::-1])
+      #         for s in df0.columns if "." in s
+      #     }
+      # )
+      # # Actually, I end up not using this. Leave here now for future reference
+
+
+      # Better to select just the columns I need at the moment of creation of the DataFrame
+      unwanted_types = ["sky",  "telluric", "noise", "nan"]
+      # Make a seperate frame for Strength, BG, and BG sig
+      df, df_bg, df_sig = [
+          pd.DataFrame(
+              {**{k: row[k] for k in ("Index", "Type", "ID")}, **row[f"Zones {label}"]}
+              for row in data if row["Type"] and row["Type"].rstrip("?").lower() not in unwanted_types
+          ).set_index("Index")
+          for label in ["Strength", "BG", "BG sig"]
+      ]
+
+      # Now correct for the BG:
+      print(df)
+      print('Subtracting BG')
+      zone_labels = [z["label"] for z in zones]
+      df.loc[:, zone_labels] -=  df_bg.loc[:, zone_labels]
+
+      # And put on scale of H beta = 100 (H beta has Index = 211)
+      # We have to do the uncrtainties first, otherwise Hb has already changed!
+      df_sig.loc[:, zone_labels] *= 100 / df.loc[211, zone_labels]
+      df.loc[:, zone_labels] *= 100 / df.loc[211, zone_labels]
+
+      print(df)
+      df.to_csv(Path(data_dir) / "line-fluxes.csv")
+      df_sig.to_csv(Path(data_dir) / "line-uncertainties.csv")
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+COLUMNS=3000 python ../../scripts/make-line-flux-table.py
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                 Type                 ID    zone-0   zone-I   zone-II  zone-III   zone-IV  zone-MYSO    zone-S
+Index                                                                                                         
+7              Fe, Ni  [Fe III] 4607.12+   12.3809  12.3060   12.2794   11.3136   12.3398    29.0818   18.7344
+35          High Perm      O II 4641.81+   12.0485  11.7521   10.9588   10.4697   10.4339    20.2526   39.6522
+42          High Perm      O II 4649.13+   10.8664  11.5612   12.1369   12.7574   13.2157    -6.4541   -3.3169
+49             Fe, Ni   [Fe III] 4658.10   15.4370  11.1258   15.8289   12.8211    7.7964   183.3786   28.7817
+71           High Neb     He II  4685.68    5.9953   9.8800   10.1640    8.1301   16.2133   -15.7099 -191.5784
+...               ...                ...       ...      ...       ...       ...       ...        ...       ...
+3707          Med Neb        H I 9229.01  160.1856  33.0624  120.9054  149.9819  101.0044   807.2283   89.9322
+3711     Deep Neutral               UIL+   -2.5618   4.0243   -2.1790   -5.0012   -2.5422    -7.4650   -8.0434
+3720          Neutral      Ca I] 9244.31    3.3306   2.7317    3.3174    2.0262    1.7982    43.8719    5.4495
+3736   Deep Neutral??                UIL    3.7476   2.4520    3.0255    2.2911    2.1809     6.8280    5.4082
+3762    Deep Neutral?                UIL   14.2620   3.4208    4.5903    5.3720    2.0096    40.5786   16.5563
+
+[263 rows x 9 columns]
+Subtracting BG
+                 Type                 ID    zone-0    zone-I   zone-II  zone-III   zone-IV zone-MYSO    zone-S
+Index                                                                                                         
+7              Fe, Ni  [Fe III] 4607.12+  0.029204  0.047758 -0.011393  0.004338  0.109447  0.068729  0.341788
+35          High Perm      O II 4641.81+  0.054879  0.185654  -0.01297  0.010963  0.057365  0.029202  0.511931
+42          High Perm      O II 4649.13+  0.066128  0.180443  0.048301  0.090637  0.156082 -0.052691 -0.328685
+49             Fe, Ni   [Fe III] 4658.10  0.104694  0.065924   0.15527  0.070984 -0.091535  0.717771  0.204803
+71           High Neb     He II  4685.68 -0.070723  0.032704 -0.009169  -0.02298  0.231436 -0.117354 -4.980698
+...               ...                ...       ...       ...       ...       ...       ...       ...       ...
+3707          Med Neb        H I 9229.01  3.151184  2.531854  3.000855  2.760457  2.257909   3.44299  2.241151
+3711     Deep Neutral               UIL+ -1.002457 -0.247553 -1.075681 -1.014121 -0.825801  -0.92018 -1.043996
+3720          Neutral      Ca I] 9244.31  0.019222  0.050464  0.001453 -0.006016 -0.010236  0.186962  0.007252
+3736   Deep Neutral??                UIL  0.036748  0.016201  0.008601  -0.00005  0.006876  0.016366  0.067998
+3762    Deep Neutral?                UIL  0.249847 -0.153269 -0.062681  0.073066 -0.007657  0.196414  0.417324
+
+[263 rows x 9 columns]
+#+end_example
+
 *** Step 9: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
