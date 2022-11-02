@@ -5,29 +5,40 @@ Index: 83
 Region: EAST
 Strength: null
 Type: Fe, Ni
-Zones BG:
-  zone-0: 8.4548
-  zone-I: 9.6755
-  zone-II: 9.222
-  zone-III: 7.6503
-  zone-IV: 8.1758
-  zone-MYSO: 3.0433
-  zone-S: 16.8901
-Zones BG sig:
-  zone-0: 1.0194
-  zone-I: 0.7234
-  zone-II: 0.8698
-  zone-III: 1.0519
-  zone-IV: 1.9207
-  zone-MYSO: 3.2988
-  zone-S: 1.7983
-Zones Strength:
-  zone-0: 9.1687
-  zone-I: 8.28
-  zone-II: 11.2454
-  zone-III: 9.6819
-  zone-IV: 6.9973
-  zone-MYSO: 62.5019
-  zone-S: 16.3591
 lambda_HM: null
 lambda_obs: 4703.694824
+zone-0:
+  BG mean: 2.8183
+  BG npix: 4
+  Sigma: 0.5885
+  Strength: 0.714
+zone-I:
+  BG mean: 3.2252
+  BG npix: 4
+  Sigma: 0.4176
+  Strength: -1.3956
+zone-II:
+  BG mean: 3.074
+  BG npix: 4
+  Sigma: 0.5022
+  Strength: 2.0234
+zone-III:
+  BG mean: 2.5501
+  BG npix: 4
+  Sigma: 0.6073
+  Strength: 2.0316
+zone-IV:
+  BG mean: 2.7253
+  BG npix: 4
+  Sigma: 1.1089
+  Strength: -1.1785
+zone-MYSO:
+  BG mean: 1.0144
+  BG npix: 4
+  Sigma: 1.9046
+  Strength: 59.4586
+zone-S:
+  BG mean: 5.63
+  BG npix: 4
+  Sigma: 1.0383
+  Strength: -0.531

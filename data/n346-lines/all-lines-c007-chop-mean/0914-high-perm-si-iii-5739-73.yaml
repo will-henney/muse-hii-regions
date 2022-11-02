@@ -5,29 +5,40 @@ Index: 914
 Region: BS
 Strength: 2.3
 Type: High Perm
-Zones BG:
-  zone-0: 3.6738
-  zone-I: 3.7408
-  zone-II: 4.0815
-  zone-III: 3.512
-  zone-IV: 2.5067
-  zone-MYSO: 4.4024
-  zone-S: 7.5124
-Zones BG sig:
-  zone-0: 0.2077
-  zone-I: 0.1271
-  zone-II: 0.2275
-  zone-III: 0.1342
-  zone-IV: 0.1196
-  zone-MYSO: 1.8996
-  zone-S: 1.6908
-Zones Strength:
-  zone-0: 4.1985
-  zone-I: 3.9926
-  zone-II: 4.7465
-  zone-III: 4.4697
-  zone-IV: 5.4523
-  zone-MYSO: 4.9856
-  zone-S: 5.1939
 lambda_HM: 5739.64
 lambda_obs: 5742.444824
+zone-0:
+  BG mean: 1.2246
+  BG npix: 4
+  Sigma: 0.1199
+  Strength: 0.5247
+zone-I:
+  BG mean: 1.2469
+  BG npix: 4
+  Sigma: 0.0734
+  Strength: 0.2518
+zone-II:
+  BG mean: 1.3605
+  BG npix: 4
+  Sigma: 0.1314
+  Strength: 0.6649
+zone-III:
+  BG mean: 1.1707
+  BG npix: 4
+  Sigma: 0.0775
+  Strength: 0.9577
+zone-IV:
+  BG mean: 0.8356
+  BG npix: 4
+  Sigma: 0.069
+  Strength: 2.9457
+zone-MYSO:
+  BG mean: 1.4675
+  BG npix: 4
+  Sigma: 1.0968
+  Strength: 0.5832
+zone-S:
+  BG mean: 2.5041
+  BG npix: 4
+  Sigma: 0.9762
+  Strength: -2.3185

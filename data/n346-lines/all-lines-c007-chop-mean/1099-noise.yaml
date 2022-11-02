@@ -5,29 +5,40 @@ Index: 1099
 Region: GLOB-E
 Strength: null
 Type: Noise
-Zones BG:
-  zone-0: 3.2494
-  zone-I: 3.6069
-  zone-II: 3.6306
-  zone-III: 3.2471
-  zone-IV: 3.2445
-  zone-MYSO: 0.47
-  zone-S: 5.2028
-Zones BG sig:
-  zone-0: 0.2336
-  zone-I: 0.1473
-  zone-II: 0.1391
-  zone-III: 0.2113
-  zone-IV: 0.1786
-  zone-MYSO: 3.5205
-  zone-S: 1.7036
-Zones Strength:
-  zone-0: 3.5859
-  zone-I: 3.1991
-  zone-II: 3.8789
-  zone-III: 3.1982
-  zone-IV: 2.8039
-  zone-MYSO: 5.2723
-  zone-S: 9.0457
 lambda_HM: null
 lambda_obs: 5973.694824
+zone-0:
+  BG mean: 1.1312
+  BG npix: 7
+  Sigma: 0.1811
+  Strength: 0.1923
+zone-I:
+  BG mean: 1.144
+  BG npix: 7
+  Sigma: 0.1098
+  Strength: -0.233
+zone-II:
+  BG mean: 1.2457
+  BG npix: 7
+  Sigma: 0.0989
+  Strength: 0.1419
+zone-III:
+  BG mean: 1.0754
+  BG npix: 7
+  Sigma: 0.1031
+  Strength: -0.028
+zone-IV:
+  BG mean: 1.0186
+  BG npix: 7
+  Sigma: 0.1293
+  Strength: -0.2518
+zone-MYSO:
+  BG mean: 0.8427
+  BG npix: 7
+  Sigma: 1.8277
+  Strength: 2.7442
+zone-S:
+  BG mean: 2.2832
+  BG npix: 7
+  Sigma: 1.0275
+  Strength: 2.196

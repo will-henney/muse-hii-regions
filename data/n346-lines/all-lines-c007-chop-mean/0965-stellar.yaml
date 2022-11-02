@@ -5,29 +5,40 @@ Index: 965
 Region: GLOB-E
 Strength: null
 Type: Stellar
-Zones BG:
-  zone-0: 3.8012
-  zone-I: 3.5627
-  zone-II: 4.0094
-  zone-III: 3.7429
-  zone-IV: 2.9756
-  zone-MYSO: 5.2435
-  zone-S: 7.7713
-Zones BG sig:
-  zone-0: 0.2142
-  zone-I: 0.2356
-  zone-II: 0.0721
-  zone-III: 0.2647
-  zone-IV: 0.1625
-  zone-MYSO: 0.5582
-  zone-S: 0.5083
-Zones Strength:
-  zone-0: 3.66
-  zone-I: 3.5516
-  zone-II: 4.316
-  zone-III: 3.94
-  zone-IV: 3.6231
-  zone-MYSO: 4.6159
-  zone-S: 1.2635
 lambda_HM: 5801.64
 lambda_obs: 5806.194824
+zone-0:
+  BG mean: 1.2469
+  BG npix: 7
+  Sigma: 0.1595
+  Strength: -0.0807
+zone-I:
+  BG mean: 1.186
+  BG npix: 7
+  Sigma: 0.129
+  Strength: -0.0063
+zone-II:
+  BG mean: 1.3803
+  BG npix: 7
+  Sigma: 0.0798
+  Strength: 0.1752
+zone-III:
+  BG mean: 1.2758
+  BG npix: 7
+  Sigma: 0.1452
+  Strength: 0.1127
+zone-IV:
+  BG mean: 1.0844
+  BG npix: 7
+  Sigma: 0.1374
+  Strength: 0.37
+zone-MYSO:
+  BG mean: 1.6582
+  BG npix: 7
+  Sigma: 0.2857
+  Strength: -0.3586
+zone-S:
+  BG mean: 1.6607
+  BG npix: 7
+  Sigma: 1.32
+  Strength: -3.7187

@@ -5,29 +5,40 @@ Index: 531
 Region: GLOB-E
 Strength: 2.9
 Type: Fe, Ni
-Zones BG:
-  zone-0: 5.5534
-  zone-I: 5.6653
-  zone-II: 5.1353
-  zone-III: 4.8302
-  zone-IV: 6.2614
-  zone-MYSO: -8.8619
-  zone-S: 10.116
-Zones BG sig:
-  zone-0: 0.6557
-  zone-I: 0.717
-  zone-II: 0.2527
-  zone-III: 0.4503
-  zone-IV: 0.6737
-  zone-MYSO: 11.3224
-  zone-S: 3.0152
-Zones Strength:
-  zone-0: 5.1974
-  zone-I: 5.0031
-  zone-II: 5.8162
-  zone-III: 5.0201
-  zone-IV: 2.8124
-  zone-MYSO: 108.3082
-  zone-S: 9.2829
 lambda_HM: 5259.58
 lambda_obs: 5263.694824
+zone-0:
+  BG mean: 1.8511
+  BG npix: 4
+  Sigma: 0.3786
+  Strength: -0.356
+zone-I:
+  BG mean: 1.8884
+  BG npix: 4
+  Sigma: 0.414
+  Strength: -0.6622
+zone-II:
+  BG mean: 1.7118
+  BG npix: 4
+  Sigma: 0.1459
+  Strength: 0.6809
+zone-III:
+  BG mean: 1.6101
+  BG npix: 4
+  Sigma: 0.26
+  Strength: 0.1899
+zone-IV:
+  BG mean: 2.0871
+  BG npix: 4
+  Sigma: 0.389
+  Strength: -3.449
+zone-MYSO:
+  BG mean: -2.954
+  BG npix: 4
+  Sigma: 6.537
+  Strength: 117.1701
+zone-S:
+  BG mean: 3.372
+  BG npix: 4
+  Sigma: 1.7408
+  Strength: -0.8331

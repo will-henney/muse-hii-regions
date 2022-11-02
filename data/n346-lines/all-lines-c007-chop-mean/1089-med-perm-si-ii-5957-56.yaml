@@ -5,29 +5,40 @@ Index: 1089
 Region: GLOB-E
 Strength: 2.3
 Type: Med Perm
-Zones BG:
-  zone-0: 2.7467
-  zone-I: 2.9239
-  zone-II: 3.723
-  zone-III: 3.2268
-  zone-IV: 2.9593
-  zone-MYSO: -1.9708
-  zone-S: 4.1493
-Zones BG sig:
-  zone-0: 0.4011
-  zone-I: 0.3033
-  zone-II: 0.1895
-  zone-III: 0.0961
-  zone-IV: 0.2483
-  zone-MYSO: 2.3334
-  zone-S: 3.6221
-Zones Strength:
-  zone-0: 4.4606
-  zone-I: 3.9079
-  zone-II: 4.4832
-  zone-III: 3.2432
-  zone-IV: 3.1487
-  zone-MYSO: 127.2034
-  zone-S: 8.2564
 lambda_HM: 5957.68
 lambda_obs: 5961.194824
+zone-0:
+  BG mean: 0.9156
+  BG npix: 4
+  Sigma: 0.2316
+  Strength: 1.7139
+zone-I:
+  BG mean: 0.9746
+  BG npix: 4
+  Sigma: 0.1751
+  Strength: 0.984
+zone-II:
+  BG mean: 1.241
+  BG npix: 4
+  Sigma: 0.1094
+  Strength: 0.7602
+zone-III:
+  BG mean: 1.0756
+  BG npix: 4
+  Sigma: 0.0555
+  Strength: 0.0164
+zone-IV:
+  BG mean: 0.9864
+  BG npix: 4
+  Sigma: 0.1433
+  Strength: 0.1894
+zone-MYSO:
+  BG mean: -0.6569
+  BG npix: 4
+  Sigma: 1.3472
+  Strength: 129.1742
+zone-S:
+  BG mean: 1.3831
+  BG npix: 4
+  Sigma: 2.0912
+  Strength: 4.1071

@@ -8,29 +8,40 @@ Notes:
 Region: BY-HAND
 Strength: 1.0
 Type: Med Neb
-Zones BG:
-  zone-0: 3.5424
-  zone-I: 1.869
-  zone-II: 3.5522
-  zone-III: 1.5496
-  zone-IV: 1.0297
-  zone-MYSO: 22.2991
-  zone-S: 3.0692
-Zones BG sig:
-  zone-0: 2.0889
-  zone-I: 0.2865
-  zone-II: 1.8913
-  zone-III: 0.4105
-  zone-IV: 0.3367
-  zone-MYSO: 18.0631
-  zone-S: 0.6497
-Zones Strength:
-  zone-0: 2.1708
-  zone-I: 1.8419
-  zone-II: 2.1203
-  zone-III: 3.7613
-  zone-IV: 3.5973
-  zone-MYSO: 1.5224
-  zone-S: 3.084
 lambda_HM: 8582.57653993
 lambda_obs: 8587.444824
+zone-0:
+  BG mean: 0.2873
+  BG npix: 2
+  Sigma: 0.0929
+  Strength: 1.3088
+zone-I:
+  BG mean: 0.4985
+  BG npix: 2
+  Sigma: 0.0108
+  Strength: 0.3462
+zone-II:
+  BG mean: 0.3154
+  BG npix: 2
+  Sigma: 0.0838
+  Strength: 1.1742
+zone-III:
+  BG mean: 0.3029
+  BG npix: 2
+  Sigma: 0.1227
+  Strength: 2.8526
+zone-IV:
+  BG mean: 0.4101
+  BG npix: 2
+  Sigma: 0.0822
+  Strength: 2.3671
+zone-MYSO:
+  BG mean: -0.1273
+  BG npix: 2
+  Sigma: 0.0236
+  Strength: 1.9044
+zone-S:
+  BG mean: 0.9591
+  BG npix: 2
+  Sigma: 0.0938
+  Strength: 0.2068

@@ -7,29 +7,40 @@ Index: 3122
 Region: BY-HAND
 Strength: 10.0
 Type: Deep Neutral
-Zones BG:
-  zone-0: 5.702
-  zone-I: 5.889
-  zone-II: 7.1779
-  zone-III: 11.3417
-  zone-IV: 7.8949
-  zone-MYSO: 34.8152
-  zone-S: 5.7025
-Zones BG sig:
-  zone-0: 5.0721
-  zone-I: 2.046
-  zone-II: 3.9447
-  zone-III: 7.2233
-  zone-IV: 4.0667
-  zone-MYSO: 39.6539
-  zone-S: 4.9414
-Zones Strength:
-  zone-0: 6.2309
-  zone-I: -0.9165
-  zone-II: -0.1492
-  zone-III: -6.5229
-  zone-IV: -3.4648
-  zone-MYSO: 23.3246
-  zone-S: -12.5093
 lambda_HM: 8497.62467932
 lambda_obs: 8502.444824
+zone-0:
+  BG mean: -0.1944
+  BG npix: 2
+  Sigma: 0.572
+  Strength: 6.8142
+zone-I:
+  BG mean: 0.8286
+  BG npix: 2
+  Sigma: 0.082
+  Strength: -3.4024
+zone-II:
+  BG mean: 0.7353
+  BG npix: 2
+  Sigma: 0.0542
+  Strength: -2.3552
+zone-III:
+  BG mean: 1.0037
+  BG npix: 2
+  Sigma: 0.1488
+  Strength: -9.5341
+zone-IV:
+  BG mean: 0.7629
+  BG npix: 2
+  Sigma: 0.0168
+  Strength: -5.7534
+zone-MYSO:
+  BG mean: -3.6442
+  BG npix: 2
+  Sigma: 1.2546
+  Strength: 34.2571
+zone-S:
+  BG mean: -0.3286
+  BG npix: 2
+  Sigma: 0.431
+  Strength: -11.5234

@@ -5,29 +5,40 @@ Index: 1146
 Region: FIL-B
 Strength: 1.4
 Type: Deep Neutral?
-Zones BG:
-  zone-0: 2.861
-  zone-I: 3.2057
-  zone-II: 3.8183
-  zone-III: 3.3614
-  zone-IV: 3.0554
-  zone-MYSO: 3.5701
-  zone-S: 5.9171
-Zones BG sig:
-  zone-0: 0.354
-  zone-I: 0.0912
-  zone-II: 0.3013
-  zone-III: 0.2133
-  zone-IV: 0.1301
-  zone-MYSO: 0.4592
-  zone-S: 0.6846
-Zones Strength:
-  zone-0: 4.3953
-  zone-I: 3.441
-  zone-II: 3.4123
-  zone-III: 3.1135
-  zone-IV: 2.5559
-  zone-MYSO: 7.3462
-  zone-S: 7.113
 lambda_HM: 6029.0
 lambda_obs: 6032.444824
+zone-0:
+  BG mean: 0.9537
+  BG npix: 4
+  Sigma: 0.2044
+  Strength: 1.5342
+zone-I:
+  BG mean: 1.0686
+  BG npix: 4
+  Sigma: 0.0526
+  Strength: 0.2353
+zone-II:
+  BG mean: 1.2728
+  BG npix: 4
+  Sigma: 0.174
+  Strength: -0.4059
+zone-III:
+  BG mean: 1.1205
+  BG npix: 4
+  Sigma: 0.1232
+  Strength: -0.2479
+zone-IV:
+  BG mean: 1.0185
+  BG npix: 4
+  Sigma: 0.0751
+  Strength: -0.4996
+zone-MYSO:
+  BG mean: 1.19
+  BG npix: 4
+  Sigma: 0.2651
+  Strength: 3.7761
+zone-S:
+  BG mean: 1.9724
+  BG npix: 4
+  Sigma: 0.3953
+  Strength: 1.1959

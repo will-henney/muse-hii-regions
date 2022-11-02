@@ -243,6 +243,23 @@
     - [[file:../notebooks/ngc346-new/00-check-peter-cube.py]]
 - General approach here is to split up functionality from notebook into independent scripts, and make sure that intermediate results are stored
 - Scripts should be python files in [[file:../scripts/]], either directly written or tangled from this file
+*** Overview of tasks to re-run after changes
+**** After editing the Google Sheet
+:PROPERTIES:
+:ID:       6CFEDC5E-0616-426F-8ABD-6C72C5BFC55E
+:END:
+1. Download as Excel format
+2. Copy to the folder [[file:../data/spec1d/]]
+3. Rename to use dashes instead of spaces: All-Lines-MUSE-NGC-346.xlsx
+4. Regenerate the little YAML files in [[file:../data/n346-lines/all-lines-orig/]]
+   - See [[id:BCD6CB93-FC5E-4CFE-81DC-047BDCE13BCF][Run the spreadsheet conversion script]]
+5. If indices have changed, make sure to clean out stale files
+6. Regenerate the mask file
+   - See [[id:41FC5AA8-E3FD-4379-B839-12CCE0FF8460][Make a mask of all the line pixels and their neighbors, so we can avoid them when finding the BG level]]
+7. Now we can calculate the line strengths from the zones that we want, for the spectra that we have generated.
+**** After changing the zones definitions
+To be written
+
 *** DONE Step -1: Do the continuum subtraction
 CLOSED: [2022-10-27 Thu 07:56]
 - This is done in a two-pass filtering with intermediate shaving of emission lines
@@ -1470,8 +1487,11 @@ CLOSED: [2022-10-25 Tue 07:55]
 #+RESULTS:
 
 ***** Run the spreadsheet conversion script
+:PROPERTIES:
+:ID:       BCD6CB93-FC5E-4CFE-81DC-047BDCE13BCF
+:END:
 #+begin_src sh :dir ../data :results verbatim
-python ../scripts/spreadsheet-convert.py spec1d/All-Lines-MUSE-NGC-346.xlsx n346-lines/all-lines-orig
+python ../scripts/spreadsheet-convert.py spec1d/All-Lines-MUSE-NGC-346.xlsx --out-folder n346-lines/all-lines-orig
 #+end_src
 
 #+RESULTS:
@@ -2570,6 +2590,7 @@ CLOSED: [2022-10-29 Sat 23:07]
               input="husl",
           )[-1]
           (spec / scale + offset).plot(label=zone["label"], linewidth=1, color=color)
+          ax.axhline(offset, linewidth=0.5, color=color)
           offset -= dy
 
       ax.legend(ncol=nzones)
@@ -2611,12 +2632,81 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
   2. Or we could use the strength and width from find_peaks
   3. We can use the variations in the pixels just outside the 3 in order to estimate the uncertainty in the baseline
 - Important thing is to get started on something, we can always refine it later!
+- [2022-11-01 Tue] Spot checks on some lines from the 7
 
 
 
-**** TODO Find strength of a single line in all zones
+**** DONE Make a mask of all the line pixels and their neighbors, so we can avoid them when finding the BG level
+CLOSED: [2022-11-01 Tue 11:50]
+:PROPERTIES:
+:ID:       41FC5AA8-E3FD-4379-B839-12CCE0FF8460
+:END:
+
+#+begin_src python :eval no :tangle ../scripts/find-all-line-pixels.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import typer
+
+  INDEX_PATTERN = "[0-9]" * 4
+  IGNORED_TYPES = ["noise", "stellar"]
+
+  def main(
+          data_dir: str="all-lines-orig",
+  ):
+      # Get all the lines
+      line_files = sorted(Path(data_dir).glob(f"{INDEX_PATTERN}.yaml"))
+      data = [
+          yaml.safe_load(path.open()) for path in line_files
+      ]
+      # Make a list of all indices that we wish to exclude from BG
+      # estimation
+      indices = []
+      for line in data:
+          if not line["Type"]:
+              # Skip case that Type is null
+              continue
+          if line["Type"].lower().lstrip("?") in IGNORED_TYPES:
+              # Skip other Types that we do not want, e.g., Noise
+              continue                
+          idx = line["Index"]
+          # Use a 3-pixel window around each line
+          indices.extend([idx - 1, idx, idx + 1])
+
+      # Save to a file as a list of integers
+      np.savetxt(
+          Path(data_dir) / "line-indices.txt",
+          indices,
+          fmt="%04d",
+      )
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+python ../../scripts/find-all-line-pixels.py
+#+end_src
+
+#+RESULTS:
+
+**** TODO Find strength of a each line in all zones
 - Original version [2022-10-30 Sun 21:18]
   - This does just one line, but it is very slow when run repeatedly for each line
+- Revised version  [2022-10-30 Sun 21:40]
+  - Now do all the lines at once. Works much faster
+- Methods:
+  - Only method so far is seven-pixel window. Outermost 4 pixels are used to estimate the hyper-local base level, and its uncertainty. Innermost 3 pixels are summed to give the line flux
+- [0/3] Future improvements:
+  - [ ] Eliminate neighboring line pixels from the BG estimation
+    - This should be easy to do by setting a mask
+    - We currently have 4 pixels that are used in the BG estimation, so even if both pixels on one side are masked out, we still have enough
+  - [ ] Use the 3-wav method to estimate the central wavelength and correct the flux for the missing wings
+  - [ ] Maybe some kind of Gaussian fit. Here is a possible plan:
+    - Take a big enough window around the central pixel to include all possible blends: 15 pixels would probably be enough
+    - Run ~find_peaks()~ to get an idea of how many lines there are. Use a minimum  strength of say 0.3 times the peak from the 3-pixel method
+    - Use those as Gaussian components in a fit (plus constant)
+    - This is starting to sound way to complicated, and it would still not be able to capture underlying absorption features easily. 
 #+begin_src python :tangle ../scripts/line-bright-all-zones.py
   from mpdaf.obj import Spectrum
   import numpy as np
@@ -2651,38 +2741,55 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
       with open(zone_file) as f:
           zones = yaml.safe_load(f)
       # And load the corresponding spectra
+      nwave = None
       for zone in zones:
           specfile = f"{zone_spectra_dir}/{zone['label']}-{spec_id_label}-spec1d.fits"
           zone["spec"] = Spectrum(str(specfile))
+          if nwave is None:
+              nwave = len(zone["spec"].data)
+          else:
+              assert len(zone["spec"].data) == nwave
 
       # Next, get all the lines
       line_files = sorted(Path(orig_data_dir).glob(f"{INDEX_PATTERN}.yaml"))
 
+      # And the list of indices to avoid when calculating the BG
+      avoid_indices = np.loadtxt(
+          Path(orig_data_dir) / "line-indices.txt",
+          dtype=int,
+      )
+      # Make a 1D mask of acceptable BG pixels
+      bg_mask = np.ones((nwave,), bool)
+      bg_mask[avoid_indices] = False
+
+      # And the list of 
       # Now loop over all lines
       for line_file in line_files:
           with open(line_file) as f:
               metadata = yaml.safe_load(f)
           ipeak = metadata["Index"]
-          metadata["Zones Strength"] = {}
-          metadata["Zones BG"] = {}
-          metadata["Zones BG sig"] = {}
-
           # Get the strength for each zone
           for zone in zones:
               spec = zone["spec"]
-              line_window = spec.data[ipeak-1:ipeak+2]
-              bg_window = spec.data[[ipeak-3, ipeak-2, ipeak+2, ipeak+3]]
-              bg_mean = np.mean(bg_window)
-              bg_sig = np.std(bg_window)
-              line_sum = np.sum(line_window)
-              label = zone["label"]
-              metadata["Zones Strength"][label] = sanitize(line_sum)
-              # Average background extended over the line window
-              metadata["Zones BG"][label] = sanitize(bg_mean * len(line_window))
-              # Standard error of the same
-              metadata["Zones BG sig"][label] = sanitize(
-                  bg_sig * len(line_window) / np.sqrt(len(bg_window) - 1)
-              )
+              # Wide window includes BG and line
+              win7 = spec.data[ipeak-3:ipeak+4]
+              # Corresponding mask
+              m7 = bg_mask[ipeak-3:ipeak+4]
+              # Narrow window includes only line
+              win3 = spec.data[ipeak-1:ipeak+2]
+              bg_npix = np.sum(m7)
+              if bg_npix > 0:
+                  bg_mean = np.mean(win7[m7])
+                  bg_sig = np.std(win7[m7])
+              else:
+                  bg_mean = bg_sig = 0.0
+              line_sum = np.sum(win3 - bg_mean)
+              metadata[zone["label"]] = {
+                  "Strength": sanitize(line_sum),
+                  "Sigma": sanitize(bg_sig),
+                  "BG npix": int(bg_npix),
+                  "BG mean": sanitize(bg_mean),
+              }
 
           out_dir = Path(f"all-lines-{spec_id_label}")
           out_dir.mkdir(parents=True, exist_ok=True)
@@ -2714,11 +2821,11 @@ WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT k
 WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
 WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
 
-real	0m5.386s
-user	0m5.751s
-sys	0m0.741s
+real	0m14.728s
+user	0m7.107s
+sys	0m1.076s
 Last run:
-Sun Oct 30 21:43:49 CST 2022
+Tue Nov  1 22:43:31 CST 2022
 #+end_example
 
 
@@ -2745,6 +2852,41 @@ Options:
 
   --help                   Show this message and exit.
 #+end_example
+
+
+
+**** TODO Attempt to fix up lines that have negative fluxes
+- [2022-11-01 Tue] Spot checks on some lines from the 7 pixel method to see if anything can be done about negative net fluxes
+- I already fixed one line (previously 1935, now 1936) by nudging its index up one, which seems more in line with its appearance in the Zone 0 spectrum
+- Now I am looking at all the lines that have negative fluxes in Zone 0
+  - I have loaded the table line-fluxes.csv in DataSpell and can sort on different columns
+
+
+***** Deep Neutral lines with negative flux in Zone 0
+Initially, there are 10 of these, out of about 120. So even if none can be fixed, it still will not affect my claim to have more than 100 lines. Look at them in order of negative flux:
+  
+1. 3711 at 9233 \AA
+   - This is in the wing of H I 9229, so probably nothing can be done without a lot of effort
+   - Verdict: Leave it
+2. 3539 at 9019 \AA
+   - A similar story: in the wings of H I 9015
+   - This could probably be fixed by using baseline on one side only, but leave it for now
+   - UPDATE [2022-11-01 Tue 17:01]: This now has positive flux after using the line mask approach
+3. 3412 at 8860 \AA
+   - Once again, the same story: in the blue wing of H I 8863
+   - This would be the hardest of the 3 to extract, so definitely leave it
+   - UPDATE [2022-11-01 Tue 17:01]: Also now fixed
+4. 3397 at 8841 \AA
+   - This has a stronger sky line close by
+   - But it should not be too hard to measure. I have had an idea, we will see if it works
+   - UPDATE [2022-11-01 Tue]: Still negative after fix. Oh well
+5. 2614 at 7823 \AA
+   - Now positive, so yay
+6. 2082 at 7499 \AA
+   - Also, now positive
+7. 
+8. 
+9. 
 
 **** Do something with all the lines at once
 - [2022-10-30 Sun] This line of thinking shelved for now. Maybe come back to it later when I do the plots of the ratios. For the moment, I will work on doing a single line at a time.
@@ -2827,6 +2969,7 @@ CLOSED: [2022-10-31 Mon 13:13]
   from pathlib import Path
   import pandas as pd
   import typer
+  import sys
 
   INDEX_PATTERN = "[0-9]" * 4
 
@@ -2837,6 +2980,7 @@ CLOSED: [2022-10-31 Mon 13:13]
       # First, get the zones
       with open(zone_file) as f:
           zones = yaml.safe_load(f)
+      zone_labels = [z["label"] for z in zones]
 
       # Next, get all the lines into a big list of dicts
       line_files = sorted(Path(data_dir).glob(f"{INDEX_PATTERN}-*.yaml"))
@@ -2846,40 +2990,28 @@ CLOSED: [2022-10-31 Mon 13:13]
 
       # # Now make some dataframes, trying different techniques
 
-      # # This one gives a flat dataframe with columns for all the nested
-      # # dicts, but with long ugly column names like 'Zones Strength.zone-III'
-      # df0 = pd.json_normalize(data).set_index("Index")
-      # # Switch the long names to tuples. We cannot use a MultiIndex
-      # # since that would require all columns to be tuples, which they
-      # # are not
-      # df0 = df0.rename(
-      #     columns={
-      #         s: tuple(x.replace("Zones ", "") for x in s.split(".")[::-1])
-      #         for s in df0.columns if "." in s
-      #     }
-      # )
-      # # Actually, I end up not using this. Leave here now for future reference
-
-
-      # Better to select just the columns I need at the moment of creation of the DataFrame
+      # This one gives a flat dataframe with columns for all the nested
+      # dicts, but with some long column names like 'zone-III.Strength'
+      df0 = pd.json_normalize(data).set_index("Index")
       unwanted_types = ["sky",  "telluric", "noise", "nan"]
-      # Make a seperate frame for Strength, BG, and BG sig
-      df, df_bg, df_sig = [
-          pd.DataFrame(
-              {**{k: row[k] for k in ("Index", "Type", "ID")}, **row[f"Zones {label}"]}
-              for row in data if row["Type"] and row["Type"].rstrip("?").lower() not in unwanted_types
-          ).set_index("Index")
-          for label in ["Strength", "BG", "BG sig"]
-      ]
+      # Filter out unwanted rows. Note use of fancy .str accessor to use
+      # regular string methods elementwise on a Series. Also use of @
+      # inside the query string to reference python variables
+      df0 = df0.query('Type.str.rstrip("?").str.lower() not in @unwanted_types')
+      df0 = df0.fillna(value={"Type": "None", "ID": "None"})
+      print(df0)
 
-      # Now correct for the BG:
-      print(df)
-      print('Subtracting BG')
-      zone_labels = [z["label"] for z in zones]
-      df.loc[:, zone_labels] -=  df_bg.loc[:, zone_labels]
+      # Make a separate frame for Strength, renaming the columns to just the zone labels
+      df = df0[
+          ["Type", "ID"] + [f"{zlabel}.Strength" for zlabel in zone_labels]
+      ].rename(columns=lambda c: c.split(".")[0])
+      # And do the same for Sigma
+      df_sig = df0[
+          ["Type", "ID"] + [f"{zlabel}.Sigma" for zlabel in zone_labels]
+      ].rename(columns=lambda c: c.split(".")[0])
 
       # And put on scale of H beta = 100 (H beta has Index = 211)
-      # We have to do the uncrtainties first, otherwise Hb has already changed!
+      # We have to do the uncertainties first, otherwise Hb has already changed!
       df_sig.loc[:, zone_labels] *= 100 / df.loc[211, zone_labels]
       df.loc[:, zone_labels] *= 100 / df.loc[211, zone_labels]
 
@@ -2897,38 +3029,286 @@ COLUMNS=3000 python ../../scripts/make-line-flux-table.py
 
 #+RESULTS:
 #+begin_example
-                 Type                 ID    zone-0   zone-I   zone-II  zone-III   zone-IV  zone-MYSO    zone-S
-Index                                                                                                         
-7              Fe, Ni  [Fe III] 4607.12+   12.3809  12.3060   12.2794   11.3136   12.3398    29.0818   18.7344
-35          High Perm      O II 4641.81+   12.0485  11.7521   10.9588   10.4697   10.4339    20.2526   39.6522
-42          High Perm      O II 4649.13+   10.8664  11.5612   12.1369   12.7574   13.2157    -6.4541   -3.3169
-49             Fe, Ni   [Fe III] 4658.10   15.4370  11.1258   15.8289   12.8211    7.7964   183.3786   28.7817
-71           High Neb     He II  4685.68    5.9953   9.8800   10.1640    8.1301   16.2133   -15.7099 -191.5784
-...               ...                ...       ...      ...       ...       ...       ...        ...       ...
-3707          Med Neb        H I 9229.01  160.1856  33.0624  120.9054  149.9819  101.0044   807.2283   89.9322
-3711     Deep Neutral               UIL+   -2.5618   4.0243   -2.1790   -5.0012   -2.5422    -7.4650   -8.0434
-3720          Neutral      Ca I] 9244.31    3.3306   2.7317    3.3174    2.0262    1.7982    43.8719    5.4495
-3736   Deep Neutral??                UIL    3.7476   2.4520    3.0255    2.2911    2.1809     6.8280    5.4082
-3762    Deep Neutral?                UIL   14.2620   3.4208    4.5903    5.3720    2.0096    40.5786   16.5563
+                                                Comments Cont_method                 ID   Region  Strength            Type    lambda_HM   lambda_obs  zone-0.BG mean  zone-0.BG npix  zone-0.Sigma  zone-0.Strength  zone-I.BG mean  zone-I.BG npix  zone-I.Sigma  zone-I.Strength  zone-II.BG mean  zone-II.BG npix  zone-II.Sigma  zone-II.Strength  zone-III.BG mean  zone-III.BG npix  zone-III.Sigma  zone-III.Strength  zone-IV.BG mean  zone-IV.BG npix  zone-IV.Sigma  zone-IV.Strength  zone-MYSO.BG mean  zone-MYSO.BG npix  zone-MYSO.Sigma  zone-MYSO.Strength  zone-S.BG mean  zone-S.BG npix  zone-S.Sigma  zone-S.Strength                                           Notes.ID Notes.Type
+Index                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+7      Must be blend because more widely distributed ...        11.0  [Fe III] 4607.12+   GLOB-E       NaN          Fe, Ni  4607.250000  4608.694824          3.6232               4        0.1381           1.5112          3.9019               4        0.1531           0.6002           4.2489                4         0.3817           -0.4672            3.6908                 4          0.1922             0.2412           2.4653                4         0.1834            4.9440             4.3030                  4           1.6915             16.1728          1.2619               4        5.6892          14.9487                                [plus N II 4607.16]        NaN
+35                     Very broad due to multiple blends        11.0      O II 4641.81+       BS       5.2       High Perm  4640.310000  4643.694824          3.0696               4        0.5973           2.8398          3.1396               4        0.3489           2.3332           3.8303                4         0.2142           -0.5320            3.2867                 4          0.3949             0.6096           2.6142                4         1.1331            2.5913             4.4603                  4           2.1099              6.8716          5.7540               4        3.1073          22.3902  [plus 4638.86 plus N II 4643.06 plus N III 464...        NaN
+42                          Morphology similar to Si III        11.0      O II 4649.13+       BS       3.5       High Perm  4649.650000  4652.444824          2.4815               4        0.3097           3.4218          3.0978               4        0.3158           2.2677           3.3852                4         0.4930            1.9812            2.5727                 4          0.3159             5.0392           2.0551                4         0.4765            7.0506             1.9815                  4           1.3609            -12.3987          3.6862               4        2.0557         -14.3756                                     [plus 4650.84]        NaN
+49     Shows diffuse emission, particularly in SE and NE        101B   [Fe III] 4658.10   GLOB-E       0.6          Fe, Ni  4657.930000  4661.194824          3.3398               4        0.6435           5.4176          3.4324               4        0.3520           0.8285           3.1534                4         0.0415            6.3688            2.9582                 4          0.7241             3.9465           3.9771                4         0.8617           -4.1348             4.8264                  4          10.1066            168.8996          6.6081               4        2.0896           8.9574                                                NaN        NaN
+71                                                  None        11.0     He II  4685.68       BS      44.0        High Neb  4685.550000  4688.694824          3.2183               4        0.2563          -3.6597          3.1563               4        0.2769           0.4110           3.5134                4         0.3282           -0.3761            3.1359                 4          0.0412            -1.2776           1.9196                4         0.4112           10.4544             3.9683                  4           2.0087            -27.6147          8.7537               4        4.9022        -217.8395                                                NaN        NaN
+...                                                  ...         ...                ...      ...       ...             ...          ...          ...             ...             ...           ...              ...             ...             ...           ...              ...              ...              ...            ...               ...               ...               ...             ...                ...              ...              ...            ...               ...                ...                ...              ...                 ...             ...             ...           ...              ...                                                ...        ...
+3707                                                None     11, 101        H I 9229.01   GLOB-E      92.0         Med Neb  9228.820000  9233.694824         -0.5235               3        2.8220         161.7562          0.1762               3        1.0462          32.5337          -0.3030                3         2.3560          121.8144           -0.4638                 3          3.3499           151.3732           0.1836                3         2.9414          100.4537            -0.0936                  3           2.9285            807.5090         -1.9528               3        2.7857          95.7906                                                NaN        NaN
+3711   Severe blend with red wing of H I line. Streng...       101.0               UIL+  BY-HAND       5.0    Deep Neutral  9233.457707  9238.694824          1.2112               3        1.5917          -6.1954          0.2995               3        1.1386           3.1257           1.4074                3         0.9982           -6.4012            1.7469                 3          1.6930           -10.2419           1.9017                3         1.6639           -8.2472             2.1306                  3           1.2071            -13.8570          2.7124               3        0.6640         -16.1805                         [plus wing of H I 9229.01]        NaN
+3720       Has diffuse emission like other neutral lines        11.0      Ca I] 9244.31   GLOB-E       1.4         Neutral  9244.400000  9249.944824          0.7786               4        0.2840           0.9947          0.6992               4        0.1288           0.6341           1.0859                4         0.1968            0.0596            0.7869                 4          0.1254            -0.3345           0.7535                4         0.1579           -0.4624            -0.0408                  4           3.6601             43.9944          1.7108               4        1.3275           0.3172                                                NaN        NaN
+3736                        Diffuse emission is marginal        101B                UIL   GLOB-E       1.0  Deep Neutral??  9262.160000  9269.944824          0.6153               4        0.2317           1.9015          0.7495               4        0.1107           0.2035           0.8909                4         0.0645            0.3529            0.7646                 4          0.1285            -0.0027           0.6234                4         0.0996            0.3106             0.9923                  4           1.2185              3.8511          0.8114               4        1.6428           2.9740                                                NaN        NaN
+3762                                                None     11, 101                UIL   GLOB-E      10.2   Deep Neutral?  9297.640000  9302.444824          0.4444               4        0.2914          12.9288          1.7823               4        0.7868          -1.9261           2.3871                4         0.9686           -2.5710            0.4366                 4          1.4484             4.0623           0.7852                4         1.0698           -0.3459            -1.8799                  4           3.3264             46.2184         -0.5654               4        3.3032          18.2524                                                NaN        NaN
 
-[263 rows x 9 columns]
-Subtracting BG
+[268 rows x 38 columns]
                  Type                 ID    zone-0    zone-I   zone-II  zone-III   zone-IV zone-MYSO    zone-S
 Index                                                                                                         
-7              Fe, Ni  [Fe III] 4607.12+  0.029204  0.047758 -0.011393  0.004338  0.109447  0.068729  0.341788
-35          High Perm      O II 4641.81+  0.054879  0.185654  -0.01297  0.010963  0.057365  0.029202  0.511931
-42          High Perm      O II 4649.13+  0.066128  0.180443  0.048301  0.090637  0.156082 -0.052691 -0.328685
+7              Fe, Ni  [Fe III] 4607.12+  0.029204  0.047758  -0.01139  0.004338  0.109449  0.068729  0.341788
+35          High Perm      O II 4641.81+  0.054879  0.185654  -0.01297  0.010965  0.057365  0.029202  0.511931
+42          High Perm      O II 4649.13+  0.066126  0.180443  0.048301  0.090637  0.156084 -0.052691 -0.328685
 49             Fe, Ni   [Fe III] 4658.10  0.104694  0.065924   0.15527  0.070984 -0.091535  0.717771  0.204803
-71           High Neb     He II  4685.68 -0.070723  0.032704 -0.009169  -0.02298  0.231436 -0.117354 -4.980698
+71           High Neb     He II  4685.68 -0.070723  0.032704 -0.009169  -0.02298  0.231436 -0.117354 -4.980696
 ...               ...                ...       ...       ...       ...       ...       ...       ...       ...
-3707          Med Neb        H I 9229.01  3.151184  2.531854  3.000855  2.760457  2.257909   3.44299  2.241151
-3711     Deep Neutral               UIL+ -1.002457 -0.247553 -1.075681 -1.014121 -0.825801  -0.92018 -1.043996
-3720          Neutral      Ca I] 9244.31  0.019222  0.050464  0.001453 -0.006016 -0.010236  0.186962  0.007252
-3736   Deep Neutral??                UIL  0.036748  0.016201  0.008601  -0.00005  0.006876  0.016366  0.067998
-3762    Deep Neutral?                UIL  0.249847 -0.153269 -0.062681  0.073066 -0.007657  0.196414  0.417324
+3707          Med Neb        H I 9229.01  3.125907  2.588731  2.969817  2.722671  2.223815  3.431665  2.190162
+3711     Deep Neutral               UIL+ -0.119725  0.248714  -0.15606 -0.184216 -0.182574 -0.058888 -0.369952
+3720          Neutral      Ca I] 9244.31  0.019222  0.050456  0.001453 -0.006016 -0.010236  0.186963  0.007252
+3736   Deep Neutral??                UIL  0.036746  0.016193  0.008604 -0.000049  0.006876  0.016366  0.067998
+3762    Deep Neutral?                UIL  0.249847 -0.153261 -0.062681  0.073066 -0.007657  0.196414  0.417324
 
-[263 rows x 9 columns]
+[268 rows x 9 columns]
 #+end_example
+
+
+**** Figures showing the line fluxes
+#+begin_src python :eval no :tangle ../scripts/plot-fluxes-by-zone.py
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import yaml
+  import typer
+
+  def main(
+          id_label: str,
+  ):
+      """Plot of line fluxes from zones 0 and I"""
+      fig, axes = plt.subplots(2,  2, figsize=(10, 10))
+      figfile = f"fluxes-by-zone-{id_label}.pdf"
+
+      df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+      df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv")
+
+      # m_deep = df.Type.str.startswith("Deep")
+      m_deep = df.ID.str.startswith("UIL")
+      m_neut = df.Type.str.startswith("Neutral")
+      m_low = df.Type.str.startswith("Low")
+      m_med = df.Type.str.startswith("Med Neb")
+      m_high = df.Type.str.startswith("High")
+
+      xmin, xmax = 5e-4, 2000.0
+      for ax, [zone_A,  zone_B] in zip(
+              axes.flat,
+              [
+                  ["0", "I"],
+                  ["0", "II"],
+                  ["0", "MYSO"],
+                  ["III", "IV"],
+              ]
+      ):
+
+          ax.scatter(f"zone-{zone_A}", f"zone-{zone_B}", alpha=0.4, data=df[m_deep], label="Deep")
+          ax.scatter(f"zone-{zone_A}", f"zone-{zone_B}", alpha=0.4, data=df[m_neut], label="Neutral")
+          ax.scatter(f"zone-{zone_A}", f"zone-{zone_B}", alpha=0.4, data=df[m_low], label="Low Neb")
+          ax.scatter(f"zone-{zone_A}", f"zone-{zone_B}", alpha=0.4, data=df[m_med], label="Medium Neb")
+          ax.scatter(f"zone-{zone_A}", f"zone-{zone_B}", alpha=0.4, data=df[m_high], label="High Neb")
+          ax.set_xscale("log")
+          ax.set_yscale("log")
+          ax.axhline(0.0,  color="k")
+          ax.axvline(0.0,  color="k")
+          ax.plot([xmin, xmax], [xmin, xmax], color="k")
+          ax.set(
+              xlabel=f"Zone {zone_A} Intensity",
+              ylabel=f"Zone {zone_B} Intensity",
+              xlim=[xmin, xmax],
+              ylim=[xmin, xmax],
+          )
+          ax.set_aspect("equal")
+      ax.legend()
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-fluxes-by-zone.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :eval no :tangle ../scripts/plot-ratios-by-zone.py
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import yaml
+  import typer
+
+  def main(
+          id_label: str,
+  ):
+      """Plot of line fluxes from zones 0 and I"""
+      fig, axes = plt.subplots(2,  2, figsize=(7, 6))
+      figfile = f"ratios-by-zone-{id_label}.pdf"
+
+      df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+      df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv")
+
+      m_deep = df.Type.str.startswith("Deep") & (df["zone-0"] > 0.0)
+      m_neut = df.Type.str.startswith("Neutral")
+      m_low = df.Type.str.startswith("Low")
+      m_med = df.Type.str.startswith("Med Neb")
+      m_high = df.Type.str.startswith("High")
+      m_fe = df.Type.str.startswith("Fe")
+      m_si = df.Type.str.startswith("Med Perm")
+
+      xmin, xmax = 1e-4, 2000.0
+      for ax, [zone_A,  zone_B] in zip(
+              axes.flat,
+              [
+                  ["0", "I"],
+                  ["0", "II"],
+                  ["0", "MYSO"],
+                  ["III", "IV"],
+              ]
+      ):
+
+          for data, label, size in [
+                  [df[m_deep], "Deep", 10],
+                  [df[m_neut], "Neutral", 15],
+                  [df[m_low], "Low Neb", 30],
+                  [df[m_med], "Medium Neb", 8],
+                  [df[m_high], "High Neb", 25],
+                  [df[m_fe], "Fe, Ni", 8],
+                  [df[m_si], "Si II", 20],
+          ]:
+              A = data[f"zone-{zone_A}"]
+              B = data[f"zone-{zone_B}"]
+              ax.scatter(A, B / A, alpha=1.0, s=size, label=label)
+            
+          ax.set_xscale("log")
+          ax.set_yscale("log")
+          ax.axhline(1.0,  color="k", linestyle="dashed", zorder=-100)
+          ax.set(
+              xlabel=f"Zone {zone_A} Intensity (Hβ = 100)",
+              ylabel=f"Intensity Ratio: Zone {zone_B} / Zone {zone_A}",
+              xlim=[xmin, xmax],
+              ylim=[2e-3, 5e2],
+          )
+          ax.set_aspect("equal")
+      ax.legend(ncol=2, fontsize="xx-small")
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-ratios-by-zone.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/ratios-by-zone-c007-chop-mean.pdf]]
+
+#+begin_src python :eval no :tangle ../scripts/plot-ratios-vs-ratios-by-zone.py
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+
+  def main(
+          id_label: str,
+  ):
+      """Plot of line fluxes from zones 0 and I"""
+      fig, axes = plt.subplots(2,  2, figsize=(6, 5))
+      figfile = f"ratios-vs-ratios-by-zone-{id_label}.pdf"
+
+      df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+      df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv")
+      df.loc[:, "zone-I":"zone-II"] = np.where(
+          df.loc[:, "zone-I":"zone-II"] > 0.0,
+          df.loc[:, "zone-I":"zone-II"],
+          2 * df_sig.loc[:, "zone-I":"zone-II"]
+      )
+
+      m_deep = df.Type.str.startswith("Deep")  & (df["zone-0"] > 0.0)
+      m_neut = df.Type.str.startswith("Neutral") & (df["zone-I"] > 0.0)
+      m_low = df.Type.str.startswith("Low") & (df["zone-II"] > 0.0)
+      m_med = df.Type.str.startswith("Med Neb") & (df["zone-III"] > 0.0)
+      m_high = df.Type.str.startswith("High") & (df["zone-IV"] > 0.0)
+      m_fe = df.Type.str.startswith("Fe") & (df["zone-MYSO"] > 0.0)
+      m_si = df.Type.str.startswith("Med Perm") & (df["zone-MYSO"] > 0.0)
+      m_ci = df.ID.str.startswith("[C I]")
+
+      xmin, xmax = 0.01, 100.0
+      for ax, [[zone_A,  zone_B], [zone_AA,  zone_BB]] in zip(
+              axes.flat,
+              [
+                  # [["0", "I"]   , ["I", "II"]], 
+                  [["0", "II"]   , ["0", "I"]], 
+                  [["I", "II"]  , ["II", "III"]], 
+                  [["II", "III"], ["III", "IV"]], 
+                  [["0", "II"], ["0", "MYSO"]], 
+              ]
+      ):
+
+          for data, label, size, marker in [
+                  [df[m_deep], "Unidentified", 25, "*"],
+                  [df[m_neut], "NO I", 12, "s"],
+                  [df[m_low], "[O I], [NOSCl II]", 25, "p"],
+                  [df[m_med], "HHe I, [SArClO III]", 10, "P"],
+                  [df[m_high], "[ClArK IV], He II", 15, "d"],
+                  [df[m_fe], "[FeNi II,III]", 8, "o"],
+                  [df[m_si], "Si II", 20, "X"],
+                  [df[m_ci], "[C I]", 100, "*"],
+          ]:
+              A = data[f"zone-{zone_A}"]
+              B = data[f"zone-{zone_B}"]
+              AA = data[f"zone-{zone_AA}"]
+              BB = data[f"zone-{zone_BB}"]
+              ax.scatter(B / A, BB / AA, alpha=1.0,
+                         s=1.5 * size, label=label,
+                         edgecolors="w", linewidths=0.1, marker=marker,
+                         )
+
+          ax.set_xscale("log")
+          ax.set_yscale("log")
+          ax.axhline(1.0,  color="k", linestyle="dashed", zorder=-100)
+          ax.axvline(1.0,  color="k", linestyle="dashed", zorder=-100)
+          ax.set(
+              xlabel=f"{zone_B} / {zone_A}",
+              ylabel=f"{zone_BB} / {zone_AA}",
+              xlim=[xmin, xmax],
+              ylim=[xmin, xmax],
+          )
+          ax.set_aspect("equal")
+      axes[1, 0].legend(ncol=3, fontsize="xx-small")
+      fig.tight_layout()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-ratios-vs-ratios-by-zone.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/ratios-vs-ratios-by-zone-c007-chop-mean.pdf]]
+
+
+**** Comments on the ratios
+- All ratios are higher/lower: I/0, II/0, II/I, III/II, IV/III, MYSO/0
+- The UIL consistently have low ratios in every combination (on average)
+- They do not always agree with the C I line
+  - In I/0 vs II/0, they loo like a progression towards [C I]
+  - But [C I] has II/I around 8, whereas most UIL have less than 1
+    - *no,  this is not right* It is a non-detection in zone I, so pointless to calculate II/I
 
 *** Step 9: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
@@ -3675,20 +4055,20 @@ For this we can use interpolation
      
 |      |       eV |   Ryd |
 |------+----------+-------|
-| K^0  |  4.34066 | 0.319 |
-| S^0  |  10.3600 | 0.762 |
-| Cl^0 |  12.9676 | 0.954 |
+| K^0   |  4.34066 | 0.319 |
+| S^0   |  10.3600 | 0.762 |
+| Cl^0  |  12.9676 | 0.954 |
 |------+----------+-------|
-| H^0  |  13.5984 | 1.000 |
-| O^0  |  13.6181 | 1.001 |
-| N^0  |  14.5341 | 1.069 |
-| Ar^0 |  15.7596 | 1.159 |
-| Ne^0 |  21.5646 | 1.586 |
+| H^0   |  13.5984 | 1.000 |
+| O^0   |  13.6181 | 1.001 |
+| N^0   |  14.5341 | 1.069 |
+| Ar^0  |  15.7596 | 1.159 |
+| Ne^0  |  21.5646 | 1.586 |
 | S^{+}   |   23.338 | 1.716 |
 | Cl^{+}  |   23.814 | 1.751 |
 | C^{+}   |   24.385 | 1.793 |
 |------+----------+-------|
-| He^0 |  24.5874 | 1.808 |
+| He^0  |  24.5874 | 1.808 |
 | Ar^{+}  |   27.630 | 2.032 |
 | N^{+}   |   29.601 | 2.177 |
 | K^{+}   |    31.63 | 2.326 |
@@ -4910,29 +5290,29 @@ CLOSED: [2021-05-29 Sat 00:16]
 :PROPERTIES:
 :ID:       903F97D6-AF67-4C78-8011-C7DDD449B546
 :END:
-| Name    | SSN | MPG | Sp. Type    | T_eff, kK |           V |    BC |  M_bol | L/Lsun | R/Rsun | log q_0 |    Q_0 | d (") |  F_bol | L_glob/L_sun | Q_0(glob) |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-| W 1     |   7 | 435 | O4If+O5-6   |        43 |        12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |   24.46 | 8.0e49 | 11.56 |   3.72 |        2.6e3 |    1.5e47 |
-| W 2     | 14* | 470 | O8.5 III    |        36 |        14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |   24.04 | 9.2e48 |  3.04 |   8.06 |        5.7e3 |    2.5e47 |
-| W 3     |   9 | 355 | O2 III(f)   |      52.5 |       13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |    24.9 | 7.7e49 | 22.68 |   0.76 |        5.3e2 |    3.7e46 |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-| SSN 168 | 168 |     | B0?         |        30 |    16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |    23.2 | 4.0e47 |   0.2 | 266.05 |            0 |         0 |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-| Sk 80   |   5 | 789 | O7 Iaf+     |        36 |       12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |   24.07 | 5.2e49 | 122.4 |   0.03 |        1.8e1 |    8.7e44 |
-| HD 5980 |     | 755 | WR+WR+O     |        43 | 11.6 + 0.75 | -3.98 | -10.88 |  1.8e6 |  24.14 |       X |   1e50 | 105.7 |   0.06 |        4.0e1 |    2.2e45 |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-| W 4     |  11 | 342 | O5-6 V((f)) |        43 |        13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |   24.47 | 3.2e49 | 24.85 |   0.32 |        2.2e2 |    1.3e46 |
-| SSN 13  |  13 | 324 | O4 V((f+))  |        48 |       14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |    24.8 | 3.7e49 | 36.99 |   0.12 |        8.4e1 |    6.8e45 |
-| SSN 15  |  15 | 368 | O6: V((f))  |      42.5 |        14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |    24.4 | 1.8e49 | 17.15 |   0.41 |        2.9e2 |    1.5e46 |
-| SSN 17  |  17 | 396 | O7V         |        38 |      14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |   24.15 | 8.7e48 | 11.53 |   0.51 |        3.6e2 |    1.6e46 |
-| SSN 18  |  18 | 487 | O8V         |        36 |       14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |   23.94 | 5.2e48 |  8.37 |   0.76 |        5.4e2 |    1.9e46 |
-| SSN 46  |  46 | 500 | O6V:        |      42.5 |      15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |    24.4 | 6.2e48 | 16.39 |   0.16 |        1.1e2 |    5.8e45 |
-| SSN 22  |  22 | 476 | O7?V?       |        38 |      14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |   24.15 | 7.3e48 |  4.06 |   3.44 |        2.4e3 |    1.1e47 |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-| SSN 26  |  26 | 655 | OC5-6Vz     |        43 |       14.90 | -3.98 |  -8.33 |  1.7e5 |   7.42 |   24.47 | 9.9e48 |    60 |   0.02 |        1.2e1 |    6.9e44 |
-| SSN 37  |  37 | 593 | O5.5V       |        43 |       15.07 | -3.98 |  -8.16 |  1.4e5 |   6.73 |   24.47 | 8.1e48 |    40 |   0.03 |        2.2e1 |    1.3e45 |
-|---------+-----+-----+-------------+-----------+-------------+-------+--------+--------+--------+---------+--------+-------+--------+--------------+-----------|
-|         |     |     |             |           |             |     X |      X |  7.6e6 |      X |       X | 4.3e50 |     X |      X |        1.3e4 |    6.3e47 |
+| Name    | SSN | MPG | Sp. Type    | T_eff, kK |           V |    BC |   M_bol | L/Lsun | R/Rsun | log q_0 |     Q_0 | d (") |   F_bol | L_glob/L_sun | Q_0(glob) |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 1     |   7 | 435 | O4If+O5-6   |       43 |        12.6 | -3.98 | -10.63 |  1.4e6 |  21.29 |  24.46 | 8.0e49 | 11.56 |   3.72 |      2.6e3 |   1.5e47 |
+| W 2     | 14* | 470 | O8.5 III    |       36 |        14.1 | -3.45 |  -8.60 |  2.1e5 |  11.76 |  24.04 | 9.2e48 |  3.04 |   8.06 |      5.7e3 |   2.5e47 |
+| W 3     |   9 | 355 | O2 III(f)   |     52.5 |       13.45 | -4.58 | -10.38 |  1.1e6 |  12.66 |   24.9 | 7.7e49 | 22.68 |   0.76 |      5.3e2 |   3.7e46 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| SSN 168 | 168 |     | B0?         |       30 |    16.7 - 1 | -2.90 |  -6.45 |  3.0e4 |   6.40 |   23.2 | 4.0e47 |   0.2 | 266.05 |          0 |        0 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| Sk 80   |   5 | 789 | O7 Iaf+     |       36 |       12.31 | -3.45 | -10.39 |  1.1e6 |  26.92 |  24.07 | 5.2e49 | 122.4 |   0.03 |      1.8e1 |   8.7e44 |
+| HD 5980 |     | 755 | WR+WR+O     |       43 | 11.6 + 0.75 | -3.98 | -10.88 |  1.8e6 |  24.14 |      X |   1e50 | 105.7 |   0.06 |      4.0e1 |   2.2e45 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| W 4     |  11 | 342 | O5-6 V((f)) |       43 |        13.6 | -3.98 |  -9.63 |  5.5e5 |  13.34 |  24.47 | 3.2e49 | 24.85 |   0.32 |      2.2e2 |   1.3e46 |
+| SSN 13  |  13 | 324 | O4 V((f+))  |       48 |       14.13 | -4.31 |  -9.43 |  4.6e5 |   9.79 |   24.8 | 3.7e49 | 36.99 |   0.12 |      8.4e1 |   6.8e45 |
+| SSN 15  |  15 | 368 | O6: V((f))  |     42.5 |        14.1 | -3.95 |  -9.10 |  3.4e5 |  10.74 |   24.4 | 1.8e49 | 17.15 |   0.41 |      2.9e2 |   1.5e46 |
+| SSN 17  |  17 | 396 | O7V         |       38 |      14.383 | -3.61 |  -8.48 |  1.9e5 |  10.04 |  24.15 | 8.7e48 | 11.53 |   0.51 |      3.6e2 |   1.6e46 |
+| SSN 18  |  18 | 487 | O8V         |       36 |       14.47 | -3.45 |  -8.23 |  1.5e5 |   9.94 |  23.94 | 5.2e48 |  8.37 |   0.76 |      5.4e2 |   1.9e46 |
+| SSN 46  |  46 | 500 | O6V:        |     42.5 |      15.267 | -3.95 |  -7.93 |  1.2e5 |   6.38 |   24.4 | 6.2e48 | 16.39 |   0.16 |      1.1e2 |   5.8e45 |
+| SSN 22  |  22 | 476 | O7?V?       |       38 |      14.562 | -3.61 |  -8.30 |  1.6e5 |   9.22 |  24.15 | 7.3e48 |  4.06 |   3.44 |      2.4e3 |   1.1e47 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+| SSN 26  |  26 | 655 | OC5-6Vz     |       43 |       14.90 | -3.98 |  -8.33 |  1.7e5 |   7.42 |  24.47 | 9.9e48 |    60 |   0.02 |      1.2e1 |   6.9e44 |
+| SSN 37  |  37 | 593 | O5.5V       |       43 |       15.07 | -3.98 |  -8.16 |  1.4e5 |   6.73 |  24.47 | 8.1e48 |    40 |   0.03 |      2.2e1 |   1.3e45 |
+|---------+-----+-----+-------------+----------+-------------+-------+--------+--------+--------+--------+--------+-------+--------+------------+----------|
+|         |     |     |             |          |             |     X |      X |  7.6e6 |      X |      X | 4.3e50 |     X |      X |      1.3e4 |   6.3e47 |
 #+TBLFM: $7=-6.9 log10(1000 $5) + 27.99 ; f2::$8=$6 + $7 - 0.3 - 18.95;f2::$9=10**(-0.4 ($8 - 4.73));s2::$10=sqrt($9 $lsun / 4 $pi $sigma (1000 $5)**4) / $rsun ; f2::$12=4 $pi ($10 $rsun)**2 10**($11);s2::$14=$9 $lsun / 4 $pi (0.3 $pc $13)**2 ; f2::$15=$13 > 1 ? $9 (1 / 2 $13)**2 : 0 ;s2::$16=$13 > 1 ? $12 (1 / 2 $13)**2 : 0 ;s2::@7$12=1e50::@17$7..@17$8=X::@17$9=vsum(@I..@IIIII);s2::@17$10..@17$11=X::@17$12=vsum(@I..@IIIII);s2::@17$13..@17$14=X::@17$15..@17$16=vsum(@I..@IIIII);s2
 
 + M_bol = V + BC - AV - DM
@@ -5124,35 +5504,35 @@ CLOSED: [2021-05-29 Sat 00:16]
   + The higher gravity model (50-44) would require a slightly stronger wind (intermediate between I and II) to get the right Q_2
   + The lower temperature model (49-42) would require the strong wind (SMC-OB-II), which has Mdot = 2.3e-6
 | Grid       | Model | log L | V_inf | log M_dot |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 | 1e4 Q2/Q0 | Q3/Q0 |   Q0' |   Q2' | Mdot' |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| OB-I       | 56-42 | 6.230 |  4136 |        -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |
-| OB-I       | 54-42 | 6.150 |  4077 |        -7 | 50.00 | 49.52 | 45.79 | 48.85 | 0.331 |     0.617 | 0.071 | 49.83 | 45.62 | -7.37 |
-| OB-I       | 53-42 | 6.070 |  4001 |        -7 | 49.92 | 49.41 | 45.53 | 48.74 | 0.309 |     0.407 | 0.066 | 49.83 | 45.44 | -7.30 |
-| OB-I       | 52-42 | 5.980 |  3898 |        -7 | 49.81 | 49.34 | 45.93 | 48.72 | 0.339 |     1.318 | 0.081 | 49.81 | 45.93 | -7.22 |
-| OB-I       | 51-42 | 5.910 |  3835 |        -7 | 49.75 | 49.20 | 45.23 | 48.50 | 0.282 |     0.302 | 0.056 | 49.82 |  45.3 | -7.15 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 50-44 | 5.520 |  3311 |    -5.891 | 49.33 | 48.82 | 45.28 | 48.23 | 0.309 |     0.891 | 0.079 | 49.79 | 45.74 | -5.66 |
-| SMC-OB-I   | 50-44 | 5.520 |  3311 |    -6.891 | 49.32 | 48.82 | 44.80 | 48.24 | 0.316 |     0.302 | 0.083 | 49.78 | 45.26 | -6.66 |
-| SMC-OB-III | 50-44 |  5.52 |  3311 |    -7.891 | 49.33 | 48.79 | 44.75 | 48.10 | 0.288 |     0.263 | 0.059 | 49.79 | 45.21 | -7.66 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 50-42 | 5.760 |  3020 |    -5.771 | 49.58 | 49.07 | 45.52 | 48.46 | 0.309 |     0.871 | 0.076 |  49.8 | 45.74 | -5.66 |
-| OB-I       | 50-42 | 5.830 |  3800 |        -7 | 49.66 | 49.08 | 45.49 | 48.37 | 0.263 |     0.676 | 0.051 | 49.81 | 45.64 | -7.09 |
-| SMC-OB-I   | 50-42 |  5.76 |  3020 |    -6.771 | 49.58 | 49.07 | 45.19 | 48.47 | 0.309 |     0.407 | 0.078 |  49.8 | 45.41 | -6.66 |
-| SMC-OB-III | 50-42 |  5.76 |  3020 |    -7.771 | 49.59 | 49.05 | 44.63 | 48.34 | 0.288 |     0.110 | 0.056 | 49.81 | 44.85 | -7.66 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| OB-I       | 50-40 | 6.240 |  3578 |        -7 | 50.09 | 49.52 | 45.37 | 48.80 | 0.269 |     0.191 | 0.051 | 49.83 | 45.11 | -7.35 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 49-44 | 5.450 |  3234 |    -5.933 | 49.25 | 48.72 | 45.02 | 48.12 | 0.295 |     0.589 | 0.074 | 49.78 | 45.55 | -5.63 |
-| SMC-OB-I   | 49-44 | 5.450 |  3234 |    -6.933 | 49.24 | 48.73 | 44.36 | 48.14 | 0.309 |     0.132 | 0.079 | 49.77 | 44.89 | -6.63 |
-| SMC-OB-III | 49-44 | 5.450 |  3234 |    -7.933 | 49.26 | 48.70 | 44.65 | 48.01 | 0.275 |     0.245 | 0.056 | 49.79 | 45.18 | -7.63 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-II  | 49-42 | 5.700 |  2978 |    -5.799 | 49.51 | 48.98 | 45.32 | 48.36 | 0.295 |     0.646 | 0.071 | 49.79 |  45.6 | -5.63 |
-| OB-I       | 49-42 | 5.750 |  3695 |        -7 | 49.57 | 48.97 | 44.79 | 48.24 | 0.251 |     0.166 | 0.047 |  49.8 | 45.02 | -7.01 |
-| SMC-OB-I   | 49-42 | 5.700 |  2978 |    -6.799 | 49.51 | 48.99 | 44.65 | 48.38 | 0.302 |     0.138 | 0.074 | 49.79 | 44.93 | -6.63 |
-| SMC-OB-III | 49-42 | 5.700 |  2978 |    -7.799 | 49.52 | 48.96 | 44.68 | 48.24 | 0.275 |     0.145 | 0.052 |  49.8 | 44.96 | -7.63 |
-|------------+-------+-------+-------+-----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
-| SMC-OB-I   | 36-38 | 5.260 |  1979 |    -6.993 | 48.82 | 47.81 | 42.06 | 46.54 | 0.098 |     0.002 | 0.005 | 49.54 | 42.78 | -6.23 |
-| SMC-OB-II  | 42-38 | 5.800 |  2316 |    -5.687 | 49.57 | 48.85 | 41.43 | 48.09 | 0.191 |   7.24e-5 | 0.033 | 49.75 | 41.61 | -5.43 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| OB-I       | 56-42 | 6.230 | 4136 |       -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |
+| OB-I       | 54-42 | 6.150 | 4077 |       -7 | 50.00 | 49.52 | 45.79 | 48.85 | 0.331 |     0.617 | 0.071 | 49.83 | 45.62 | -7.37 |
+| OB-I       | 53-42 | 6.070 | 4001 |       -7 | 49.92 | 49.41 | 45.53 | 48.74 | 0.309 |     0.407 | 0.066 | 49.83 | 45.44 | -7.30 |
+| OB-I       | 52-42 | 5.980 | 3898 |       -7 | 49.81 | 49.34 | 45.93 | 48.72 | 0.339 |     1.318 | 0.081 | 49.81 | 45.93 | -7.22 |
+| OB-I       | 51-42 | 5.910 | 3835 |       -7 | 49.75 | 49.20 | 45.23 | 48.50 | 0.282 |     0.302 | 0.056 | 49.82 |  45.3 | -7.15 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 50-44 | 5.520 | 3311 |   -5.891 | 49.33 | 48.82 | 45.28 | 48.23 | 0.309 |     0.891 | 0.079 | 49.79 | 45.74 | -5.66 |
+| SMC-OB-I   | 50-44 | 5.520 | 3311 |   -6.891 | 49.32 | 48.82 | 44.80 | 48.24 | 0.316 |     0.302 | 0.083 | 49.78 | 45.26 | -6.66 |
+| SMC-OB-III | 50-44 |  5.52 | 3311 |   -7.891 | 49.33 | 48.79 | 44.75 | 48.10 | 0.288 |     0.263 | 0.059 | 49.79 | 45.21 | -7.66 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 50-42 | 5.760 | 3020 |   -5.771 | 49.58 | 49.07 | 45.52 | 48.46 | 0.309 |     0.871 | 0.076 |  49.8 | 45.74 | -5.66 |
+| OB-I       | 50-42 | 5.830 | 3800 |       -7 | 49.66 | 49.08 | 45.49 | 48.37 | 0.263 |     0.676 | 0.051 | 49.81 | 45.64 | -7.09 |
+| SMC-OB-I   | 50-42 |  5.76 | 3020 |   -6.771 | 49.58 | 49.07 | 45.19 | 48.47 | 0.309 |     0.407 | 0.078 |  49.8 | 45.41 | -6.66 |
+| SMC-OB-III | 50-42 |  5.76 | 3020 |   -7.771 | 49.59 | 49.05 | 44.63 | 48.34 | 0.288 |     0.110 | 0.056 | 49.81 | 44.85 | -7.66 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| OB-I       | 50-40 | 6.240 | 3578 |       -7 | 50.09 | 49.52 | 45.37 | 48.80 | 0.269 |     0.191 | 0.051 | 49.83 | 45.11 | -7.35 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 49-44 | 5.450 | 3234 |   -5.933 | 49.25 | 48.72 | 45.02 | 48.12 | 0.295 |     0.589 | 0.074 | 49.78 | 45.55 | -5.63 |
+| SMC-OB-I   | 49-44 | 5.450 | 3234 |   -6.933 | 49.24 | 48.73 | 44.36 | 48.14 | 0.309 |     0.132 | 0.079 | 49.77 | 44.89 | -6.63 |
+| SMC-OB-III | 49-44 | 5.450 | 3234 |   -7.933 | 49.26 | 48.70 | 44.65 | 48.01 | 0.275 |     0.245 | 0.056 | 49.79 | 45.18 | -7.63 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-II  | 49-42 | 5.700 | 2978 |   -5.799 | 49.51 | 48.98 | 45.32 | 48.36 | 0.295 |     0.646 | 0.071 | 49.79 |  45.6 | -5.63 |
+| OB-I       | 49-42 | 5.750 | 3695 |       -7 | 49.57 | 48.97 | 44.79 | 48.24 | 0.251 |     0.166 | 0.047 |  49.8 | 45.02 | -7.01 |
+| SMC-OB-I   | 49-42 | 5.700 | 2978 |   -6.799 | 49.51 | 48.99 | 44.65 | 48.38 | 0.302 |     0.138 | 0.074 | 49.79 | 44.93 | -6.63 |
+| SMC-OB-III | 49-42 | 5.700 | 2978 |   -7.799 | 49.52 | 48.96 | 44.68 | 48.24 | 0.275 |     0.145 | 0.052 |  49.8 | 44.96 | -7.63 |
+|------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
+| SMC-OB-I   | 36-38 | 5.260 | 1979 |   -6.993 | 48.82 | 47.81 | 42.06 | 46.54 | 0.098 |     0.002 | 0.005 | 49.54 | 42.78 | -6.23 |
+| SMC-OB-II  | 42-38 | 5.800 | 2316 |   -5.687 | 49.57 | 48.85 | 41.43 | 48.09 | 0.191 |   7.24e-5 | 0.033 | 49.75 | 41.61 | -5.43 |
 #+TBLFM: $10=10**($7 - $6);f3::$11=10**(4 + $8 - $6);f3::$12=10**($9 - $6);f3::$13=$6 - ($3 - 5.98)::$14=$8 - ($3 - 5.98)::$15=$5 - 0.75 ($3 - 5.98) + 1.5 (log10(2800 / $4));f2
 ***** Correction for radius
 + The POWR models are a bit sub-luminous compared with W3

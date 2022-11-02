@@ -5,29 +5,40 @@ Index: 110
 Region: BY-HAND
 Strength: null
 Type: Fe, Ni
-Zones BG:
-  zone-0: 8.2398
-  zone-I: 9.0773
-  zone-II: 9.4589
-  zone-III: 7.3761
-  zone-IV: 8.7492
-  zone-MYSO: 10.7329
-  zone-S: 14.9569
-Zones BG sig:
-  zone-0: 2.495
-  zone-I: 1.0592
-  zone-II: 0.8971
-  zone-III: 1.8976
-  zone-IV: 8.3088
-  zone-MYSO: 5.6473
-  zone-S: 3.0113
-Zones Strength:
-  zone-0: 5.8107
-  zone-I: 7.1647
-  zone-II: 9.1554
-  zone-III: 6.3352
-  zone-IV: -0.084
-  zone-MYSO: 20.9621
-  zone-S: 11.6482
 lambda_HM: 4734.75697103
 lambda_obs: 4737.444824
+zone-0:
+  BG mean: 2.1063
+  BG npix: 3
+  Sigma: 1.0615
+  Strength: -0.5082
+zone-I:
+  BG mean: 2.7551
+  BG npix: 3
+  Sigma: 0.4535
+  Strength: -1.1006
+zone-II:
+  BG mean: 3.0304
+  BG npix: 3
+  Sigma: 0.5455
+  Strength: 0.0643
+zone-III:
+  BG mean: 2.0708
+  BG npix: 3
+  Sigma: 0.9993
+  Strength: 0.1227
+zone-IV:
+  BG mean: 0.6101
+  BG npix: 3
+  Sigma: 3.0671
+  Strength: -1.9143
+zone-MYSO:
+  BG mean: 3.7223
+  BG npix: 3
+  Sigma: 3.7537
+  Strength: 9.7951
+zone-S:
+  BG mean: 4.7212
+  BG npix: 3
+  Sigma: 1.9367
+  Strength: -2.5155

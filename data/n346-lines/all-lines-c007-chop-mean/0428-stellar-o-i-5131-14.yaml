@@ -5,29 +5,40 @@ Index: 428
 Region: YSO
 Strength: null
 Type: Stellar
-Zones BG:
-  zone-0: 5.38
-  zone-I: 5.548
-  zone-II: 6.2167
-  zone-III: 5.711
-  zone-IV: 4.914
-  zone-MYSO: 9.0969
-  zone-S: 10.304
-Zones BG sig:
-  zone-0: 0.2016
-  zone-I: 0.3715
-  zone-II: 0.2975
-  zone-III: 0.181
-  zone-IV: 0.6615
-  zone-MYSO: 0.9455
-  zone-S: 1.182
-Zones Strength:
-  zone-0: 5.8296
-  zone-I: 6.3094
-  zone-II: 6.2907
-  zone-III: 5.3868
-  zone-IV: 5.4976
-  zone-MYSO: 14.7583
-  zone-S: 11.5928
 lambda_HM: 5131.46
 lambda_obs: 5134.944824
+zone-0:
+  BG mean: 1.8576
+  BG npix: 7
+  Sigma: 0.1811
+  Strength: 0.2569
+zone-I:
+  BG mean: 1.9581
+  BG npix: 7
+  Sigma: 0.2072
+  Strength: 0.4351
+zone-II:
+  BG mean: 2.0828
+  BG npix: 7
+  Sigma: 0.2054
+  Strength: 0.0423
+zone-III:
+  BG mean: 1.8574
+  BG npix: 7
+  Sigma: 0.1379
+  Strength: -0.1853
+zone-IV:
+  BG mean: 1.7214
+  BG npix: 7
+  Sigma: 0.3775
+  Strength: 0.3335
+zone-MYSO:
+  BG mean: 3.8411
+  BG npix: 7
+  Sigma: 1.3611
+  Strength: 3.2351
+zone-S:
+  BG mean: 3.6188
+  BG npix: 7
+  Sigma: 0.5939
+  Strength: 0.7364

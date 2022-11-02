@@ -5,29 +5,40 @@ Index: 3039
 Region: BY-HAND
 Strength: 10.0
 Type: Sky
-Zones BG:
-  zone-0: 1.1834
-  zone-I: -0.6472
-  zone-II: 0.1855
-  zone-III: 2.446
-  zone-IV: 0.126
-  zone-MYSO: 28.5717
-  zone-S: 1.8891
-Zones BG sig:
-  zone-0: 6.5308
-  zone-I: 2.4329
-  zone-II: 5.1535
-  zone-III: 3.8992
-  zone-IV: 2.5482
-  zone-MYSO: 30.8328
-  zone-S: 2.8215
-Zones Strength:
-  zone-0: 19.8237
-  zone-I: 10.3435
-  zone-II: 17.0198
-  zone-III: 13.7217
-  zone-IV: 14.5714
-  zone-MYSO: 70.1144
-  zone-S: 17.5066
 lambda_HM: null
 lambda_obs: 8398.694824
+zone-0:
+  BG mean: -1.913
+  BG npix: 2
+  Sigma: 2.1478
+  Strength: 25.5627
+zone-I:
+  BG mean: -0.9626
+  BG npix: 2
+  Sigma: 1.6719
+  Strength: 13.2313
+zone-II:
+  BG mean: -1.8786
+  BG npix: 2
+  Sigma: 2.5147
+  Strength: 22.6557
+zone-III:
+  BG mean: -0.8403
+  BG npix: 2
+  Sigma: 1.0798
+  Strength: 16.2425
+zone-IV:
+  BG mean: -0.8694
+  BG npix: 2
+  Sigma: 1.4635
+  Strength: 17.1796
+zone-MYSO:
+  BG mean: -1.4298
+  BG npix: 2
+  Sigma: 1.9793
+  Strength: 74.4038
+zone-S:
+  BG mean: -0.0182
+  BG npix: 2
+  Sigma: 1.4384
+  Strength: 17.5611

@@ -5,29 +5,40 @@ Index: 2399
 Region: GLOB-E
 Strength: null
 Type: Sky
-Zones BG:
-  zone-0: 5.019
-  zone-I: 3.4245
-  zone-II: 6.2675
-  zone-III: 4.8303
-  zone-IV: 2.9763
-  zone-MYSO: 11.6823
-  zone-S: 11.9482
-Zones BG sig:
-  zone-0: 2.992
-  zone-I: 2.4272
-  zone-II: 2.5046
-  zone-III: 2.4564
-  zone-IV: 2.8284
-  zone-MYSO: 11.5686
-  zone-S: 15.0981
-Zones Strength:
-  zone-0: 14.3799
-  zone-I: 10.6293
-  zone-II: 12.4488
-  zone-III: 11.5143
-  zone-IV: 11.3216
-  zone-MYSO: 35.3638
-  zone-S: 28.9287
 lambda_HM: null
 lambda_obs: 7598.694824
+zone-0:
+  BG mean: 0.0128
+  BG npix: 2
+  Sigma: 0.4342
+  Strength: 14.3414
+zone-I:
+  BG mean: -0.1178
+  BG npix: 2
+  Sigma: 0.7909
+  Strength: 10.9827
+zone-II:
+  BG mean: 0.8035
+  BG npix: 2
+  Sigma: 0.4727
+  Strength: 10.0384
+zone-III:
+  BG mean: 0.3301
+  BG npix: 2
+  Sigma: 0.8436
+  Strength: 10.5241
+zone-IV:
+  BG mean: -0.5288
+  BG npix: 2
+  Sigma: 0.8346
+  Strength: 12.9081
+zone-MYSO:
+  BG mean: -2.4293
+  BG npix: 2
+  Sigma: 0.9077
+  Strength: 42.6517
+zone-S:
+  BG mean: -4.0524
+  BG npix: 2
+  Sigma: 0.7675
+  Strength: 41.0859

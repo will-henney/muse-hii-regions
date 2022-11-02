@@ -5,29 +5,40 @@ Index: 3324
 Region: GLOB-E
 Strength: 33.6821
 Type: Med Neb
-Zones BG:
-  zone-0: -5.3332
-  zone-I: 1.5839
-  zone-II: -3.3974
-  zone-III: -5.9801
-  zone-IV: -3.0056
-  zone-MYSO: -5.694
-  zone-S: -5.6637
-Zones BG sig:
-  zone-0: 0.7311
-  zone-I: 1.1116
-  zone-II: 1.5728
-  zone-III: 1.7232
-  zone-IV: 1.3508
-  zone-MYSO: 2.0168
-  zone-S: 1.3549
-Zones Strength:
-  zone-0: 61.7937
-  zone-I: 14.9782
-  zone-II: 53.5133
-  zone-III: 71.4642
-  zone-IV: 44.4393
-  zone-MYSO: 363.6867
-  zone-S: 40.7267
 lambda_HM: 8750.17
 lambda_obs: 8754.944824
+zone-0:
+  BG mean: -1.7777
+  BG npix: 4
+  Sigma: 0.4221
+  Strength: 67.1269
+zone-I:
+  BG mean: 0.528
+  BG npix: 4
+  Sigma: 0.6418
+  Strength: 13.3943
+zone-II:
+  BG mean: -1.1325
+  BG npix: 4
+  Sigma: 0.908
+  Strength: 56.9107
+zone-III:
+  BG mean: -1.9934
+  BG npix: 4
+  Sigma: 0.9949
+  Strength: 77.4442
+zone-IV:
+  BG mean: -1.0019
+  BG npix: 4
+  Sigma: 0.7799
+  Strength: 47.4449
+zone-MYSO:
+  BG mean: -1.898
+  BG npix: 4
+  Sigma: 1.1644
+  Strength: 369.3807
+zone-S:
+  BG mean: -1.8879
+  BG npix: 4
+  Sigma: 0.7822
+  Strength: 46.3904

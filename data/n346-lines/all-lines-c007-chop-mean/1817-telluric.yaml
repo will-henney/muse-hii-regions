@@ -5,29 +5,40 @@ Index: 1817
 Region: GLOB-E
 Strength: null
 Type: Telluric
-Zones BG:
-  zone-0: 1.6514
-  zone-I: 1.9918
-  zone-II: 2.7416
-  zone-III: 2.4108
-  zone-IV: 1.3147
-  zone-MYSO: -3.6852
-  zone-S: -1.0512
-Zones BG sig:
-  zone-0: 0.1268
-  zone-I: 0.2594
-  zone-II: 0.437
-  zone-III: 0.3066
-  zone-IV: 0.3494
-  zone-MYSO: 3.895
-  zone-S: 4.2287
-Zones Strength:
-  zone-0: 6.7322
-  zone-I: 3.776
-  zone-II: 4.8763
-  zone-III: 4.4423
-  zone-IV: 4.6078
-  zone-MYSO: 31.964
-  zone-S: 39.7448
 lambda_HM: null
 lambda_obs: 6871.194824
+zone-0:
+  BG mean: 0.5505
+  BG npix: 4
+  Sigma: 0.0732
+  Strength: 5.0808
+zone-I:
+  BG mean: 0.6639
+  BG npix: 4
+  Sigma: 0.1497
+  Strength: 1.7842
+zone-II:
+  BG mean: 0.9139
+  BG npix: 4
+  Sigma: 0.2523
+  Strength: 2.1347
+zone-III:
+  BG mean: 0.8036
+  BG npix: 4
+  Sigma: 0.177
+  Strength: 2.0314
+zone-IV:
+  BG mean: 0.4382
+  BG npix: 4
+  Sigma: 0.2017
+  Strength: 3.2931
+zone-MYSO:
+  BG mean: -1.2284
+  BG npix: 4
+  Sigma: 2.2488
+  Strength: 35.6492
+zone-S:
+  BG mean: -0.3504
+  BG npix: 4
+  Sigma: 2.4414
+  Strength: 40.7959

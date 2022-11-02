@@ -1,4 +1,4 @@
-Comments: null
+Comments: In the c007 cube at least, this is well separated from [Cl IV]
 Cont_method: null
 ID: UIL+
 Index: 2345
@@ -8,29 +8,40 @@ Notes:
 Region: GLOB-E
 Strength: 2.4
 Type: Deep Neutral?
-Zones BG:
-  zone-0: 1.2006
-  zone-I: 1.4715
-  zone-II: 1.7602
-  zone-III: 1.7092
-  zone-IV: 3.5025
-  zone-MYSO: -0.4885
-  zone-S: 1.031
-Zones BG sig:
-  zone-0: 0.9314
-  zone-I: 0.645
-  zone-II: 0.3745
-  zone-III: 0.9791
-  zone-IV: 2.305
-  zone-MYSO: 1.3314
-  zone-S: 1.043
-Zones Strength:
-  zone-0: 4.1694
-  zone-I: 2.2617
-  zone-II: 2.7184
-  zone-III: 1.7433
-  zone-IV: 0.5458
-  zone-MYSO: 6.7482
-  zone-S: 4.9669
 lambda_HM: 7528.26
 lambda_obs: 7531.194824
+zone-0:
+  BG mean: -0.1183
+  BG npix: 2
+  Sigma: 0.0143
+  Strength: 4.5242
+zone-I:
+  BG mean: 0.1535
+  BG npix: 2
+  Sigma: 0.2227
+  Strength: 1.8013
+zone-II:
+  BG mean: 0.4314
+  BG npix: 2
+  Sigma: 0.188
+  Strength: 1.4241
+zone-III:
+  BG mean: 0.1364
+  BG npix: 2
+  Sigma: 0.4455
+  Strength: 1.334
+zone-IV:
+  BG mean: -0.127
+  BG npix: 2
+  Sigma: 0.223
+  Strength: 0.9268
+zone-MYSO:
+  BG mean: -0.8749
+  BG npix: 2
+  Sigma: 0.1282
+  Strength: 9.3729
+zone-S:
+  BG mean: -0.2448
+  BG npix: 2
+  Sigma: 0.1343
+  Strength: 5.7014

@@ -5,29 +5,40 @@ Index: 1759
 Region: BS
 Strength: 1.1
 Type: High Neb
-Zones BG:
-  zone-0: 1.7869
-  zone-I: 1.6576
-  zone-II: 2.0701
-  zone-III: 1.779
-  zone-IV: 1.2494
-  zone-MYSO: 4.005
-  zone-S: 3.2404
-Zones BG sig:
-  zone-0: 0.0863
-  zone-I: 0.0897
-  zone-II: 0.201
-  zone-III: 0.2357
-  zone-IV: 0.1425
-  zone-MYSO: 1.0168
-  zone-S: 0.185
-Zones Strength:
-  zone-0: 2.0525
-  zone-I: 1.8477
-  zone-II: 2.0916
-  zone-III: 1.8637
-  zone-IV: 2.2442
-  zone-MYSO: 2.6281
-  zone-S: 3.4845
 lambda_HM: 6794.52
 lambda_obs: 6798.694824
+zone-0:
+  BG mean: 0.5956
+  BG npix: 4
+  Sigma: 0.0499
+  Strength: 0.2656
+zone-I:
+  BG mean: 0.5525
+  BG npix: 4
+  Sigma: 0.0518
+  Strength: 0.19
+zone-II:
+  BG mean: 0.69
+  BG npix: 4
+  Sigma: 0.116
+  Strength: 0.0215
+zone-III:
+  BG mean: 0.593
+  BG npix: 4
+  Sigma: 0.1361
+  Strength: 0.0848
+zone-IV:
+  BG mean: 0.4165
+  BG npix: 4
+  Sigma: 0.0823
+  Strength: 0.9948
+zone-MYSO:
+  BG mean: 1.335
+  BG npix: 4
+  Sigma: 0.5871
+  Strength: -1.377
+zone-S:
+  BG mean: 1.0801
+  BG npix: 4
+  Sigma: 0.1068
+  Strength: 0.2441

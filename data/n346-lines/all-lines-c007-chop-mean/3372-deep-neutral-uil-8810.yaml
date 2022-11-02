@@ -5,29 +5,40 @@ Index: 3372
 Region: GLOB-E
 Strength: 2.9591
 Type: Deep Neutral
-Zones BG:
-  zone-0: -0.0672
-  zone-I: 1.4953
-  zone-II: 1.9388
-  zone-III: 1.8799
-  zone-IV: 1.8959
-  zone-MYSO: -1.5565
-  zone-S: 0.9626
-Zones BG sig:
-  zone-0: 0.4449
-  zone-I: 0.3858
-  zone-II: 0.2257
-  zone-III: 0.3707
-  zone-IV: 0.3168
-  zone-MYSO: 1.031
-  zone-S: 1.8032
-Zones Strength:
-  zone-0: 5.596
-  zone-I: 1.9177
-  zone-II: 2.4695
-  zone-III: 1.415
-  zone-IV: 1.2931
-  zone-MYSO: 8.3059
-  zone-S: 4.7006
 lambda_HM: 8809.78
 lambda_obs: 8814.944824
+zone-0:
+  BG mean: -0.0224
+  BG npix: 4
+  Sigma: 0.2569
+  Strength: 5.6633
+zone-I:
+  BG mean: 0.4984
+  BG npix: 4
+  Sigma: 0.2228
+  Strength: 0.4224
+zone-II:
+  BG mean: 0.6463
+  BG npix: 4
+  Sigma: 0.1303
+  Strength: 0.5307
+zone-III:
+  BG mean: 0.6266
+  BG npix: 4
+  Sigma: 0.214
+  Strength: -0.4649
+zone-IV:
+  BG mean: 0.632
+  BG npix: 4
+  Sigma: 0.1829
+  Strength: -0.6028
+zone-MYSO:
+  BG mean: -0.5188
+  BG npix: 4
+  Sigma: 0.5953
+  Strength: 9.8624
+zone-S:
+  BG mean: 0.3209
+  BG npix: 4
+  Sigma: 1.0411
+  Strength: 3.738

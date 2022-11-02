@@ -8,29 +8,40 @@ Notes:
 Region: YSO
 Strength: 21.0
 Type: Low Neb
-Zones BG:
-  zone-0: 17.0422
-  zone-I: 26.7499
-  zone-II: 14.61
-  zone-III: 20.0571
-  zone-IV: 21.7546
-  zone-MYSO: 11.5944
-  zone-S: 18.4783
-Zones BG sig:
-  zone-0: 15.4498
-  zone-I: 18.6621
-  zone-II: 14.9288
-  zone-III: 12.5534
-  zone-IV: 14.9609
-  zone-MYSO: 15.1832
-  zone-S: 13.6418
-Zones Strength:
-  zone-0: 3.6745
-  zone-I: 1.6542
-  zone-II: 3.7978
-  zone-III: 2.3677
-  zone-IV: 3.0856
-  zone-MYSO: 24.3428
-  zone-S: 9.1377
 lambda_HM: 5577.65
 lambda_obs: 5581.194824
+zone-0:
+  BG mean: 5.6807
+  BG npix: 4
+  Sigma: 8.92
+  Strength: -13.3677
+zone-I:
+  BG mean: 8.9166
+  BG npix: 4
+  Sigma: 10.7746
+  Strength: -25.0957
+zone-II:
+  BG mean: 4.87
+  BG npix: 4
+  Sigma: 8.6191
+  Strength: -10.8122
+zone-III:
+  BG mean: 6.6857
+  BG npix: 4
+  Sigma: 7.2477
+  Strength: -17.6893
+zone-IV:
+  BG mean: 7.2515
+  BG npix: 4
+  Sigma: 8.6377
+  Strength: -18.669
+zone-MYSO:
+  BG mean: 3.8648
+  BG npix: 4
+  Sigma: 8.766
+  Strength: 12.7484
+zone-S:
+  BG mean: 6.1594
+  BG npix: 4
+  Sigma: 7.8761
+  Strength: -9.3406

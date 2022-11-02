@@ -20,7 +20,6 @@ def main(
     with open(zone_file) as f:
         zones = yaml.safe_load(f)
 
-    specfiles = sorted(Path.cwd().glob(f"zone-*-{id_label}-spec1d.fits"))
     nzones = len(zones)
     yspan = 1.5 * linthresh
     dy = yspan / (nzones - 1)
@@ -34,6 +33,7 @@ def main(
             input="husl",
         )[-1]
         (spec / scale + offset).plot(label=zone["label"], linewidth=1, color=color)
+        ax.axhline(offset, linewidth=0.5, color=color)
         offset -= dy
 
     ax.legend(ncol=nzones)
