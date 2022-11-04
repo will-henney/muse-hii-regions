@@ -2685,6 +2685,9 @@ python ../../scripts/find-all-line-pixels.py
 #+RESULTS:
 
 **** TODO Find strength of a each line in all zones
+:PROPERTIES:
+:ID:       C597528A-4D58-439C-99B3-EA227BAED261
+:END:
 - Original version [2022-10-30 Sun 21:18]
   - This does just one line, but it is very slow when run repeatedly for each line
 - Revised version  [2022-10-30 Sun 21:40]
@@ -2951,6 +2954,9 @@ COLUMNS=100 python ../../scripts/extract-lines-by-zone.py
 
 **** DONE Line strengths normalized to H beta
 CLOSED: [2022-10-31 Mon 13:13]
+:PROPERTIES:
+:ID:       E5A865EF-2A09-4BE9-891B-617EA2E8A6CB
+:END:
 
 - We write out to CSV tables
   - line_fluxes.csv
@@ -3056,7 +3062,11 @@ Index
 #+end_example
 
 
+
 **** Figures showing the line fluxes
+:PROPERTIES:
+:ID:       1DCB8F2F-FC0E-4042-99B0-1E57C35413C7
+:END:
 #+begin_src python :eval no :tangle ../scripts/plot-fluxes-by-zone.py
   from matplotlib import pyplot as plt
   import seaborn as sns
@@ -3473,6 +3483,81 @@ III / II 0.0368160192031341 0.0048041895266617 0.13049182477210153 0.04225479623
 #+end_example
 
 It duplicates Type and ID columns unnecessarily, but works fine
+
+
+**** Repeat the steps 7 and 8 with the median instead of the mean
+First, from [[id:C597528A-4D58-439C-99B3-EA227BAED261][Find strength of a each line in all zones]]
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :dir ../data/n346-lines :results verbatim
+  time python ../../scripts/line-bright-all-zones.py --spec-id-label c007-chop-median
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+#+begin_example
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+
+real	0m5.361s
+user	0m6.156s
+sys	0m0.704s
+Last run:
+Fri Nov  4 08:29:00 CST 2022
+#+end_example
+
+
+Second, from [[id:E5A865EF-2A09-4BE9-891B-617EA2E8A6CB][Line strengths normalized to H beta]]
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+python ../../scripts/make-line-flux-table.py --data-dir all-lines-c007-chop-median
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                                                Comments  ... Notes.Type
+Index                                                     ...           
+7      Must be blend because more widely distributed ...  ...        NaN
+35                     Very broad due to multiple blends  ...        NaN
+42                          Morphology similar to Si III  ...        NaN
+49     Shows diffuse emission, particularly in SE and NE  ...        NaN
+71                                                  None  ...        NaN
+...                                                  ...  ...        ...
+3707                                                None  ...        NaN
+3711   Severe blend with red wing of H I line. Streng...  ...        NaN
+3720       Has diffuse emission like other neutral lines  ...        NaN
+3736                        Diffuse emission is marginal  ...        NaN
+3762                                                None  ...        NaN
+
+[268 rows x 38 columns]
+                 Type                 ID  ... zone-MYSO    zone-S
+Index                                     ...                    
+7              Fe, Ni  [Fe III] 4607.12+  ...  0.100542  0.156928
+35          High Perm      O II 4641.81+  ...  0.068371  0.158782
+42          High Perm      O II 4649.13+  ... -0.043486 -0.126814
+49             Fe, Ni   [Fe III] 4658.10  ...  0.648828  0.182271
+71           High Neb     He II  4685.68  ... -0.162297 -0.932491
+...               ...                ...  ...       ...       ...
+3707          Med Neb        H I 9229.01  ...  3.445843  2.049167
+3711     Deep Neutral               UIL+  ... -0.118165 -0.319868
+3720          Neutral      Ca I] 9244.31  ...  0.123422 -0.014258
+3736   Deep Neutral??                UIL  ...  0.019161  0.051154
+3762    Deep Neutral?                UIL  ...  0.315056   0.32932
+
+[268 rows x 9 columns]
+#+end_example
+
+Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing the line fluxes]]
+#+Begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-ratios-vs-ratios-by-zone.py c007-chop-median
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/ratios-vs-ratios-by-zone-c007-chop-median.pdf]]
 
 **** Comments on the ratios
 - All ratios are higher/lower: I/0, II/0, II/I, III/II, IV/III, MYSO/0
