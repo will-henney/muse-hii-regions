@@ -1,0 +1,207 @@
+# Info for use in constructing the inter-zone diagnostic plots of all
+# the emission lines
+---
+types:
+  # A dict giving info for each type of emission line: husl is the key
+  # color, zone is which zone's brightness to use for color mapping,
+  # log_min, log_max map log10 brightness (units of H beta = 100) on
+  # to the lightest and darkest color in the color map
+  # 
+  # These are mainly the same colors as in zones.yaml, maybe change
+  # them later
+  Unidentified:
+    description: >-
+      All unidentified emission lines, even if they might not be Deep
+      Neutral ones
+    husl: [0, 0, 0]             # black is black
+    zone: zone-0
+    log_min: -2.0
+    log_max: -0.5
+  Deep:
+    description: >-
+      Deep Neutral lines with a confirmed identification. This
+      currently includes only the [C I] 8727 line
+    husl: [130, 100, 55]             # A green
+    zone: zone-0
+    log_min: -2.0
+    log_max: -1.0
+  Neutral:
+    description: >-
+      Fluorescent lines of O I and N I 
+    husl: [250, 100, 30]         # a deep blue
+    zone: zone-I
+    log_min: -2.5
+    log_max: -0.5
+  Low:
+    description: >-
+      Forbidden lines from the ionization front and close to it, such
+      as [O I], [S II], [N II], [O II]
+    husl: [290, 85, 30]         # a medium purple (darkened)
+    zone: zone-II
+    log_min: -2.0
+    log_max: 1.0
+  Medium:
+    description: >-
+      Medium ionization recombination lines (H I and He I) and
+      forbidden lines, such as [S III], [Cl III], [Ar III], [O III]
+    husl: [352, 90, 40]         # a nice magenta (darkened)
+    zone: zone-III
+    log_min: -2.0
+    log_max: 2.0
+  High:
+    description: >-
+      High ionization lines, such as He II, [Ar IV], [Cl IV], [K IV], Si III
+    husl: [30, 100, 50]          # an intense orange (darkened, and slightly yellower)
+    zone: zone-IV
+    log_min: -2.0
+    log_max: 0.0
+  Fe:
+    description: >-
+      Lines from Fe, Ni, Si, Ca that show distributions that are
+      somewhat different from the Neutral and Low types. For example:
+      [Fe II], [Ni II], Si II, [Fe III], Ca I. Note that this category
+      is rather miscellaneous.
+    husl: [200, 85, 70]         # a light blue-green
+    zone: zone-MYSO
+    log_min: -2.0
+    log_max: -0.3
+
+species:
+  # List of different species, giving name (used for selecting rows
+  # from the database), line Type (from which color will be derived),
+  # and size and shape for plot marker
+  #
+  # Species are plotted in reverse order, so put the more important
+  # ones first (and the ones with smaller symbols to minimise overlaps)
+  - name: "[C I]"
+    type: Deep
+    size: 100
+    marker: "*"
+  - name: UIL
+    type: Unidentified
+    size: 50
+    marker: "*"
+
+  # The Neutral lines
+  - name: O I
+    type: Neutral
+    size: 20
+    marker: s
+  - name: "[N I]"
+    type: Neutral
+    size: 30
+    marker: o
+  - name: N I
+    type: Neutral
+    size: 20
+    marker: o
+    
+  # The Low ionization lines
+  - name: "[Cl II]"
+    type: Low
+    size: 20
+    marker: d
+  - name: "[N II]"
+    type: Low
+    size: 25
+    marker: o
+  - name: "[O I]"
+    type: Low
+    size: 15
+    marker: s
+  - name: "[O II]"
+    type: Low
+    size: 25
+    marker: s
+  - name: "[P II]"
+    type: Low
+    size: 10
+    marker: d
+  - name: "[S II]"
+    type: Low
+    size: 25
+    marker: p
+
+  # The Medium ionization line
+  - name: "[S III]"
+    type: Medium
+    size: 10
+    marker: p
+  - name: "[Cl III]"
+    type: Medium
+    size: 15
+    marker: d
+  - name: "[Ar III]"
+    type: Medium
+    size: 20
+    marker: o
+  - name: "[O III]"
+    type: Medium
+    size: 25
+    marker: s
+  - name: He I
+    type: Medium
+    size: 15
+    marker: X
+  - name: H I
+    type: Medium
+    size: 20
+    marker: P
+
+  # The High ionization lines
+  - name: He II
+    type: High
+    size: 30
+    marker: X
+  - name: O II
+    type: High
+    size: 15
+    marker: d
+  - name: Si III
+    type: High
+    size: 25
+    marker: D
+  - name: "[Cl IV]"
+    type: High
+    size: 20
+    marker: s
+  - name: "[Ar IV]"
+    type: High
+    size: 25
+    marker: o
+  - name: "[K IV]"
+    type: High
+    size: 30
+    marker: p
+
+  # The Fe lines
+  - name: "Ca I]"
+    type: Fe
+    size: 10
+    marker: d
+  - name: Fe II
+    type: Fe
+    size: 10
+    marker: s
+  - name: Ni II
+    type: Fe
+    size: 10
+    marker: o
+  - name: Si II
+    type: Fe
+    size: 20
+    marker: p
+  - name: "[Fe III]"
+    type: Fe
+    size: 30
+    marker: s
+  - name: "[Fe II]"
+    type: Fe
+    size: 20
+    marker: s
+  - name: "[Ni II]"
+    type: Fe
+    size: 20
+    marker: o
+ 
+    
