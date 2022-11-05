@@ -61,6 +61,20 @@
 
 ** Deep neutral/molecular lines
 
+
+*** Possible atomic candidates
+
+**** C I lines
+- Although 8727 is recombination in Orion, according to Vladimir, it is more likely to be collisionally excited in most planetary nebulae according to Liu et al. 1995
+  - This is because the ratio of (9824 +9850)/8727 is predicted to be around 5 to 10 with recombination, whereas it is observed to be typically 30 in planetary nebulae
+- There  are other potential recombination lines mentioned by Liu, but we do not see them in NGC 346
+  - Ci M3 3p3 P-3s3 P° at 9089À,
+    - strongest component 9094.289
+  - M2 3p3 S-3s3 P° at 9642 À
+  - and M26 4d3 F°-3p3 D at 7116Ä
+    - supposedly strongest component is 7113.180
+- I do not see any of those lines.
+**** Fe I lines
 *** Possible molecular candidates
 - Diffuse clouds are known to show optical/IR absorption in lines of CN, C_2, CH, CH+, NH, C_3
   - See Table 2 of Snow:2006e ARAA review
@@ -3360,13 +3374,13 @@ Index
               [
                   ["II / 0", "I / 0"],
                   ["II / 0", "MYSO / 0"],
-                  ["II / I", "III / II"],
+                  ["II / 0", "III / II"],
                   ["III / II", "IV / III"],
               ],
               [
                   ["IV"],
                   ["IV"],
-                  ["0"],
+                  [],
                   ["0", "I"],                
               ],
       ):
@@ -3399,7 +3413,7 @@ Index
               ylim=[xmin, xmax],
           )
           ax.set_aspect("equal")
-      # Now do one more loop over the species to mak the legend
+      # Now do one more loop over the species to make the legend
       handles = []
       for species in info["species"]:
           label = species["name"]
