@@ -10,35 +10,301 @@ lambda_obs: 5742.444824
 zone-0:
   BG mean: 1.2246
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 0.584
+    Mean Wave: 5743.2351
+    RMS Width: 0.8043
+  Pixel Wave: 5742.4448
   Sigma: 0.1199
   Strength: 0.5247
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.0003
+    - 0.0226
+    - 0.2215
+    - 0.2877
+    - 0.0507
+    - 0.0011
+    Spectrum:
+    - 0.1147
+    - 0.0189
+    - 0.0162
+    - 0.2216
+    - 0.2869
+    - 0.0657
+    - -0.1992
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-I:
   BG mean: 1.2469
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 0.209
+    Mean Wave: 5743.1296
+    RMS Width: 0.1948
+  Pixel Wave: 5742.4448
   Sigma: 0.0734
   Strength: 0.2518
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0793
+    - 0.1297
+    - 0.0
+    - 0.0
+    Spectrum:
+    - 0.1188
+    - -0.047
+    - 0.0431
+    - 0.0786
+    - 0.13
+    - -0.0723
+    - 0.0005
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-II:
   BG mean: 1.3605
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 0.7524
+    Mean Wave: 5741.7893
+    RMS Width: 1.3573
+  Pixel Wave: 5742.4448
   Sigma: 0.1314
   Strength: 0.6649
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0236
+    - 0.1129
+    - 0.2441
+    - 0.2395
+    - 0.1065
+    - 0.0214
+    - 0.0019
+    Spectrum:
+    - -0.2162
+    - 0.1385
+    - 0.3605
+    - 0.078
+    - 0.2264
+    - 0.0324
+    - 0.0453
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-III:
   BG mean: 1.1707
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 1.088
+    Mean Wave: 5742.8814
+    RMS Width: 1.1724
+  Pixel Wave: 5742.4448
   Sigma: 0.0775
   Strength: 0.9577
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0013
+    - 0.0252
+    - 0.1722
+    - 0.4148
+    - 0.3549
+    - 0.1077
+    - 0.0115
+    Spectrum:
+    - -0.1021
+    - 0.0603
+    - 0.1835
+    - 0.3868
+    - 0.3873
+    - 0.0883
+    - -0.0465
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-IV:
   BG mean: 0.8356
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 3.1101
+    Mean Wave: 5742.8082
+    RMS Width: 0.9643
+  Pixel Wave: 5742.4448
   Sigma: 0.069
   Strength: 2.9457
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0005
+    - 0.0311
+    - 0.4433
+    - 1.4127
+    - 1.0406
+    - 0.1754
+    - 0.0065
+    Spectrum:
+    - 0.0199
+    - 0.0171
+    - 0.4836
+    - 1.3616
+    - 1.1005
+    - 0.0755
+    - -0.1125
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-MYSO:
   BG mean: 1.4675
   BG npix: 4
+  Gauss Fit:
+    Amplitude: 0.7717
+    Mean Wave: 5742.3873
+    RMS Width: 0.1474
+  Pixel Wave: 5742.4448
   Sigma: 1.0968
   Strength: 0.5832
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.7717
+    - 0.0
+    - 0.0
+    - 0.0
+    Spectrum:
+    - 0.7705
+    - 1.1384
+    - -0.1774
+    - 0.777
+    - -0.0164
+    - -0.2129
+    - -1.696
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948
 zone-S:
   BG mean: 2.5041
   BG npix: 4
+  Gauss Fit:
+    Amplitude: -4.3063
+    Mean Wave: 5744.2182
+    RMS Width: 1.5324
+  Pixel Wave: 5742.4448
   Sigma: 0.9762
   Strength: -2.3185
+  Window:
+    BG Mask:
+    - true
+    - true
+    - false
+    - false
+    - false
+    - true
+    - true
+    Fit:
+    - -0.0029
+    - -0.0342
+    - -0.2159
+    - -0.7236
+    - -1.2903
+    - -1.2259
+    - -0.6205
+    Spectrum:
+    - 0.8772
+    - 1.0378
+    - -0.1197
+    - -1.0894
+    - -1.1093
+    - -1.214
+    - -0.701
+    Wave:
+    - 5738.6948
+    - 5739.9448
+    - 5741.1948
+    - 5742.4448
+    - 5743.6948
+    - 5744.9448
+    - 5746.1948

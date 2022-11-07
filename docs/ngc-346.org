@@ -2698,6 +2698,47 @@ python ../../scripts/find-all-line-pixels.py
 
 #+RESULTS:
 
+**** Fitting a discrete Gaussian profile
+#+begin_src python :eval no :tangle ../lib/discrete_gaussian_model.py
+  import numpy as np
+  import scipy.stats
+  import astropy.modeling
+
+  def _E_cdf(x, x0, sig):
+      "General case of any profile via the CDF"
+      return scipy.stats.norm.cdf(x, loc=x0, scale=sig)
+
+  @astropy.modeling.custom_model
+  def DiscreteGaussianModel(x, amplitude=1.0, mean=0.0, stddev=1.0, bin_width=1.0):
+      """
+      A Gaussian profile, but integrated over bins of width bin_width (in units of x)
+
+      """
+      return  amplitude * (
+          _E_cdf(x + bin_width/2, mean, stddev) - _E_cdf(x - bin_width/2, mean, stddev)
+      )
+
+#+end_src
+
+
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  sys.path.append("../lib")
+  from discrete_gaussian_model import DiscreteGaussianModel
+  from astropy.modeling import models, fitting
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+
+  plotfile = "discrete-gaussian-test.pdf"
+  FITTER = fitting.LevMarLSQFitter()
+  g0 = DiscreteGaussianModel(
+      amplitude=1.0,
+      mean=2.0,
+      std_dev=1.0,
+      bin_width=1.25,
+  )
+#+end_src
 **** TODO Find strength of a each line in all zones
 :PROPERTIES:
 :ID:       C597528A-4D58-439C-99B3-EA227BAED261
@@ -2706,10 +2747,14 @@ python ../../scripts/find-all-line-pixels.py
   - This does just one line, but it is very slow when run repeatedly for each line
 - Revised version  [2022-10-30 Sun 21:40]
   - Now do all the lines at once. Works much faster
+- Second revised version [2022-11-01 Tue]
+  - Mask out the lines so that blends work better
+- Third revised version [2022-11-05 Sat]
+  - Do Gaussian fits
 - Methods:
   - Only method so far is seven-pixel window. Outermost 4 pixels are used to estimate the hyper-local base level, and its uncertainty. Innermost 3 pixels are summed to give the line flux
-- [0/3] Future improvements:
-  - [ ] Eliminate neighboring line pixels from the BG estimation
+- [1/4] Future improvements:
+  - [X] Eliminate neighboring line pixels from the BG estimation
     - This should be easy to do by setting a mask
     - We currently have 4 pixels that are used in the BG estimation, so even if both pixels on one side are masked out, we still have enough
   - [ ] Use the 3-wav method to estimate the central wavelength and correct the flux for the missing wings
@@ -2717,16 +2762,24 @@ python ../../scripts/find-all-line-pixels.py
     - Take a big enough window around the central pixel to include all possible blends: 15 pixels would probably be enough
     - Run ~find_peaks()~ to get an idea of how many lines there are. Use a minimum  strength of say 0.3 times the peak from the 3-pixel method
     - Use those as Gaussian components in a fit (plus constant)
-    - This is starting to sound way to complicated, and it would still not be able to capture underlying absorption features easily. 
+    - This is starting to sound way to complicated, and it would still not be able to capture underlying absorption features easily.
+  - [ ] A simpler Gaussian plan
+    - Use the same 7-point window, and unmask the central line
+    - Still have any other nearby lines masked out
+    - Fit a single Gaussian plus continuum
 #+begin_src python :tangle ../scripts/line-bright-all-zones.py
   from mpdaf.obj import Spectrum
   import numpy as np
   from pathlib import Path
+  import sys
   import yaml
   import typer
   import slugify
+  from astropy.modeling import models, fitting
+  from discrete_gaussian_model import DiscreteGaussianModel
 
   INDEX_PATTERN = "[0-9]" * 4
+  FITTER = fitting.LevMarLSQFitter()
 
   def get_id_string(data):
       s = f"{data['Index']:04d}-{str(data['Type']).rstrip('?')}"
@@ -2738,6 +2791,31 @@ python ../../scripts/find-all-line-pixels.py
 
   def sanitize(x):
       return float(np.round(x, 4))
+
+  def sanitize_array(x: np.ndarray) -> list:
+      return [sanitize(_) for _ in x.tolist()]
+
+
+  def fit_gauss7(wave: np.ndarray, spec: np.ndarray, mask: np.ndarray):
+      assert wave.shape == spec.shape == mask.shape == (7,)
+      assert mask.dtype == bool
+      # Make a copy so that we do not affect the global array
+      _mask = mask.copy()
+      # Unmask the central pixels for this line, so we can fit them
+      _mask[2:5] = True
+      # Initial guess for Gaussian
+      g0 = DiscreteGaussianModel(
+          amplitude=spec[3],
+          mean=wave[3],
+          stddev=1.0,
+          bin_width=wave[1] - wave[0],
+          fixed={"bin_width": True},
+      )
+      # Try and fit it
+      return FITTER(g0, wave[_mask], spec[_mask])
+      # return g0
+
+
 
   def main(
           spec_id_label: str="c007-chop-mean",
@@ -2773,7 +2851,9 @@ python ../../scripts/find-all-line-pixels.py
       bg_mask = np.ones((nwave,), bool)
       bg_mask[avoid_indices] = False
 
-      # And the list of 
+      # And an array of the wave pixel indices
+      indices = np.arange(nwave)
+
       # Now loop over all lines
       for line_file in line_files:
           with open(line_file) as f:
@@ -2784,6 +2864,8 @@ python ../../scripts/find-all-line-pixels.py
               spec = zone["spec"]
               # Wide window includes BG and line
               win7 = spec.data[ipeak-3:ipeak+4]
+              # Corresponding wavelengths, converted from m to Angstrom
+              wave7 = 1.0e10 * spec.wave.coord(indices[ipeak-3:ipeak+4])
               # Corresponding mask
               m7 = bg_mask[ipeak-3:ipeak+4]
               # Narrow window includes only line
@@ -2795,12 +2877,27 @@ python ../../scripts/find-all-line-pixels.py
               else:
                   bg_mean = bg_sig = 0.0
               line_sum = np.sum(win3 - bg_mean)
+              gfit = fit_gauss7(wave7, win7 - bg_mean, m7)
               metadata[zone["label"]] = {
                   "Strength": sanitize(line_sum),
                   "Sigma": sanitize(bg_sig),
                   "BG npix": int(bg_npix),
                   "BG mean": sanitize(bg_mean),
+                  "Pixel Wave": sanitize(wave7[3]),
               }
+              metadata[zone["label"]]["Gauss Fit"] = {
+                  "Amplitude": sanitize(gfit.amplitude.value),
+                  "Mean Wave": sanitize(gfit.mean.value),
+                  "RMS Width": sanitize(gfit.stddev.value),
+              }
+              if debug:
+                  metadata[zone["label"]]["Window"] = {
+                      "Wave": sanitize_array(wave7),
+                      "Spectrum": sanitize_array(win7 - bg_mean),
+                      "Fit":  sanitize_array(gfit(wave7)),
+                      "BG Mask": m7.tolist(),
+                  }
+                  #metadata[zone["label"]]["Fit Info"] = str(FITTER.fit_info)
 
           out_dir = Path(f"all-lines-{spec_id_label}")
           out_dir.mkdir(parents=True, exist_ok=True)
@@ -2817,7 +2914,7 @@ python ../../scripts/find-all-line-pixels.py
 
 #+header: :prologue "exec 2>&1" :epilogue ":"
 #+begin_src sh :dir ../data/n346-lines :results verbatim
-  time python ../../scripts/line-bright-all-zones.py
+  time PYTHONPATH=../../lib python ../../scripts/line-bright-all-zones.py --debug
   echo "Last run:"
   date
 #+end_src
@@ -2831,12 +2928,529 @@ WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT k
 WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
 WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
 WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+WARNING: The fit may be unsuccessful; check fit_info['message'] for more information. [astropy.modeling.fitting]
+Saving line data to all-lines-c007-chop-mean/0004-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0007-fe-ni-fe-iii-4607-12.yaml
+Saving line data to all-lines-c007-chop-mean/0011-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0014-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0022-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0035-high-perm-o-ii-4641-81.yaml
+Saving line data to all-lines-c007-chop-mean/0042-high-perm-o-ii-4649-13.yaml
+Saving line data to all-lines-c007-chop-mean/0049-fe-ni-fe-iii-4658-10.yaml
+Saving line data to all-lines-c007-chop-mean/0060-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0067-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0071-high-neb-he-ii-4685-68.yaml
+Saving line data to all-lines-c007-chop-mean/0077-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0081-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0083-fe-ni-fe-iii-4701-62.yaml
+Saving line data to all-lines-c007-chop-mean/0091-high-neb-ar-iv-4711-37.yaml
+Saving line data to all-lines-c007-chop-mean/0097-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0100-med-neb-uil-4723.yaml
+Saving line data to all-lines-c007-chop-mean/0105-fe-ni-uil-4729.yaml
+Saving line data to all-lines-c007-chop-mean/0110-fe-ni-fe-iii-4734-00.yaml
+Saving line data to all-lines-c007-chop-mean/0114-high-neb-ar-iv-4740-17.yaml
+Saving line data to all-lines-c007-chop-mean/0126-fe-ni-fe-iii-4754-81.yaml
+Saving line data to all-lines-c007-chop-mean/0128-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0136-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0138-fe-ni-fe-iii-4769-53.yaml
+Saving line data to all-lines-c007-chop-mean/0145-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0148-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0157-fe-ni-uil-4792.yaml
+Saving line data to all-lines-c007-chop-mean/0174-fe-ni-fe-ii-4814-534.yaml
+Saving line data to all-lines-c007-chop-mean/0180-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0190-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0197-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0211-med-neb-h-i-4861-32.yaml
+Saving line data to all-lines-c007-chop-mean/0218-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0227-fe-ni-fe-iii-4881-073.yaml
+Saving line data to all-lines-c007-chop-mean/0238-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0247-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0253-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0260-med-neb-he-i-4921-93.yaml
+Saving line data to all-lines-c007-chop-mean/0268-fe-ni-fe-iii-4930-64.yaml
+Saving line data to all-lines-c007-chop-mean/0283-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0289-med-neb-o-iii-4958-91.yaml
+Saving line data to all-lines-c007-chop-mean/0301-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0311-fe-ni-fe-iii-4987-20.yaml
+Saving line data to all-lines-c007-chop-mean/0322-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0328-med-neb-o-iii-5006-84.yaml
+Saving line data to all-lines-c007-chop-mean/0335-med-neb-he-i-5015-68.yaml
+Saving line data to all-lines-c007-chop-mean/0347-sky.yaml
+Saving line data to all-lines-c007-chop-mean/0356-med-perm-si-ii-5041-03.yaml
+Saving line data to all-lines-c007-chop-mean/0360-med-neb-he-i-5047-74.yaml
+Saving line data to all-lines-c007-chop-mean/0367-med-perm-si-ii-5055-98.yaml
+Saving line data to all-lines-c007-chop-mean/0382-sky.yaml
+Saving line data to all-lines-c007-chop-mean/0385-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0391-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0395-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0401-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0407-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0414-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0417-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0428-stellar-o-i-5131-14.yaml
+Saving line data to all-lines-c007-chop-mean/0441-neutral-o-i-5146-61.yaml
+Saving line data to all-lines-c007-chop-mean/0449-fe-ni-fe-ii-5158-81.yaml
+Saving line data to all-lines-c007-chop-mean/0465-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0475-med-neb-ar-iii-5191-82.yaml
+Saving line data to all-lines-c007-chop-mean/0482-neutral-n-i-5199-00.yaml
+Saving line data to all-lines-c007-chop-mean/0492-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0498-med-perm-si-ii-5219-31.yaml
+Saving line data to all-lines-c007-chop-mean/0518-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0531-fe-ni-fe-ii-5261-61.yaml
+Saving line data to all-lines-c007-chop-mean/0539-fe-ni-fe-iii-5270-40.yaml
+Saving line data to all-lines-c007-chop-mean/0552-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0556-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0566-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0569-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0576-stellar.yaml
+Saving line data to all-lines-c007-chop-mean/0580-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0589-fe-ni-fe-ii-5333-646.yaml
+Saving line data to all-lines-c007-chop-mean/0598-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0607-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0623-fe-ni-fe-ii-5376-452.yaml
+Saving line data to all-lines-c007-chop-mean/0628-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0632-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0642-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0649-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0652-high-neb-he-ii-5411-52.yaml
+Saving line data to all-lines-c007-chop-mean/0660-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0664-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0669-stellar-o-ii-5433-49.yaml
+Saving line data to all-lines-c007-chop-mean/0673-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0683-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0689-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0695-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0698-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0708-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0713-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0727-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0737-med-neb-cl-iii-5517-71.yaml
+Saving line data to all-lines-c007-chop-mean/0747-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0753-med-neb-cl-iii-5537-88.yaml
+Saving line data to all-lines-c007-chop-mean/0785-low-neb-o-i-5577-34.yaml
+Saving line data to all-lines-c007-chop-mean/0790-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0797-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0800-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0809-deep-neutral-uil-5608.yaml
+Saving line data to all-lines-c007-chop-mean/0819-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0825-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0829-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0834-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0842-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0851-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0865-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0868-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0874-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0900-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0903-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0911-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0914-high-perm-si-iii-5739-73.yaml
+Saving line data to all-lines-c007-chop-mean/0920-stellar.yaml
+Saving line data to all-lines-c007-chop-mean/0926-low-neb-n-ii-5755-08.yaml
+Saving line data to all-lines-c007-chop-mean/0941-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0954-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0965-stellar.yaml
+Saving line data to all-lines-c007-chop-mean/0978-noise.yaml
+Saving line data to all-lines-c007-chop-mean/0985-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1003-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1018-fe-ni-ni-ii-5867-99.yaml
+Saving line data to all-lines-c007-chop-mean/1023-med-neb-he-i-5875-62.yaml
+Saving line data to all-lines-c007-chop-mean/1037-sky-na-i-5896.yaml
+Saving line data to all-lines-c007-chop-mean/1045-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1052-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1055-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1062-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1069-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1083-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1089-med-perm-si-ii-5957-56.yaml
+Saving line data to all-lines-c007-chop-mean/1099-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1106-med-perm-si-ii-5978-93.yaml
+Saving line data to all-lines-c007-chop-mean/1115-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1123-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1127-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1135-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1146-deep-neutral-uil-6029.yaml
+Saving line data to all-lines-c007-chop-mean/1149-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1152-none.yaml
+Saving line data to all-lines-c007-chop-mean/1153-deep-neutral-uil-6038.yaml
+Saving line data to all-lines-c007-chop-mean/1160-neutral-o-i-6046-23.yaml
+Saving line data to all-lines-c007-chop-mean/1171-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1178-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1181-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1190-neutral-uil-6083.yaml
+Saving line data to all-lines-c007-chop-mean/1204-high-neb-k-iv-6101-79.yaml
+Saving line data to all-lines-c007-chop-mean/1211-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1217-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1223-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1227-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1235-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1238-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1245-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1256-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1268-deep-neutral-uil-6180.yaml
+Saving line data to all-lines-c007-chop-mean/1282-sky.yaml
+Saving line data to all-lines-c007-chop-mean/1285-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1300-deep-neutral-uil-6220.yaml
+Saving line data to all-lines-c007-chop-mean/1312-deep-neutral-uil-6236.yaml
+Saving line data to all-lines-c007-chop-mean/1322-deep-neutral-uil-6247.yaml
+Saving line data to all-lines-c007-chop-mean/1326-sky.yaml
+Saving line data to all-lines-c007-chop-mean/1332-deep-neutral-uil-6261.yaml
+Saving line data to all-lines-c007-chop-mean/1339-deep-neutral-uil-6271.yaml
+Saving line data to all-lines-c007-chop-mean/1350-sky-oh-6287-4.yaml
+Saving line data to all-lines-c007-chop-mean/1363-low-neb-o-i-6300-30.yaml
+Saving line data to all-lines-c007-chop-mean/1372-med-neb-s-iii-6312-06.yaml
+Saving line data to all-lines-c007-chop-mean/1378-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1384-sky.yaml
+Saving line data to all-lines-c007-chop-mean/1388-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1401-med-perm-si-ii-6347-11.yaml
+Saving line data to all-lines-c007-chop-mean/1414-low-neb-o-i-6363-78.yaml
+Saving line data to all-lines-c007-chop-mean/1420-med-perm-si-ii-6371-36.yaml
+Saving line data to all-lines-c007-chop-mean/1429-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1441-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1446-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1455-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1458-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1463-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1470-deep-neutral-uil-6434.yaml
+Saving line data to all-lines-c007-chop-mean/1484-deep-neutral-uil-6451.yaml
+Saving line data to all-lines-c007-chop-mean/1490-deep-neutral-uil-6459.yaml
+Saving line data to all-lines-c007-chop-mean/1498-deep-neutral-uil-6468.yaml
+Saving line data to all-lines-c007-chop-mean/1512-deep-neutral-uil-6486.yaml
+Saving line data to all-lines-c007-chop-mean/1521-sky-oh-6499.yaml
+Saving line data to all-lines-c007-chop-mean/1524-deep-neutral-uil-6502.yaml
+Saving line data to all-lines-c007-chop-mean/1537.yaml
+Saving line data to all-lines-c007-chop-mean/1547-deep-neutral-uil-6530.yaml
+Saving line data to all-lines-c007-chop-mean/1561-low-neb-n-ii-6548-05.yaml
+Saving line data to all-lines-c007-chop-mean/1573-med-neb-h-i-6562-79.yaml
+Saving line data to all-lines-c007-chop-mean/1590-low-neb-n-ii-6583-45.yaml
+Saving line data to all-lines-c007-chop-mean/1603-neutral-uil-6601.yaml
+Saving line data to all-lines-c007-chop-mean/1616-deep-neutral-uil-6615.yaml
+Saving line data to all-lines-c007-chop-mean/1626-deep-neutral-uil-6629.yaml
+Saving line data to all-lines-c007-chop-mean/1632-deep-neutral-uil-6637.yaml
+Saving line data to all-lines-c007-chop-mean/1640-deep-neutral-uil-6646.yaml
+Saving line data to all-lines-c007-chop-mean/1648-deep-neutral-uil-6656.yaml
+Saving line data to all-lines-c007-chop-mean/1651-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1657-fe-ni-ni-ii-6666-80.yaml
+Saving line data to all-lines-c007-chop-mean/1665-med-neb-he-i-6678-15.yaml
+Saving line data to all-lines-c007-chop-mean/1677-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1682-deep-neutral-uil-6699.yaml
+Saving line data to all-lines-c007-chop-mean/1692-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1696-low-neb-s-ii-6716-44.yaml
+Saving line data to all-lines-c007-chop-mean/1708-low-neb-s-ii-6730-816.yaml
+Saving line data to all-lines-c007-chop-mean/1720-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1726-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1736-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1744-deep-neutral-uil-6777.yaml
+Saving line data to all-lines-c007-chop-mean/1756-none.yaml
+Saving line data to all-lines-c007-chop-mean/1759-high-neb-k-iv-6795-1.yaml
+Saving line data to all-lines-c007-chop-mean/1770-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1777-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1784-sky-oh-6830.yaml
+Saving line data to all-lines-c007-chop-mean/1787-sky-oh-6833.yaml
+Saving line data to all-lines-c007-chop-mean/1794-none.yaml
+Saving line data to all-lines-c007-chop-mean/1801-deep-neutral-uil-6847.yaml
+Saving line data to all-lines-c007-chop-mean/1811-sky-oh-6864.yaml
+Saving line data to all-lines-c007-chop-mean/1817-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1830-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1842-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1850-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1861-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1867-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1879-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1882-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1896-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1906-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/1913-deep-neutral-uil-6987.yaml
+Saving line data to all-lines-c007-chop-mean/1921-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1925-neutral-o-i-7001-92.yaml
+Saving line data to all-lines-c007-chop-mean/1931-deep-neutral-uil-7010.yaml
+Saving line data to all-lines-c007-chop-mean/1936-deep-neutral-uil-7016.yaml
+Saving line data to all-lines-c007-chop-mean/1944-deep-neutral-uil-7026.yaml
+Saving line data to all-lines-c007-chop-mean/1954-deep-neutral-uil-7038.yaml
+Saving line data to all-lines-c007-chop-mean/1958-deep-neutral-uil-7043.yaml
+Saving line data to all-lines-c007-chop-mean/1963-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1969-deep-neutral-uil-7057.yaml
+Saving line data to all-lines-c007-chop-mean/1975-med-neb-he-i-7065-28.yaml
+Saving line data to all-lines-c007-chop-mean/1987-neutral-uil-7079.yaml
+Saving line data to all-lines-c007-chop-mean/1994-noise.yaml
+Saving line data to all-lines-c007-chop-mean/1997-deep-neutral-uil-7092.yaml
+Saving line data to all-lines-c007-chop-mean/2004-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2008-deep-neutral-uil-7105.yaml
+Saving line data to all-lines-c007-chop-mean/2012-deep-neutral-uil-7111.yaml
+Saving line data to all-lines-c007-chop-mean/2023-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2027-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2032-med-neb-ar-iii-7135-78.yaml
+Saving line data to all-lines-c007-chop-mean/2039-deep-neutral-uil-7144.yaml
+Saving line data to all-lines-c007-chop-mean/2047-fe-ni-fe-ii-7155-14.yaml
+Saving line data to all-lines-c007-chop-mean/2052-med-neb-he-i-7160-13.yaml
+Saving line data to all-lines-c007-chop-mean/2060-high-neb-ar-iv-7170-5.yaml
+Saving line data to all-lines-c007-chop-mean/2066-deep-neutral-uil-7179.yaml
+Saving line data to all-lines-c007-chop-mean/2071-deep-neutral-uil-7185.yaml
+Saving line data to all-lines-c007-chop-mean/2079-deep-neutral-uil-7194.yaml
+Saving line data to all-lines-c007-chop-mean/2082-deep-neutral-uil-7199.yaml
+Saving line data to all-lines-c007-chop-mean/2091-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2101-neutral-uil-7223.yaml
+Saving line data to all-lines-c007-chop-mean/2114-deep-neutral-uil-7238.yaml
+Saving line data to all-lines-c007-chop-mean/2127-neutral-o-i-7254-15.yaml
+Saving line data to all-lines-c007-chop-mean/2134-high-neb-ar-iv-7262-7.yaml
+Saving line data to all-lines-c007-chop-mean/2141-sky-oh-7276-4.yaml
+Saving line data to all-lines-c007-chop-mean/2148-med-neb-he-i-7281-35.yaml
+Saving line data to all-lines-c007-chop-mean/2154-uil-7288.yaml
+Saving line data to all-lines-c007-chop-mean/2164-sky-oh-7303-7.yaml
+Saving line data to all-lines-c007-chop-mean/2168-deep-neutral-uil-7306.yaml
+Saving line data to all-lines-c007-chop-mean/2173-sky-oh-7316-3.yaml
+Saving line data to all-lines-c007-chop-mean/2179-low-neb-o-ii-7319-99.yaml
+Saving line data to all-lines-c007-chop-mean/2187-low-neb-o-ii-7330-73.yaml
+Saving line data to all-lines-c007-chop-mean/2193-sky-oh-7340-9.yaml
+Saving line data to all-lines-c007-chop-mean/2199-deep-neutral-uil-7345.yaml
+Saving line data to all-lines-c007-chop-mean/2207-sky-oh-7358-7.yaml
+Saving line data to all-lines-c007-chop-mean/2216-sky-oh-7369-3.yaml
+Saving line data to all-lines-c007-chop-mean/2225-fe-ni-ni-ii-7377-83.yaml
+Saving line data to all-lines-c007-chop-mean/2234-sky-oh-7392-2.yaml
+Saving line data to all-lines-c007-chop-mean/2242-sky-oh-7401-9.yaml
+Saving line data to all-lines-c007-chop-mean/2246-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2252-fe-ni-ni-ii-7411-61.yaml
+Saving line data to all-lines-c007-chop-mean/2263-fe-ni-uil-7426.yaml
+Saving line data to all-lines-c007-chop-mean/2264-sky-oh-7429-8.yaml
+Saving line data to all-lines-c007-chop-mean/2271-sky-oh-7438-5.yaml
+Saving line data to all-lines-c007-chop-mean/2277-neutral-n-i-7442-30.yaml
+Saving line data to all-lines-c007-chop-mean/2285-fe-ni-fe-ii-7452-54.yaml
+Saving line data to all-lines-c007-chop-mean/2294-deep-neutral-uil-7463.yaml
+Saving line data to all-lines-c007-chop-mean/2298-neutral-n-i-7468-31.yaml
+Saving line data to all-lines-c007-chop-mean/2299-sky-oh-7473-7.yaml
+Saving line data to all-lines-c007-chop-mean/2304-sky-oh-7479.yaml
+Saving line data to all-lines-c007-chop-mean/2307-sky-oh-7483-5.yaml
+Saving line data to all-lines-c007-chop-mean/2314-deep-neutral-uil-7488.yaml
+Saving line data to all-lines-c007-chop-mean/2323-med-neb-he-i-7499-85.yaml
+Saving line data to all-lines-c007-chop-mean/2334-fe-ni-fe-ii-7513-1762.yaml
+Saving line data to all-lines-c007-chop-mean/2340-sky-oh-7524-1.yaml
+Saving line data to all-lines-c007-chop-mean/2345-deep-neutral-uil-7528.yaml
+Saving line data to all-lines-c007-chop-mean/2348-high-neb-cl-iv-7530-8.yaml
+Saving line data to all-lines-c007-chop-mean/2358-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2366-sky-oh-7557-5.yaml
+Saving line data to all-lines-c007-chop-mean/2378-sky-oh-7571-7.yaml
+Saving line data to all-lines-c007-chop-mean/2386-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2399-sky-oh-7598-4.yaml
+Saving line data to all-lines-c007-chop-mean/2402-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2420-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2423-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2426-deep-neutral-uil-7629.yaml
+Saving line data to all-lines-c007-chop-mean/2434-deep-neutral-uil-7638.yaml
+Saving line data to all-lines-c007-chop-mean/2437-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2441-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2445-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2450-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2454-deep-neutral-uil-7663.yaml
+Saving line data to all-lines-c007-chop-mean/2464-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2470-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2474-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2479-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/2489-deep-neutral-uil-7708.yaml
+Saving line data to all-lines-c007-chop-mean/2490-deep-neutral-uil-7708.yaml
+Saving line data to all-lines-c007-chop-mean/2494-sky-oh-7717.yaml
+Saving line data to all-lines-c007-chop-mean/2501-deep-neutral-uil-7722.yaml
+Saving line data to all-lines-c007-chop-mean/2503-deep-neutral-uil-7724.yaml
+Saving line data to all-lines-c007-chop-mean/2516-deep-neutral-uil-7739.yaml
+Saving line data to all-lines-c007-chop-mean/2524-med-neb-ar-iii-7751-10.yaml
+Saving line data to all-lines-c007-chop-mean/2528-sky-oh-7760.yaml
+Saving line data to all-lines-c007-chop-mean/2538-deep-neutral-uil-7769.yaml
+Saving line data to all-lines-c007-chop-mean/2549-deep-neutral-uil-7781.yaml
+Saving line data to all-lines-c007-chop-mean/2556-deep-neutral-uil-7790.yaml
+Saving line data to all-lines-c007-chop-mean/2565-deep-neutral-uil-7803.yaml
+Saving line data to all-lines-c007-chop-mean/2577-med-neb-he-i-7816-13.yaml
+Saving line data to all-lines-c007-chop-mean/2584-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2589-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2594-deep-neutral-uil-7838.yaml
+Saving line data to all-lines-c007-chop-mean/2602-deep-neutral-uil-7848.yaml
+Saving line data to all-lines-c007-chop-mean/2609-sky-oh-7861.yaml
+Saving line data to all-lines-c007-chop-mean/2614-deep-neutral-uil-7863.yaml
+Saving line data to all-lines-c007-chop-mean/2617-sky-oh-7871.yaml
+Saving line data to all-lines-c007-chop-mean/2623-low-neb-p-ii-7875-99.yaml
+Saving line data to all-lines-c007-chop-mean/2632-sky-oh-7890.yaml
+Saving line data to all-lines-c007-chop-mean/2636-deep-neutral-uil-7890.yaml
+Saving line data to all-lines-c007-chop-mean/2657-deep-neutral-uil-7917.yaml
+Saving line data to all-lines-c007-chop-mean/2665-deep-neutral-uil-7927.yaml
+Saving line data to all-lines-c007-chop-mean/2671-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2679-sky-oh-7949.yaml
+Saving line data to all-lines-c007-chop-mean/2692-deep-neutral-uil-7960.yaml
+Saving line data to all-lines-c007-chop-mean/2696-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2700-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2704-sky-oh-7980.yaml
+Saving line data to all-lines-c007-chop-mean/2709-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2715-sky-oh-7993.yaml
+Saving line data to all-lines-c007-chop-mean/2724-fe-ni-fe-ii-7997-03.yaml
+Saving line data to all-lines-c007-chop-mean/2731-deep-neutral-uil-8009.yaml
+Saving line data to all-lines-c007-chop-mean/2736-deep-neutral-uil-8016.yaml
+Saving line data to all-lines-c007-chop-mean/2741-sky-oh-8026.yaml
+Saving line data to all-lines-c007-chop-mean/2754-deep-neutral-uil-8038.yaml
+Saving line data to all-lines-c007-chop-mean/2760-high-neb-cl-iv-8045-62.yaml
+Saving line data to all-lines-c007-chop-mean/2770-sky-oh-8062.yaml
+Saving line data to all-lines-c007-chop-mean/2779-deep-neutral-uil-8069.yaml
+Saving line data to all-lines-c007-chop-mean/2790-deep-neutral-uil-8083.yaml
+Saving line data to all-lines-c007-chop-mean/2795-sky-oh-8094.yaml
+Saving line data to all-lines-c007-chop-mean/2802-sky-oh-8103.yaml
+Saving line data to all-lines-c007-chop-mean/2816-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2825-neutral-ca-i-8125-31.yaml
+Saving line data to all-lines-c007-chop-mean/2838-sky-oh-8147.yaml
+Saving line data to all-lines-c007-chop-mean/2844-deep-neutral-uil-8151.yaml
+Saving line data to all-lines-c007-chop-mean/2851-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2860-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2864-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2874-neutral-n-i-8188-012.yaml
+Saving line data to all-lines-c007-chop-mean/2877-deep-neutral-uil-8190.yaml
+Saving line data to all-lines-c007-chop-mean/2884-neutral-n-i-8200-357.yaml
+Saving line data to all-lines-c007-chop-mean/2889-deep-neutral-uil-8208.yaml
+Saving line data to all-lines-c007-chop-mean/2897-neutral-n-i-8216-34.yaml
+Saving line data to all-lines-c007-chop-mean/2902-neutral-n-i-8223-14.yaml
+Saving line data to all-lines-c007-chop-mean/2907-neutral-uil-8229.yaml
+Saving line data to all-lines-c007-chop-mean/2913-high-neb-he-ii-8236-78.yaml
+Saving line data to all-lines-c007-chop-mean/2918-neutral-n-i-8242-39.yaml
+Saving line data to all-lines-c007-chop-mean/2932-noise.yaml
+Saving line data to all-lines-c007-chop-mean/2937-deep-neutral-uil-8266.yaml
+Saving line data to all-lines-c007-chop-mean/2942-deep-neutral-uil-8272.yaml
+Saving line data to all-lines-c007-chop-mean/2945-sky-oh-8281-7.yaml
+Saving line data to all-lines-c007-chop-mean/2951-deep-neutral-uil-8285.yaml
+Saving line data to all-lines-c007-chop-mean/2954-deep-neutral-uil-8287.yaml
+Saving line data to all-lines-c007-chop-mean/2957-med-neb-h-i-8292-31.yaml
+Saving line data to all-lines-c007-chop-mean/2959-sky-oh-8298-9.yaml
+Saving line data to all-lines-c007-chop-mean/2963-deep-neutral-uil-8299.yaml
+Saving line data to all-lines-c007-chop-mean/2967-deep-neutral-uil-8304.yaml
+Saving line data to all-lines-c007-chop-mean/2968-med-neb-uil-8305.yaml
+Saving line data to all-lines-c007-chop-mean/2969-med-neb-h-i-8306-11.yaml
+Saving line data to all-lines-c007-chop-mean/2975-med-neb-h-i-8314-26.yaml
+Saving line data to all-lines-c007-chop-mean/2982-med-neb-h-i-8323-42.yaml
+Saving line data to all-lines-c007-chop-mean/2987-deep-neutral-uil-8329.yaml
+Saving line data to all-lines-c007-chop-mean/2991-deep-neutral-uil-8334.yaml
+Saving line data to all-lines-c007-chop-mean/2996-sky-oh-8344-6.yaml
+Saving line data to all-lines-c007-chop-mean/3000-med-neb-h-i-8345-55.yaml
+Saving line data to all-lines-c007-chop-mean/3011-med-neb-h-i-8359-00.yaml
+Saving line data to all-lines-c007-chop-mean/3023-med-neb-h-i-8374-48.yaml
+Saving line data to all-lines-c007-chop-mean/3026-sky-oh-8382-4.yaml
+Saving line data to all-lines-c007-chop-mean/3034-deep-neutral-uil-8388.yaml
+Saving line data to all-lines-c007-chop-mean/3037-med-neb-h-i-8392-40.yaml
+Saving line data to all-lines-c007-chop-mean/3039-sky-oh-8399-2.yaml
+Saving line data to all-lines-c007-chop-mean/3044-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3045-deep-neutral-uil-8401.yaml
+Saving line data to all-lines-c007-chop-mean/3052-sky-oh-8415-2.yaml
+Saving line data to all-lines-c007-chop-mean/3054-med-neb-h-i-8413-32.yaml
+Saving line data to all-lines-c007-chop-mean/3064-sky-oh-8430-2.yaml
+Saving line data to all-lines-c007-chop-mean/3074-med-neb-h-i-8437-96.yaml
+Saving line data to all-lines-c007-chop-mean/3081-neutral-o-i-8446-48.yaml
+Saving line data to all-lines-c007-chop-mean/3091-deep-neutral-uil-8459.yaml
+Saving line data to all-lines-c007-chop-mean/3092-sky-oh-8465-2.yaml
+Saving line data to all-lines-c007-chop-mean/3098-med-neb-h-i-8467-26.yaml
+Saving line data to all-lines-c007-chop-mean/3104-deep-neutral-uil-8475.yaml
+Saving line data to all-lines-c007-chop-mean/3115-sky-oh-8493-4.yaml
+Saving line data to all-lines-c007-chop-mean/3122-deep-neutral-uil-8498.yaml
+Saving line data to all-lines-c007-chop-mean/3124-sky-oh-8504-6.yaml
+Saving line data to all-lines-c007-chop-mean/3126-med-neb-h-i-8502-49.yaml
+Saving line data to all-lines-c007-chop-mean/3138-med-neb-he-i-8518-04.yaml
+Saving line data to all-lines-c007-chop-mean/3142-deep-neutral-uil-8522.yaml
+Saving line data to all-lines-c007-chop-mean/3147-deep-neutral-uil-8529.yaml
+Saving line data to all-lines-c007-chop-mean/3151-sky-oh-3538-7.yaml
+Saving line data to all-lines-c007-chop-mean/3160-med-neb-h-i-8545-38.yaml
+Saving line data to all-lines-c007-chop-mean/3164-deep-neutral-uil-8550.yaml
+Saving line data to all-lines-c007-chop-mean/3172-deep-neutral-uil-8560.yaml
+Saving line data to all-lines-c007-chop-mean/3187-low-neb-cl-ii-8578-69.yaml
+Saving line data to all-lines-c007-chop-mean/3190-med-neb-he-i-8582-61.yaml
+Saving line data to all-lines-c007-chop-mean/3202-med-neb-h-i-8598-39.yaml
+Saving line data to all-lines-c007-chop-mean/3213-deep-neutral-uil-8611.yaml
+Saving line data to all-lines-c007-chop-mean/3218-fe-ni-fe-ii-8616-95.yaml
+Saving line data to all-lines-c007-chop-mean/3221-deep-neutral-uil-8621.yaml
+Saving line data to all-lines-c007-chop-mean/3226-sky.yaml
+Saving line data to all-lines-c007-chop-mean/3234-sky.yaml
+Saving line data to all-lines-c007-chop-mean/3242-sky-o-2-8651-28.yaml
+Saving line data to all-lines-c007-chop-mean/3244-deep-neutral-uil-8650.yaml
+Saving line data to all-lines-c007-chop-mean/3252-deep-neutral-uil-8660.yaml
+Saving line data to all-lines-c007-chop-mean/3256-med-neb-h-i-8665-02.yaml
+Saving line data to all-lines-c007-chop-mean/3261-sky-o-2-8676-1.yaml
+Saving line data to all-lines-c007-chop-mean/3263-deep-neutral-uil-8674.yaml
+Saving line data to all-lines-c007-chop-mean/3268-neutral-n-i-8680-282.yaml
+Saving line data to all-lines-c007-chop-mean/3272-deep-neutral-uil-8685.yaml
+Saving line data to all-lines-c007-chop-mean/3278-deep-neutral-uil-8693.yaml
+Saving line data to all-lines-c007-chop-mean/3280-neutral-uil-8696.yaml
+Saving line data to all-lines-c007-chop-mean/3286-neutral-n-i-8703-247.yaml
+Saving line data to all-lines-c007-chop-mean/3293-neutral-n-i-8711-703.yaml
+Saving line data to all-lines-c007-chop-mean/3299-neutral-n-i-8718-837.yaml
+Saving line data to all-lines-c007-chop-mean/3306-deep-neutral-c-i-8727-13.yaml
+Saving line data to all-lines-c007-chop-mean/3311-med-neb-he-i-8733-43.yaml
+Saving line data to all-lines-c007-chop-mean/3315-deep-neutral-uil-8738.yaml
+Saving line data to all-lines-c007-chop-mean/3324-med-neb-h-i-8750-47.yaml
+Saving line data to all-lines-c007-chop-mean/3330-sky-oh-8671-3.yaml
+Saving line data to all-lines-c007-chop-mean/3335-sky-oh-8767-9.yaml
+Saving line data to all-lines-c007-chop-mean/3343-sky-oh-8778-3.yaml
+Saving line data to all-lines-c007-chop-mean/3346-med-neb-he-i-8776-71.yaml
+Saving line data to all-lines-c007-chop-mean/3353-sky-oh-8797-2.yaml
+Saving line data to all-lines-c007-chop-mean/3355-deep-neutral-uil-8789.yaml
+Saving line data to all-lines-c007-chop-mean/3362-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3372-deep-neutral-uil-8810.yaml
+Saving line data to all-lines-c007-chop-mean/3378-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3382-sky-oh-8827-1.yaml
+Saving line data to all-lines-c007-chop-mean/3397-deep-neutral-uil-8841.yaml
+Saving line data to all-lines-c007-chop-mean/3400-sky-oh-8850-1.yaml
+Saving line data to all-lines-c007-chop-mean/3405-deep-neutral-uil-8851.yaml
+Saving line data to all-lines-c007-chop-mean/3412-deep-neutral-uil-8860.yaml
+Saving line data to all-lines-c007-chop-mean/3414-med-neb-h-i-8862-79.yaml
+Saving line data to all-lines-c007-chop-mean/3428-sky-oh-8885-9.yaml
+Saving line data to all-lines-c007-chop-mean/3435-deep-neutral-uil-8889.yaml
+Saving line data to all-lines-c007-chop-mean/3439-deep-neutral-uil-8894.yaml
+Saving line data to all-lines-c007-chop-mean/3444-sky-oh-8903-1.yaml
+Saving line data to all-lines-c007-chop-mean/3448-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3456-sky-oh-8919-6.yaml
+Saving line data to all-lines-c007-chop-mean/3463-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3470-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3475-sky-oh-8943-4.yaml
+Saving line data to all-lines-c007-chop-mean/3476-neutral.yaml
+Saving line data to all-lines-c007-chop-mean/3481-deep-neutral-uil-8945.yaml
+Saving line data to all-lines-c007-chop-mean/3487-sky-oh-8958-1.yaml
+Saving line data to all-lines-c007-chop-mean/3494-fe-ni-uil-8963.yaml
+Saving line data to all-lines-c007-chop-mean/3503-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3511-sky-oh-8988-4.yaml
+Saving line data to all-lines-c007-chop-mean/3522-sky-oh-9001-4.yaml
+Saving line data to all-lines-c007-chop-mean/3536-med-neb-h-i-9014-91.yaml
+Saving line data to all-lines-c007-chop-mean/3539-deep-neutral-uil-9019.yaml
+Saving line data to all-lines-c007-chop-mean/3548-deep-neutral-uil-9029.yaml
+Saving line data to all-lines-c007-chop-mean/3552-deep-neutral-uil-9034.yaml
+Saving line data to all-lines-c007-chop-mean/3557-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3561-deep-neutral-uil-9046.yaml
+Saving line data to all-lines-c007-chop-mean/3564-deep-neutral-uil-9050.yaml
+Saving line data to all-lines-c007-chop-mean/3570-deep-neutral-uil-9057.yaml
+Saving line data to all-lines-c007-chop-mean/3574-med-neb-he-i-9063-29.yaml
+Saving line data to all-lines-c007-chop-mean/3579-med-neb-s-iii-9068-90.yaml
+Saving line data to all-lines-c007-chop-mean/3587-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3591-deep-neutral-uil-9084.yaml
+Saving line data to all-lines-c007-chop-mean/3603-deep-neutral-uil-9099.yaml
+Saving line data to all-lines-c007-chop-mean/3615-deep-neutral-uil-9114.yaml
+Saving line data to all-lines-c007-chop-mean/3622-low-neb-cl-ii-9123-60.yaml
+Saving line data to all-lines-c007-chop-mean/3627-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3631-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3640-deep-neutral-uil-9144.yaml
+Saving line data to all-lines-c007-chop-mean/3649-deep-neutral-uil-9159.yaml
+Saving line data to all-lines-c007-chop-mean/3654-deep-neutral-uil-9162.yaml
+Saving line data to all-lines-c007-chop-mean/3664.yaml
+Saving line data to all-lines-c007-chop-mean/3679-noise.yaml
+Saving line data to all-lines-c007-chop-mean/3687-neutral-ca-i-9204-09.yaml
+Saving line data to all-lines-c007-chop-mean/3692-med-neb-he-i-9210-28.yaml
+Saving line data to all-lines-c007-chop-mean/3699-neutral-uil-9218.yaml
+Saving line data to all-lines-c007-chop-mean/3707-med-neb-h-i-9229-01.yaml
+Saving line data to all-lines-c007-chop-mean/3711-deep-neutral-uil-9233.yaml
+Saving line data to all-lines-c007-chop-mean/3720-neutral-ca-i-9244-31.yaml
+Saving line data to all-lines-c007-chop-mean/3736-deep-neutral-uil-9262.yaml
+Saving line data to all-lines-c007-chop-mean/3745-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3750-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3755-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3762-deep-neutral-uil-9298.yaml
+Saving line data to all-lines-c007-chop-mean/3767-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3774-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3779-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3785-telluric.yaml
+Saving line data to all-lines-c007-chop-mean/3790-telluric.yaml
 
-real	0m14.728s
-user	0m7.107s
-sys	0m1.076s
+real	1m32.299s
+user	1m28.941s
+sys	0m2.287s
 Last run:
-Tue Nov  1 22:43:31 CST 2022
+Sun Nov  6 14:09:00 CST 2022
 #+end_example
 
 
