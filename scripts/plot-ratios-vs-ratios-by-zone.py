@@ -123,6 +123,7 @@ def plot_one_ratio_ratio_point(
 def main(
         id_label: str,
         species_file: str="species.yaml",
+        use_gauss: bool=False,
 ):
     """Plot of line fluxes from zones 0 and I"""
 
@@ -132,7 +133,12 @@ def main(
     fig, axes = plt.subplots(2,  2, figsize=(8, 7))
     figfile = f"ratios-vs-ratios-by-zone-{id_label}.pdf"
 
-    df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv").set_index("Index")
+    if use_gauss:
+        df = pd.read_csv(f"all-lines-{id_label}/line-gauss-fluxes.csv")
+        figfile = figfile.replace(".pdf", "-gauss.pdf")
+    else:
+        df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+    df = df.set_index("Index")
     df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv").set_index("Index")
     df = df.join(df_sig, rsuffix="_sig")
 
@@ -182,7 +188,7 @@ def main(
             ylim=[xmin, xmax],
         )
         ax.set_aspect("equal")
-    # Now do one more loop over the species to mak the legend
+    # Now do one more loop over the species to make the legend
     handles = []
     for species in info["species"]:
         label = species["name"]

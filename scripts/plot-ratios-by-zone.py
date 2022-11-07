@@ -7,15 +7,20 @@ import typer
 
 def main(
         id_label: str,
+        use_gauss: bool=False,
 ):
     """Plot of line fluxes from zones 0 and I"""
     fig, axes = plt.subplots(2,  2, figsize=(7, 6))
     figfile = f"ratios-by-zone-{id_label}.pdf"
 
-    df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+    if use_gauss:
+        df = pd.read_csv(f"all-lines-{id_label}/line-gauss-fluxes.csv")
+        figfile = figfile.replace(".pdf", "-gauss.pdf")
+    else:
+        df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
     df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv")
 
-    m_deep = df.Type.str.startswith("Deep")
+    m_deep = df.Type.str.startswith("Deep") & (df["zone-0"] > 0.0)
     m_neut = df.Type.str.startswith("Neutral")
     m_low = df.Type.str.startswith("Low")
     m_med = df.Type.str.startswith("Med Neb")

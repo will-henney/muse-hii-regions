@@ -132,8 +132,6 @@ def main(
         out_dir = Path(f"all-lines-{spec_id_label}")
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / (get_id_string(metadata) + ".yaml")
-        if debug:
-            print("Saving line data to", out_path)
         with open(out_path, "w") as f:
             yaml.dump(metadata, f)
 
