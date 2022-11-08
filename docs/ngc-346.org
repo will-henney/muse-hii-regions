@@ -1387,7 +1387,7 @@ Options:
   --help                          Show this message and exit.
 #+end_example
 
-*** DONE Step 3: Make spreadsheet of all  lines
+*** DONE Step 3: Make spreadsheet of all lines
 CLOSED: [2022-10-25 Tue 08:18]
 
 
@@ -2634,7 +2634,8 @@ python ../../../scripts/spec1d-plot-all-zones.py c007-chop-median --linthresh=10
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone_spectra/spec1d-all-zones-c007-chop-median.pdf]]
 
 
-*** TODO Step 7: Sum each line for each map zone
+*** DONE Step 7: Sum each line for each map zone
+CLOSED: [2022-11-08 Tue 13:48]
 - We could use various different approaches for doing this
   1. Sum the 3 pixels, with or without the correction for the missing wing flux
   2. Or we could use the strength and width from find_peaks
@@ -2739,7 +2740,8 @@ python ../../scripts/find-all-line-pixels.py
       bin_width=1.25,
   )
 #+end_src
-**** TODO Find strength of a each line in all zones
+**** DONE Find strength of a each line in all zones
+CLOSED: [2022-11-08 Tue 13:47]
 :PROPERTIES:
 :ID:       C597528A-4D58-439C-99B3-EA227BAED261
 :END:
@@ -2753,11 +2755,12 @@ python ../../scripts/find-all-line-pixels.py
   - Do Gaussian fits
 - Methods:
   - Only method so far is seven-pixel window. Outermost 4 pixels are used to estimate the hyper-local base level, and its uncertainty. Innermost 3 pixels are summed to give the line flux
-- [3/4] Future improvements:
+- [4/4] Future improvements:
   - [X] Eliminate neighboring line pixels from the BG estimation
     - This should be easy to do by setting a mask
     - We currently have 4 pixels that are used in the BG estimation, so even if both pixels on one side are masked out, we still have enough
-  - [ ] Use the 3-wav method to estimate the central wavelength and correct the flux for the missing wings
+  - [X] Use the 3-wav method to estimate the central wavelength and correct the flux for the missing wings
+    - POSTPONED for now [2022-11-08 Tue] since the gaussian fits are good enough
   - [X] Maybe some kind of Gaussian fit. Here is a possible plan:
     - CANCELLED, see next item
     - Take a big enough window around the central pixel to include all possible blends: 15 pixels would probably be enough
@@ -3574,12 +3577,13 @@ COLUMNS=100 python ../../scripts/extract-lines-by-zone.py
 [120 rows x 9 columns]
 #+end_example
   
-*** Step 8: Inter-zone ratios
+*** TODO Step 8: Inter-zone ratios
 - Do diagnostic plots for the different lines
 - One possibility would be to take the ratio of each zone to the sum of the zones
   - This would keep the dimensionality to a minimum, since we have only 5 ratios
   - Or maybe 6 if we want to separate out the YSO
 - Alternatively, we can normalize the strengths to H beta and plot then plot them directly
+- UPDATE [2022-11-08 Tue] Still need to [[id:F7004917-496C-473F-8256-7821C94B7417][Write tables with the ratios]]
 
 
 **** DONE Line strengths normalized to H beta
@@ -3715,7 +3719,8 @@ Index
 
 
 
-**** Figures showing the line fluxes
+**** DONE Figures showing the line fluxes
+CLOSED: [2022-11-08 Tue 13:48]
 :PROPERTIES:
 :ID:       1DCB8F2F-FC0E-4042-99B0-1E57C35413C7
 :END:
@@ -4236,6 +4241,9 @@ Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing 
 
 
 **** TODO Write tables with the ratios
+:PROPERTIES:
+:ID:       F7004917-496C-473F-8256-7821C94B7417
+:END:
 - This will allow us to easily identify which line corresponds to which point on the graph
   - Would be useful if we want to label particular lines in the ratio-vs-ratio figure
 *** Step 9: Calculate the velocity shifts for the known lines, and hence get the rest wavelengths of the UILs
@@ -4364,7 +4372,8 @@ Index
 
 [268 rows x 4 columns]
 #+end_example
-**** Make a plot of the velocities
+**** DONE Make a plot of the velocities
+CLOSED: [2022-11-08 Tue 13:50]
 - Vision of how this should look
   - Each row of plots is for a single zone
   - Each column of plots is for a particular line type
@@ -4386,14 +4395,31 @@ Index
   import sys
 
 
-  UNWANTED_ZONES = ["zone-S"]
+  # UNWANTED_ZONES = ["zone-S"]
+  UNWANTED_ZONES = []
   UNWANTED_TYPES = ["Unidentified"]
 
+  REPLACEMENTS = {
+      "Deep": "Deep Neutral",
+      "Fe": "Fe-Ni-Ca-Si",
+  }
+  BEST_TYPES = {
+      "zone-0": ["Deep", "Neutral", "Low", "Medium"],
+      "zone-I": ["Neutral", "Low", "Medium"],
+      "zone-II": ["Low", "Medium"],
+      "zone-III": ["Medium"],
+      "zone-IV": ["Medium", "High"],
+      "zone-MYSO": ["Deep", "Neutral", "Low", "Medium", "Fe"],
+      "zone-S": ["Medium"],
+  }
   def main(
           id_label: str,
           minimum_signal_noise: float=3.0,
+          signal_noise_log_range: tuple[float, float]=(0.0, 2.0),
           species_file: str="species.yaml",
           zone_file: str="zones.yaml",
+          v_sys: float=171.1,
+          d_v_sys: float=2.7,
   ):
       """Plot of line velocity versus flux for all zones"""
 
@@ -4416,7 +4442,7 @@ Index
       fig, axes = plt.subplots(
           n_rows, n_cols,
           sharex=True, sharey=True,
-          figsize=(8, 6),
+          figsize=(8, 7),
       )
 
 
@@ -4450,13 +4476,18 @@ Index
               )
               size = species["size"]
               marker = species["marker"]
-              # Log brightness in this line's most favorable zone
-              log_f = np.log10(data.flux)
               # Remap to range [0, 1]
+              # Switch to using s/n instead of flux
               norm_value = (
-                  (log_f - type_data["log_min"])
-                  / (type_data["log_max"] - type_data["log_min"])
+                  (np.log10(data.s_n) - signal_noise_log_range[0])
+                  / (signal_noise_log_range[1] - signal_noise_log_range[0])
               )
+              # log_f = np.log10(data.flux)
+              # norm_value = (
+              #     (log_f - type_data["log_min"])
+              #     / (type_data["log_max"] - type_data["log_min"])
+              # )
+
               if type_data["husl"][2] <= 50:
                   edgecolors = "w"
               else:
@@ -4480,30 +4511,75 @@ Index
           ylim=[80.0, 240.0],
       )
       axes[-1, 2].set(
-          xlabel=r"Line Intensity (H$\beta$ = 100)",
+          xlabel=" " * 24 + r"Line Intensity (H$\beta$ = 100)",
       )
-      axes[2, 0].set(
+      axes[3, 0].set(
           ylabel="Heliocentric Velocity, km/s",
       )
+      # Add a line for the systemic velocity 
       for ax in axes.flat:
           ax.axhspan(
-              171.1 - 2.7, 171.1 + 2.7,
+              v_sys - d_v_sys, v_sys + d_v_sys,
               alpha=0.2, zorder=0, color="k", linewidth=0,
           )
+      # And a label for it
+      axes[4, 1].text(
+          1e-3, v_sys - 5,
+          # fr"$V_\mathrm{{sys}} = {v_sys:.1f} \pm {d_v_sys:.1f}$ km/s",
+          fr"$V_{{\odot}} = {v_sys:.0f}$ km/s",
+          ha="right", va="center", fontsize="small",
+      )
+
+      # Add labels for the line types at the top of each column
       for itype, line_type in  enumerate(line_types):
-          axes[0, itype].set_title(line_type)
+          ax = axes[0, itype]
+          type_data = info["types"][line_type]
+          label = REPLACEMENTS.get(line_type, line_type)
+          # Use a darker version of the color for the labels
+          color = sns.dark_palette(
+              tuple(type_data["husl"]),
+              input="husl",
+              as_cmap=True,
+          )(0.5)
+          ax.text(
+              0.5, 1.2, label, transform=ax.transAxes,
+              ha="center", va="center",
+              color=color,
+          )
+      # And a title for these
+      fig.text(0.5, 0.99, "Emission line type", ha="center", va="top")
+
+      # Label the zones down the left and right sides
       for jzone, zone in enumerate(zones):
           label = zone["label"].replace("zone-", "Zone\n")
           ax = axes[jzone, -1]
+          # Use a darker version of the color for the labels
+          color = sns.dark_palette(
+              tuple(zone["husl"]),
+              input="husl",
+              as_cmap=True,
+          )(0.8)
           ax.text(
               1.3, 0.5, label, transform=ax.transAxes,
               ha="center", va="center",
+              color=color,
           )
           ax = axes[jzone, 0]
           ax.text(
               -1.0, 0.5, label, transform=ax.transAxes,
               ha="center", va="center",
+              color=color,
           )
+          # Add an asterisk in the panels of line types that are
+          # brightest for this zone
+          for line_type in BEST_TYPES[zone["label"]]:
+              itype = line_type_index[line_type]
+              ax = axes[jzone, itype]
+              ax.text(
+                  0.95, 0.05, "[*]", transform=ax.transAxes,
+                  ha="right", va="bottom",
+                  color=color, fontsize="medium", fontweight="bold",
+              )
 
       # Now do one more loop over the species to make the legend
       handles = []
@@ -4541,14 +4617,14 @@ Index
 
       fig.legend(
           handles=handles,
-          title="Line Type",
+          title="Species",
           fontsize="small",
           loc="lower center",
           ncol=8,
       )
       sns.despine()
       #fig.tight_layout()
-      fig.subplots_adjust(left=0.15, bottom=0.25, top=0.95)
+      fig.subplots_adjust(left=0.15, bottom=0.22, top=0.93)
       fig.savefig(
           figfile,
           # bbox_inches="tight",
@@ -4568,8 +4644,19 @@ Index
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/velocity-vs-flux-by-zone-c007-chop-mean.pdf]]
 
 
+Copy file to paper project
 
+#+Begin_src sh :dir ../data/n346-lines :results verbatim
+  PAPER_ROOT=$HOME/Dropbox/mabel-smc-deep-neutral-paper
+  cp -fv velocity-vs-flux-by-zone-c007-chop-mean.pdf $PAPER_ROOT/figs
+#+end_src
 
+#+RESULTS:
+: velocity-vs-flux-by-zone-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/velocity-vs-flux-by-zone-c007-chop-mean.pdf
+
+**** TODO Calculate histogram of velocity differences between Zone 0 and MYSO
+- We can do this for the UIL as well as the other lines
+- By looking at the histograms in different S/N bins, we can estimate the wavelength uncertainty of the UILs
 *** Step 10: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions

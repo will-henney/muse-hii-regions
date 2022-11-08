@@ -9,14 +9,31 @@ import typer
 import sys
 
 
-UNWANTED_ZONES = ["zone-S"]
+# UNWANTED_ZONES = ["zone-S"]
+UNWANTED_ZONES = []
 UNWANTED_TYPES = ["Unidentified"]
 
+REPLACEMENTS = {
+    "Deep": "Deep Neutral",
+    "Fe": "Fe-Ni-Ca-Si",
+}
+BEST_TYPES = {
+    "zone-0": ["Deep", "Neutral", "Low", "Medium"],
+    "zone-I": ["Neutral", "Low", "Medium"],
+    "zone-II": ["Low", "Medium"],
+    "zone-III": ["Medium"],
+    "zone-IV": ["Medium", "High"],
+    "zone-MYSO": ["Deep", "Neutral", "Low", "Medium", "Fe"],
+    "zone-S": ["Medium"],
+}
 def main(
         id_label: str,
         minimum_signal_noise: float=3.0,
+        signal_noise_log_range: tuple[float, float]=(0.0, 2.0),
         species_file: str="species.yaml",
         zone_file: str="zones.yaml",
+        v_sys: float=171.1,
+        d_v_sys: float=2.7,
 ):
     """Plot of line velocity versus flux for all zones"""
 
@@ -39,7 +56,7 @@ def main(
     fig, axes = plt.subplots(
         n_rows, n_cols,
         sharex=True, sharey=True,
-        figsize=(8, 6),
+        figsize=(8, 7),
     )
 
 
@@ -73,13 +90,18 @@ def main(
             )
             size = species["size"]
             marker = species["marker"]
-            # Log brightness in this line's most favorable zone
-            log_f = np.log10(data.flux)
             # Remap to range [0, 1]
+            # Switch to using s/n instead of flux
             norm_value = (
-                (log_f - type_data["log_min"])
-                / (type_data["log_max"] - type_data["log_min"])
+                (np.log10(data.s_n) - signal_noise_log_range[0])
+                / (signal_noise_log_range[1] - signal_noise_log_range[0])
             )
+            # log_f = np.log10(data.flux)
+            # norm_value = (
+            #     (log_f - type_data["log_min"])
+            #     / (type_data["log_max"] - type_data["log_min"])
+            # )
+
             if type_data["husl"][2] <= 50:
                 edgecolors = "w"
             else:
@@ -103,30 +125,75 @@ def main(
         ylim=[80.0, 240.0],
     )
     axes[-1, 2].set(
-        xlabel=r"Line Intensity (H$\beta$ = 100)",
+        xlabel=" " * 24 + r"Line Intensity (H$\beta$ = 100)",
     )
-    axes[2, 0].set(
+    axes[3, 0].set(
         ylabel="Heliocentric Velocity, km/s",
     )
+    # Add a line for the systemic velocity 
     for ax in axes.flat:
         ax.axhspan(
-            171.1 - 2.7, 171.1 + 2.7,
+            v_sys - d_v_sys, v_sys + d_v_sys,
             alpha=0.2, zorder=0, color="k", linewidth=0,
         )
+    # And a label for it
+    axes[4, 1].text(
+        1e-3, v_sys - 5,
+        # fr"$V_\mathrm{{sys}} = {v_sys:.1f} \pm {d_v_sys:.1f}$ km/s",
+        fr"$V_{{\odot}} = {v_sys:.0f}$ km/s",
+        ha="right", va="center", fontsize="small",
+    )
+
+    # Add labels for the line types at the top of each column
     for itype, line_type in  enumerate(line_types):
-        axes[0, itype].set_title(line_type)
+        ax = axes[0, itype]
+        type_data = info["types"][line_type]
+        label = REPLACEMENTS.get(line_type, line_type)
+        # Use a darker version of the color for the labels
+        color = sns.dark_palette(
+            tuple(type_data["husl"]),
+            input="husl",
+            as_cmap=True,
+        )(0.5)
+        ax.text(
+            0.5, 1.2, label, transform=ax.transAxes,
+            ha="center", va="center",
+            color=color,
+        )
+    # And a title for these
+    fig.text(0.5, 0.99, "Emission line type", ha="center", va="top")
+
+    # Label the zones down the left and right sides
     for jzone, zone in enumerate(zones):
         label = zone["label"].replace("zone-", "Zone\n")
         ax = axes[jzone, -1]
+        # Use a darker version of the color for the labels
+        color = sns.dark_palette(
+            tuple(zone["husl"]),
+            input="husl",
+            as_cmap=True,
+        )(0.8)
         ax.text(
             1.3, 0.5, label, transform=ax.transAxes,
             ha="center", va="center",
+            color=color,
         )
         ax = axes[jzone, 0]
         ax.text(
             -1.0, 0.5, label, transform=ax.transAxes,
             ha="center", va="center",
+            color=color,
         )
+        # Add an asterisk in the panels of line types that are
+        # brightest for this zone
+        for line_type in BEST_TYPES[zone["label"]]:
+            itype = line_type_index[line_type]
+            ax = axes[jzone, itype]
+            ax.text(
+                0.95, 0.05, "[*]", transform=ax.transAxes,
+                ha="right", va="bottom",
+                color=color, fontsize="medium", fontweight="bold",
+            )
 
     # Now do one more loop over the species to make the legend
     handles = []
@@ -164,14 +231,14 @@ def main(
 
     fig.legend(
         handles=handles,
-        title="Line Type",
+        title="Species",
         fontsize="small",
         loc="lower center",
         ncol=8,
     )
     sns.despine()
     #fig.tight_layout()
-    fig.subplots_adjust(left=0.15, bottom=0.25, top=0.95)
+    fig.subplots_adjust(left=0.15, bottom=0.22, top=0.93)
     fig.savefig(
         figfile,
         # bbox_inches="tight",
