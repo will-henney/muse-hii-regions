@@ -3589,8 +3589,9 @@ CLOSED: [2022-10-31 Mon 13:13]
 :END:
 
 - We write out to CSV tables
-  - line_fluxes.csv
-  - line_uncertainties.csv
+  - ~line-fluxes.csv~
+  - ~line-uncertainties.csv~
+  - ~line-gauss-{fluxes,waves,widths}.csv~
 #+begin_src python :eval no :tangle ../scripts/make-line-flux-table.py
   from matplotlib import pyplot as plt
   from astropy.io import fits
@@ -3680,7 +3681,7 @@ COLUMNS=3000 python ../../scripts/make-line-flux-table.py
 
 #+RESULTS:
 #+begin_example
-                                                Comments Cont_method                 ID   Region  Strength            Type    lambda_HM   lambda_obs  zone-0.BG mean  zone-0.BG npix  zone-0.Gauss Fit.Amplitude  zone-0.Gauss Fit.Mean Wave  zone-0.Gauss Fit.RMS Width  zone-0.Pixel Wave  zone-0.Sigma  zone-0.Strength                           zone-0.Window.BG Mask                                  zone-0.Window.Fit                             zone-0.Window.Spectrum                                 zone-0.Window.Wave  zone-I.BG mean  zone-I.BG npix  zone-I.Gauss Fit.Amplitude  zone-I.Gauss Fit.Mean Wave  zone-I.Gauss Fit.RMS Width  zone-I.Pixel Wave  zone-I.Sigma  zone-I.Strength                           zone-I.Window.BG Mask                                  zone-I.Window.Fit                             zone-I.Window.Spectrum                                 zone-I.Window.Wave  zone-II.BG mean  zone-II.BG npix  zone-II.Gauss Fit.Amplitude  zone-II.Gauss Fit.Mean Wave  zone-II.Gauss Fit.RMS Width  zone-II.Pixel Wave  zone-II.Sigma  zone-II.Strength                          zone-II.Window.BG Mask                                 zone-II.Window.Fit                            zone-II.Window.Spectrum                                zone-II.Window.Wave  zone-III.BG mean  zone-III.BG npix  zone-III.Gauss Fit.Amplitude  zone-III.Gauss Fit.Mean Wave  zone-III.Gauss Fit.RMS Width  zone-III.Pixel Wave  zone-III.Sigma  zone-III.Strength                         zone-III.Window.BG Mask                                zone-III.Window.Fit                           zone-III.Window.Spectrum                               zone-III.Window.Wave  zone-IV.BG mean  zone-IV.BG npix  zone-IV.Gauss Fit.Amplitude  zone-IV.Gauss Fit.Mean Wave  zone-IV.Gauss Fit.RMS Width  zone-IV.Pixel Wave  zone-IV.Sigma  zone-IV.Strength                          zone-IV.Window.BG Mask                                 zone-IV.Window.Fit                            zone-IV.Window.Spectrum                                zone-IV.Window.Wave  zone-MYSO.BG mean  zone-MYSO.BG npix  zone-MYSO.Gauss Fit.Amplitude  zone-MYSO.Gauss Fit.Mean Wave  zone-MYSO.Gauss Fit.RMS Width  zone-MYSO.Pixel Wave  zone-MYSO.Sigma  zone-MYSO.Strength                        zone-MYSO.Window.BG Mask                               zone-MYSO.Window.Fit                          zone-MYSO.Window.Spectrum                              zone-MYSO.Window.Wave  zone-S.BG mean  zone-S.BG npix  zone-S.Gauss Fit.Amplitude  zone-S.Gauss Fit.Mean Wave  zone-S.Gauss Fit.RMS Width  zone-S.Pixel Wave  zone-S.Sigma  zone-S.Strength                           zone-S.Window.BG Mask                                  zone-S.Window.Fit                             zone-S.Window.Spectrum                                 zone-S.Window.Wave                                           Notes.ID Notes.Type
+Comments Cont_method                 ID   Region  Strength            Type    lambda_HM   lambda_obs  zone-0.BG mean  zone-0.BG npix  zone-0.Gauss Fit.Amplitude  zone-0.Gauss Fit.Mean Wave  zone-0.Gauss Fit.RMS Width  zone-0.Pixel Wave  zone-0.Sigma  zone-0.Strength                           zone-0.Window.BG Mask                                  zone-0.Window.Fit                             zone-0.Window.Spectrum                                 zone-0.Window.Wave  zone-I.BG mean  zone-I.BG npix  zone-I.Gauss Fit.Amplitude  zone-I.Gauss Fit.Mean Wave  zone-I.Gauss Fit.RMS Width  zone-I.Pixel Wave  zone-I.Sigma  zone-I.Strength                           zone-I.Window.BG Mask                                  zone-I.Window.Fit                             zone-I.Window.Spectrum                                 zone-I.Window.Wave  zone-II.BG mean  zone-II.BG npix  zone-II.Gauss Fit.Amplitude  zone-II.Gauss Fit.Mean Wave  zone-II.Gauss Fit.RMS Width  zone-II.Pixel Wave  zone-II.Sigma  zone-II.Strength                          zone-II.Window.BG Mask                                 zone-II.Window.Fit                            zone-II.Window.Spectrum                                zone-II.Window.Wave  zone-III.BG mean  zone-III.BG npix  zone-III.Gauss Fit.Amplitude  zone-III.Gauss Fit.Mean Wave  zone-III.Gauss Fit.RMS Width  zone-III.Pixel Wave  zone-III.Sigma  zone-III.Strength                         zone-III.Window.BG Mask                                zone-III.Window.Fit                           zone-III.Window.Spectrum                               zone-III.Window.Wave  zone-IV.BG mean  zone-IV.BG npix  zone-IV.Gauss Fit.Amplitude  zone-IV.Gauss Fit.Mean Wave  zone-IV.Gauss Fit.RMS Width  zone-IV.Pixel Wave  zone-IV.Sigma  zone-IV.Strength                          zone-IV.Window.BG Mask                                 zone-IV.Window.Fit                            zone-IV.Window.Spectrum                                zone-IV.Window.Wave  zone-MYSO.BG mean  zone-MYSO.BG npix  zone-MYSO.Gauss Fit.Amplitude  zone-MYSO.Gauss Fit.Mean Wave  zone-MYSO.Gauss Fit.RMS Width  zone-MYSO.Pixel Wave  zone-MYSO.Sigma  zone-MYSO.Strength                        zone-MYSO.Window.BG Mask                               zone-MYSO.Window.Fit                          zone-MYSO.Window.Spectrum                              zone-MYSO.Window.Wave  zone-S.BG mean  zone-S.BG npix  zone-S.Gauss Fit.Amplitude  zone-S.Gauss Fit.Mean Wave  zone-S.Gauss Fit.RMS Width  zone-S.Pixel Wave  zone-S.Sigma  zone-S.Strength                           zone-S.Window.BG Mask                                  zone-S.Window.Fit                             zone-S.Window.Spectrum                                 zone-S.Window.Wave                                           Notes.ID Notes.Type
 Index                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 7      Must be blend because more widely distributed ...        11.0  [Fe III] 4607.12+   GLOB-E       NaN          Fe, Ni  4607.250000  4608.694824          3.6232               4                      1.5432                   4608.9970                      0.7783          4608.6948        0.1381           1.5112   [True, True, False, False, False, True, True]  [0.0, 0.004, 0.1762, 0.8396, 0.49, 0.0332, 0.0...  [0.1605, -0.2151, 0.1876, 0.8407, 0.4829, 0.06...  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...          3.9019               4                      0.5607                   4608.3596                      0.7349          4608.6948        0.1531           0.6002   [True, True, False, False, False, True, True]  [0.0, 0.0101, 0.1843, 0.3127, 0.0529, 0.0007, ...  [0.0606, -0.2224, 0.2337, 0.2862, 0.0804, 0.19...  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...           4.2489                4                       0.2264                    4608.2914                       0.0233           4608.6948         0.3817           -0.4672   [True, True, False, False, False, True, True]             [0.0, 0.0, 0.0, 0.2264, 0.0, 0.0, 0.0]  [-0.6457, 0.349, -0.2235, 0.2264, -0.4701, 0.1...  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...            3.6908                 4                        0.4301                     4610.2133                        0.8864            4608.6948          0.1922             0.2412   [True, True, False, False, False, True, True]  [0.0, 0.0, 0.0033, 0.0641, 0.2149, 0.1328, 0.0...  [0.0438, 0.0039, -0.0268, 0.1194, 0.1485, 0.24...  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...           2.4653                4                       5.1581                    4608.7136                       1.1712           4608.6948         0.1834            4.9440   [True, True, False, False, False, True, True]  [0.0183, 0.2544, 1.2294, 2.0961, 1.2682, 0.270...  [0.1339, -0.3128, 1.6215, 1.8168, 1.5057, 0.05...  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...             4.3030                  4                        16.1841                      4609.1234                         0.4645             4608.6948           1.6915             16.1728   [True, True, False, False, False, True, True]   [0.0, 0.0, 0.1886, 10.5542, 5.4263, 0.0149, 0.0]  [2.7138, -1.9219, 0.1894, 10.5438, 5.4396, -0....  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...          1.2619               4                     26.7869                   4610.2433                      1.3284          4608.6948        5.6892          14.9487   [True, True, False, False, False, True, True]  [0.0057, 0.1276, 1.2302, 5.1583, 9.4719, 7.641...  [-4.2568, -6.7116, -1.2339, 7.5162, 8.6664, 7....  [4604.9448, 4606.1948, 4607.4448, 4608.6948, 4...                                [plus N II 4607.16]        NaN
 35                     Very broad due to multiple blends        11.0      O II 4641.81+       BS       5.2       High Perm  4640.310000  4643.694824          3.0696               4                      3.7053                   4643.3533                      1.6082          4643.6948        0.5973           2.8398   [True, True, False, False, False, True, True]  [0.1322, 0.4758, 0.9629, 1.0969, 0.7035, 0.253...  [-0.2586, 0.781, 0.9548, 0.8246, 1.0603, 0.292...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...          3.1396               4                      2.7929                   4643.4405                      1.5151          4643.6948        0.3489           2.3332   [True, True, False, False, False, True, True]  [0.0721, 0.3165, 0.7289, 0.882, 0.561, 0.1874,...  [0.2302, 0.2972, 0.763, 0.7041, 0.8661, 0.0576...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...           3.8303                4                      -1.0877                    4643.1854                       0.1786           4643.6948         0.2142           -0.5320   [True, True, False, False, False, True, True]   [-0.0, -0.0, -0.2815, -0.8062, -0.0, -0.0, -0.0]  [-0.0617, 0.0996, -0.2815, -0.8079, 0.5574, 0....  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...            3.2867                 4                        1.0353                     4643.1571                        1.6513            4643.6948          0.3949             0.6096   [True, True, False, False, False, True, True]  [0.0502, 0.1558, 0.2794, 0.2903, 0.1746, 0.060...  [0.0131, 0.2585, 0.1604, 0.3852, 0.064, 0.3741...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...           2.6142                4                       2.8888                    4641.7636                       0.2506           4643.6948         1.1331            2.5913   [True, True, False, False, False, True, True]          [0.0, 1.7009, 1.1879, 0.0, 0.0, 0.0, 0.0]  [-0.3383, 1.7014, 1.1873, 0.3239, 1.0801, 0.09...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...             4.4603                  4                        10.8858                      4645.0846                         1.4555             4643.6948           2.1099              6.8716   [True, True, False, False, False, True, True]  [0.0101, 0.125, 0.7696, 2.3567, 3.6025, 2.7523...  [-2.8277, -1.1786, 0.5232, 2.9318, 3.4167, 2.4...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...          5.7540               4                     25.4870                   4643.6542                      1.2336          4643.6948        3.1073          22.3902   [True, True, False, False, False, True, True]  [0.1525, 1.5878, 6.3551, 9.874, 5.9771, 1.4038...  [-4.8378, -0.2107, 7.9351, 9.516, 4.9392, 3.62...  [4639.9448, 4641.1948, 4642.4448, 4643.6948, 4...  [plus 4638.86 plus N II 4643.06 plus N III 464...        NaN
@@ -3718,6 +3719,8 @@ Index
 :PROPERTIES:
 :ID:       1DCB8F2F-FC0E-4042-99B0-1E57C35413C7
 :END:
+
+***** Simple plots of fluxes by zone and ratio vs flux
 #+begin_src python :eval no :tangle ../scripts/plot-fluxes-by-zone.py
   from matplotlib import pyplot as plt
   import seaborn as sns
@@ -3870,6 +3873,10 @@ Index
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/ratios-by-zone-c007-chop-mean-gauss.pdf]]
 
+
+***** More elaborate plot of ratio versus ratio
+- This one is the best
+- I have an annotated version for the paper
 #+begin_src python :eval no :tangle ../scripts/plot-ratios-vs-ratios-by-zone.py
   from matplotlib import pyplot as plt
   import matplotlib
@@ -4227,7 +4234,343 @@ Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing 
   - But [C I] has II/I around 8, whereas most UIL have less than 1
     - *no,  this is not right* It is a non-detection in zone I, so pointless to calculate II/I
 
-*** Step 9: Final figures showing highlights from the spectra
+
+**** TODO Write tables with the ratios
+- This will allow us to easily identify which line corresponds to which point on the graph
+  - Would be useful if we want to label particular lines in the ratio-vs-ratio figure
+*** Step 9: Calculate the velocity shifts for the known lines, and hence get the rest wavelengths of the UILs
+**** DONE Write file for each zone with table of velocities
+CLOSED: [2022-11-07 Mon 17:25]
+- [1/1] Read in the fluxes and the wavelengths and uncertainties, and widths
+  - [X] Do a join on the tables
+  - [2/2] For each line, do the following
+    - [X] Get the rest wavelength from the ID string if possible
+    - [X] Also get a flag for possible blends from the "+" suffix
+    - [4/4] For each zone:
+      - [X] Check whether we have a significant detection, otherwise skip
+      - [X] Calculate an error on the observed wavelength from the relative flux uncertainty
+      - [X] Check whether we have a rest wavelength, otherwise skip the remaining
+      - [X] Calculate the velocity and velocity width
+- [X] Write out a new table with velocities for the known lines and the waves and uncertainties for all
+
+#+begin_src python :eval no :tangle ../scripts/find-velocities.py
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
+  DWAVE = 1.25                    # Wavelength pixel size in angstrom
+
+  def extract_wave(s: str):
+      """Extract rest wavelength from the ID field if possible"""
+      wave_string = s.rstrip("+").split(" ")[-1]
+      try:
+          wave = float(wave_string)
+      except ValueError:
+          wave = np.nan
+      return wave
+
+
+  def main(
+          id_label: str,
+          species_file: str="species.yaml",
+          zones_file: str="zones.yaml",
+  ):
+      """Find Doppler velocities for all identified lines"""
+
+      with open(species_file) as f:
+          info = yaml.safe_load(f)
+      with open(zones_file) as f:
+          zones = yaml.safe_load(f)
+
+      common_cols = ["Type", "ID"]
+      df_f = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv").set_index("Index")
+      df_g = pd.read_csv(f"all-lines-{id_label}/line-gauss-fluxes.csv").set_index("Index")
+      df_wave = pd.read_csv(f"all-lines-{id_label}/line-gauss-waves.csv").set_index("Index")
+      df_width = pd.read_csv(f"all-lines-{id_label}/line-gauss-widths.csv").set_index("Index")
+      df_err = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv").set_index("Index")
+
+      df0 = df_f[common_cols]
+
+      df1 = pd.concat(
+          [df.drop(columns=common_cols) for df in [df_f, df_g, df_wave, df_width, df_err]],
+          axis=1,
+          keys=["flux", "gflux", "wave", "width", "err"],
+      )
+      df = pd.concat([df0, df1], axis=1)
+
+      # Get rest wavelengths and blend status
+      df = df.assign(
+          blend=df.ID.str.endswith("+"),
+          wave0=[extract_wave(_) for _ in df.ID],
+      )
+
+      print(df[common_cols + ["blend", "wave0"]])
+
+      for zone in zones:
+          zlabel = zone["label"]
+          # Use greater of Gaussian fit and 3-pixel flux
+          flux = np.maximum(df[("flux", zlabel)], df[("gflux", zlabel)])
+          # Signal to noise
+          s_n = flux / df[("err", zlabel)]
+          # Is it a significant measurement?
+          msig = s_n > 1.0
+          # Estimate error on wavelength
+          e_wave = DWAVE / s_n
+          wave = np.where(msig, df[("wave", zlabel)], np.nan)
+          d_wave = np.where(msig, df[("width", zlabel)], np.nan)
+          vel = LIGHT_SPEED_KMS * (wave - df.wave0) / df.wave0
+          d_vel = LIGHT_SPEED_KMS * d_wave / df.wave0
+
+          dfz = df[common_cols + ["blend", "wave0"]].assign(
+              wave=wave,
+              e_wave=e_wave,
+              d_wave=d_wave,
+              vel=vel,
+              d_vel=d_vel,
+              flux=flux,
+              s_n=s_n,
+          )
+          dfz.to_csv(f"all-lines-{id_label}/{zlabel}-velocities.csv")
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+Begin_src sh :dir ../data/n346-lines :results output verbatim
+  COLUMNS=1000 python ../../scripts/find-velocities.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                 Type                 ID  blend    wave0
+Index                                                   
+7              Fe, Ni  [Fe III] 4607.12+   True  4607.12
+35          High Perm      O II 4641.81+   True  4641.81
+42          High Perm      O II 4649.13+   True  4649.13
+49             Fe, Ni   [Fe III] 4658.10  False  4658.10
+71           High Neb     He II  4685.68  False  4685.68
+...               ...                ...    ...      ...
+3707          Med Neb        H I 9229.01  False  9229.01
+3711     Deep Neutral               UIL+   True      NaN
+3720          Neutral      Ca I] 9244.31  False  9244.31
+3736   Deep Neutral??                UIL  False      NaN
+3762    Deep Neutral?                UIL  False      NaN
+
+[268 rows x 4 columns]
+#+end_example
+**** Make a plot of the velocities
+- Vision of how this should look
+  - Each row of plots is for a single zone
+  - Each column of plots is for a particular line type
+    - Same symbols as in the ratio plots
+  - Only include lines in each zone with sufficient s/n
+  - Each plot is
+    - x axis: flux (Hb = 100)
+    - y axis: velocity
+      
+#+begin_src python :eval no :tangle ../scripts/plot-velocity-vs-flux-by-zone.py
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+
+
+  UNWANTED_ZONES = ["zone-S"]
+  UNWANTED_TYPES = ["Unidentified"]
+
+  def main(
+          id_label: str,
+          minimum_signal_noise: float=3.0,
+          species_file: str="species.yaml",
+          zone_file: str="zones.yaml",
+  ):
+      """Plot of line velocity versus flux for all zones"""
+
+      # Load the species and line type database
+      with open(species_file) as f:
+          info = yaml.safe_load(f)
+      # Load the zone database
+      with open(zone_file) as f:
+          # But drop zones we do not want
+          zones = [_ for _ in yaml.safe_load(f) if _["label"] not in UNWANTED_ZONES]
+
+      # The zones will correspond to the rows
+      n_rows = len(zones)
+      # And the line types to the columns (but miss out unwanted ones)
+      line_types = [_ for _ in info["types"] if _ not in UNWANTED_TYPES]
+      n_cols = len(line_types)
+      # Reverse mapping from line type to index in the list
+      line_type_index = {line_types[i]: i for i in range(n_cols)}
+
+      fig, axes = plt.subplots(
+          n_rows, n_cols,
+          sharex=True, sharey=True,
+          figsize=(8, 6),
+      )
+
+
+      figfile = f"velocity-vs-flux-by-zone-{id_label}.pdf"
+
+      # Iterate over the zones
+      for jzone, zone in enumerate(zones):
+          # Read in the velocity table
+          df = pd.read_csv(f"all-lines-{id_label}/{zone['label']}-velocities.csv")
+
+          # So long as so not want to fade out the colors for the lower
+          # flux lines, we can use a single call to scatter and errorbar for each species
+
+          # Iterate over the species
+          for species in reversed(info["species"]):
+              if species["type"] in UNWANTED_TYPES:
+                  continue
+              label = species["name"]
+              itype = line_type_index[species["type"]]
+
+              # Which one of the axes do we plot into?
+              ax = axes[jzone, itype]
+
+              type_data = info["types"][species["type"]]
+              mask = df.ID.str.startswith(label) & (df.s_n > minimum_signal_noise)
+              data = df[mask].sort_values(by="s_n")
+              cmap = sns.light_palette(
+                  tuple(type_data["husl"]),
+                  input="husl",
+                  as_cmap=True,
+              )
+              size = species["size"]
+              marker = species["marker"]
+              # Log brightness in this line's most favorable zone
+              log_f = np.log10(data.flux)
+              # Remap to range [0, 1]
+              norm_value = (
+                  (log_f - type_data["log_min"])
+                  / (type_data["log_max"] - type_data["log_min"])
+              )
+              if type_data["husl"][2] <= 50:
+                  edgecolors = "w"
+              else:
+                  edgecolors =  matplotlib.colormaps["gray_r"](norm_value)
+
+              ax.scatter(
+                  "flux", "vel",
+                  data=data,
+                  alpha=1.0, s=size,
+                  c=norm_value,
+                  vmin=0.0, vmax=1.0,
+                  cmap=cmap,
+                  edgecolors=edgecolors,
+                  linewidths=0.1, marker=marker,
+              )
+
+      ax = axes[-1, 0]
+      ax.set_xscale("log")
+      ax.set(
+          xlim=[2e-3,  1e3],
+          ylim=[80.0, 240.0],
+      )
+      axes[-1, 2].set(
+          xlabel=r"Line Intensity (H$\beta$ = 100)",
+      )
+      axes[2, 0].set(
+          ylabel="Heliocentric Velocity, km/s",
+      )
+      for ax in axes.flat:
+          ax.axhspan(
+              171.1 - 2.7, 171.1 + 2.7,
+              alpha=0.2, zorder=0, color="k", linewidth=0,
+          )
+      for itype, line_type in  enumerate(line_types):
+          axes[0, itype].set_title(line_type)
+      for jzone, zone in enumerate(zones):
+          label = zone["label"].replace("zone-", "Zone\n")
+          ax = axes[jzone, -1]
+          ax.text(
+              1.3, 0.5, label, transform=ax.transAxes,
+              ha="center", va="center",
+          )
+          ax = axes[jzone, 0]
+          ax.text(
+              -1.0, 0.5, label, transform=ax.transAxes,
+              ha="center", va="center",
+          )
+
+      # Now do one more loop over the species to make the legend
+      handles = []
+      for species in info["species"]:
+          if species["type"] in UNWANTED_TYPES:
+              continue
+          label = species["name"]
+          size = species["size"]
+          marker = species["marker"]
+          type_data = info["types"][species["type"]]
+          cmap = sns.light_palette(
+              tuple(type_data["husl"]),
+              input="husl",
+              as_cmap=True,
+          )
+          # Get darkest color from the color map
+          color = cmap(1.0)
+          # Edge color is white or black, whichever gives best contrast with the key color
+          if type_data["husl"][2] <= 50:
+              edgecolor = "w"
+          else:
+              edgecolor = "k"
+          handles.append(
+              matplotlib.lines.Line2D(
+                  [], [],
+                  linestyle="none",
+                  label=label,
+                  marker=marker,
+                  markersize=np.sqrt(size),
+                  color=color,
+                  markeredgecolor=edgecolor,
+                  markeredgewidth=0.1,
+              )
+          )
+
+      fig.legend(
+          handles=handles,
+          title="Line Type",
+          fontsize="small",
+          loc="lower center",
+          ncol=8,
+      )
+      sns.despine()
+      #fig.tight_layout()
+      fig.subplots_adjust(left=0.15, bottom=0.25, top=0.95)
+      fig.savefig(
+          figfile,
+          # bbox_inches="tight",
+      )
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+Begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-velocity-vs-flux-by-zone.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/velocity-vs-flux-by-zone-c007-chop-mean.pdf]]
+
+
+
+
+*** Step 10: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
   - Point out cases where we have blends
@@ -4237,6 +4580,12 @@ Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing 
 - Include spectra from some of the partitions of the previous step
   - Also maybe add Orion and 30 Dor, but probably best not to
 **** Choosing good microcosm ranges
+***** 8520-8800
+- This contains one of the strongest clean UIL, 8660, plus a whole load more
+- Also has [C I] 8727, which is important to show
+- And has [Cl II] and a bunch of H I lines and He I
+- Has sky lines, especially O_2, but they are very weak
+- Has [Fe II] and lots of N I lines
 ***** 7350-7600
 - This is an excellent range, which shows a great variety of weak lines
   - Deep neutral lines 7463, 7488, 7528
