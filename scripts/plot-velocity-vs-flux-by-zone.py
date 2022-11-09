@@ -122,6 +122,8 @@ def main(
     ax.set_xscale("log")
     ax.set(
         xlim=[2e-3,  1e3],
+        xticks=[0.01, 1, 100],
+        xticklabels=["0.01", "1", "100"],
         ylim=[80.0, 240.0],
     )
     axes[-1, 2].set(
@@ -138,10 +140,11 @@ def main(
         )
     # And a label for it
     axes[4, 1].text(
-        1e-3, v_sys - 5,
+        0.8e-3, v_sys - 5,
         # fr"$V_\mathrm{{sys}} = {v_sys:.1f} \pm {d_v_sys:.1f}$ km/s",
         fr"$V_{{\odot}} = {v_sys:.0f}$ km/s",
         ha="right", va="center", fontsize="small",
+        bbox={"facecolor": "white", "edgecolor": "none"},
     )
 
     # Add labels for the line types at the top of each column
