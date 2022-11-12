@@ -4246,6 +4246,117 @@ Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing 
 :END:
 - This will allow us to easily identify which line corresponds to which point on the graph
   - Would be useful if we want to label particular lines in the ratio-vs-ratio figure
+
+
+#+begin_src python :eval no :tangle ../scripts/make-ratio-tables.py
+  from matplotlib import pyplot as plt
+  import matplotlib
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+
+  def find_ratios_with_errors(
+          df: pd.DataFrame,
+          zone_ratio: str="II / 0",
+  ) -> pd.DataFrame:
+      """
+      Find the zone ratios and errors for all emission lines
+
+      Returns new dataframe with added columns.  This uses vector
+      version of the same logic as in the plotting program, but is in
+      some ways simpler since it only deals with one ratio, not two.
+      """
+      assert " / " in zone_ratio
+      assert type(df) == pd.DataFrame
+
+      # Fluxes in each zone, assuming ratio is B / A
+      xB, xA  = [df[f"zone-{zone}"].to_numpy(copy=True) for zone in zone_ratio.split(" / ")]
+      # Corresponding uncertainties
+      xBe, xAe  = [df[f"zone-{zone}_sig"].to_numpy(copy=True) for zone in zone_ratio.split(" / ")]
+
+      # Fluxes that are negative or smaller than the uncertainty are
+      # replaced with 2-sigma upper limits
+      #
+      # For the numerator B, this gives upper limit to the ratio
+      m_upper = xB < xBe
+      xB = np.where(
+          m_upper,
+          np.maximum(xB, 0.0) + 2 * xBe,
+          xB
+      )
+      # For the denominator A, it gives lower limit to the ratio
+      m_lower = xA < xAe
+      xA = np.where(
+          m_lower,
+          np.maximum(xA, 0.0) + 2 * xAe,
+          xA
+      )
+      # Then calculate the ratio
+      xratio = np.where(
+          # Ratio is undefined if both fluxes are upper limits
+          m_upper & m_lower,
+          np.nan,
+          xB / xA
+      )
+      # And the error
+      xerr = np.hypot(xBe / xB, xAe / xA) * xratio
+      e_zone_ratio = f"E({zone_ratio})"
+      _df = pd.DataFrame(
+          {
+              zone_ratio: xratio,
+              e_zone_ratio: xerr,
+          },
+          index=df.index,
+      )
+      # Patch in indicators of upper and lower limits in err column
+      _df.loc[m_upper, e_zone_ratio] = "<"
+      _df.loc[m_lower, e_zone_ratio] = ">"
+      return _df
+
+  def main(
+          id_label: str,
+          species_file: str="species.yaml",
+          use_gauss: bool=False,
+  ):
+      """Write table of ratios between the zones"""
+
+      outfile = f"all-lines-{id_label}/ratios-vs-ratios-by-zone.csv"
+
+      if use_gauss:
+          df = pd.read_csv(f"all-lines-{id_label}/line-gauss-fluxes.csv")
+          outfile = outfile.replace(".csv", "-gauss.csv")
+      else:
+          df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv")
+      df = df.set_index("Index")
+      df_sig = pd.read_csv(f"all-lines-{id_label}/line-uncertainties.csv").set_index("Index")
+      df = df.join(df_sig, rsuffix="_sig")
+
+      dfr = df[["ID"]]
+      ratio_frames = [
+          find_ratios_with_errors(df, zone_ratio)
+          for zone_ratio in [
+                  "I / 0", "II / 0", "MYSO / 0", "III / II", "IV / III",
+          ]
+      ]
+      dfr = pd.concat([dfr] + ratio_frames, axis="columns")
+
+      dfr.to_csv(outfile)
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+Begin_src sh :dir ../data/n346-lines :results output verbatim
+  python ../../scripts/make-ratio-tables.py c007-chop-mean --no-use-gauss
+#+end_src
+
+#+RESULTS:
+
 *** Step 9: Calculate the velocity shifts for the known lines, and hence get the rest wavelengths of the UILs
 **** DONE Write file for each zone with table of velocities
 CLOSED: [2022-11-07 Mon 17:25]
@@ -4847,7 +4958,7 @@ CLOSED: [2022-11-11 Fri 18:11]
       typer.run(main)
 
 #+end_src
-#+Begin_src sh :dir ../data/n346-lines :results output file
+#+begin_src sh :dir ../data/n346-lines :results output file
   COLUMNS=10000 python ../../scripts/plot-vel-diff-zone-0-MYSO.py c007-chop-mean
 #+end_src
 
@@ -4874,7 +4985,28 @@ Copy histogram figure file to paper project
   - +/- 20 km/s for bright < 0.1
 - We should maybe identify outliers in the 0-MYSO velocity difference distribution, and give those an extra uncertainty (e.g., double the individual value)
 - All the above is now implemented in the previous plotting script
-  
+
+
+#+begin_src python  :eval no :tangle ../scripts/make-table-uil-waves.py
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import typer
+
+  def main(
+          id_label: str,
+          debug: bool=False,
+  ):
+      """Histograms of velocity difference between Zone 0 and MYSO"""
+
+      # Load the data for the two zones
+      df0 = pd.read_csv(f"all-lines-{id_label}/zone-0-velocities.csv").set_index("Index")
+      dfd = pd.read_csv(f"all-lines-{id_label}/interzone-0-MYSO-vel-diffs.csv").set_index("Index")
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/make-table-uil-waves.py c007-chop-mean
+#+end_src
 *** Step 10: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
