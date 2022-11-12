@@ -20,7 +20,7 @@ REPLACEMENTS = {
 TYPES = ["Unidentified", "Deep", "Neutral", "Low", "Medium", "Fe"]
 META_TYPES = {
     "Unidentified": ["Unidentified"],
-    "Neutral-Low": ["Deep", "Neutral", "Low", "Fe"],
+    "Neutral-Low": ["Neutral", "Deep", "Low", "Fe"],
     "Medium": ["Medium"], 
 }
 def main(
@@ -29,6 +29,7 @@ def main(
         signal_noise_log_range: tuple[float, float]=(0.0, 2.0),
         species_file: str="species.yaml",
         zone_file: str="zones.yaml",
+        debug: bool=False,
 ):
     """Histograms of velocity difference between Zone 0 and MYSO"""
 
@@ -45,7 +46,7 @@ def main(
     dfy = pd.read_csv(f"all-lines-{id_label}/zone-MYSO-velocities.csv").set_index("Index")
 
     # Make a new frame with the columns that we need
-    df = df0[["ID", "flux", "s_n"]].assign(
+    df = df0[["ID", "wave", "flux", "s_n"]].assign(
         # Note that we use dfy.wave in denominator instead of dfy.wave0
         # since we do not have the latter for the UILs. The resultant
         # inaccuracy is very small (order v/c ~ 0.001)
@@ -53,6 +54,7 @@ def main(
         # Do not use the original type field, instead make our own
         type="Unknown",
         species="Unknown",
+        sigma_d_vel=np.nan,
     )
 
     # Use the species info to fill in the types column
@@ -79,7 +81,7 @@ def main(
     fig, axes = plt.subplots(
         n_rows, n_cols,
         sharex=True, sharey=True,
-        figsize=(8, 7),
+        figsize=(5, 4),
     )
     figfile = f"vel-diff-zone-0-MYSO-{id_label}.pdf"
     vrange = [-105, 105]
@@ -93,10 +95,13 @@ def main(
         else:
             bstring = f"> {thresh}"
         axes[jrow, -1].text(
-            1.3, 0.5, "Brightness\n" + bstring,
+            1.3, 0.5, "Brightness\n" + bstring + "% Hβ",
             transform=axes[jrow, -1].transAxes,
             ha="center",
         )
+        if debug:
+            print("> * < + " * 8)
+            print(bstring, end="\n\n")
         # Iterate over the line types
         for icol, (label, line_types) in enumerate(META_TYPES.items()):
             mask = (
@@ -104,7 +109,11 @@ def main(
                 & df.type.str.startswith(tuple(line_types))
                 & (df.s_n > minimum_signal_noise)
             )
-            data = df[mask].sort_values(by="flux")
+            data = df[mask]
+            if debug:
+                print(label)
+                print(data)
+                print()
             if len(data) == 0:
                 # If we have no lines, then skip to the next
                 continue
@@ -117,8 +126,13 @@ def main(
             ax = axes[jrow, icol]
             ax.hist(data.d_vel, bins=31, range=vrange, color=color)
             mean, median, std = sigma_clipped_stats(data.d_vel, sigma=2)
-            stats_string = fr"${mean:.1f} \pm {std:.1f}$"
+            stats_string = fr"${mean:.1f} \pm {std:.1f}$ km/s"
             stats_string += "\n" + fr"$N = {len(data)}$"
+            # Save the sigma of the velocity differences
+            df.sigma_d_vel[mask] = std
+            # And higher for the outliers
+            mout = df.d_vel ** 2 > (2 * std) ** 2
+            df.sigma_d_vel[mask & mout] = 2 * std
             ax.text(
                 0.05, 0.95, stats_string,
                 transform=ax.transAxes,
@@ -128,8 +142,11 @@ def main(
 
         value += d_value
 
+    # Save the new table
+    df.to_csv(f"all-lines-{id_label}/interzone-0-MYSO-vel-diffs.csv")
+
     # Add labels for the line types at the top of each column
-    for itype, meta_type in  enumerate(META_TYPES):
+    for itype, meta_type in enumerate(META_TYPES):
         ax = axes[0, itype]
         ax.text(
             0.5, 1.2, meta_type, transform=ax.transAxes,
@@ -140,10 +157,11 @@ def main(
 
 
     axes[-1, 1].set(
-        xlabel=r"Velocity difference: Zone 0 - Zone MYSO (km/s)",
+        xlabel=r"Velocity difference: Zone 0 $-$ Zone MYSO (km/s)",
     )
     axes[1, 0].set(
         ylabel=r"Number of emission lines",
+        ylim=[0, 19],
     )
 
     sns.despine()
