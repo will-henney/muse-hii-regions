@@ -3577,7 +3577,8 @@ COLUMNS=100 python ../../scripts/extract-lines-by-zone.py
 [120 rows x 9 columns]
 #+end_example
   
-*** TODO Step 8: Inter-zone ratios
+*** DONE Step 8: Inter-zone ratios
+CLOSED: [2022-11-12 Sat 19:17]
 - Do diagnostic plots for the different lines
 - One possibility would be to take the ratio of each zone to the sum of the zones
   - This would keep the dimensionality to a minimum, since we have only 5 ratios
@@ -4240,12 +4241,14 @@ Third, the plot from [[id:1DCB8F2F-FC0E-4042-99B0-1E57C35413C7][Figures showing 
     - *no,  this is not right* It is a non-detection in zone I, so pointless to calculate II/I
 
 
-**** TODO Write tables with the ratios
+**** DONE Write tables with the ratios
+CLOSED: [2022-11-12 Sat 13:16]
 :PROPERTIES:
 :ID:       F7004917-496C-473F-8256-7821C94B7417
 :END:
 - This will allow us to easily identify which line corresponds to which point on the graph
   - Would be useful if we want to label particular lines in the ratio-vs-ratio figure
+- Also, we will use some of the ratios in the final table for the UILs
 
 
 #+begin_src python :eval no :tangle ../scripts/make-ratio-tables.py
@@ -4977,14 +4980,17 @@ Copy histogram figure file to paper project
 : vel-diff-zone-0-MYSO-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/vel-diff-zone-0-MYSO-c007-chop-mean.pdf
 : Last copied: Wed Nov 9 10:56:35 CST 2022
 
-**** TODO Make a table of rest wavelengths plus uncertainties of all the UILs
-- We will assume a velocity of 171 km/s +/- 5 km/s
-  - Which is a systematic uncertainty for all lines
-- And for the wavelength accuracy of individual lines, we will assume
-  - +/- 8 km/s for bright > 0.1
-  - +/- 20 km/s for bright < 0.1
-- We should maybe identify outliers in the 0-MYSO velocity difference distribution, and give those an extra uncertainty (e.g., double the individual value)
-- All the above is now implemented in the previous plotting script
+**** DONE Make a table of rest wavelengths plus uncertainties of all the UILs
+CLOSED: [2022-11-12 Sat 19:08]
+- Where the wavelength accuracy estimates come from
+  - We will assume a velocity of 171 km/s +/- 5 km/s
+    - Which is a systematic uncertainty for all lines
+  - And for the wavelength accuracy of individual lines, we will assume
+    - +/- 8 km/s for bright > 0.1
+    - +/- 20 km/s for bright < 0.1
+  - We should maybe identify outliers in the 0-MYSO velocity difference distribution, and give those an extra uncertainty (e.g., double the individual value)
+  - All the above is now implemented in the previous plotting script
+- 
 
 
 #+begin_src python  :eval no :tangle ../scripts/make-table-uil-waves.py
@@ -4992,21 +4998,79 @@ Copy histogram figure file to paper project
   import pandas as pd
   import numpy as np
   import typer
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 
   def main(
           id_label: str,
           debug: bool=False,
+          vsys: float=171.1,
+          d_vsys: float=5.0,
   ):
-      """Histograms of velocity difference between Zone 0 and MYSO"""
+      """Table of all unidentified lines"""
 
-      # Load the data for the two zones
+      # Load the data for zone 0 ... 
       df0 = pd.read_csv(f"all-lines-{id_label}/zone-0-velocities.csv").set_index("Index")
+      # ... for the wavelengths and velocities ...
       dfd = pd.read_csv(f"all-lines-{id_label}/interzone-0-MYSO-vel-diffs.csv").set_index("Index")
+      # ... and for the zone ratios
+      dfr = pd.read_csv(f"all-lines-{id_label}/ratios-vs-ratios-by-zone.csv").set_index("Index")
+
+      # Select only the unidentified lines with credible detection
+      mask = df0.ID.str.startswith("UIL") & (df0.s_n > 1.0)
+      # Make a new frame combining selected columns from each
+      df = pd.concat(
+          [
+              df0[["Type", "ID", "blend", "wave", "e_wave", "flux", "s_n"]],
+              dfd[["sigma_d_vel"]],
+              dfr[[col for ratio in ["I / 0", "II / 0", "MYSO / 0"]
+                   for col in [ratio, f"E({ratio})"] ]],
+          ],
+          axis="columns",
+      )[mask]
+      # Add new columns
+      df = df.assign(
+         wave0=df.wave / (1.0 + vsys / LIGHT_SPEED_KMS),
+         sig_flux=df.flux / df.s_n, 
+         sig_wave0=df.wave * np.hypot(df.sigma_d_vel, d_vsys) / LIGHT_SPEED_KMS
+      ).drop(columns=["ID", "wave", "e_wave", "s_n", "sigma_d_vel"])
+      priority = ["wave0", "sig_wave0", "flux", "sig_flux"]
+      remainder = [c for c in df.columns if c not in priority]
+      df = df[priority + remainder]
+      print(df)
+      df.to_csv(f"all-lines-{id_label}/uil-final-table.csv")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
 
 #+end_src
-#+begin_src sh :dir ../data/n346-lines :results output file
-  python ../../scripts/make-table-uil-waves.py c007-chop-mean
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+  COLUMNS=1000 python ../../scripts/make-table-uil-waves.py c007-chop-mean
 #+end_src
+
+#+RESULTS:
+#+begin_example
+             wave0  sig_wave0      flux  sig_flux            Type  blend     I / 0             E(I / 0)    II / 0            E(II / 0)   MYSO / 0          E(MYSO / 0)
+Index                                                                                                                                                                 
+100    4722.122652   0.592445  0.054474  0.001795        Med Neb?  False  1.919061    0.208326790042966  0.807484   0.1778195561220083   0.260116  0.22775322830671174
+105    4729.842146   0.593413  0.020958  0.003730         Fe, Ni?  False  2.172281                    <  0.432971                    <   0.876520   0.8608647415235604
+157    4793.121131   0.308552  0.054532  0.006706         Fe, Ni?  False  4.112178   1.1289800937240981  0.493611  0.19213902587221696   0.196040                    <
+809    5608.429411   0.361037  0.029367  0.004794  Deep Neutral??  False  2.362993   0.8322097573212647  0.283710  0.11928173461419664   0.492399   0.1574675963473429
+1146   6029.569455   0.388147  0.030460  0.003950   Deep Neutral?  False  0.631507  0.16434004927980292  0.286163                    <   0.541257  0.08151035309512236
+...            ...        ...       ...       ...             ...    ...       ...                  ...       ...                  ...        ...                  ...
+3649   9155.283022   0.589362  0.091543  0.008872   Deep Neutral?  False  0.314548  0.09364213508779988  0.307184  0.06971787197790356   0.162390                    <
+3654   9162.896677   0.589852  0.033448  0.006201   Deep Neutral?  False  0.581987                    <  0.388719                    <   0.415872                    <
+3699   9217.034279   0.593337  0.042116  0.008169        Neutral?  False  1.231973  0.48904716578817664  1.179990   0.3458723747347167  11.277655   3.3432901763481175
+3736   9264.376659   1.162323  0.040371  0.004478  Deep Neutral??  False  0.440663  0.24565215361050075  0.234138  0.05143204462594494   0.445380  0.15100858797854358
+3762   9297.368030   0.277183  0.249847  0.005631   Deep Neutral?  False  0.501158                    <  0.189031                    <   0.786139  0.05928898038303045
+
+[129 rows x 12 columns]
+#+end_example
+
+**** TODO Write a latex version of the table
 *** Step 10: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
@@ -5042,6 +5106,132 @@ Copy histogram figure file to paper project
 
 ***** 6200-6800
 - Shows all the lines around H alpha
+
+*** Step 11: A figure showing the distribution of line types over wavelength
+#+begin_src python :eval no :tangle ../scripts/plot-line-type-wave-distro.py
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
+
+  XY_BY_TYPE = {
+      "Unidentified": (7000, 0.15),
+      "Deep": (8730, 1.15),
+      "Neutral": (8200, 1.35),
+      "Low": (7300, 1.15),
+      "Medium": (6563, 1.35),
+      "High": (5000, 1.35),
+      "Fe": (5500, 1.15),
+  }
+  REPLACEMENTS = {
+      "Deep": "Deep Neutral",
+      "Low": "Low Ionization",
+      "Medium": "Medium Ionization",
+      "High": "High Ionization",
+      "Fe": "Fe-Ni-Si-Ca",
+  }
+  def main(
+          id_label: str,
+          species_file: str="species.yaml",
+          vsys: float=171.1,
+  ):
+      """Plot of line type distribution over wavelength"""
+
+      with open(species_file) as f:
+          info = yaml.safe_load(f)
+
+      fig, ax = plt.subplots(1,  1, figsize=(10, 3))
+      figfile = f"line-type-wave-distro-{id_label}.pdf"
+
+      df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv").set_index("Index")
+      df_wave = pd.read_csv(f"all-lines-{id_label}/line-gauss-waves.csv").set_index("Index")
+      df = df.join(df_wave,  rsuffix="_wave")
+
+      n_type = {_t: 0 for _t in info["types"]}
+
+      for species in reversed(info["species"]):
+          label = species["name"]
+          type_data = info["types"][species["type"]]
+          mask = df.ID.str.startswith(label) & (df[type_data["zone"]] > 0.0)
+          data = df[mask].sort_values(by=type_data["zone"])
+          n_type[species["type"]] += len(data)
+          cmap = sns.light_palette(
+              tuple(type_data["husl"]),
+              input="husl",
+              as_cmap=True,
+          )
+          y0 = 0 if label == "UIL" else 1
+          for idx, row in data.iterrows():
+              # Log brightness in this line's most favorable zone
+              log_f = np.log10(row[type_data["zone"]])
+              # Corresponding wavelengtn
+              wave = row[type_data["zone"] + "_wave"]
+              wave /= 1.0 + vsys / LIGHT_SPEED_KMS
+              # Remap to range [0, 1]
+              # norm_value = (log_f - type_data["log_min"]) / (type_data["log_max"] - type_data["log_min"])
+              norm_value = (log_f - (-2)) / (3 - (-2))
+              # Get the color for this point from the color map and normalized brightness
+              color = cmap(1.0)
+              try:
+                  ax.plot([wave, wave], [y0, y0 + 0.9], lw=0.2 * (2.5 + log_f), color=color)
+              except:
+                  ...
+      for _type, type_data in info["types"].items():
+          label = f"{REPLACEMENTS.get(_type, _type)}: $N = {n_type[_type]}$"
+          x0, y0 = XY_BY_TYPE[_type]
+          color = sns.light_palette(
+              tuple(type_data["husl"]),
+              input="husl",
+              as_cmap=True,
+          )(1.0)
+          ax.text(
+              x0, y0, label,
+              color=color, ha="center", va="center",
+              fontweight="bold",
+              bbox={"facecolor": "white", "edgecolor": "none", "boxstyle": "Round, pad=0.1"},
+          )
+
+      ax.set(
+          xlabel="Wavelength, Angstrom",
+          ylabel="",
+          yticks=[],
+      )
+      sns.despine(left=True)
+      fig.savefig(figfile, bbox_inches="tight")
+      print(figfile, end="")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+Begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-line-type-wave-distro.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/line-type-wave-distro-c007-chop-mean.pdf]]
+
+Copy line bar-code figure to the paper project
+
+#+begin_src sh :dir ../data/n346-lines :results verbatim
+  PAPER_ROOT=$HOME/Dropbox/mabel-smc-deep-neutral-paper
+  cp -fv line-type-wave-distro-c007-chop-mean.pdf $PAPER_ROOT/figs
+  echo Last copied: $(date)
+#+end_src
+
+#+RESULTS:
+: line-type-wave-distro-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/line-type-wave-distro-c007-chop-mean.pdf
+: Last copied: Sat Nov 12 23:38:33 CST 2022
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
