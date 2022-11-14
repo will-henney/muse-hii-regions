@@ -5107,7 +5107,8 @@ Index
 ***** 6200-6800
 - Shows all the lines around H alpha
 
-*** Step 11: A figure showing the distribution of line types over wavelength
+*** DONE Step 11: A figure showing the distribution of line types over wavelength
+CLOSED: [2022-11-13 Sun 14:38]
 #+begin_src python :eval no :tangle ../scripts/plot-line-type-wave-distro.py
   from matplotlib import pyplot as plt
   import matplotlib
@@ -5232,6 +5233,286 @@ Copy line bar-code figure to the paper project
 #+RESULTS:
 : line-type-wave-distro-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/line-type-wave-distro-c007-chop-mean.pdf
 : Last copied: Sat Nov 12 23:38:33 CST 2022
+
+*** TODO Step 12: Distribution of nearest neighbors and reciprocity
+
+**** DONE Make a table of nearest neighbor distances
+CLOSED: [2022-11-13 Sun 21:21]
+
+#+begin_src python :eval no :tangle ../scripts/find-nearest-neighbors.py
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
+
+
+  def main(
+          id_label: str,
+          species_file: str="species.yaml",
+  ):
+      """Make tables of nearest neighbor distances"""
+
+      with open(species_file) as f:
+          info = yaml.safe_load(f)
+
+      df = pd.read_csv(f"all-lines-{id_label}/line-fluxes.csv").set_index("Index")
+      df_wav = pd.read_csv(f"all-lines-{id_label}/line-gauss-waves.csv").set_index("Index")
+      df = df.join(df_wav, rsuffix="_wav")
+
+      # First, make separate tables for each line type
+      # And another for all the identified lines
+      table_types = list(info["types"].keys()) + ["Identified"]
+      # Initialize a dict to hold the tables
+      tables = {k: [] for k in table_types}
+      # Go accumulating rows in the tables by iterating over the species
+      for species in reversed(info["species"]):
+          _type = species["type"]
+          type_data = info["types"][_type]
+          zone = type_data["zone"]
+          prefix = species["name"]
+          if not species["name"] == "UIL":
+              prefix += " "
+          mask = df.ID.str.startswith(prefix) & (df[zone] > 0.0)
+          data = df[mask]
+          # Stripped down to only the data we need
+          newdata = data[["Type", "ID"]].assign(
+              flux=data[zone],
+              wave=data[f"{zone}_wav"],
+          )
+          tables[_type].append(newdata)
+          if not _type == "Unidentified":
+              tables["Identified"].append(newdata)
+      for _type, tab in tables.items():
+          # Reassemble each table into a dataframe
+          tab = pd.concat(tab)
+          # Calculate wave numbers and sort in ascending wn
+          tab = tab.assign(
+              wn=1.0 / (tab.wave * (u.Angstrom.to(u.cm))),
+          ).sort_values(by="wn")
+          # Calculate backward and forward differences
+          tab = tab.assign(
+              dwn_b=np.ediff1d(tab.wn, to_begin=np.inf),
+              dwn_f=np.ediff1d(tab.wn, to_end=np.inf),
+          )
+          # For nearest neighbor, choose minimum of the two and drop originals
+          tab = tab.assign(
+              dwn=np.minimum(tab.dwn_b, tab.dwn_f),
+          ).drop(columns=["dwn_b", "dwn_f"])
+          # Take second order differences squared to check reciprocity
+          tab = tab.assign(
+              dd_b=np.ediff1d(tab.dwn, to_begin=10)**2,
+              dd_f=np.ediff1d(tab.dwn, to_end=10)**2,
+          )
+          # Reciprocal if at least one of these is zero
+          tab = tab.assign(
+              mutual=np.minimum(tab.dd_b, tab.dd_f) == 0.0,
+          ).drop(columns=["dd_b", "dd_f"])
+          print()
+          print(_type, "Degree of reciprocity =", tab.mutual.sum() / len(tab))
+          print(tab.describe())
+          tab.to_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv")
+
+
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+  COLUMNS=200 python ../../scripts/find-nearest-neighbors.py c007-chop-mean
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+Unidentified Degree of reciprocity = 0.6976744186046512
+             flux         wave            wn          dwn
+count  129.000000   129.000000    129.000000   129.000000
+mean     0.120841  7702.438881  13246.357697    37.416237
+std      0.116557  1029.799048   2028.789573   112.406241
+min      0.005823  4724.817700  10749.597027     0.102064
+25%      0.039825  7029.547400  11717.708909    11.323485
+50%      0.080084  7807.540500  12808.130806    19.253044
+75%      0.165372  8534.091500  14225.666933    33.034121
+max      0.653517  9302.674300  21164.837746  1244.661293
+
+Deep Degree of reciprocity = 0.0
+          flux       wave           wn  dwn
+count  1.00000     1.0000      1.00000  1.0
+mean   0.25615  8731.9493  11452.19659  inf
+std        NaN        NaN          NaN  NaN
+min    0.25615  8731.9493  11452.19659  inf
+25%    0.25615  8731.9493  11452.19659  NaN
+50%    0.25615  8731.9493  11452.19659  NaN
+75%    0.25615  8731.9493  11452.19659  NaN
+max    0.25615  8731.9493  11452.19659  inf
+
+Neutral Degree of reciprocity = 0.5882352941176471
+            flux         wave            wn          dwn
+count  17.000000    17.000000     17.000000    17.000000
+mean    0.158319  7436.382141  13916.869212   230.589865
+std     0.210522  1291.015694   2897.991296   541.954650
+min     0.007870  5134.868900  11461.011461    10.438317
+25%     0.049533  7006.802600  12125.113027    11.939899
+50%     0.083724  8192.366800  12206.484700    47.440081
+75%     0.133814  8247.345800  14271.844907   192.706948
+max     0.733754  8725.233400  19474.693891  2258.347663
+
+Low Degree of reciprocity = 0.8333333333333334
+            flux         wave            wn          dwn
+count  12.000000    12.000000     12.000000    12.000000
+mean    5.734520  7105.873308  14307.990193   367.909010
+std     7.794025   992.305904   1853.922164   481.774035
+min     0.006885  5757.933600  10957.127194    19.276748
+25%     0.228511  6505.713700  13398.910516    31.785329
+50%     2.703243  6727.456300  14864.476238   120.067238
+75%     6.753502  7470.470400  15373.450893   693.029958
+max    23.100525  9126.479800  17367.341645  1504.357473
+
+Medium Degree of reciprocity = 0.5909090909090909
+             flux         wave            wn          dwn
+count   44.000000    44.000000     44.000000    44.000000
+mean    26.362536  7654.634780  13601.137714   135.235744
+std     91.508775  1385.810018   3071.897836   244.107110
+min      0.018208  4864.003400  10829.320168     8.972654
+25%      0.176650  6972.387325  11639.225721    21.625423
+50%      0.589633  8338.781300  11992.179775    35.412988
+75%      2.447271  8591.642000  14350.830811   129.792746
+max    476.538186  9234.190000  20559.196155  1103.604395
+
+High Degree of reciprocity = 0.7692307692307693
+            flux         wave            wn          dwn
+count  13.000000    13.000000     13.000000    13.000000
+mean    0.320794  6180.958438  16976.660673   362.882653
+std     0.524640  1398.492573   3853.783193   357.298550
+min     0.006874  4641.763600  12134.756274    49.008351
+25%     0.065211  4714.130800  13760.335818   117.798843
+50%     0.102637  6104.969800  16380.097409   178.199423
+75%     0.231436  7267.264500  21212.818278   488.110465
+max     1.538814  8240.791800  21543.535737  1032.986316
+
+Fe Degree of reciprocity = 0.5882352941176471
+            flux         wave            wn         dwn
+count  34.000000    34.000000     34.000000   34.000000
+mean    0.312717  6086.900397  17211.453069  164.624112
+std     0.251414  1417.486936   3515.453516  160.893879
+min     0.033171  4609.123400  10811.804094   32.961195
+25%     0.133055  4947.321325  13652.314205   59.973158
+50%     0.223339  5357.783550  18664.731967  126.176681
+75%     0.469799  7326.056800  20213.433956  205.090053
+max     0.977622  9249.150200  21696.099523  701.991298
+
+Identified Degree of reciprocity = 0.6611570247933884
+             flux         wave            wn         dwn
+count  121.000000   121.000000    121.000000  121.000000
+mean    10.301786  6979.602718  15074.966182   47.443633
+std     56.190732  1505.821619   3541.149513   55.161467
+min      0.006874  4609.123400  10811.804094    5.704762
+25%      0.082647  5336.393500  11955.677291   18.502178
+50%      0.225070  7258.967700  13776.063503   31.272524
+75%      0.866044  8364.227100  18739.247771   58.728461
+max    476.538186  9249.150200  21696.099523  476.856928
+#+end_example
+
+
+**** TODO Make a plot of nearest neighbour distribution
+#+begin_src python :eval no :tangle ../scripts/plot-histogram-nearest-neighbors.py
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+
+  types = [
+      "Identified",
+      "Unidentified",
+  ]
+  colors = ["r", "k"]
+  sizes = [50, 25]
+  lmin, lmax = 0.0, 3.0
+
+  def poisson(wn, wn0):
+      return 1 - np.exp(-2 * wn / wn0)
+
+  def main(
+          id_label: str,
+          nbins: int=10,
+  ):
+      """Plot histograms of the nearest neighbor distribution"""
+
+      sns.set_color_codes()
+      fig, axes = plt.subplots(3,  1, figsize=(8, 6), sharex=True)
+      figfile = f"hist-nearest-neighbors-{id_label}.pdf"
+      bins = np.logspace(lmin, lmax, nbins)
+      dl = (lmax - lmin) / nbins
+      centers = (bins[:-1] + bins[1:]) / 2
+      finegrid = np.logspace(0.0, 3.0, 200)
+
+      for ax, _type, color, size in zip(axes[1:], types, colors, sizes):
+          df = pd.read_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv").set_index("Index")
+          H, _, _ = ax.hist(df.dwn, bins=bins, color=color, cumulative=True, label=_type)
+          # mean distance between lines
+          wn0 = (df.wn.max() - df.wn.min()) / len(df)
+          #wn0 = np.median(df.dwn)
+          ax.plot(
+              finegrid,
+              H[-1] * poisson(finegrid, wn0),
+              color="y",
+              linewidth=2,
+              label=f"{wn0:.1f} cm$^{{-1}}$",
+          )
+
+          HH, _ = np.histogram(df.dwn[df.mutual], bins=bins)
+          P1 = HH.cumsum() / H
+          axes[0].plot(centers, P1, c=color, label=_type)
+          ax.legend()
+          ax.set_ylabel("# of lines")
+
+      axes[-1].set(
+          xscale="log",
+          xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{cm}^{-1}$",
+      )
+      axes[0].axhline(2/3, color="b", linestyle="dashed")
+      axes[0].legend()
+      axes[0].set(
+          ylim=[0.45, 1.1],
+          ylabel="Degree of reciprocity",
+      )
+      sns.despine()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/plot-histogram-nearest-neighbors.py c007-chop-mean --nbins 200
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/hist-nearest-neighbors-c007-chop-mean.pdf]]
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
@@ -5358,12 +5639,12 @@ Copy line bar-code figure to the paper project
 #+end_src
 
 #+RESULTS:
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8452_44.fits[DATA]
-: 0 30
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8451_19.fits[DATA]
-: 0 40
-: /Users/will/Dropbox/muse-hii-regions/data/ngc346-slice-oi-8449_94.fits[DATA]
-: 0 30
+: /Users/will/Dropbox/muse-hii-regions/data/n346-lines/type-med-neb/3536-h-i-9014-91.fits
+: -125.773 808.237
+: /Users/will/Dropbox/muse-hii-regions/data/n346-lines/type-med-neb/3536-h-i-9014-91.fits
+: -125.773 808.237
+: /Users/will/Dropbox/muse-hii-regions/data/n346-lines/type-med-neb/3536-h-i-9014-91.fits
+: -125.773 808.237
 
 
 ***** Table generated from getting the channels 
