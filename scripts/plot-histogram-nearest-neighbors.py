@@ -38,19 +38,20 @@ def main(
 
     for ax, _type, color, size in zip(axes[1:], types, colors, sizes):
         df = pd.read_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv").set_index("Index")
-        H, _, _ = ax.hist(df.dwn, bins=bins, color=color, cumulative=True, label=_type)
+        df = df[1:-1]
+        H, _, _ = ax.hist(df.dwave_nn, bins=bins, color=color, cumulative=True, label=_type)
         # mean distance between lines
-        wn0 = (df.wn.max() - df.wn.min()) / len(df)
+        wave0 = np.mean(df.dwave_mean)
         #wn0 = np.median(df.dwn)
         ax.plot(
             finegrid,
-            H[-1] * poisson(finegrid, wn0),
+            H[-1] * poisson(finegrid, wave0),
             color="y",
             linewidth=2,
-            label=f"{wn0:.1f} cm$^{{-1}}$",
+            label=f"{wave0:.1f} Å$^{{-1}}$",
         )
 
-        HH, _ = np.histogram(df.dwn[df.mutual], bins=bins)
+        HH, _ = np.histogram(df.dwave_nn[df.mutual], bins=bins)
         P1 = HH.cumsum() / H
         axes[0].plot(centers, P1, c=color, label=_type)
         ax.legend()
@@ -58,7 +59,7 @@ def main(
 
     axes[-1].set(
         xscale="log",
-        xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{cm}^{-1}$",
+        xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{Å}^{-1}$",
     )
     axes[0].axhline(2/3, color="b", linestyle="dashed")
     axes[0].legend()

@@ -5289,32 +5289,54 @@ CLOSED: [2022-11-13 Sun 21:21]
           if not _type == "Unidentified":
               tables["Identified"].append(newdata)
       for _type, tab in tables.items():
-          # Reassemble each table into a dataframe
-          tab = pd.concat(tab)
+          # Reassemble each table into a dataframe and sort on wavelength
+          tab = pd.concat(tab).sort_values(by="wave")
+          # Calculate backward and forward wave differences, padding the
+          # ends with the mean separation to fake extra lines outside the range
+          if len(tab) > 1:
+              fill_value = (tab.wave.max() - tab.wave.min()) / (len(tab) - 1)
+          else:
+              fill_value = 0.0
+          tab = tab.assign(
+              dwave_b=np.ediff1d(tab.wave, to_begin=fill_value),
+              dwave_f=np.ediff1d(tab.wave, to_end=fill_value),
+          )
+          # For nearest neighbor, choose minimum of the two, whereas
+          # mean spacing is average of the two, then drop originals
+          tab = tab.assign(
+              dwave_nn=np.minimum(tab.dwave_b, tab.dwave_f),
+              dwave_mean=(tab.dwave_b + tab.dwave_f) / 2,
+          ).drop(columns=["dwave_b", "dwave_f"])
           # Calculate wave numbers and sort in ascending wn
           tab = tab.assign(
               wn=1.0 / (tab.wave * (u.Angstrom.to(u.cm))),
           ).sort_values(by="wn")
-          # Calculate backward and forward differences
+          # Calculate backward and forward wn differences
+          if len(tab) > 1:
+              fill_value = (tab.wn.max() - tab.wn.min()) / (len(tab) - 1)
+          else:
+              fill_value = 0.0
           tab = tab.assign(
-              dwn_b=np.ediff1d(tab.wn, to_begin=np.inf),
-              dwn_f=np.ediff1d(tab.wn, to_end=np.inf),
+              dwn_b=np.ediff1d(tab.wn, to_begin=fill_value),
+              dwn_f=np.ediff1d(tab.wn, to_end=fill_value),
           )
           # For nearest neighbor, choose minimum of the two and drop originals
           tab = tab.assign(
-              dwn=np.minimum(tab.dwn_b, tab.dwn_f),
+              dwn_nn=np.minimum(tab.dwn_b, tab.dwn_f),
+              dwn_mean=(tab.dwn_b + tab.dwn_f) / 2,
           ).drop(columns=["dwn_b", "dwn_f"])
           # Take second order differences squared to check reciprocity
           tab = tab.assign(
-              dd_b=np.ediff1d(tab.dwn, to_begin=10)**2,
-              dd_f=np.ediff1d(tab.dwn, to_end=10)**2,
+              dd_b=np.ediff1d(tab.dwn_nn, to_begin=10)**2,
+              dd_f=np.ediff1d(tab.dwn_nn, to_end=10)**2,
           )
           # Reciprocal if at least one of these is zero
           tab = tab.assign(
               mutual=np.minimum(tab.dd_b, tab.dd_f) == 0.0,
           ).drop(columns=["dd_b", "dd_f"])
           print()
-          print(_type, "Degree of reciprocity =", tab.mutual.sum() / len(tab))
+          # Ignore first and last points when calculating reciprocity, since their status is unknown
+          print(_type, "Degree of reciprocity =", tab[1:-1].mutual.sum() / len(tab[1:-1]))
           print(tab.describe())
           tab.to_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv")
 
@@ -5333,97 +5355,234 @@ CLOSED: [2022-11-13 Sun 21:21]
 #+RESULTS:
 #+begin_example
 
-Unidentified Degree of reciprocity = 0.6976744186046512
-             flux         wave            wn          dwn
-count  129.000000   129.000000    129.000000   129.000000
-mean     0.120841  7702.438881  13246.357697    37.416237
-std      0.116557  1029.799048   2028.789573   112.406241
-min      0.005823  4724.817700  10749.597027     0.102064
-25%      0.039825  7029.547400  11717.708909    11.323485
-50%      0.080084  7807.540500  12808.130806    19.253044
-75%      0.165372  8534.091500  14225.666933    33.034121
-max      0.653517  9302.674300  21164.837746  1244.661293
+Unidentified Degree of reciprocity = 0.6929133858267716
+             flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
+count  129.000000   129.000000  129.000000  129.000000    129.000000   129.000000   129.000000
+mean     0.120841  7702.438881   18.077176   35.764505  13246.357697    37.416237    81.369068
+std      0.116557  1029.799048   38.251397   68.217884   2028.789573   112.406241   240.606392
+min      0.005823  4724.817700    0.060700    3.094600  10749.597027     0.102064     4.484526
+25%      0.039825  7029.547400    6.690100   12.840200  11717.708909    11.323485    21.277991
+50%      0.080084  7807.540500   10.038000   21.127050  12808.130806    19.253044    34.582147
+75%      0.165372  8534.091500   15.526700   33.908200  14225.666933    33.034121    57.955918
+max      0.653517  9302.674300  421.380400  618.577000  21164.837746  1244.661293  2137.929966
 
-Deep Degree of reciprocity = 0.0
-          flux       wave           wn  dwn
-count  1.00000     1.0000      1.00000  1.0
-mean   0.25615  8731.9493  11452.19659  inf
-std        NaN        NaN          NaN  NaN
-min    0.25615  8731.9493  11452.19659  inf
-25%    0.25615  8731.9493  11452.19659  NaN
-50%    0.25615  8731.9493  11452.19659  NaN
-75%    0.25615  8731.9493  11452.19659  NaN
-max    0.25615  8731.9493  11452.19659  inf
+Deep Degree of reciprocity = nan
+          flux       wave  dwave_nn  dwave_mean           wn  dwn_nn  dwn_mean
+count  1.00000     1.0000       1.0         1.0      1.00000     1.0       1.0
+mean   0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
+std        NaN        NaN       NaN         NaN          NaN     NaN       NaN
+min    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
+25%    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
+50%    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
+75%    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
+max    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
 
-Neutral Degree of reciprocity = 0.5882352941176471
-            flux         wave            wn          dwn
-count  17.000000    17.000000     17.000000    17.000000
-mean    0.158319  7436.382141  13916.869212   230.589865
-std     0.210522  1291.015694   2897.991296   541.954650
-min     0.007870  5134.868900  11461.011461    10.438317
-25%     0.049533  7006.802600  12125.113027    11.939899
-50%     0.083724  8192.366800  12206.484700    47.440081
-75%     0.133814  8247.345800  14271.844907   192.706948
-max     0.733754  8725.233400  19474.693891  2258.347663
+Neutral Degree of reciprocity = 0.5333333333333333
+            flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
+count  17.000000    17.000000   17.000000   17.000000     17.000000    17.000000    17.000000
+mean    0.158319  7436.382141  100.669224  224.397781  13916.869212   230.589865   500.855152
+std     0.210522  1291.015694  207.997577  246.415986   2897.991296   541.954650   666.654672
+min     0.007870  5134.868900    7.060900    8.631300  11461.011461    10.438317    11.360101
+25%     0.049533  7006.802600    9.063300   33.581400  12125.113027    11.939899   125.717705
+50%     0.083724  8192.366800   15.531700  119.964741  12206.484700    47.440081   255.817728
+75%     0.133814  8247.345800   51.631100  365.861750  14271.844907   192.706948   596.673964
+max     0.733754  8725.233400  847.504600  902.385450  19474.693891  2258.347663  2475.706788
 
-Low Degree of reciprocity = 0.8333333333333334
-            flux         wave            wn          dwn
-count  12.000000    12.000000     12.000000    12.000000
-mean    5.734520  7105.873308  14307.990193   367.909010
-std     7.794025   992.305904   1853.922164   481.774035
-min     0.006885  5757.933600  10957.127194    19.276748
-25%     0.228511  6505.713700  13398.910516    31.785329
-50%     2.703243  6727.456300  14864.476238   120.067238
-75%     6.753502  7470.470400  15373.450893   693.029958
-max    23.100525  9126.479800  17367.341645  1504.357473
+Low Degree of reciprocity = 0.8
+            flux         wave    dwave_nn  dwave_mean            wn      dwn_nn     dwn_mean
+count  12.000000    12.000000   12.000000   12.000000     12.000000   12.000000    12.000000
+mean    5.734520  7105.873308  162.248029  306.231473  14307.990193  281.917852   582.746768
+std     7.794025   992.305904  207.577012  192.274598   1853.922164  324.671367   308.579808
+min     0.006885  5757.933600   10.354900   73.737850  10957.127194   19.276748   166.217368
+25%     0.228511  6505.713700   14.385600  120.391963  13398.910516   31.785329   290.472437
+50%     2.703243  6727.456300   49.432250  300.868475  14864.476238  120.067238   610.201471
+75%     6.753502  7470.470400  306.231473  424.961274  15373.450893  582.746768   840.345218
+max    23.100525  9126.479800  544.398800  624.602250  17367.341645  942.097622  1043.552121
 
-Medium Degree of reciprocity = 0.5909090909090909
-             flux         wave            wn          dwn
-count   44.000000    44.000000     44.000000    44.000000
-mean    26.362536  7654.634780  13601.137714   135.235744
-std     91.508775  1385.810018   3071.897836   244.107110
-min      0.018208  4864.003400  10829.320168     8.972654
-25%      0.176650  6972.387325  11639.225721    21.625423
-50%      0.589633  8338.781300  11992.179775    35.412988
-75%      2.447271  8591.642000  14350.830811   129.792746
-max    476.538186  9234.190000  20559.196155  1103.604395
+Medium Degree of reciprocity = 0.5952380952380952
+             flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
+count   44.000000    44.000000   44.000000   44.000000     44.000000    44.000000    44.000000
+mean    26.362536  7654.634780   58.024539  101.632247  13601.137714   134.622793   226.276186
+std     91.508775  1385.810018   84.105267  110.602524   3071.897836   243.837608   314.890896
+min      0.018208  4864.003400    7.381800    8.589600  10829.320168     8.972654    12.410210
+25%      0.176650  6972.387325   15.290625   24.976600  11639.225721    21.625423    34.742131
+50%      0.589633  8338.781300   24.940000   48.321150  11992.179775    35.412988    92.233812
+75%      2.447271  8591.642000   66.356500  161.544413  14350.830811   129.792746   281.848567
+max    476.538186  9234.190000  358.192400  414.207200  20559.196155  1103.604395  1395.004873
 
-High Degree of reciprocity = 0.7692307692307693
-            flux         wave            wn          dwn
-count  13.000000    13.000000     13.000000    13.000000
-mean    0.320794  6180.958438  16976.660673   362.882653
-std     0.524640  1398.492573   3853.783193   357.298550
-min     0.006874  4641.763600  12134.756274    49.008351
-25%     0.065211  4714.130800  13760.335818   117.798843
-50%     0.102637  6104.969800  16380.097409   178.199423
-75%     0.231436  7267.264500  21212.818278   488.110465
-max     1.538814  8240.791800  21543.535737  1032.986316
+High Degree of reciprocity = 0.7272727272727273
+            flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
+count  13.000000    13.000000   13.000000   13.000000     13.000000    13.000000    13.000000
+mean    0.320794  6180.958438  156.646862  299.919017  16976.660673   362.882653   784.064955
+std     0.524640  1398.492573  143.869093  218.974084   3853.783193   357.298550   711.997172
+min     0.006874  4641.763600   10.583400   23.166650  12134.756274    49.008351   106.459308
+25%     0.065211  4714.130800   26.033900  155.251208  13760.335818   117.798843   333.154944
+50%     0.102637  6104.969800   92.909500  245.278108  16380.097409   178.199423   535.715181
+75%     0.231436  7267.264500  267.267000  514.338700  21212.818278   488.110465  1220.781084
+max     1.538814  8240.791800  375.865400  681.106700  21543.535737  1032.986316  2352.343901
 
-Fe Degree of reciprocity = 0.5882352941176471
-            flux         wave            wn         dwn
-count  34.000000    34.000000     34.000000   34.000000
-mean    0.312717  6086.900397  17211.453069  164.624112
-std     0.251414  1417.486936   3515.453516  160.893879
-min     0.033171  4609.123400  10811.804094   32.961195
-25%     0.133055  4947.321325  13652.314205   59.973158
-50%     0.223339  5357.783550  18664.731967  126.176681
-75%     0.469799  7326.056800  20213.433956  205.090053
-max     0.977622  9249.150200  21696.099523  701.991298
+Fe Degree of reciprocity = 0.59375
+            flux         wave    dwave_nn  dwave_mean            wn      dwn_nn    dwn_mean
+count  34.000000    34.000000   34.000000   34.000000     34.000000   34.000000   34.000000
+mean    0.312717  6086.900397   67.850697  140.606873  17211.453069  164.624112  329.827134
+std     0.251414  1417.486936   95.644784  134.535375   3515.453516  160.893879  241.288134
+min     0.033171  4609.123400    9.150400   17.907650  10811.804094   32.961195   67.854401
+25%     0.133055  4947.321325   21.936175   48.317875  13652.314205   59.973158  162.584352
+50%     0.223339  5357.783550   41.129250   58.540150  18664.731967  126.176681  232.889706
+75%     0.469799  7326.056800   53.754075  249.145725  20213.433956  205.090053  456.060231
+max     0.977622  9249.150200  492.041400  539.733550  21696.099523  701.991298  907.340794
 
-Identified Degree of reciprocity = 0.6611570247933884
-             flux         wave            wn         dwn
-count  121.000000   121.000000    121.000000  121.000000
-mean    10.301786  6979.602718  15074.966182   47.443633
-std     56.190732  1505.821619   3541.149513   55.161467
-min      0.006874  4609.123400  10811.804094    5.704762
-25%      0.082647  5336.393500  11955.677291   18.502178
-50%      0.225070  7258.967700  13776.063503   31.272524
-75%      0.866044  8364.227100  18739.247771   58.728461
-max    476.538186  9249.150200  21696.099523  476.856928
+Identified Degree of reciprocity = 0.6638655462184874
+             flux         wave    dwave_nn  dwave_mean            wn      dwn_nn    dwn_mean
+count  121.000000   121.000000  121.000000  121.000000    121.000000  121.000000  121.000000
+mean    10.301786  6979.602718   20.245769   38.666890  15074.966182   46.932383   90.702462
+std     56.190732  1505.821619   19.995778   34.075331   3541.149513   54.461297   87.636638
+min      0.006874  4609.123400    4.205200    6.711550  10811.804094    5.704762    8.802400
+25%      0.082647  5336.393500    8.762700   15.994200  11955.677291   18.502178   29.986579
+50%      0.225070  7258.967700   14.385600   26.378850  13776.063503   31.272524   59.126998
+75%      0.866044  8364.227100   20.694900   46.089250  18739.247771   58.728461  121.633124
+max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928  588.566219
 #+end_example
 
 
-**** TODO Make a plot of nearest neighbour distribution
+
+**** Plot neighbor parameters versus wavelength
+- We want to look at 3 measures
+  - Density of lines, or equivalently, mean separation \langle\Delta\lambda\rangle
+  - Nearest neighbor distance \Delta\lambda_NN
+    - For a one-d Poisson process, we should have E(\Delta\lambda_NN) = 0.5 \langle\Delta\lambda\rangle
+  - Reciprocity fraction: P(1)
+    - For a one-d Poisson process, we should have P(1) = 2/3
+  - We can bin every k points to get mean or median values
+    - Probably with k = 6 (at least), maybe more
+    - We can use bootstrap method to estimate the confidence limits
+- First attempt uses rolling average with a certain window size (in unit of number of table rows)
+  - This is OK, but suffers from the fact that the effective resolution varies with the line type, being far broader for types with lower spectral density of lines
+  - And if I make the winfow width too high, then we lose lots of the types entirely
+  - To fix this, I will try and interpolate onto a uniform wavelength grid first
+
+#+begin_src python :eval no :tangle ../scripts/plot-neighbor-stats.py
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  from pathlib import Path
+  import pandas as pd
+  import numpy as np
+  import yaml
+  import typer
+  import sys
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+
+  types = [
+      "Identified",
+      "Unidentified",
+  ]
+  colors = ["r", "k"]
+
+  # 
+  wavgrid = np.arange(4600, 9400, dtype=float)
+
+  def finesse_regrid(waves, values, window_size=None):
+      """Fix up a quantity as a function of wavelength"""
+      # Interpolate onto uniform grid
+      vgrid = np.interp(wavgrid, waves.to_numpy(), values.to_numpy())
+      if window_size is not None:
+          vgrid = pd.Series(vgrid).rolling(window=window_size, center=True).mean()
+      return vgrid
+
+  def finesse(waves, values, window_size):
+      """Fix up a quantity as a function of wavelength"""
+      return values.rolling(window=window_size, center=True).mean()
+
+  def main(
+          id_label: str,
+          window_size: int=10,
+          species_file: str="species.yaml",
+  ):
+      """Plot statistics of the nearest neighbor distances versus wavelength"""
+      with open(species_file) as f:
+          info = yaml.safe_load(f)
+      # Drop the Deep type since it only has one line
+      info["types"].pop("Deep")
+      # But add in the combination of all Identified lines
+      info["types"]["Identified"] = info["types"]["Medium"]
+
+      # Three panel stack of plots
+      fig, axes = plt.subplots(3,  1, figsize=(8, 8), sharex=True)
+      figfile = f"nearest-neighbor-stats-{id_label}.pdf"
+      for _type, type_data in info["types"].items():
+          if not _type in types:
+              continue
+          cmap = sns.dark_palette(
+              tuple(type_data["husl"]),
+              input="husl",
+              as_cmap=True,
+          )
+          df = pd.read_csv(
+              f"all-lines-{id_label}/nearest-neighbors-{_type}.csv"
+          ).set_index("Index").sort_values(by="wave")
+          # Make window-averaged arrays to plot
+          wave = finesse(df.wave, df.wave, window_size)
+          density = finesse(df.wave, 1 / df.dwave_mean, window_size)
+          ratio_nn = finesse(df.wave, df.dwave_nn / df.dwave_mean, window_size)
+          reciprocity = finesse(df.wave, df.mutual.astype(float), window_size)
+
+          axes[0].plot(wave, density, color=cmap(1.0), label=_type)
+          axes[1].plot(wave, ratio_nn, color=cmap(1.0))
+          axes[2].plot(wave, reciprocity, color=cmap(1.0))
+
+
+
+      axes[-1].set(
+          xlabel=r"Wavelength, Angstrom",
+      )
+
+      axes[0].set(
+          ylim=[0.0, None],
+          yscale="linear",
+          ylabel="Spectral density:\n" + r"$\rho_\lambda$, Lines / Å",
+      )
+
+      axes[1].axhline(1/2, color="b", linestyle="dashed")
+      axes[1].set(
+          ylim=[0.0, 1.05],
+          ylabel="Nearest-neighbor factor:\n" + r"$\rho_\lambda \times \langle \Delta\lambda_{\mathrm{NN}} \rangle$",
+      )
+
+      axes[2].axhline(2/3, color="b", linestyle="dashed")
+      axes[2].set(
+          ylim=[0.0, 1.05],
+          ylabel="Degree of reciprocity",
+      )
+
+
+      axes[0].legend()
+      for ax in axes:
+          ax.grid(axis="x", color="k", linestyle="dotted")
+      sns.despine()
+      fig.savefig(figfile)
+      print(figfile, end="")
+
+
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+  COLUMNS=200 python ../../scripts/plot-neighbor-stats.py c007-chop-mean --window-size 10
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/nearest-neighbor-stats-c007-chop-mean.pdf]]
+      
+**** TODO Make a plot of nearest neighbor distribution
 #+begin_src python :eval no :tangle ../scripts/plot-histogram-nearest-neighbors.py
   from matplotlib import pyplot as plt
   import matplotlib
@@ -5454,7 +5613,7 @@ max    476.538186  9249.150200  21696.099523  476.856928
           nbins: int=10,
   ):
       """Plot histograms of the nearest neighbor distribution"""
-
+    
       sns.set_color_codes()
       fig, axes = plt.subplots(3,  1, figsize=(8, 6), sharex=True)
       figfile = f"hist-nearest-neighbors-{id_label}.pdf"
@@ -5465,19 +5624,20 @@ max    476.538186  9249.150200  21696.099523  476.856928
 
       for ax, _type, color, size in zip(axes[1:], types, colors, sizes):
           df = pd.read_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv").set_index("Index")
-          H, _, _ = ax.hist(df.dwn, bins=bins, color=color, cumulative=True, label=_type)
+          df = df[1:-1]
+          H, _, _ = ax.hist(df.dwave_nn, bins=bins, color=color, cumulative=True, label=_type)
           # mean distance between lines
-          wn0 = (df.wn.max() - df.wn.min()) / len(df)
+          wave0 = np.mean(df.dwave_mean)
           #wn0 = np.median(df.dwn)
           ax.plot(
               finegrid,
-              H[-1] * poisson(finegrid, wn0),
+              H[-1] * poisson(finegrid, wave0),
               color="y",
               linewidth=2,
-              label=f"{wn0:.1f} cm$^{{-1}}$",
+              label=f"{wave0:.1f} Å$^{{-1}}$",
           )
 
-          HH, _ = np.histogram(df.dwn[df.mutual], bins=bins)
+          HH, _ = np.histogram(df.dwave_nn[df.mutual], bins=bins)
           P1 = HH.cumsum() / H
           axes[0].plot(centers, P1, c=color, label=_type)
           ax.legend()
@@ -5485,7 +5645,7 @@ max    476.538186  9249.150200  21696.099523  476.856928
 
       axes[-1].set(
           xscale="log",
-          xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{cm}^{-1}$",
+          xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{Å}^{-1}$",
       )
       axes[0].axhline(2/3, color="b", linestyle="dashed")
       axes[0].legend()
