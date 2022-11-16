@@ -5446,7 +5446,8 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
 
 
 
-**** Plot neighbor parameters versus wavelength
+**** DONE Plot neighbor parameters versus wavelength
+CLOSED: [2022-11-15 Tue 18:57]
 - We want to look at 3 measures
   - Density of lines, or equivalently, mean separation \langle\Delta\lambda\rangle
   - Nearest neighbor distance \Delta\lambda_NN
@@ -5484,17 +5485,20 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
   # 
   wavgrid = np.arange(4600, 9400, dtype=float)
 
-  def finesse_regrid(waves, values, window_size=None):
-      """Fix up a quantity as a function of wavelength"""
-      # Interpolate onto uniform grid
-      vgrid = np.interp(wavgrid, waves.to_numpy(), values.to_numpy())
-      if window_size is not None:
-          vgrid = pd.Series(vgrid).rolling(window=window_size, center=True).mean()
-      return vgrid
+  def finesse_rolling(waves, values, window_size):
+      """Take rolling mean in window"""
+      return values.rolling(window=window_size, center=True)
 
-  def finesse(waves, values, window_size):
-      """Fix up a quantity as a function of wavelength"""
-      return values.rolling(window=window_size, center=True).mean()
+  def finesse_reindex(waves, values, window_size):
+      """Reindex, then interpolate, then rolling window"""
+      return (values
+              .reindex(range(values.index.min(),  values.index.max()))
+              .interpolate(method="linear")
+              .rolling(window=window_size, center=True)
+              )
+
+  finesse = finesse_rolling
+  #finesse = finesse_reindex
 
   def main(
           id_label: str,
@@ -5510,59 +5514,99 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
       info["types"]["Identified"] = info["types"]["Medium"]
 
       # Three panel stack of plots
-      fig, axes = plt.subplots(3,  1, figsize=(8, 8), sharex=True)
+      sns.set_color_codes()
+      fig, axes = plt.subplots(3,  1, figsize=(5, 5), sharex=True)
       figfile = f"nearest-neighbor-stats-{id_label}.pdf"
-      for _type, type_data in info["types"].items():
-          if not _type in types:
-              continue
-          cmap = sns.dark_palette(
-              tuple(type_data["husl"]),
-              input="husl",
-              as_cmap=True,
-          )
+      for _type, color in zip(types, colors):
+          type_data = info["types"][_type]
           df = pd.read_csv(
               f"all-lines-{id_label}/nearest-neighbors-{_type}.csv"
           ).set_index("Index").sort_values(by="wave")
           # Make window-averaged arrays to plot
-          wave = finesse(df.wave, df.wave, window_size)
+          wave = finesse(df.wave, df.wave, window_size).mean()
           density = finesse(df.wave, 1 / df.dwave_mean, window_size)
           ratio_nn = finesse(df.wave, df.dwave_nn / df.dwave_mean, window_size)
           reciprocity = finesse(df.wave, df.mutual.astype(float), window_size)
 
-          axes[0].plot(wave, density, color=cmap(1.0), label=_type)
-          axes[1].plot(wave, ratio_nn, color=cmap(1.0))
-          axes[2].plot(wave, reciprocity, color=cmap(1.0))
+          axes[0].plot(wave, density.mean(), ds="steps-mid", color=color, label=f"{_type} lines")
+          sem = density.std() / np.sqrt(window_size - 1)
+          axes[0].fill_between(
+              wave,
+              density.mean() - sem,
+              density.mean() + sem,
+              step="mid",
+              color=color,
+              alpha=0.2,
+              linewidth=0.0,
+          )
+
+          axes[1].plot(wave, ratio_nn.mean(), ds="steps-mid", color=color)
+          sem = ratio_nn.std() / np.sqrt(window_size - 1)
+          axes[1].fill_between(
+              wave,
+              ratio_nn.mean() - sem,
+              ratio_nn.mean() + sem,
+              step="mid",
+              color=color,
+              alpha=0.2,
+              linewidth=0.0,
+          )
+
+          axes[2].plot(wave, reciprocity.mean(), ds="steps-mid", color=color)
+          sem = reciprocity.std() / np.sqrt(window_size - 1)
+          axes[2].fill_between(
+              wave,
+              reciprocity.mean() - sem,
+              reciprocity.mean() + sem,
+              step="mid",
+              color=color,
+              alpha=0.2,
+              linewidth=0.0,
+          )
 
 
 
       axes[-1].set(
-          xlabel=r"Wavelength, Angstrom",
+          xlabel=r"Wavelength, Å",
       )
 
       axes[0].set(
           ylim=[0.0, None],
           yscale="linear",
-          ylabel="Spectral density:\n" + r"$\rho_\lambda$, Lines / Å",
+      )
+      axes[0].set_ylabel(
+          "Spectral\ndensity:\n" + r" $\rho_\lambda = 1 / \langle \Delta\lambda \rangle$, Å$^{-1}$",
+          rotation="horizontal", ha="center", va="center",
+          labelpad=50,
       )
 
       axes[1].axhline(1/2, color="b", linestyle="dashed")
       axes[1].set(
           ylim=[0.0, 1.05],
-          ylabel="Nearest-neighbor factor:\n" + r"$\rho_\lambda \times \langle \Delta\lambda_{\mathrm{NN}} \rangle$",
+      )
+      axes[1].set_ylabel(
+          "Nearest-neighbor\n" + r"ratio: $\langle \Delta\lambda_{\mathrm{nn}} \rangle / \langle \Delta\lambda \rangle$",
+          rotation="horizontal", ha="center", va="center",
+          labelpad=50,
       )
 
       axes[2].axhline(2/3, color="b", linestyle="dashed")
       axes[2].set(
           ylim=[0.0, 1.05],
-          ylabel="Degree of reciprocity",
       )
+      axes[2].set_ylabel(
+          "Degree of\nreciprocity:\n" + r"$P_{\mathrm{nn-nn}}$",
+          rotation="horizontal", ha="center", va="center",
+          labelpad=50,
+      )
+
 
 
       axes[0].legend()
       for ax in axes:
           ax.grid(axis="x", color="k", linestyle="dotted")
       sns.despine()
-      fig.savefig(figfile)
+      fig.savefig(figfile, bbox_inches="tight")
       print(figfile, end="")
 
 
@@ -5582,7 +5626,8 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/nearest-neighbor-stats-c007-chop-mean.pdf]]
       
-**** TODO Make a plot of nearest neighbor distribution
+**** DONE Make a plot of nearest neighbor distribution
+CLOSED: [2022-11-15 Tue 18:57]
 #+begin_src python :eval no :tangle ../scripts/plot-histogram-nearest-neighbors.py
   from matplotlib import pyplot as plt
   import matplotlib
@@ -5603,7 +5648,9 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
   ]
   colors = ["r", "k"]
   sizes = [50, 25]
-  lmin, lmax = 0.0, 3.0
+  lmin, lmax = -0.1, 2.9
+  wave_floor = 2.0
+  labels = ["_nolabel", "Homogeneous Poisson process"]
 
   def poisson(wn, wn0):
       return 1 - np.exp(-2 * wn / wn0)
@@ -5613,48 +5660,58 @@ max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928
           nbins: int=10,
   ):
       """Plot histograms of the nearest neighbor distribution"""
-    
+
       sns.set_color_codes()
-      fig, axes = plt.subplots(3,  1, figsize=(8, 6), sharex=True)
+      fig, axes = plt.subplots(2,  1, figsize=(5, 3), sharex=True)
       figfile = f"hist-nearest-neighbors-{id_label}.pdf"
       bins = np.logspace(lmin, lmax, nbins)
       dl = (lmax - lmin) / nbins
       centers = (bins[:-1] + bins[1:]) / 2
-      finegrid = np.logspace(0.0, 3.0, 200)
+      finegrid = np.logspace(lmin, lmax, 200)
 
-      for ax, _type, color, size in zip(axes[1:], types, colors, sizes):
+      for ax, _type, color, size, label in zip(axes, types, colors, sizes, labels):
           df = pd.read_csv(f"all-lines-{id_label}/nearest-neighbors-{_type}.csv").set_index("Index")
           df = df[1:-1]
-          H, _, _ = ax.hist(df.dwave_nn, bins=bins, color=color, cumulative=True, label=_type)
+          H, _, _ = ax.hist(
+              df.dwave_nn, bins=bins, color=color, cumulative=True,
+              label=f"CDF of {_type} lines",
+          )
           # mean distance between lines
           wave0 = np.mean(df.dwave_mean)
           #wn0 = np.median(df.dwn)
           ax.plot(
               finegrid,
-              H[-1] * poisson(finegrid, wave0),
+              H[-1] * np.where(
+                  finegrid > wave_floor,
+                  (poisson(finegrid, wave0) - poisson(wave_floor, wave0))
+                  / (1.0 - poisson(wave_floor, wave0)),
+                  np.nan
+              ),
               color="y",
               linewidth=2,
-              label=f"{wave0:.1f} Å$^{{-1}}$",
+              label=label,
+              # label=fr"Poisson: $\rho_\lambda = {1/wave0:.3f}$ Å$^{{-1}}$",
           )
 
-          HH, _ = np.histogram(df.dwave_nn[df.mutual], bins=bins)
-          P1 = HH.cumsum() / H
-          axes[0].plot(centers, P1, c=color, label=_type)
-          ax.legend()
-          ax.set_ylabel("# of lines")
+          # HH, _ = np.histogram(df.dwave_nn[df.mutual], bins=bins)
+          # P1 = HH.cumsum() / H
+          # axes[0].plot(centers, P1, c=color, label=_type)
+          ax.set_ylabel("Cumulative\n# of lines", rotation="horizontal", ha="right", va="center")
+
+      fig.legend(loc=(0.55, 0.65), fontsize="small")
 
       axes[-1].set(
           xscale="log",
-          xlabel=r"Nearest neighbor wavenumber difference, $\mathrm{Å}^{-1}$",
+          xlabel=r"Nearest neighbor wavelength difference: $\Delta\lambda_{\mathrm{nn}}$, Å",
       )
-      axes[0].axhline(2/3, color="b", linestyle="dashed")
-      axes[0].legend()
-      axes[0].set(
-          ylim=[0.45, 1.1],
-          ylabel="Degree of reciprocity",
-      )
+      # axes[0].axhline(2/3, color="b", linestyle="dashed")
+      # axes[0].legend()
+      # axes[0].set(
+      #     ylim=[0.45, 1.1],
+      #     ylabel="Degree of reciprocity",
+      # )
       sns.despine()
-      fig.savefig(figfile)
+      fig.savefig(figfile, bbox_inches="tight")
       print(figfile, end="")
 
 

@@ -20,17 +20,20 @@ colors = ["r", "k"]
 # 
 wavgrid = np.arange(4600, 9400, dtype=float)
 
-def finesse_regrid(waves, values, window_size=None):
-    """Fix up a quantity as a function of wavelength"""
-    # Interpolate onto uniform grid
-    vgrid = np.interp(wavgrid, waves.to_numpy(), values.to_numpy())
-    if window_size is not None:
-        vgrid = pd.Series(vgrid).rolling(window=window_size, center=True).mean()
-    return vgrid
+def finesse_rolling(waves, values, window_size):
+    """Take rolling mean in window"""
+    return values.rolling(window=window_size, center=True)
 
-def finesse(waves, values, window_size):
-    """Fix up a quantity as a function of wavelength"""
-    return values.rolling(window=window_size, center=True).mean()
+def finesse_reindex(waves, values, window_size):
+    """Reindex, then interpolate, then rolling window"""
+    return (values
+            .reindex(range(values.index.min(),  values.index.max()))
+            .interpolate(method="linear")
+            .rolling(window=window_size, center=True)
+            )
+
+finesse = finesse_rolling
+#finesse = finesse_reindex
 
 def main(
         id_label: str,
@@ -46,59 +49,99 @@ def main(
     info["types"]["Identified"] = info["types"]["Medium"]
 
     # Three panel stack of plots
-    fig, axes = plt.subplots(3,  1, figsize=(8, 8), sharex=True)
+    sns.set_color_codes()
+    fig, axes = plt.subplots(3,  1, figsize=(5, 5), sharex=True)
     figfile = f"nearest-neighbor-stats-{id_label}.pdf"
-    for _type, type_data in info["types"].items():
-        if not _type in types:
-            continue
-        cmap = sns.dark_palette(
-            tuple(type_data["husl"]),
-            input="husl",
-            as_cmap=True,
-        )
+    for _type, color in zip(types, colors):
+        type_data = info["types"][_type]
         df = pd.read_csv(
             f"all-lines-{id_label}/nearest-neighbors-{_type}.csv"
         ).set_index("Index").sort_values(by="wave")
         # Make window-averaged arrays to plot
-        wave = finesse(df.wave, df.wave, window_size)
+        wave = finesse(df.wave, df.wave, window_size).mean()
         density = finesse(df.wave, 1 / df.dwave_mean, window_size)
         ratio_nn = finesse(df.wave, df.dwave_nn / df.dwave_mean, window_size)
         reciprocity = finesse(df.wave, df.mutual.astype(float), window_size)
 
-        axes[0].plot(wave, density, color=cmap(1.0), label=_type)
-        axes[1].plot(wave, ratio_nn, color=cmap(1.0))
-        axes[2].plot(wave, reciprocity, color=cmap(1.0))
+        axes[0].plot(wave, density.mean(), ds="steps-mid", color=color, label=f"{_type} lines")
+        sem = density.std() / np.sqrt(window_size - 1)
+        axes[0].fill_between(
+            wave,
+            density.mean() - sem,
+            density.mean() + sem,
+            step="mid",
+            color=color,
+            alpha=0.2,
+            linewidth=0.0,
+        )
+
+        axes[1].plot(wave, ratio_nn.mean(), ds="steps-mid", color=color)
+        sem = ratio_nn.std() / np.sqrt(window_size - 1)
+        axes[1].fill_between(
+            wave,
+            ratio_nn.mean() - sem,
+            ratio_nn.mean() + sem,
+            step="mid",
+            color=color,
+            alpha=0.2,
+            linewidth=0.0,
+        )
+
+        axes[2].plot(wave, reciprocity.mean(), ds="steps-mid", color=color)
+        sem = reciprocity.std() / np.sqrt(window_size - 1)
+        axes[2].fill_between(
+            wave,
+            reciprocity.mean() - sem,
+            reciprocity.mean() + sem,
+            step="mid",
+            color=color,
+            alpha=0.2,
+            linewidth=0.0,
+        )
 
 
 
     axes[-1].set(
-        xlabel=r"Wavelength, Angstrom",
+        xlabel=r"Wavelength, Å",
     )
 
     axes[0].set(
         ylim=[0.0, None],
         yscale="linear",
-        ylabel="Spectral density:\n" + r"$\rho_\lambda$, Lines / Å",
+    )
+    axes[0].set_ylabel(
+        "Spectral\ndensity:\n" + r" $\rho_\lambda = 1 / \langle \Delta\lambda \rangle$, Å$^{-1}$",
+        rotation="horizontal", ha="center", va="center",
+        labelpad=50,
     )
 
     axes[1].axhline(1/2, color="b", linestyle="dashed")
     axes[1].set(
         ylim=[0.0, 1.05],
-        ylabel="Nearest-neighbor factor:\n" + r"$\rho_\lambda \times \langle \Delta\lambda_{\mathrm{NN}} \rangle$",
+    )
+    axes[1].set_ylabel(
+        "Nearest-neighbor\n" + r"ratio: $\langle \Delta\lambda_{\mathrm{nn}} \rangle / \langle \Delta\lambda \rangle$",
+        rotation="horizontal", ha="center", va="center",
+        labelpad=50,
     )
 
     axes[2].axhline(2/3, color="b", linestyle="dashed")
     axes[2].set(
         ylim=[0.0, 1.05],
-        ylabel="Degree of reciprocity",
     )
+    axes[2].set_ylabel(
+        "Degree of\nreciprocity:\n" + r"$P_{\mathrm{nn-nn}}$",
+        rotation="horizontal", ha="center", va="center",
+        labelpad=50,
+    )
+
 
 
     axes[0].legend()
     for ax in axes:
         ax.grid(axis="x", color="k", linestyle="dotted")
     sns.despine()
-    fig.savefig(figfile)
+    fig.savefig(figfile, bbox_inches="tight")
     print(figfile, end="")
 
 
