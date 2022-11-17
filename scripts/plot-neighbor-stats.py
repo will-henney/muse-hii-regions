@@ -14,8 +14,13 @@ import astropy.units as u  # type: ignore
 types = [
     "Identified",
     "Unidentified",
+#     "Cross",
 ]
-colors = ["r", "k"]
+colors = [
+    "r",
+    "k",
+    # "c",
+]
 
 # 
 wavgrid = np.arange(4600, 9400, dtype=float)
@@ -53,7 +58,6 @@ def main(
     fig, axes = plt.subplots(3,  1, figsize=(5, 5), sharex=True)
     figfile = f"nearest-neighbor-stats-{id_label}.pdf"
     for _type, color in zip(types, colors):
-        type_data = info["types"][_type]
         df = pd.read_csv(
             f"all-lines-{id_label}/nearest-neighbors-{_type}.csv"
         ).set_index("Index").sort_values(by="wave")
