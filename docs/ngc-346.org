@@ -6021,6 +6021,21 @@ CLOSED: [2022-11-15 Tue 18:57]
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/hist-nearest-neighbors-c007-chop-mean.pdf]]
 
+*** TODO Step 13: Go back and do a better job of de-blending the sky lines
+- After making the 1d spectrum plots, it is apparent that the sky contamination of some lines is more serious than I had thought
+  - I sorted the [[file:../data/n346-lines/all-lines-c007-chop-mean/uil-final-table.csv]] table on I/0 ratio and started looking at all the lines that supposedly had I/0 > 1
+  - It turned out that they were all spurious, mainly due to blending with sky lines
+  - In reality, most should count as non-detections in Zone I
+- So, this means that the progressive sequence that we see on the diagnostic diagrams is probably not real
+  - In reality, there are few if any UIL that have intermediate I/0 ratios
+- So now I have a plan for dealing with the sky
+  - I will use Zone IV as a proxy for the sky emission, since there should be no real emission of the UILs from this zone
+  - So subtract the Zone IV intensity from Zones I and II
+  - But only do this for UILs that are marked as blend with sky, so as not to add unnecessary noise
+  - And we need to subtract before dividing by H beta, assuming that the sky intensity is roughly uniform  between the zones.
+- [ ] Implementation in the particular steps above:
+  - [2022-11-23 Wed] *Do this next*
+
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
   - This is evidence for the local anisotropy of the radiation field
