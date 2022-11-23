@@ -22,7 +22,7 @@ def main(
         zone_file: str="zones.yaml",
 ):
     """Plot of spectra from zones in a given wave range"""
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(6, 6.4))
     figfile = f"spec1d-{id_label}-{int(wave_range[0])}-{int(wave_range[1])}.pdf"
 
     with open(zone_file) as f:
@@ -44,12 +44,12 @@ def main(
             tuple(zone["husl"]),
             input="husl",
             as_cmap=True,
-        )(0.8)
+        )(0.6)
         ax.plot(
             1e10 * spec.wave.coord() / doppler,
             spec.data / scale + offset,
             drawstyle="steps-mid",
-            linewidth=1,
+            linewidth=0.7,
             color=color,
         )
         # (spec / scale + offset).plot(label=zone["label"], linewidth=1, color=color)
@@ -72,13 +72,13 @@ def main(
         if wave_range[0] / doppler < data.wave0 < wave_range[1] / doppler:
             linestyle = "dotted" if data.blend else "solid"
             if data.Type.startswith('Deep'):
-                ax.axvline(data.wave0, 0.8, 0.9, color="0.5", lw=1.5, linestyle=linestyle)
+                ax.axvline(data.wave0, 0.85, 0.95, color="0.7", lw=1.5, linestyle=linestyle)
             else:
-                ax.axvline(data.wave0, 0.8, 0.85, color="0.5", lw=1, linestyle=linestyle)
+                ax.axvline(data.wave0, 0.85, 0.9, color="0.7", lw=1, linestyle=linestyle)
     ax.minorticks_on()
     ax.yaxis.set_tick_params(which='minor', left=False)
     ax.grid(which="major", linewidth=0.5)
-    ax.set_ylim(-3 * separation, 12 * separation)
+    ax.set_ylim(-3 * separation, 9 * separation)
     ax.set_xlim(None, wave_range[1])
     ax.set_xlabel("STP wavelength in rest frame of nebula, Å")
     ax.set_ylabel(

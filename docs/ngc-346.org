@@ -5087,6 +5087,14 @@ Index
 - Based on
   - [[file:../scripts/spec1d-plot-all-zones.py]]
   - from [[id:765997A8-764F-46E3-89EE-FC2E42F88EBB][Plot the per-zone spectra]]
+- These get edited afterwards in Affinity Designer to add markers for all the lines
+- [2022-11-23 Wed] Calculating a new page size to make it not so tall
+  - Original version was
+    - Figure size: (6, 8) inches
+    - Y limits: -3 to 12 in data units
+  - Try changing to 9 as upper limit
+    - factor: 12/15 = 0.8
+    - New  Figure size: (6, 6.4) inches
 
 
 #+begin_src python :tangle ../scripts/spec1d-wave-range.py
@@ -5114,7 +5122,7 @@ Index
           zone_file: str="zones.yaml",
   ):
       """Plot of spectra from zones in a given wave range"""
-      fig, ax = plt.subplots(figsize=(6, 5))
+      fig, ax = plt.subplots(figsize=(6, 6.4))
       figfile = f"spec1d-{id_label}-{int(wave_range[0])}-{int(wave_range[1])}.pdf"
 
       with open(zone_file) as f:
@@ -5136,12 +5144,12 @@ Index
               tuple(zone["husl"]),
               input="husl",
               as_cmap=True,
-          )(0.8)
+          )(0.6)
           ax.plot(
               1e10 * spec.wave.coord() / doppler,
               spec.data / scale + offset,
               drawstyle="steps-mid",
-              linewidth=1,
+              linewidth=0.7,
               color=color,
           )
           # (spec / scale + offset).plot(label=zone["label"], linewidth=1, color=color)
@@ -5164,13 +5172,13 @@ Index
           if wave_range[0] / doppler < data.wave0 < wave_range[1] / doppler:
               linestyle = "dotted" if data.blend else "solid"
               if data.Type.startswith('Deep'):
-                  ax.axvline(data.wave0, 0.8, 0.9, color="0.5", lw=1.5, linestyle=linestyle)
+                  ax.axvline(data.wave0, 0.85, 0.95, color="0.7", lw=1.5, linestyle=linestyle)
               else:
-                  ax.axvline(data.wave0, 0.8, 0.85, color="0.5", lw=1, linestyle=linestyle)
+                  ax.axvline(data.wave0, 0.85, 0.9, color="0.7", lw=1, linestyle=linestyle)
       ax.minorticks_on()
       ax.yaxis.set_tick_params(which='minor', left=False)
       ax.grid(which="major", linewidth=0.5)
-      ax.set_ylim(-3 * separation, 12 * separation)
+      ax.set_ylim(-3 * separation, 9 * separation)
       ax.set_xlim(None, wave_range[1])
       ax.set_xlabel("STP wavelength in rest frame of nebula, Å")
       ax.set_ylabel(
@@ -5189,48 +5197,83 @@ Index
 
 #+RESULTS:
 
+
+***** 6000 to 7000: Region around H alpha
+
+First do the bluest UILs
+
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 8520 8800 --separation 8
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 6000 6390 --separation 5 --star-scale 5
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8520-8800.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6000-6390.pdf]]
 
+Then the immediate vicinity of Ha. We go as far as 6810 to get in the  [K IV] 6795 line.  There is another UIL further red before hitting the telluric bands, but I cut that off so that the range is not too wide
 
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 6760 7560 --separation 5 --star-scale 10
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 6430 6810 --separation 5 --star-scale 5
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6760-7560.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6430-6810.pdf]]
 
+
+
+
+***** 7000 to 8000
+First section up to the [O II] lines
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 6000 6750 --separation 5 --star-scale 10
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 6980 7380 --separation 10 --star-scale 10
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6000-6750.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6980-7380.pdf]]
+
+
+A nice region that leads up to the 8150.7 line
 
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 7700 8160 --separation 8 --star-scale 5
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 7760 8160 --separation 10 --star-scale 5
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-7700-8160.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-7760-8160.pdf]]
 
+
+
+***** 8000 to 9000
+Around the Paschen limit
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 8170 8500 --separation 8 --star-scale 10
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 8170 8500 --separation 15 --star-scale 10
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8170-8500.pdf]]
 
+
+
+
+Next batch is a nice clean area. The H I lines are brighter, so increase the separation
+
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 8800 9300 --separation 8 --star-scale 10
+  python ../../scripts/spec1d-wave-range.py c007-chop-mean 8520 8860 --separation 25 --star-scale 5
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8800-9300.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8520-8860.pdf]]
+
+
+
+***** 9000 plus
+The last range
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 8880 9300 --separation 15 --star-scale 10
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8880-9300.pdf]]
 
 
 **** Choosing good microcosm ranges
