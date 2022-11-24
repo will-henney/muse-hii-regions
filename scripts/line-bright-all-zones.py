@@ -11,6 +11,9 @@ from discrete_gaussian_model import DiscreteGaussianModel
 INDEX_PATTERN = "[0-9]" * 4
 FITTER = fitting.LevMarLSQFitter()
 
+ZONES_TO_FIX_SKY = ["0", "I", "II", "III", "MYSO"]
+SKY_SPECIES = ["OH", "O_2"]
+
 def get_id_string(data):
     s = f"{data['Index']:04d}-{str(data['Type']).rstrip('?')}"
     if data["ID"]:
@@ -45,6 +48,26 @@ def fit_gauss7(wave: np.ndarray, spec: np.ndarray, mask: np.ndarray):
     return FITTER(g0, wave[_mask], spec[_mask])
     # return g0
 
+def is_sky_blend(d: dict):
+    """Check if this line is a UIL or similar that is blended with sky"""
+    if d.get("ID", "") and d.get("ID", "").endswith("+"):
+        # Case where we have a blended line: check that it is with
+        # a sky line by looking at the note to the ID column
+        try:
+            # We need to look in first element of list inside dict inside dict
+            is_blend = any(s in d["Notes"]["ID"][0] for s in SKY_SPECIES)
+        except (KeyError, IndexError):
+            # But either of the dicts may be absent
+            is_blend = False
+        if d["Type"].startswith(("Med", "High")):
+            # Also, do not try this with Medium or higher
+            # ionization lines, since they will have real emission
+            # in Zone IV
+            is_blend = False
+    else:
+        # Or, not even a blended line
+        is_blend = False
+    return is_blend
 
 
 def main(
@@ -64,6 +87,9 @@ def main(
     for zone in zones:
         specfile = f"{zone_spectra_dir}/{zone['label']}-{spec_id_label}-spec1d.fits"
         zone["spec"] = Spectrum(str(specfile))
+        # Save the Zone IV spec when we find it, since we will use it later to fix the sky
+        if zone["label"] == "zone-IV":
+            spec_IV = zone["spec"]
         if nwave is None:
             nwave = len(zone["spec"].data)
         else:
@@ -89,9 +115,16 @@ def main(
         with open(line_file) as f:
             metadata = yaml.safe_load(f)
         ipeak = metadata["Index"]
+        # Check if we are blended with sky
+        metadata["sky_blend"] = is_sky_blend(metadata)
         # Get the strength for each zone
         for zone in zones:
-            spec = zone["spec"]
+            spec = zone["spec"].copy()
+            # Case where we have a sky blend
+            if metadata["sky_blend"] and zone["label"].split("-")[-1] in ZONES_TO_FIX_SKY:
+                # Use Zone IV to model the sky
+                spec = spec - spec_IV
+
             # Wide window includes BG and line
             win7 = spec.data[ipeak-3:ipeak+4]
             # Corresponding wavelengths, converted from m to Angstrom

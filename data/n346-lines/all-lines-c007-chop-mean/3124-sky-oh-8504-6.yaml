@@ -10,16 +10,17 @@ Strength: null
 Type: Sky
 lambda_HM: null
 lambda_obs: 8504.944824
+sky_blend: true
 zone-0:
   BG mean: 0.0
   BG npix: 0
   Gauss Fit:
-    Amplitude: 56.8178
-    Mean Wave: 8508.3956
-    RMS Width: 1.5208
+    Amplitude: -1.174
+    Mean Wave: 8505.0478
+    RMS Width: 0.1556
   Pixel Wave: 8504.9448
   Sigma: 0.0
-  Strength: 9.6389
+  Strength: 1.6311
   Window:
     BG Mask:
     - false
@@ -30,21 +31,21 @@ zone-0:
     - false
     - false
     Fit:
-    - 0.0004
-    - 0.0127
-    - 0.196
-    - 1.5851
-    - 6.7322
-    - 15.0637
-    - 17.791
+    - -0.0
+    - -0.0
+    - -0.0
+    - -1.1736
+    - -0.0005
+    - -0.0
+    - -0.0
     Spectrum:
-    - 1.5137
-    - 3.0698
-    - 1.6473
-    - 1.1595
-    - 6.8321
-    - 11.5282
-    - 3.566
+    - 1.886
+    - 5.1693
+    - 2.6404
+    - -1.3308
+    - 0.3216
+    - 2.3443
+    - 0.2746
     Wave:
     - 8501.1948
     - 8502.4448
@@ -57,12 +58,12 @@ zone-I:
   BG mean: 0.0
   BG npix: 0
   Gauss Fit:
-    Amplitude: 7.3244
-    Mean Wave: 8505.3624
-    RMS Width: 0.8523
+    Amplitude: -3.3016
+    Mean Wave: 8491.6082
+    RMS Width: 0.5532
   Pixel Wave: 8504.9448
   Sigma: 0.0
-  Strength: 6.9788
+  Strength: -1.029
   Window:
     BG Mask:
     - false
@@ -73,21 +74,21 @@ zone-I:
     - false
     - false
     Fit:
-    - 0.0001
-    - 0.0261
-    - 0.7841
-    - 3.5561
-    - 2.6384
-    - 0.3142
-    - 0.0054
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
     Spectrum:
-    - -0.2749
-    - -1.4256
-    - 0.784
-    - 3.5562
-    - 2.6386
-    - 2.3824
-    - 0.4266
+    - 0.0973
+    - 0.6739
+    - 1.777
+    - 1.0659
+    - -3.8719
+    - -6.8015
+    - -2.8649
     Wave:
     - 8501.1948
     - 8502.4448
@@ -100,12 +101,12 @@ zone-II:
   BG mean: 0.0
   BG npix: 0
   Gauss Fit:
-    Amplitude: 26.2637
-    Mean Wave: 8507.4553
-    RMS Width: 1.3672
+    Amplitude: -0.9008
+    Mean Wave: 8505.4353
+    RMS Width: 0.2292
   Pixel Wave: 8504.9448
   Sigma: 0.0
-  Strength: 8.6663
+  Strength: 0.6585
   Window:
     BG Mask:
     - false
@@ -116,21 +117,21 @@ zone-II:
     - false
     - false
     Fit:
-    - 0.0005
-    - 0.0171
-    - 0.2691
-    - 1.9178
-    - 6.227
-    - 9.2556
-    - 6.3092
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.6498
+    - -0.251
+    - -0.0
+    - -0.0
     Spectrum:
-    - 0.1357
-    - -0.8512
-    - 0.5664
-    - 1.8415
-    - 6.2584
-    - 11.5015
-    - 4.2289
+    - 0.5079
+    - 1.2482
+    - 1.5594
+    - -0.6488
+    - -0.2521
+    - 2.3176
+    - 0.9374
     Wave:
     - 8501.1948
     - 8502.4448
@@ -143,12 +144,12 @@ zone-III:
   BG mean: 0.0
   BG npix: 0
   Gauss Fit:
-    Amplitude: 13.1173
-    Mean Wave: 8505.6716
-    RMS Width: 0.1043
+    Amplitude: 3.791
+    Mean Wave: 8451.9142
+    RMS Width: 5.0518
   Pixel Wave: 8504.9448
   Sigma: 0.0
-  Strength: 9.7109
+  Strength: 1.7032
   Window:
     BG Mask:
     - false
@@ -162,18 +163,18 @@ zone-III:
     - 0.0
     - 0.0
     - 0.0
-    - 2.1588
-    - 10.9585
+    - 0.0
+    - 0.0
     - 0.0
     - 0.0
     Spectrum:
-    - -0.4147
-    - -2.7044
-    - -3.4038
-    - 2.1596
-    - 10.9552
-    - 15.6968
-    - 5.9902
+    - -0.0424
+    - -0.6049
+    - -2.4108
+    - -0.3308
+    - 4.4447
+    - 6.5129
+    - 2.6987
     Wave:
     - 8501.1948
     - 8502.4448
@@ -229,12 +230,12 @@ zone-MYSO:
   BG mean: 0.0
   BG npix: 0
   Gauss Fit:
-    Amplitude: 53.182
-    Mean Wave: 8505.7452
-    RMS Width: 0.1108
+    Amplitude: 43.8868
+    Mean Wave: 8505.6766
+    RMS Width: 0.0197
   Pixel Wave: 8504.9448
   Sigma: 0.0
-  Strength: 61.2491
+  Strength: 53.2414
   Window:
     BG Mask:
     - false
@@ -248,18 +249,18 @@ zone-MYSO:
     - 0.0
     - 0.0
     - 0.0
-    - 3.0184
-    - 50.1636
+    - 0.0
+    - 43.8868
     - 0.0
     - 0.0
     Spectrum:
-    - 4.7307
-    - 11.0534
-    - 7.5405
-    - 2.7372
-    - 50.9714
-    - 70.3104
-    - 10.6974
+    - 5.1029
+    - 13.1529
+    - 8.5335
+    - 0.2468
+    - 44.461
+    - 61.1265
+    - 7.4059
     Wave:
     - 8501.1948
     - 8502.4448

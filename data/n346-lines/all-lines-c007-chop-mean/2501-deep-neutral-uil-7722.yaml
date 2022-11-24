@@ -10,16 +10,17 @@ Strength: 1.1
 Type: Deep Neutral?
 lambda_HM: 7722.36
 lambda_obs: 7726.194824
+sky_blend: true
 zone-0:
-  BG mean: 0.1712
+  BG mean: -0.2541
   BG npix: 2
   Gauss Fit:
-    Amplitude: 2.4291
-    Mean Wave: 7725.784
-    RMS Width: 0.8066
+    Amplitude: 1.6099
+    Mean Wave: 7725.4005
+    RMS Width: 1.0174
   Pixel Wave: 7726.1948
-  Sigma: 0.0894
-  Strength: 2.3378
+  Sigma: 0.1869
+  Strength: 1.4868
   Window:
     BG Mask:
     - true
@@ -30,21 +31,21 @@ zone-0:
     - false
     - false
     Fit:
-    - 0.0009
-    - 0.0835
-    - 0.8759
-    - 1.2271
-    - 0.2362
-    - 0.0056
-    - 0.0
+    - 0.0173
+    - 0.2143
+    - 0.6794
+    - 0.5673
+    - 0.1242
+    - 0.0069
+    - 0.0001
     Spectrum:
-    - -0.0894
-    - 0.0894
-    - 0.8745
-    - 1.2277
-    - 0.2356
-    - 0.6402
-    - 0.4128
+    - -0.1869
+    - 0.1869
+    - 0.7748
+    - 0.4379
+    - 0.2741
+    - 0.7947
+    - 0.277
     Wave:
     - 7722.4448
     - 7723.6948
@@ -54,15 +55,15 @@ zone-0:
     - 7728.6948
     - 7729.9448
 zone-I:
-  BG mean: 0.4832
+  BG mean: 0.058
   BG npix: 2
   Gauss Fit:
-    Amplitude: 0.7118
-    Mean Wave: 7725.7453
-    RMS Width: 0.1584
+    Amplitude: -0.2489
+    Mean Wave: 7726.8359
+    RMS Width: 0.3096
   Pixel Wave: 7726.1948
-  Sigma: 0.0279
-  Strength: 0.6336
+  Sigma: 0.1254
+  Strength: -0.2173
   Window:
     BG Mask:
     - true
@@ -73,21 +74,21 @@ zone-I:
     - false
     - false
     Fit:
-    - 0.0
-    - 0.0
-    - 0.0954
-    - 0.6163
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.1193
+    - -0.1296
+    - -0.0
+    - -0.0
     Spectrum:
-    - -0.0279
-    - 0.0279
-    - 0.1312
-    - 0.6704
-    - -0.168
-    - -0.092
-    - 0.0327
+    - -0.1254
+    - 0.1254
+    - 0.0315
+    - -0.1194
+    - -0.1295
+    - 0.0625
+    - -0.1031
     Wave:
     - 7722.4448
     - 7723.6948
@@ -97,15 +98,15 @@ zone-I:
     - 7728.6948
     - 7729.9448
 zone-II:
-  BG mean: 0.6726
+  BG mean: 0.2474
   BG npix: 2
   Gauss Fit:
-    Amplitude: 0.8147
-    Mean Wave: 7725.6133
-    RMS Width: 0.0499
+    Amplitude: -0.3257
+    Mean Wave: 7726.9064
+    RMS Width: 0.3404
   Pixel Wave: 7726.1948
-  Sigma: 0.0941
-  Strength: 0.586
+  Sigma: 0.0034
+  Strength: -0.265
   Window:
     BG Mask:
     - true
@@ -116,21 +117,21 @@ zone-II:
     - false
     - false
     Fit:
-    - 0.0
-    - 0.0
-    - 0.1562
-    - 0.6584
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.1301
+    - -0.1954
+    - -0.0001
+    - -0.0
     Spectrum:
-    - 0.0941
-    - -0.0941
-    - 0.1603
-    - 0.6596
-    - -0.2339
-    - -0.0898
-    - 0.0043
+    - -0.0034
+    - 0.0034
+    - 0.0606
+    - -0.1302
+    - -0.1954
+    - 0.0647
+    - -0.1315
     Wave:
     - 7722.4448
     - 7723.6948
@@ -140,15 +141,15 @@ zone-II:
     - 7728.6948
     - 7729.9448
 zone-III:
-  BG mean: 0.3316
+  BG mean: -0.0936
   BG npix: 2
   Gauss Fit:
-    Amplitude: 1.2583
-    Mean Wave: 7726.7475
-    RMS Width: 0.1441
+    Amplitude: 0.501
+    Mean Wave: 7726.9313
+    RMS Width: 0.1163
   Pixel Wave: 7726.1948
-  Sigma: 0.0577
-  Strength: 1.2186
+  Sigma: 0.1552
+  Strength: 0.3676
   Window:
     BG Mask:
     - true
@@ -162,18 +163,18 @@ zone-III:
     - 0.0
     - 0.0
     - 0.0
-    - 0.8709
-    - 0.3875
+    - 0.0845
+    - 0.4165
     - 0.0
     - 0.0
     Spectrum:
-    - -0.0577
-    - 0.0577
-    - -0.0397
-    - 0.8746
-    - 0.3837
-    - 0.1161
-    - 0.1394
+    - -0.1552
+    - 0.1552
+    - -0.1394
+    - 0.0848
+    - 0.4223
+    - 0.2706
+    - 0.0036
     Wave:
     - 7722.4448
     - 7723.6948
@@ -226,15 +227,15 @@ zone-IV:
     - 7728.6948
     - 7729.9448
 zone-MYSO:
-  BG mean: 0.3686
+  BG mean: -0.0567
   BG npix: 2
   Gauss Fit:
-    Amplitude: 2.7845
-    Mean Wave: 7725.6494
-    RMS Width: 0.2984
+    Amplitude: 2.2504
+    Mean Wave: 7725.384
+    RMS Width: 0.8516
   Pixel Wave: 7726.1948
-  Sigma: 0.2135
-  Strength: 2.7407
+  Sigma: 0.311
+  Strength: 1.8897
   Window:
     BG Mask:
     - true
@@ -245,21 +246,21 @@ zone-MYSO:
     - false
     - false
     Fit:
-    - 0.0
-    - 0.0
-    - 1.0996
-    - 1.6848
-    - 0.0001
-    - 0.0
+    - 0.0074
+    - 0.2305
+    - 1.0817
+    - 0.8276
+    - 0.1015
+    - 0.0018
     - 0.0
     Spectrum:
-    - -0.2135
-    - 0.2135
-    - 1.1127
-    - 1.7093
-    - -0.0812
-    - 0.495
-    - -0.7874
+    - -0.311
+    - 0.311
+    - 1.013
+    - 0.9195
+    - -0.0427
+    - 0.6496
+    - -0.9232
     Wave:
     - 7722.4448
     - 7723.6948

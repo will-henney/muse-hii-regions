@@ -58,6 +58,8 @@ def main(
         ["Type", "ID"] + [f"{zlabel}.Gauss Fit.RMS Width" for zlabel in zone_labels]
     ].rename(columns=lambda c: c.split(".")[0])
 
+
+
     # And put on scale of H beta = 100 (H beta has Index = 211)
     # We have to do the uncertainties first, otherwise Hb has already changed!
     df_sig.loc[:, zone_labels] *= 100 / df.loc[211, zone_labels]
@@ -69,6 +71,8 @@ def main(
     df_g.loc[:, zone_labels] *= 100 / df_g.loc[211, zone_labels]
 
     print(df_g)
+
+    print(df[df0.sky_blend])
 
     df.to_csv(Path(data_dir) / "line-fluxes.csv")
     df_sig.to_csv(Path(data_dir) / "line-uncertainties.csv")
