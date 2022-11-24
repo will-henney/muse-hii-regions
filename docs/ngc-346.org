@@ -5800,7 +5800,8 @@ CLOSED: [2022-11-15 Tue 18:57]
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/hist-nearest-neighbors-c007-chop-mean.pdf]]
 
-*** TODO Step 13: Go back and do a better job of de-blending the sky lines
+*** DONE Step 13: Go back and do a better job of de-blending the sky lines
+CLOSED: [2022-11-24 Thu 12:28]
 - After making the 1d spectrum plots, it is apparent that the sky contamination of some lines is more serious than I had thought
   - I sorted the [[file:../data/n346-lines/all-lines-c007-chop-mean/uil-final-table.csv]] table on I/0 ratio and started looking at all the lines that supposedly had I/0 > 1
   - It turned out that they were all spurious, mainly due to blending with sky lines
@@ -5812,7 +5813,7 @@ CLOSED: [2022-11-15 Tue 18:57]
   - So subtract the Zone IV intensity from Zones I and II
   - But only do this for UILs that are marked as blend with sky, so as not to add unnecessary noise
   - And we need to subtract before dividing by H beta, assuming that the sky intensity is roughly uniform  between the zones.
-- [ ] Implementation in the particular steps above:
+- [X] Implementation in the particular steps above:
   - [2022-11-23 Wed] *Do this next*
   - We need to decide which lines need treating:
     - ~ID == UIL+~
@@ -5829,7 +5830,7 @@ CLOSED: [2022-11-15 Tue 18:57]
     - [[id:16E007EA-F0D2-4AC5-A53E-0CC153767167][More elaborate plot of ratio versus ratio]]
       - This shows some minor changes in panel a, but much less than I expected
       - It removes nearly all the black stars with I/0 >  1, but does not affect the rest
-      - [ ] Need to add this to the Affinity figure
+      - [X] Need to add this to the Affinity figure
     - [[id:F7004917-496C-473F-8256-7821C94B7417][Write tables with the ratios]]
       - This writes out [[file:../data/n346-lines/all-lines-c007-chop-mean/ratios-vs-ratios-by-zone.csv]]
     - Deal with the velocities
@@ -5843,7 +5844,7 @@ CLOSED: [2022-11-15 Tue 18:57]
       - But we do see a alight change in the degree of reciprocity for the identified lines
         - We no longer get the peak in P(nn-nn) to the blue side of the Paschen jump
         - This is entirely due to adding in more N I lines, so it is legitimate 
-      - [ ] Need to add the plots to the Affinity figure
+      - [X] Need to add the plots to the Affinity figure
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
