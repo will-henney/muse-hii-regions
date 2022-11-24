@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: 1.1231
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.2892
     Mean Wave: 5995.2203
@@ -51,9 +52,13 @@ zone-0:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-I:
   BG mean: 1.1105
   BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 0.1944
     Mean Wave: 5995.8304
@@ -94,9 +99,11 @@ zone-I:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-II:
   BG mean: 1.208
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.3256
     Mean Wave: 5994.3024
@@ -137,9 +144,12 @@ zone-II:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.1001
   BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: -0.2004
     Mean Wave: 5993.2954
@@ -180,9 +190,13 @@ zone-III:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.978
   BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: -0.1117
     Mean Wave: 5993.3306
@@ -223,9 +237,11 @@ zone-IV:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 1.8849
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 1.9827
     Mean Wave: 5994.426
@@ -266,9 +282,12 @@ zone-MYSO:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false
 zone-S:
   BG mean: 2.1565
   BG npix: 7
+  Fit Info: "The cosine of the angle between func(x) and any column of the\n  Jacobian\
+    \ is at most 0.000000 in absolute value"
   Gauss Fit:
     Amplitude: 0.1956
     Mean Wave: 5983.9455
@@ -309,3 +328,4 @@ zone-S:
     - 5994.9448
     - 5996.1948
     - 5997.4448
+  Zone IV subtracted: false

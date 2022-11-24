@@ -121,8 +121,10 @@ def main(
         for zone in zones:
             spec = zone["spec"].copy()
             # Case where we have a sky blend
-            if metadata["sky_blend"] and zone["label"].split("-")[-1] in ZONES_TO_FIX_SKY:
+            sub_iv = metadata["sky_blend"] and zone["label"].split("-")[-1] in ZONES_TO_FIX_SKY
+            if sub_iv:
                 # Use Zone IV to model the sky
+                orig_spec = spec
                 spec = spec - spec_IV
 
             # Wide window includes BG and line
@@ -147,6 +149,7 @@ def main(
                 "BG npix": int(bg_npix),
                 "BG mean": sanitize(bg_mean),
                 "Pixel Wave": sanitize(wave7[3]),
+                "Zone IV subtracted": sub_iv,
             }
             metadata[zone["label"]]["Gauss Fit"] = {
                 "Amplitude": sanitize(gfit.amplitude.value),
@@ -160,7 +163,25 @@ def main(
                     "Fit":  sanitize_array(gfit(wave7)),
                     "BG Mask": m7.tolist(),
                 }
-                #metadata[zone["label"]]["Fit Info"] = str(FITTER.fit_info)
+                if sub_iv:
+                    metadata[zone["label"]]["Window"]["Before zone IV subtraction"] = sanitize_array(
+                        orig_spec.data[ipeak-3:ipeak+4] - bg_mean
+                    )
+
+                metadata[zone["label"]]["Fit Info"] = str(FITTER.fit_info["message"])
+        # Another loop over zones to increase the uncertainty estimate
+        # for cases where we have corrected for a sky blend
+        for zone in zones:
+            if metadata[zone["label"]]["Zone IV subtracted"]:
+                # Add contributions in quadrature
+                metadata[zone["label"]]["Sigma"] = sanitize(np.sqrt(
+                    # The original uncertainty for this zone
+                    metadata[zone["label"]]["Sigma"] ** 2
+                    # The uncertainty for zone IV
+                    + metadata["zone-IV"]["Sigma"] ** 2
+                    # The difference in base levels
+                    + (metadata["zone-IV"]["BG mean"] - metadata[zone["label"]]["BG mean"]) ** 2
+                ))
 
         out_dir = Path(f"all-lines-{spec_id_label}")
         out_dir.mkdir(parents=True, exist_ok=True)

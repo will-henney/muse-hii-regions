@@ -95,7 +95,7 @@ def main(
         else:
             bstring = f"> {thresh}"
         axes[jrow, -1].text(
-            1.3, 0.5, "Brightness\n" + bstring + "% Hβ",
+            1.3, 0.4, "Brightness\n" + bstring + "% Hβ",
             transform=axes[jrow, -1].transAxes,
             ha="center",
         )

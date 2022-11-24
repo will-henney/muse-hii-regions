@@ -12,6 +12,7 @@ sky_blend: false
 zone-0:
   BG mean: 0.7711
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 2.2413
     Mean Wave: 6040.8426
@@ -52,9 +53,11 @@ zone-0:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-I:
   BG mean: 1.0294
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.1098
     Mean Wave: 6041.6986
@@ -95,9 +98,13 @@ zone-I:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-II:
   BG mean: 1.1577
   BG npix: 4
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 0.0598
     Mean Wave: 6041.862
@@ -138,9 +145,11 @@ zone-II:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.0278
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.334
     Mean Wave: 6042.2387
@@ -181,9 +190,11 @@ zone-III:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.9083
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.3617
     Mean Wave: 6041.213
@@ -224,9 +235,11 @@ zone-IV:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 0.1486
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 6.364
     Mean Wave: 6040.4744
@@ -267,9 +280,11 @@ zone-MYSO:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false
 zone-S:
   BG mean: 1.5722
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -1.0487
     Mean Wave: 6040.5412
@@ -310,3 +325,4 @@ zone-S:
     - 6042.4448
     - 6043.6948
     - 6044.9448
+  Zone IV subtracted: false

@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: 1.02
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.5378
     Mean Wave: 6086.6675
@@ -51,9 +52,11 @@ zone-0:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.9901
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.1194
     Mean Wave: 6085.0799
@@ -94,9 +97,13 @@ zone-I:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 1.189
   BG npix: 4
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 0.1468
     Mean Wave: 6087.0683
@@ -137,9 +144,11 @@ zone-II:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.0797
   BG npix: 4
+  Fit Info: Number of calls to function has reached maxfev = 100.
   Gauss Fit:
     Amplitude: -0.3574
     Mean Wave: 6085.8115
@@ -180,9 +189,11 @@ zone-III:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.9932
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.5704
     Mean Wave: 6086.3862
@@ -223,9 +234,11 @@ zone-IV:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 0.8531
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 3.8977
     Mean Wave: 6087.3411
@@ -266,9 +279,11 @@ zone-MYSO:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 2.1674
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -1.3554
     Mean Wave: 6086.3823
@@ -309,3 +324,4 @@ zone-S:
     - 6088.6948
     - 6089.9448
     - 6091.1948
+  Zone IV subtracted: false

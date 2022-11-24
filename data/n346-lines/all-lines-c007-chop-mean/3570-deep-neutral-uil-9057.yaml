@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: -1.3647
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 14.9115
     Mean Wave: 9062.3479
@@ -51,9 +52,11 @@ zone-0:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.7217
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.4423
     Mean Wave: 9064.3506
@@ -94,9 +97,11 @@ zone-I:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 0.4832
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 1.0271
     Mean Wave: 9062.9713
@@ -137,9 +142,11 @@ zone-II:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 0.6207
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -2.3646
     Mean Wave: 9062.4055
@@ -180,9 +187,11 @@ zone-III:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.9502
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -2.9801
     Mean Wave: 9061.947
@@ -223,9 +232,12 @@ zone-IV:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 0.1617
   BG npix: 3
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: 7.6815
     Mean Wave: 9064.401
@@ -266,9 +278,11 @@ zone-MYSO:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 2.5966
   BG npix: 3
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -13.2746
     Mean Wave: 9061.3334
@@ -309,3 +323,4 @@ zone-S:
     - 9063.6948
     - 9064.9448
     - 9066.1948
+  Zone IV subtracted: false

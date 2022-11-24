@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: 1.6558
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.9971
     Mean Wave: 5325.6029
@@ -51,9 +52,11 @@ zone-0:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 1.6588
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.6797
     Mean Wave: 5325.8475
@@ -94,9 +97,11 @@ zone-I:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 1.7129
   BG npix: 7
+  Fit Info: Number of calls to function has reached maxfev = 100.
   Gauss Fit:
     Amplitude: 0.493
     Mean Wave: 5325.7844
@@ -137,9 +142,12 @@ zone-II:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.5784
   BG npix: 7
+  Fit Info: "The cosine of the angle between func(x) and any column of the\n  Jacobian\
+    \ is at most 0.000000 in absolute value"
   Gauss Fit:
     Amplitude: 0.1698
     Mean Wave: 5315.8558
@@ -180,9 +188,11 @@ zone-III:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 1.2856
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 2.1512
     Mean Wave: 5325.6293
@@ -223,9 +233,11 @@ zone-IV:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 3.4423
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -5.1898
     Mean Wave: 5323.802
@@ -266,9 +278,11 @@ zone-MYSO:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 3.3389
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 1.8774
     Mean Wave: 5325.3358
@@ -309,3 +323,4 @@ zone-S:
     - 5326.1948
     - 5327.4448
     - 5328.6948
+  Zone IV subtracted: false

@@ -11,6 +11,8 @@ sky_blend: false
 zone-0:
   BG mean: 3.2907
   BG npix: 6
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: -0.3794
     Mean Wave: 4686.0113
@@ -51,9 +53,11 @@ zone-0:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-I:
   BG mean: 3.0225
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.4361
     Mean Wave: 4683.1392
@@ -94,9 +98,11 @@ zone-I:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-II:
   BG mean: 3.4535
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.4931
     Mean Wave: 4682.9421
@@ -137,9 +143,11 @@ zone-II:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-III:
   BG mean: 3.2685
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.3927
     Mean Wave: 4684.205
@@ -180,9 +188,11 @@ zone-III:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 2.546
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.4564
     Mean Wave: 4683.123
@@ -223,9 +233,11 @@ zone-IV:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 6.4768
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 4.347
     Mean Wave: 4682.6622
@@ -266,9 +278,11 @@ zone-MYSO:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false
 zone-S:
   BG mean: 7.8551
   BG npix: 6
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 5.5617
     Mean Wave: 4683.1575
@@ -309,3 +323,4 @@ zone-S:
     - 4684.9448
     - 4686.1948
     - 4687.4448
+  Zone IV subtracted: false

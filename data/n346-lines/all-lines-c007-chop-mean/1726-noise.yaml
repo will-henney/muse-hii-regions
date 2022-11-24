@@ -11,6 +11,8 @@ sky_blend: false
 zone-0:
   BG mean: 0.6702
   BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: -0.0149
     Mean Wave: 6756.9727
@@ -51,9 +53,11 @@ zone-0:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.5785
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.0814
     Mean Wave: 6756.2443
@@ -94,9 +98,12 @@ zone-I:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 0.7037
   BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: -0.0024
     Mean Wave: 6757.17
@@ -137,9 +144,11 @@ zone-II:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 0.6091
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.0791
     Mean Wave: 6758.6461
@@ -180,9 +189,11 @@ zone-III:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.5504
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.1299
     Mean Wave: 6758.2326
@@ -223,9 +234,11 @@ zone-IV:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 1.0888
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.3836
     Mean Wave: 6757.4772
@@ -266,9 +279,11 @@ zone-MYSO:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 1.1236
   BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.7147
     Mean Wave: 6759.2724
@@ -309,3 +324,4 @@ zone-S:
     - 6758.6948
     - 6759.9448
     - 6761.1948
+  Zone IV subtracted: false

@@ -15,12 +15,13 @@ sky_blend: true
 zone-0:
   BG mean: -1.0353
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 10.9412
     Mean Wave: 7711.1915
     RMS Width: 0.7875
   Pixel Wave: 7711.1948
-  Sigma: 0.9047
+  Sigma: 1.958
   Strength: 10.9235
   Window:
     BG Mask:
@@ -31,6 +32,14 @@ zone-0:
     - false
     - true
     - true
+    Before zone IV subtraction:
+    - 1.5608
+    - 0.7943
+    - 1.0246
+    - 5.4567
+    - 5.9698
+    - -0.2836
+    - -0.6844
     Fit:
     - 0.0004
     - 0.0952
@@ -55,15 +64,17 @@ zone-0:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: true
 zone-I:
   BG mean: -0.2098
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 2.166
     Mean Wave: 7710.752
     RMS Width: 0.2064
   Pixel Wave: 7711.1948
-  Sigma: 0.471
+  Sigma: 1.2793
   Strength: 2.5461
   Window:
     BG Mask:
@@ -74,6 +85,14 @@ zone-I:
     - false
     - true
     - true
+    Before zone IV subtraction:
+    - 1.0953
+    - 0.6736
+    - -0.5645
+    - 0.7741
+    - 3.8641
+    - 0.4943
+    - -0.8762
     Fit:
     - 0.0
     - 0.0
@@ -98,15 +117,17 @@ zone-I:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: true
 zone-II:
   BG mean: -0.0995
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 3.7934
     Mean Wave: 7710.7315
     RMS Width: 0.2765
   Pixel Wave: 7711.1948
-  Sigma: 0.7878
+  Sigma: 1.3874
   Strength: 4.4321
   Window:
     BG Mask:
@@ -117,6 +138,14 @@ zone-II:
     - false
     - true
     - true
+    Before zone IV subtraction:
+    - 0.986
+    - 0.5531
+    - -0.1338
+    - 1.8982
+    - 4.1953
+    - 0.1484
+    - -0.3004
     Fit:
     - 0.0
     - 0.0
@@ -141,15 +170,17 @@ zone-II:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: true
 zone-III:
   BG mean: 0.3224
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -1.3622
     Mean Wave: 7710.9522
     RMS Width: 0.42
   Pixel Wave: 7711.1948
-  Sigma: 0.4279
+  Sigma: 1.1352
   Strength: -1.364
   Window:
     BG Mask:
@@ -160,6 +191,14 @@ zone-III:
     - false
     - true
     - true
+    Before zone IV subtraction:
+    - 0.9544
+    - 0.5879
+    - -1.3858
+    - -1.7919
+    - 3.3413
+    - 1.8628
+    - -2.018
     Fit:
     - -0.0
     - -0.0001
@@ -184,9 +223,12 @@ zone-III:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: true
 zone-IV:
   BG mean: 0.3468
   BG npix: 4
+  Fit Info: "The cosine of the angle between func(x) and any column of the\n  Jacobian\
+    \ is at most 0.000000 in absolute value"
   Gauss Fit:
     Amplitude: 1.9258
     Mean Wave: 7702.1075
@@ -227,15 +269,19 @@ zone-IV:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 1.7632
   BG npix: 4
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 3.0225
     Mean Wave: 7710.6712
     RMS Width: 0.0093
   Pixel Wave: 7711.1948
-  Sigma: 4.0377
+  Sigma: 4.4062
   Strength: 0.9829
   Window:
     BG Mask:
@@ -246,6 +292,14 @@ zone-MYSO:
     - false
     - true
     - true
+    Before zone IV subtraction:
+    - 0.4031
+    - -0.7868
+    - -2.2353
+    - 2.3195
+    - 2.4263
+    - -3.2985
+    - 5.0694
     Fit:
     - 0.0
     - 0.0
@@ -270,9 +324,11 @@ zone-MYSO:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: true
 zone-S:
   BG mean: 1.5028
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -4.8625
     Mean Wave: 7710.3198
@@ -313,3 +369,4 @@ zone-S:
     - 7712.4448
     - 7713.6948
     - 7714.9448
+  Zone IV subtracted: false

@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: -0.2344
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 11.3627
     Mean Wave: 8951.0563
@@ -51,9 +52,11 @@ zone-0:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.5612
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 2.0523
     Mean Wave: 8952.3043
@@ -94,9 +97,11 @@ zone-I:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-II:
   BG mean: 0.5206
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 4.2676
     Mean Wave: 8952.1771
@@ -137,9 +142,12 @@ zone-II:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.1128
   BG npix: 4
+  Fit Info: "The cosine of the angle between func(x) and any column of the\n  Jacobian\
+    \ is at most 0.000000 in absolute value"
   Gauss Fit:
     Amplitude: 1.6439
     Mean Wave: 8898.5973
@@ -180,9 +188,11 @@ zone-III:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.7422
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.4672
     Mean Wave: 8950.455
@@ -223,9 +233,11 @@ zone-IV:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: -0.6874
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 23.1939
     Mean Wave: 8952.1577
@@ -266,9 +278,11 @@ zone-MYSO:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false
 zone-S:
   BG mean: 1.0402
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -4.1384
     Mean Wave: 8947.8155
@@ -309,3 +323,4 @@ zone-S:
     - 8952.4448
     - 8953.6948
     - 8954.9448
+  Zone IV subtracted: false

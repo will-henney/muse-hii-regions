@@ -11,6 +11,9 @@ sky_blend: false
 zone-0:
   BG mean: 1.556
   BG npix: 5
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 0.3221
     Mean Wave: 5410.8104
@@ -51,9 +54,11 @@ zone-0:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-I:
   BG mean: 1.4912
   BG npix: 5
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.3636
     Mean Wave: 5410.5171
@@ -94,9 +99,13 @@ zone-I:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-II:
   BG mean: 1.6467
   BG npix: 5
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 0.4477
     Mean Wave: 5410.8292
@@ -137,9 +146,11 @@ zone-II:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-III:
   BG mean: 1.4963
   BG npix: 5
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.2147
     Mean Wave: 5411.9708
@@ -180,9 +191,11 @@ zone-III:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 1.4802
   BG npix: 5
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.1334
     Mean Wave: 5411.252
@@ -223,9 +236,11 @@ zone-IV:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 1.1453
   BG npix: 5
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 1.5928
     Mean Wave: 5411.047
@@ -266,9 +281,11 @@ zone-MYSO:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false
 zone-S:
   BG mean: 2.5743
   BG npix: 5
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 2.566
     Mean Wave: 5410.5665
@@ -309,3 +326,4 @@ zone-S:
     - 5412.4448
     - 5413.6948
     - 5414.9448
+  Zone IV subtracted: false

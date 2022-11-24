@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: 0.5169
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 1.994
     Mean Wave: 6659.6846
@@ -51,9 +52,11 @@ zone-0:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.6622
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.2796
     Mean Wave: 6661.4134
@@ -94,9 +97,11 @@ zone-I:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 0.6709
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 0.8606
     Mean Wave: 6659.652
@@ -137,9 +142,11 @@ zone-II:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 0.6489
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.1217
     Mean Wave: 6659.3417
@@ -180,9 +187,12 @@ zone-III:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 0.5799
   BG npix: 4
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
   Gauss Fit:
     Amplitude: -0.2223
     Mean Wave: 6659.5225
@@ -223,9 +233,13 @@ zone-IV:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 1.5946
   BG npix: 4
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000 and the relative error between two consecutive iterates\
+    \ is at \n  most 0.000000"
   Gauss Fit:
     Amplitude: 2.461
     Mean Wave: 6659.623
@@ -266,9 +280,11 @@ zone-MYSO:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 1.3247
   BG npix: 4
+  Fit Info: Number of calls to function has reached maxfev = 100.
   Gauss Fit:
     Amplitude: 0.1534
     Mean Wave: 6660.702
@@ -309,3 +325,4 @@ zone-S:
     - 6661.1948
     - 6662.4448
     - 6663.6948
+  Zone IV subtracted: false

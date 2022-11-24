@@ -11,6 +11,7 @@ sky_blend: false
 zone-0:
   BG mean: 0.379
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 3.02
     Mean Wave: 6462.9304
@@ -51,9 +52,11 @@ zone-0:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-I:
   BG mean: 0.8195
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.16
     Mean Wave: 6460.5584
@@ -94,9 +97,11 @@ zone-I:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-II:
   BG mean: 0.9578
   BG npix: 4
+  Fit Info: Number of calls to function has reached maxfev = 100.
   Gauss Fit:
     Amplitude: 0.2295
     Mean Wave: 6463.1344
@@ -137,9 +142,11 @@ zone-II:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-III:
   BG mean: 0.8578
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -0.6293
     Mean Wave: 6462.2578
@@ -180,9 +187,11 @@ zone-III:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-IV:
   BG mean: 1.0017
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: -1.6285
     Mean Wave: 6461.9663
@@ -223,9 +232,11 @@ zone-IV:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-MYSO:
   BG mean: 2.7169
   BG npix: 4
+  Fit Info: Number of calls to function has reached maxfev = 100.
   Gauss Fit:
     Amplitude: -10.6704
     Mean Wave: 6465.5891
@@ -266,9 +277,11 @@ zone-MYSO:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
 zone-S:
   BG mean: 0.2596
   BG npix: 4
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
   Gauss Fit:
     Amplitude: 6.1291
     Mean Wave: 6461.8594
@@ -309,3 +322,4 @@ zone-S:
     - 6463.6948
     - 6464.9448
     - 6466.1948
+  Zone IV subtracted: false
