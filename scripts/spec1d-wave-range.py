@@ -72,9 +72,9 @@ def main(
         if wave_range[0] / doppler < data.wave0 < wave_range[1] / doppler:
             linestyle = "dotted" if data.blend else "solid"
             if data.Type.startswith('Deep'):
-                ax.axvline(data.wave0, 0.85, 0.95, color="0.7", lw=1.5, linestyle=linestyle)
+                ax.axvline(data.wave0, 0.85, 0.95, color="0.9", lw=1.5, linestyle=linestyle)
             else:
-                ax.axvline(data.wave0, 0.85, 0.9, color="0.7", lw=1, linestyle=linestyle)
+                ax.axvline(data.wave0, 0.85, 0.9, color="0.9", lw=1, linestyle=linestyle)
     ax.minorticks_on()
     ax.yaxis.set_tick_params(which='minor', left=False)
     ax.grid(which="major", linewidth=0.5)
