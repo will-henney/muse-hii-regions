@@ -34,14 +34,8 @@ def main(
             input="husl",
             as_cmap=True,
         )
-        ax.imshow(
-            image,
-            origin="lower",
-            interpolation="none",
-            vmin=-1.0,
-            vmax=zone["max_bright"],
-            cmap=cmap,
-        )
+        ax.imshow( image, origin="lower", interpolation="none",
+                   vmin=-1.0, vmax=zone["max_bright"], cmap=cmap, )
     ax.set(xticks=[], yticks=[])
     fig.subplots_adjust(0.0, 0.0, 1.0, 1.0)
     fig_file = "zone-color-image.png"

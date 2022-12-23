@@ -4850,6 +4850,95 @@ Index
 #+end_example
 
 **** TODO Write a latex version of the table
+- I am going to try and do this using the pandas facility for writing latex
+- This works OK, but there are a few issues that need sorting
+  - [ ] alignment of the columns is not great, especially when we have a colon
+  - [ ] I need to do a more careful classification of the blends
+    - at the moment, I am using a colon with all of the blends that were automatically identified
+    - But there are some other blends that I am finding from looking at the figures, which need to be added in
+    - And also, I want to distinguish between various cases
+      1. Blend affecting the flux in zones I, II, etc, so it only affects the ratios
+      2. Blend affecting the UIL flux in Zone 0, which is more serious
+    - At the moment, all the blend have the ratios completely omitted, but in the first case above, it would be better to just transform the measurement to an upper limit
+
+#+begin_src python :eval no :tangle ../scripts/convert-table-uil-latex.py
+  import pandas as pd
+  import numpy as np
+
+  def format_blend(value, dp=2):
+      if not value or not np.isfinite(value):
+          return "0.0:"
+      try:
+          return str(round(float(value), dp)) + ":"
+      except TypeError:
+          return "0.0:"
+
+  def format_pair(value, uncertainty, dp=2):
+      if not value or not np.isfinite(value):
+          return "0.0"
+      try:
+          svalue = str(round(float(value), dp))
+      except TypeError:
+          svalue = "0.0"
+
+      if uncertainty in  ["<", ">"]:
+          return f"{uncertainty} {svalue}"
+
+      try:
+          suncertainty = str(round(float(uncertainty), dp))
+      except TypeError:
+          suncertainty = "0.0"
+
+      return fr"{svalue} \pm {suncertainty}"
+
+  df = pd.read_csv("uil-final-table.csv")
+  table = []
+  for _, row in df.iterrows():
+      if row["blend"]:
+          table.append(
+              {
+                  r"Wavelength $\lambda_0$": format_blend(row["wave0"]),
+                  r"$I(\hb = 100)$": format_blend(row["flux"], 3),
+                  r"$\mathrm{I / 0}$": "",
+                  r"$\mathrm{II / 0}$": "",
+                  r"$\mathrm{MYSO / 0}$": "",
+               }
+          )
+      else:
+          table.append(
+              {
+                  r"Wavelength $\lambda_0$": format_pair(row["wave0"], row["sig_wave0"]),
+                  r"$I(\hb = 100)$": format_pair(row["flux"], row["sig_flux"], 3),
+                  r"$\mathrm{I / 0}$": format_pair(row["I / 0"], row["E(I / 0)"]),
+                  r"$\mathrm{II / 0}$": format_pair(row["II / 0"], row["E(II / 0)"]),
+                  r"$\mathrm{MYSO / 0}$": format_pair(row["MYSO / 0"], row["E(MYSO / 0)"]),
+              }
+          )
+      dff = pd.DataFrame(table)# dff = df.drop(columns=["Type", "blend"]).rename(
+  #     columns=lambda col: col.replace("_", " ")
+  # )
+
+  s = dff.style.hide()
+
+
+
+  with open("uil-final-table.tex", "w") as f:
+      f.write(
+          s.to_latex(
+              hrules=True,
+              siunitx=True,
+              environment="longtable",
+              column_format="SSSSS",
+          )
+      )
+#+end_src
+
+#+begin_src sh :dir ../data/n346-lines/all-lines-c007-chop-mean :results output verbatim
+  python ../../../scripts/convert-table-uil-latex.py
+#+end_src
+
+#+RESULTS:
+
 *** TODO Step 10: Final figures showing highlights from the spectra
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
@@ -5841,16 +5930,80 @@ CLOSED: [2022-11-24 Thu 12:28]
     - Nearest neighbors
       - We are down to 125 lines now (from 129)
       - The histograms are almost unchanged
-      - But we do see a alight change in the degree of reciprocity for the identified lines
+      - But we do see a slight change in the degree of reciprocity for the identified lines
         - We no longer get the peak in P(nn-nn) to the blue side of the Paschen jump
         - This is entirely due to adding in more N I lines, so it is legitimate 
       - [X] Need to add the plots to the Affinity figure
 
 *** TODO Step 14: Final things to do [2022-11-27 Sun] 
-- [ ] Write a latex table of all the UIL lines to include in paper
+- [X] Write a latex table of all the UIL lines to include in paper
+- [ ] Make a top-ten table of the best lines
 - [ ] Better treatment of the H I line blends
 - [ ] Add the annotations to the remaining one-d spectra
 - [ ] Finish writing the paper
+**** TODO Top-ten line list
+- I have sorted the list in order of flux. Some are unsuitable because of blends, so I will analyze them here
+- But I might also want some weaker lines, in the interest of diversity in wavelength bands
+  - For instance, some around Ha, such as 6636.8 and 6776.8, which are the strongest ones around there that are not blends
+- So I have five out of the 25 strongest, with possibly some more that are in between figures
+- Plus 2 from around Ha
+- And maybe I could do the least red ones, like 6221.82, which is the strongest there
+- 
+***** Comments on particular lines
+- ✘ 8333.95 This is beautifully strong, but is blended with a H line, so i impossible to measure for the other zones
+- ✘ 8459.25 Has strong sky contamination
+- ✘ 8659.51 Also very strong, and sky contamination is minimal but it is certainly there, so unfortunately must be dropped
+- ✔ 9029.22 This is very strong and well-isolated
+- ⊚ 8859.09 /unfortunately, this got left off the figures/ Although we could still use it  I suppose
+- ⊚ 9019.35 Nice and strong, but it is very close to an H I line
+- ✔ 8850.65 This is the classic line, which has clear measurements for multiple zones
+- ⊚ 7628.72 /another one in a gap between the figures/
+- ✘ 8299.16 Blended with H I line
+- ✔ 8150.67 This is a very good one, with a well-measured and very small I/0
+- ⊚ 9098.84 Nice strong line, bu there is a stellar line just to blue of it
+- ✔ 8550.06 Strong line with a relatively large I/0 ratio
+- ⊚ 8893.68 Not sure why the upper limit to I/0 is so high
+- ✔ 9057.17 Good clean line, although some upper limits on the ratios
+- ⊚ 7637.59 /In the gap/
+- ✔ 8789.18 Good measurements
+- ✘ 7837.58 Too affected by sky
+- ✘ 7959.35 Again, sky blend
+- ✘ 8649.96 Too much sky O2
+- ✘ 9297.36 Not even shown as line in the figures - why not?
+- ⊚ 8266.46 Not anything wrong with it, except that the stellar spectra are messy around there
+- ✘ 8305.14 Blend with H I
+- ⊚ 8272.50 Very similar to the nearby 8266.46
+- ✘ 7804.48 Blend with sky
+- ✘ 8945.95 Looks a bit weird
+***** Sorted list
+- Lines that we want in the Top Ten are marked in the TT column
+| Index | TT |    wav0 | ewav0 |      0 |       e0 | Type           | blend |    I/0 |  e I/0 |   II/0 | e II/0 | MYSO/0 | e MYSO/0 |
+|-------+----+---------+-------+--------+----------+----------------+-------+--------+--------+--------+--------+--------+----------|
+|  2991 |    | 8333.95 |  0.24 | 0.7001 |   0.0437 | Deep Neutral   | True  |  1.273 | 0.3031 | 0.7199 | 0.0950 | 0.7099 |   0.0533 |
+|  3091 |    | 8459.25 |  0.25 | 0.6381 |   0.0569 | Deep Neutral   | True  | 0.5609 | 0.1327 | 0.4636 | 0.0830 | 0.4447 |   0.0590 |
+|  3252 |    | 8659.51 |  0.25 | 0.5215 |   0.0278 | Deep Neutral   | False | 0.6715 | 0.0412 | 0.4566 | 0.0494 | 0.1099 |   0.0311 |
+|  3548 | X  | 9029.22 |  0.26 | 0.3990 |   0.0196 | Deep Neutral   | False | 0.2294 |      < | 0.1399 | 0.0569 | 0.4695 |   0.0632 |
+|  3412 |    | 8859.09 |  0.46 | 0.3499 | 7.72e-05 | Deep Neutral?? | False | 0.4502 | 0.0112 | 0.4225 | 0.0043 | 1.3972 |   0.0018 |
+|  3539 |    | 9019.35 |  0.47 | 0.3216 |   0.0258 | Deep Neutral   | False | 0.1510 |      < | 0.0837 |      < | 0.1644 |   0.0217 |
+|  3405 | X  | 8850.65 |  0.26 | 0.3169 |   0.0101 | Deep Neutral   | False | 0.1878 | 0.0440 | 0.2156 | 0.0135 | 0.3745 |   0.0249 |
+|  2426 |    | 7628.72 |  0.22 | 0.3048 |   0.0043 | Deep Neutral   | False | 0.7563 | 0.0132 | 0.3956 | 0.0144 | 0.9564 |   0.0242 |
+|  2963 |    | 8299.16 |  0.24 | 0.2949 |   0.0200 | Deep Neutral   | True  | 0.9702 | 0.1785 | 0.8717 | 0.1043 | 0.9230 |   0.0802 |
+|  2844 | X  | 8150.67 |  0.24 | 0.2902 |   0.0067 | Deep Neutral   | False | 0.0599 | 0.0320 | 0.1783 | 0.0179 | 0.3133 |   0.0338 |
+|  3603 |    | 9098.84 |  0.47 | 0.2891 |   0.0109 | Deep Neutral   | False | 0.9313 | 0.0539 | 0.4823 | 0.0282 | 0.3270 |   0.2036 |
+|  3164 | X  | 8550.06 |  0.25 | 0.2882 |   0.0196 | Deep Neutral   | False | 0.3269 | 0.0674 | 0.0971 | 0.0410 | 0.1749 |   0.0177 |
+|  3439 |    | 8893.68 |  0.26 | 0.2813 |   0.0533 | Deep Neutral   | False | 1.2246 |      < | 0.4871 |      < | 0.5315 |   0.1143 |
+|  3570 |    | 9057.17 |  0.47 | 0.2794 |   0.0030 | Deep Neutral   | False | 0.1023 |      < | 0.0687 | 0.0172 | 0.1870 |        < |
+|  2434 |    | 7637.59 |  0.22 | 0.2700 |   0.0252 | Deep Neutral   | False | 0.8949 | 0.2697 | 0.4463 | 0.0845 | 1.5222 |   0.3188 |
+|  3355 | X  | 8789.18 |  0.26 | 0.2665 |   0.0079 | Deep Neutral   | False | 0.0228 |      < | 0.0967 | 0.0086 | 0.3119 |   0.0109 |
+|  2594 |    | 7837.58 |  0.23 | 0.2611 |   0.0060 | Deep Neutral   | False | 0.7847 | 0.1069 | 0.2784 | 0.0312 | 0.5355 |   0.0177 |
+|  2692 |    | 7959.35 |  0.23 | 0.2566 |   0.0421 | Deep Neutral   | True  | 1.6585 |      < | 0.5259 |      < | 0.6063 |   0.1371 |
+|  3244 |    | 8649.96 |  0.25 | 0.2499 |   0.0307 | Deep Neutral   | True  | 0.3625 | 0.1317 | 0.4452 | 0.0898 | 0.2957 |   0.0507 |
+|  3762 |    | 9297.36 |  0.27 | 0.2498 |   0.0056 | Deep Neutral?  | False | 0.5011 |      < | 0.1890 |      < | 0.7861 |   0.0592 |
+|  2937 |    | 8266.46 |  0.43 | 0.2333 |   0.0115 | Deep Neutral   | False | 0.2441 | 0.0255 | 0.2400 | 0.0483 | 0.3668 |   0.0285 |
+|  2967 |    | 8305.14 |  0.43 | 0.2279 |      0.0 | Deep Neutral?  | True  | 0.0584 |    0.0 | 0.5088 |    0.0 | 0.3023 |      0.0 |
+|  2942 |    | 8272.50 |  0.43 | 0.2241 |   0.0043 | Deep Neutral   | False | 0.0882 | 0.0225 | 0.2792 | 0.0406 | 0.1097 |   0.0236 |
+|  2565 |    | 7804.48 |  0.40 | 0.2239 |   0.0013 | Deep Neutral   | False | 0.1569 |      < | 0.0823 |      < | 0.7771 |   0.0159 |
+|  3481 |    | 8945.95 |  0.46 | 0.2118 |   0.0221 | Deep Neutral   | False | 0.6822 | 0.2820 | 0.4673 | 0.1404 | 0.4182 |   0.1076 |
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
@@ -7237,6 +7390,11 @@ Try this in a notebook
 
 #+RESULTS: xsec-dust-ratd
 [[file:../figs/xsec-infrared-dust-silicate_ism_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="silicate_orion_10")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-silicate_orion_10.pdf]]
 
 #+call: xsec-dust(GRAINTYPE="graphite_ism_10")
 
