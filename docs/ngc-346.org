@@ -5134,11 +5134,11 @@ Next batch is a nice clean area. The H I lines are brighter, so increase the sep
 The last range
 
 #+begin_src sh :dir ../data/n346-lines :results output file
-python ../../scripts/spec1d-wave-range.py c007-chop-mean 8880 9300 --separation 15 --star-scale 10
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 8880 9305 --separation 15 --star-scale 10
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8880-9300.pdf]]
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8880-9305.pdf]]
 
 
 **** Choosing good microcosm ranges
@@ -5937,7 +5937,7 @@ CLOSED: [2022-11-24 Thu 12:28]
 
 *** TODO Step 14: Final things to do [2022-11-27 Sun] 
 - [X] Write a latex table of all the UIL lines to include in paper
-- [ ] Make a top-ten table of the best lines
+- [X] Make a top-ten table of the best lines
 - [ ] Better treatment of the H I line blends
 - [ ] Add the annotations to the remaining one-d spectra
 - [ ] Finish writing the paper
