@@ -1,0 +1,328 @@
+Comments: 'I no longer believe in this one. Very weak but certainly something there.
+  Hard to measure on the spectrum since it is filling in an underlying absorption
+  feature around 7349. Index reduced by 1 by hand to try and center the emission better. '
+Cont_method: 101B
+ID: null
+Index: 2198
+Region: BY-HAND
+Strength: 0.8
+Type: Noise
+lambda_HM: 7345.24
+lambda_obs: 7347.444824
+sky_blend: false
+zone-0:
+  BG mean: 0.5475
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: 0.5591
+    Mean Wave: 7347.5878
+    RMS Width: 1.0379
+  Pixel Wave: 7347.4448
+  Sigma: 0.2956
+  Strength: 0.5822
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - 0.0005
+    - 0.014
+    - 0.1139
+    - 0.2511
+    - 0.153
+    - 0.0255
+    - 0.0011
+    Spectrum:
+    - -0.6716
+    - -0.0228
+    - 0.1612
+    - 0.2073
+    - 0.2137
+    - -0.0838
+    - 0.196
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-I:
+  BG mean: 0.5031
+  BG npix: 7
+  Fit Info: "Both actual and predicted relative reductions in the sum of squares\n\
+    \  are at most 0.000000"
+  Gauss Fit:
+    Amplitude: 0.4828
+    Mean Wave: 7233.8898
+    RMS Width: 41.4479
+  Pixel Wave: 7347.4448
+  Sigma: 0.1502
+  Strength: -0.0582
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - 0.0002
+    - 0.0002
+    - 0.0001
+    - 0.0001
+    - 0.0001
+    - 0.0001
+    - 0.0001
+    Spectrum:
+    - -0.1674
+    - 0.1716
+    - 0.1702
+    - 0.0038
+    - -0.2322
+    - -0.0629
+    - 0.1168
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-II:
+  BG mean: 0.6413
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: 0.4684
+    Mean Wave: 7345.6414
+    RMS Width: 0.3328
+  Pixel Wave: 7347.4448
+  Sigma: 0.2128
+  Strength: 0.1537
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.1943
+    - 0.274
+    - 0.0001
+    - 0.0
+    - 0.0
+    - 0.0
+    Spectrum:
+    - -0.4044
+    - 0.1983
+    - 0.2712
+    - 0.0116
+    - -0.1291
+    - -0.0799
+    - 0.1324
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-III:
+  BG mean: 0.4242
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: -0.3017
+    Mean Wave: 7348.3997
+    RMS Width: 0.5727
+  Pixel Wave: 7347.4448
+  Sigma: 0.1285
+  Strength: -0.1421
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - -0.0
+    - -0.0
+    - -0.0009
+    - -0.0843
+    - -0.2002
+    - -0.0163
+    - -0.0
+    Spectrum:
+    - -0.0389
+    - -0.0031
+    - 0.1466
+    - -0.0921
+    - -0.1966
+    - -0.0274
+    - 0.2115
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-IV:
+  BG mean: 0.4068
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: -0.8556
+    Mean Wave: 7342.7552
+    RMS Width: 0.604
+  Pixel Wave: 7347.4448
+  Sigma: 0.1872
+  Strength: -0.0557
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - -0.2536
+    - -0.0041
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    - -0.0
+    Spectrum:
+    - -0.268
+    - 0.0504
+    - 0.1009
+    - 0.064
+    - -0.2205
+    - -0.0514
+    - 0.3246
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-MYSO:
+  BG mean: 0.3735
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: 3.4322
+    Mean Wave: 7346.6113
+    RMS Width: 0.4182
+  Pixel Wave: 7347.4448
+  Sigma: 1.6741
+  Strength: 1.7751
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.0219
+    - 2.3497
+    - 1.0598
+    - 0.0008
+    - 0.0
+    - 0.0
+    Spectrum:
+    - -2.0008
+    - -0.3576
+    - 2.3598
+    - 1.3027
+    - -1.8874
+    - -1.2063
+    - 1.7897
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false
+zone-S:
+  BG mean: 0.3493
+  BG npix: 7
+  Fit Info: The relative error between two consecutive iterates is at most 0.000000
+  Gauss Fit:
+    Amplitude: 3.2687
+    Mean Wave: 7346.5521
+    RMS Width: 0.4346
+  Pixel Wave: 7347.4448
+  Sigma: 1.7973
+  Strength: 1.1021
+  Window:
+    BG Mask:
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    Fit:
+    - 0.0
+    - 0.0389
+    - 2.3507
+    - 0.8784
+    - 0.0008
+    - 0.0
+    - 0.0
+    Spectrum:
+    - -1.2415
+    - -0.489
+    - 2.3601
+    - 1.1417
+    - -2.3997
+    - -1.6862
+    - 2.3146
+    Wave:
+    - 7343.6948
+    - 7344.9448
+    - 7346.1948
+    - 7347.4448
+    - 7348.6948
+    - 7349.9448
+    - 7351.1948
+  Zone IV subtracted: false

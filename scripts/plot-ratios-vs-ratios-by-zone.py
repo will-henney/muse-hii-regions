@@ -149,7 +149,7 @@ def main(
             [
                 ["II / 0", "I / 0"],
                 ["II / 0", "MYSO / 0"],
-                ["II / 0", "III / II"],
+                ["II / I", "III / II"],
                 ["III / II", "IV / III"],
             ],
             [
