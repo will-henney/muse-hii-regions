@@ -296,7 +296,12 @@
      - Done here [[id:16E007EA-F0D2-4AC5-A53E-0CC153767167][More elaborate plot of ratio versus ratio]]
      - There is a version with th gauss fits and with the 3 pixel counting method
    - Then we have to import the raw figure into the annotated version that I do with Affinity Designer
-   
+   - Write tables with the ratios
+9. Rest wavelengths and velocity shifts
+   - Run all the scripts in [[id:046007F7-309C-4517-996C-26013838FB37][Step 9: Calculate the velocity shifts for the known lines, and hence get the rest wavelengths of the UILs]]
+10. Redo the 1d spectra figures
+11. Redo figure 1 with the line distribution
+12. Redo analysis of nearest-neighbor distribution
 **** After changing the zones definitions
 To be written
 
@@ -3205,11 +3210,11 @@ WARNING: The fit may be unsuccessful; check fit_info['message'] for more informa
 WARNING: The fit may be unsuccessful; check fit_info['message'] for more information. [astropy.modeling.fitting]
 WARNING: The fit may be unsuccessful; check fit_info['message'] for more information. [astropy.modeling.fitting]
 
-real	1m33.389s
-user	1m29.674s
-sys	0m1.422s
+real	1m38.207s
+user	1m30.744s
+sys	0m1.452s
 Last run:
-Sun Jan 15 13:58:59 CST 2023
+Sun Jan 15 22:45:31 CST 2023
 #+end_example
 
 
@@ -3462,7 +3467,7 @@ Index                                                                           
 3736                        Diffuse emission is marginal        101B                UIL   GLOB-E       1.0  Deep Neutral??  9262.160000  9269.944824      False          0.6153               4  The relative error between two consecutive ite...                      2.1653                   9269.6641                      1.2316          9269.9448        0.2317           1.9015   [True, True, False, False, False, True, True]  [0.0217, 0.189, 0.6326, 0.8207, 0.4136, 0.0805...  [0.2476, 0.2081, 0.5516, 0.8161, 0.5339, -0.17...  [9266.1948, 9267.4448, 9268.6948, 9269.9448, 9...                      False          0.7495               4  The relative error between two consecutive ite...                      0.3947                   9267.7845                      1.8198          9269.9448        0.1107           0.2035   [True, True, False, False, False, True, True]  [0.0735, 0.1043, 0.0941, 0.0539, 0.0196, 0.004...  [0.0534, 0.1517, 0.0327, 0.0862, 0.0845, -0.13...  [9266.1948, 9267.4448, 9268.6948, 9269.9448, 9...                      False           0.8909                4  The relative error between two consecutive ite...                       0.4014                    9270.7524                       0.7236           9269.9448         0.0645            0.3529   [True, True, False, False, False, True, True]  ...  The relative error between two consecutive ite...                      0.5151                   9268.4092                       1.8209           9269.9448         0.0996           0.3106   [True, True, False, False, False, True, True]  [0.0679, 0.1209, 0.1367, 0.0983, 0.0449, 0.013...  [0.0973, 0.0967, 0.095, 0.1855, 0.03, -0.0646,...  [9266.1948, 9267.4448, 9268.6948, 9269.9448, 9...                       False             0.9923                 4  The relative error between two consecutive ite...                        6.1748                     9268.1400                         2.2124             9269.9448           1.2185             3.8511   [True, True, False, False, False, True, True]  [0.9427, 1.3091, 1.3321, 0.9934, 0.5428, 0.217...  [1.3064, 1.0771, 0.7778, 1.5724, 1.5009, -0.85...  [9266.1948, 9267.4448, 9268.6948, 9269.9448, 9...                         False          0.8114              4  The relative error between two consecutive ite...                     9.5650                  9265.8853                      2.6456          9269.9448        1.6428          2.9740   [True, True, False, False, False, True, True]  [1.7743, 1.5062, 1.027, 0.5625, 0.2474, 0.0874...  [1.8626, 1.4025, 0.6521, 1.2057, 1.1162, -1.51...  [9266.1948, 9267.4448, 9268.6948, 9269.9448, 9...                      False                                                NaN                                      NaN                                      NaN                                       NaN                                        NaN                                          NaN         NaN
 3762                                                None     11, 101                UIL   GLOB-E      10.2   Deep Neutral?  9297.640000  9302.444824      False          0.4444               4  The relative error between two consecutive ite...                     13.1954                   9302.6743                      0.8388          9302.4448        0.2914          12.9288   [True, True, False, False, False, True, True]  [0.0004, 0.0795, 1.9545, 6.9565, 3.876, 0.3248...  [-0.1385, -0.2325, 1.9822, 6.837, 4.1095, -0.1...  [9298.6948, 9299.9448, 9301.1948, 9302.4448, 9...                      False          1.7823               4  The relative error between two consecutive ite...                     -1.8028                   9303.6285                      0.5933          9302.4448        0.7868          -1.9261   [True, True, False, False, False, True, True]  [-0.0, -0.0, -0.0021, -0.3102, -1.2707, -0.218...  [-0.6093, -0.4296, -0.3854, -0.2525, -1.2882, ...  [9298.6948, 9299.9448, 9301.1948, 9302.4448, 9...                      False           2.3871                4  The relative error between two consecutive ite...                      -2.0752                    9303.4528                       0.0347           9302.4448         0.9686           -2.5710   [True, True, False, False, False, True, True]  ...  Both actual and predicted relative reductions ...                     -0.6755                   9245.5186                       6.8853           9302.4448         1.0698          -0.3459   [True, True, False, False, False, True, True]         [-0.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0]  [0.5977, 1.3543, 0.8048, 0.1429, -1.2936, -1.4...  [9298.6948, 9299.9448, 9301.1948, 9302.4448, 9...                       False            -1.8799                 4  The relative error between two consecutive ite...                       48.1377                     9302.4899                         0.9579             9302.4448           3.3264            46.2184   [True, True, False, False, False, True, True]  [0.0224, 1.0609, 10.5712, 23.3687, 11.7648, 1....  [2.8803, 3.5275, 9.4936, 23.2649, 13.46, -1.98...  [9298.6948, 9299.9448, 9301.1948, 9302.4448, 9...                         False         -0.5654              4  The relative error between two consecutive ite...                    18.6931                  9302.4314                      0.8820          9302.4448        3.3032         18.2524   [True, True, False, False, False, True, True]  [0.0039, 0.3213, 4.2365, 9.7467, 4.0832, 0.298...  [3.6049, 2.7645, 3.3633, 9.9299, 4.9592, -2.01...  [9298.6948, 9299.9448, 9301.1948, 9302.4448, 9...                      False                                                NaN                                      NaN                                      NaN                                       NaN                                        NaN                                          NaN         NaN
 
-[273 rows x 114 columns]
+[262 rows x 114 columns]
                  Type                 ID    zone-0    zone-I   zone-II  zone-III   zone-IV zone-MYSO    zone-S
 Index                                                                                                         
 7              Fe, Ni  [Fe III] 4607.12+  0.028772  0.043522   0.00533  0.007463  0.110371  0.066075  0.598223
@@ -3477,7 +3482,7 @@ Index
 3736   Deep Neutral??                UIL  0.040371  0.030637  0.009451  0.002212  0.011022   0.02521  0.213612
 3762    Deep Neutral?                UIL  0.246023 -0.139935  -0.04886  0.120681 -0.014454  0.196532  0.417467
 
-[273 rows x 9 columns]
+[262 rows x 9 columns]
                  Type               ID    zone-0    zone-I   zone-II  zone-III   zone-IV zone-MYSO    zone-S
 Index                                                                                                       
 1626    Deep Neutral?             UIL+  0.070244  0.050464   0.02663  0.010725 -0.005092  0.094575  0.040042
@@ -4166,12 +4171,21 @@ CLOSED: [2022-11-12 Sat 13:16]
 
 #+end_src
 #+Begin_src sh :dir ../data/n346-lines :results output verbatim
+  python ../../scripts/make-ratio-tables.py c007-chop-mean --use-gauss
+#+end_src
+
+#+RESULTS:
+
+#+Begin_src sh :dir ../data/n346-lines :results output verbatim
   python ../../scripts/make-ratio-tables.py c007-chop-mean --no-use-gauss
 #+end_src
 
 #+RESULTS:
 
 *** Step 9: Calculate the velocity shifts for the known lines, and hence get the rest wavelengths of the UILs
+:PROPERTIES:
+:ID:       046007F7-309C-4517-996C-26013838FB37
+:END:
 **** DONE Write file for each zone with table of velocities
 CLOSED: [2022-11-07 Mon 17:25]
 - [1/1] Read in the fluxes and the wavelengths and uncertainties, and widths
@@ -4295,7 +4309,7 @@ Index
 3736   Deep Neutral??                UIL  False      NaN
 3762    Deep Neutral?                UIL  False      NaN
 
-[264 rows x 4 columns]
+[262 rows x 4 columns]
 #+end_example
 **** DONE Make a plot of the velocities
 CLOSED: [2022-11-08 Tue 13:50]
@@ -4582,7 +4596,7 @@ Copy file to paper project
 
 #+RESULTS:
 : velocity-vs-flux-by-zone-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/velocity-vs-flux-by-zone-c007-chop-mean.pdf
-: Last copied: Thu Nov 24 11:42:08 CST 2022
+: Last copied: Sun Jan 15 22:54:01 CST 2023
 
 **** DONE Calculate histogram of velocity differences between Zone 0 and MYSO
 CLOSED: [2022-11-11 Fri 18:11]
@@ -4789,7 +4803,7 @@ Copy histogram figure file to paper project
 
 #+RESULTS:
 : vel-diff-zone-0-MYSO-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/vel-diff-zone-0-MYSO-c007-chop-mean.pdf
-: Last copied: Thu Nov 24 11:45:23 CST 2022
+: Last copied: Sun Jan 15 22:55:00 CST 2023
 
 **** DONE Make a table of rest wavelengths plus uncertainties of all the UILs
 CLOSED: [2022-11-12 Sat 19:08]
@@ -4827,7 +4841,7 @@ CLOSED: [2022-11-12 Sat 19:08]
       # ... for the wavelengths and velocities ...
       dfd = pd.read_csv(f"all-lines-{id_label}/interzone-0-MYSO-vel-diffs.csv").set_index("Index")
       # ... and for the zone ratios
-      dfr = pd.read_csv(f"all-lines-{id_label}/ratios-vs-ratios-by-zone.csv").set_index("Index")
+      dfr = pd.read_csv(f"all-lines-{id_label}/ratios-vs-ratios-by-zone-gauss.csv").set_index("Index")
 
       # Select only the unidentified lines with credible detection
       mask = df0.ID.str.startswith("UIL") & (df0.s_n > 1.0)
@@ -4864,21 +4878,21 @@ CLOSED: [2022-11-12 Sat 19:08]
 
 #+RESULTS:
 #+begin_example
-             wave0  sig_wave0      flux  sig_flux            Type  blend     I / 0             E(I / 0)    II / 0            E(II / 0)   MYSO / 0          E(MYSO / 0)
+             wave0  sig_wave0      flux  sig_flux            Type  blend     I / 0             E(I / 0)    II / 0             E(II / 0)  MYSO / 0          E(MYSO / 0)
 Index                                                                                                                                                                 
-100    4722.122652   0.660806  0.054474  0.001795        Med Neb?  False  1.919061    0.208326790042966  0.807484   0.1778195561220083   0.260116  0.22775322830671174
-105    4729.842146   0.661886  0.020958  0.003730         Fe, Ni?  False  2.172281                    <  0.432971                    <   0.876520   0.8608647415235604
-157    4793.121131   0.342450  0.054532  0.006706         Fe, Ni?  False  4.112178   1.1289800937240981  0.493611  0.19213902587221696   0.196040                    <
-809    5608.429411   0.400700  0.029367  0.004794  Deep Neutral??  False  2.362993   0.8322097573212647  0.283710  0.11928173461419664   0.492399   0.1574675963473429
-1146   6029.569455   0.430789  0.030460  0.003950   Deep Neutral?  False  0.631507  0.16434004927980292  0.286163                    <   0.541257  0.08151035309512236
-...            ...        ...       ...       ...             ...    ...       ...                  ...       ...                  ...        ...                  ...
-3649   9155.283022   0.654109  0.091543  0.008872   Deep Neutral?  False  0.314548  0.09364213508779988  0.307184  0.06971787197790356   0.162390                    <
-3654   9162.896677   0.654653  0.033448  0.006201   Deep Neutral?  False  0.581987                    <  0.388719                    <   0.415872                    <
-3699   9217.034279   0.658521  0.042116  0.008169        Neutral?  False  1.231973  0.48904716578817664  1.179990   0.3458723747347167  11.277655   3.3432901763481175
-3736   9264.376659   1.296441  0.040371  0.004478  Deep Neutral??  False  0.440663  0.24565215361050075  0.234138  0.05143204462594494   0.445380  0.15100858797854358
-3762   9297.368030   0.277911  0.249847  0.005631   Deep Neutral?  False  0.501158                    <  0.189031                    <   0.786139  0.05928898038303045
+1146   6029.569455   0.474174  0.030460  0.003950   Deep Neutral?  False  0.806796  0.17270589448303295  0.278538                     <  0.566409  0.08223807126741514
+1153   6037.396888   0.474789  0.041788  0.001888   Deep Neutral?  False  0.262772                    <  0.258424                     <  0.621762  0.07714474313369726
+1190   6083.195649   0.478391  0.010027  0.001544        Neutral?  False  0.974489                    <  0.344700   0.22540796977070063  1.587017   0.2639460474224281
+1300   6221.819532   0.489292  0.044434  0.002791    Deep Neutral  False  0.249419                    <  0.175997    0.1265387785954366  0.646933  0.07039356305651166
+1312   6235.960662   0.490404  0.002996  0.001229   Deep Neutral?  False  1.195078                    <  1.441971    0.9420039712209577  4.946403                    <
+...            ...        ...       ...       ...             ...    ...       ...                  ...       ...                   ...       ...                  ...
+3640   9145.250748   0.495034  0.173619  0.015699    Deep Neutral  False  0.110803                    <  0.245631   0.06596063953592872  0.499748  0.11939190597846112
+3649   9155.283022   0.719984  0.091543  0.008872   Deep Neutral?  False  0.343321  0.08269764524392587  0.285899   0.05978031445603332  0.141534                    <
+3654   9162.896677   0.720583  0.033448  0.006201   Deep Neutral?  False  0.507658                    <  0.339074                     <  0.362759                    <
+3736   9264.376659   1.432310  0.040371  0.004478  Deep Neutral??  False  0.758882   0.2338583778328036  0.234097  0.046811222069704915  0.624451    0.145769523856512
+3762   9297.368030   0.285261  0.249847  0.005631   Deep Neutral?  False  0.508946                    <  0.191968                     <  0.798834  0.06029779135307084
 
-[126 rows x 12 columns]
+[116 rows x 12 columns]
 #+end_example
 
 **** TODO Write a latex version of the table
@@ -5337,7 +5351,7 @@ Copy line bar-code figure to the paper project
 
 #+RESULTS:
 : line-type-wave-distro-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/line-type-wave-distro-c007-chop-mean.pdf
-: Last copied: Thu Nov 24 11:47:18 CST 2022
+: Last copied: Sun Jan 15 23:01:09 CST 2023
 
 *** DONE Step 12: Distribution of nearest neighbors and reciprocity
 CLOSED: [2022-11-19 Sat 13:01]
@@ -5461,16 +5475,16 @@ CLOSED: [2022-11-13 Sun 21:21]
 #+RESULTS:
 #+begin_example
 
-Unidentified Degree of reciprocity = 0.6666666666666666
-             flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
-count  125.000000   125.000000  125.000000  125.000000    125.000000   125.000000   125.000000
-mean     0.117508  7713.378250   19.032029   36.918198  13229.323770    39.191486    83.993877
-std      0.114955  1033.576047   38.751855   68.989874   2036.513663   114.057602   244.037726
-min      0.004878  4724.817700    2.631700    4.947900  10749.597027     3.477977     6.544464
-25%      0.040458  7041.842200    7.618000   12.972650  11675.152927    11.975240    21.933841
-50%      0.079786  7808.939700   10.255000   21.737050  12805.835855    19.796389    36.026565
-75%      0.152904  8565.198300   15.974600   34.617400  14200.829436    34.299384    59.268323
-max      0.653517  9302.674300  421.380400  618.577000  21164.837746  1244.661293  2137.929966
+Unidentified Degree of reciprocity = 0.7079646017699115
+             flux         wave    dwave_nn  dwave_mean            wn      dwn_nn    dwn_mean
+count  115.000000   115.000000  115.000000  115.000000    115.000000  115.000000  115.000000
+mean     0.124497  7820.429611   15.529327   28.681260  12965.259963   27.245314   51.104167
+std      0.117054   905.042654   13.075853   21.897635   1563.270921   26.727209   49.681212
+min      0.004878  6033.010700    2.631700    4.947900  10749.597027    3.477977    6.544464
+25%      0.045603  7089.907800    7.441050   12.727650  11600.227108   11.834660   21.183519
+50%      0.085868  7852.080500   10.255000   21.515950  12735.478196   19.634523   36.007100
+75%      0.164644  8620.523450   15.974600   34.376100  14104.567380   30.621329   57.794142
+max      0.653517  9302.674300   70.821300  105.305900  16575.472011  152.444866  245.340542
 
 Deep Degree of reciprocity = nan
           flux       wave  dwave_nn  dwave_mean           wn  dwn_nn  dwn_mean
@@ -5483,15 +5497,15 @@ min    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
 75%    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
 max    0.25615  8731.9493       0.0         0.0  11452.19659     0.0       0.0
 
-Neutral Degree of reciprocity = 0.47058823529411764
+Neutral Degree of reciprocity = 0.4444444444444444
             flux         wave    dwave_nn  dwave_mean            wn       dwn_nn     dwn_mean
-count  19.000000    19.000000   19.000000   19.000000     19.000000    19.000000    19.000000
-mean    0.147386  7519.297621   90.080668  199.464694  13731.886583   206.305336   445.204579
-std     0.200162  1242.287671  198.612355  243.290699   2787.902559   516.075816   648.931057
+count  20.000000    20.000000   20.000000   20.000000     20.000000    20.000000    20.000000
+mean    0.143893  7575.119005   88.157815  188.966553  13624.282417   198.721240   421.772759
+std     0.195449  1234.655418  192.763000  239.535784   2755.884629   502.599423   638.642769
 min     0.007870  5134.868900    5.790900    6.425900  11461.011461     8.547480     9.492898
-25%     0.045666  7132.885150    8.199300   10.434275  12134.996693    10.780303    15.445272
-50%     0.083724  8204.912500   13.423600  107.498197  12187.820406    19.767331   196.862738
-75%     0.129923  8240.634000   38.689450  298.250425  14023.954205   125.717705   509.438528
+25%     0.047599  7195.926425    8.199300   10.847788  12051.768282    10.780303    16.089206
+50%     0.083402  8209.900950   14.477650  104.516588  12180.419414    33.018859   185.431965
+75%     0.127978  8298.470975   56.784700  256.541612  13900.008854   120.230436   465.528387
 max     0.733754  8725.233400  847.504600  902.385450  19474.693891  2258.347663  2475.706788
 
 Low Degree of reciprocity = 0.8
@@ -5527,26 +5541,26 @@ min     0.006874  4641.763600   10.583400   23.166650  12134.756274    49.008351
 75%     0.231436  7267.264500  267.267000  514.338700  21212.818278   488.110465  1220.781084
 max     1.538814  8240.791800  375.865400  681.106700  21543.535737  1032.986316  2352.343901
 
-Fe Degree of reciprocity = 0.59375
+Fe Degree of reciprocity = 0.5526315789473685
             flux         wave    dwave_nn  dwave_mean            wn      dwn_nn    dwn_mean
-count  34.000000    34.000000   34.000000   34.000000     34.000000   34.000000   34.000000
-mean    0.313798  6086.899112   67.850697  140.606873  17211.455381  164.624112  329.827134
-std     0.250322  1417.485656   95.645063  134.536539   3515.450941  160.894396  241.290065
-min     0.033171  4609.123400    9.150400   17.907650  10811.804094   32.961195   67.815102
-25%     0.133055  4947.321325   21.936175   48.317875  13652.314205   59.973158  162.584352
-50%     0.223339  5357.783550   41.107400   58.540150  18664.731967  126.215980  232.889706
-75%     0.469799  7326.056800   53.754075  249.145725  20213.433956  205.090053  456.089706
+count  40.000000    40.000000   40.000000   40.000000     40.000000   40.000000   40.000000
+mean    0.276242  6134.793293   58.677630  118.975046  16971.748011  142.543662  279.084498
+std     0.246535  1309.538896   82.216907  125.314647   3286.265968  128.778981  225.816921
+min     0.018986  4609.123400    9.150400   17.907650  10811.804094   32.429189   46.197826
+25%     0.090499  5029.927525   21.121750   37.670413  14735.094752   59.156300  127.261578
+50%     0.186012  5971.572150   39.979200   55.456900  16746.060713   88.428665  209.662938
+75%     0.392596  6792.864850   52.128825  151.513113  19881.443268  197.111161  390.920546
 max     0.977622  9249.150200  492.041400  539.733550  21696.099523  701.991298  907.340794
 
-Identified Degree of reciprocity = 0.6475409836065574
+Identified Degree of reciprocity = 0.6434108527131783
              flux         wave    dwave_nn  dwave_mean            wn      dwn_nn    dwn_mean
-count  124.000000   124.000000  124.000000  124.000000    124.000000  124.000000  124.000000
-mean    10.054864  7012.210698   19.765219   37.723795  15000.868915   45.794466   88.490207
-std     55.523579  1501.984600   19.879693   34.116414   3529.620739   54.174014   87.634198
+count  131.000000   131.000000  131.000000  131.000000    131.000000  131.000000  131.000000
+mean     9.521078  6996.847434   19.907316   35.692514  15002.809055   46.185796   83.725349
+std     54.055095  1473.734946   19.653925   32.190787   3449.243812   53.530075   82.803127
 min      0.006874  4609.123400    4.205200    6.330250  10811.804094    5.704762    8.802400
-25%      0.082972  5368.478575    8.646225   15.097650  11950.389622   17.481107   27.978331
-50%      0.217411  7276.336400   13.341100   25.649800  13743.201241   30.036854   58.914571
-75%      0.860244  8367.932925   20.262450   45.938462  18627.474065   57.383876  119.491612
+25%      0.078966  5631.797650    8.529750   14.983250  11966.053575   17.446141   27.218731
+50%      0.195582  7174.355000   13.980000   24.958350  13938.535241   30.160423   58.619414
+75%      0.747331  8356.980400   20.797900   44.723425  17763.221480   58.947721  113.303073
 max    476.538186  9249.150200  141.613500  181.817300  21696.099523  476.856928  588.566219
 #+end_example
 

@@ -20,7 +20,7 @@ def main(
     # ... for the wavelengths and velocities ...
     dfd = pd.read_csv(f"all-lines-{id_label}/interzone-0-MYSO-vel-diffs.csv").set_index("Index")
     # ... and for the zone ratios
-    dfr = pd.read_csv(f"all-lines-{id_label}/ratios-vs-ratios-by-zone.csv").set_index("Index")
+    dfr = pd.read_csv(f"all-lines-{id_label}/ratios-vs-ratios-by-zone-gauss.csv").set_index("Index")
 
     # Select only the unidentified lines with credible detection
     mask = df0.ID.str.startswith("UIL") & (df0.s_n > 1.0)
