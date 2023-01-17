@@ -5182,7 +5182,13 @@ python ../../scripts/spec1d-wave-range.py c007-chop-mean 7760 8160 --separation 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-7760-8160.pdf]]
 
+And the missing section, which is not in the paper
+#+begin_src sh :dir ../data/n346-lines :results output file
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 7370 7760 --separation 10 --star-scale 5
+#+end_src
 
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-7370-7760.pdf]]
 
 ***** 8000 to 9000
 Around the Paschen limit
