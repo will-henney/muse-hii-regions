@@ -143,6 +143,8 @@ def main(
     df = df.join(df_sig, rsuffix="_sig")
 
     xmin, xmax = 0.01, 100.0
+    xticks = [0.01, 0.1, 1.0, 10.0, 100.0]
+    xticklabels = ["0.01", "0.1", "1", "10", "100"]
 
     for ax, [x_zone_ratio, y_zone_ratio], exclude in zip(
             axes.flat,
@@ -155,7 +157,7 @@ def main(
             [
                 ["IV"],
                 ["IV"],
-                [],
+                ["0", "IV"],
                 ["0", "I"],                
             ],
     ):
@@ -188,6 +190,10 @@ def main(
             ylim=[xmin, xmax],
         )
         ax.set_aspect("equal")
+        ax.set_xticks(xticks)
+        ax.set_yticks(xticks)
+        ax.set_xticklabels(xticklabels)
+        ax.set_yticklabels(xticklabels)
     # Now do one more loop over the species to make the legend
     handles = []
     for species in info["species"]:

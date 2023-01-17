@@ -107,6 +107,15 @@ def main(
     bg_mask = np.ones((nwave,), bool)
     bg_mask[avoid_indices] = False
 
+    # Repeat but for the restricted map that only includes central pixel of each line
+    avoid_indices = np.loadtxt(
+        Path(orig_data_dir) / "line-indices-core.txt",
+        dtype=int,
+    )
+    # Make a 1D mask of acceptable BG pixels
+    bg_mask_core = np.ones((nwave,), bool)
+    bg_mask_core[avoid_indices] = False
+
     # And an array of the wave pixel indices
     indices = np.arange(nwave)
 
@@ -136,13 +145,24 @@ def main(
             # Narrow window includes only line
             win3 = spec.data[ipeak-1:ipeak+2]
             bg_npix = np.sum(m7)
-            if bg_npix > 0:
-                bg_mean = np.mean(win7[m7])
-                bg_sig = np.std(win7[m7])
-            else:
-                bg_mean = bg_sig = 0.0
+            if bg_npix == 0:
+                # Use a more restrictive mask for neighboring lines in
+                # cases there were no valid BG pixels
+                m7 = bg_mask_core[ipeak-3:ipeak+4].copy()
+                # But this line still needs its 3 pixels to be blocked out
+                m7[2:5] = False
+                bg_npix = np.sum(m7)
+
+            bg_mean = np.mean(win7[m7])
+            bg_sig = np.std(win7[m7])
+
             line_sum = np.sum(win3 - bg_mean)
             gfit = fit_gauss7(wave7, win7 - bg_mean, m7)
+
+            # Add extra uncertainty from difference between the
+            # Gaussian fit and the direct measure of the strength
+            bg_sig = np.hypot(bg_sig, np.abs(gfit.amplitude.value - line_sum))
+
             metadata[zone["label"]] = {
                 "Strength": sanitize(line_sum),
                 "Sigma": sanitize(bg_sig),

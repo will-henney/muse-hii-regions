@@ -17,6 +17,7 @@ def main(
     # Make a list of all indices that we wish to exclude from BG
     # estimation
     indices = []
+    indices_core = []
     for line in data:
         if not line["Type"]:
             # Skip case that Type is null
@@ -27,11 +28,17 @@ def main(
         idx = line["Index"]
         # Use a 3-pixel window around each line
         indices.extend([idx - 1, idx, idx + 1])
+        indices_core.append(idx)
 
     # Save to a file as a list of integers
     np.savetxt(
         Path(data_dir) / "line-indices.txt",
         indices,
+        fmt="%04d",
+    )
+    np.savetxt(
+        Path(data_dir) / "line-indices-core.txt",
+        indices_core,
         fmt="%04d",
     )
 
