@@ -6984,6 +6984,21 @@ For this we can use interpolation
 - Also I have added a couple of extra regions
   - YSO :: This is mYSO-C from Rubio et al 2018
   - FIL :: A clean section of neutral filament in a region where nebula and stellar emission is weak
+
+
+**** Return to Spitzer spectra
+- [2022-12-14 Wed] Jesús sent the spectra
+  - Analyzed in notebook [[file:../notebooks/spitzer/01-jesus-ngc346-spitzer.ipynb]]
+  - Made spectrum figure for BS, YSO, and background
+    - YSO has silicate peaks
+    - BS has spectrum approximately of warm black body at 145 K
+    - Background has cool spectrum
+  - Added figure to paper
+- [2023-01-19 Thu] Jesús sent the spectral images
+  - Turns out the [Ne III] traces bow shock quite well, as well as medium ionization zones
+  - And [S IV] especially
+- [2023-01-20 Fri]
+  - Realized that we need to use a better background so as not to oversubtract  the medium ionization lines
 *** Look at fractional excess in different features
 - Compare the following
   - medium ionization peak
