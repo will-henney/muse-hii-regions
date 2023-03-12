@@ -6037,8 +6037,9 @@ CLOSED: [2022-11-24 Thu 12:28]
 *** TODO Step 14: Final things to do [2022-11-27 Sun] 
 - [X] Write a latex table of all the UIL lines to include in paper
 - [X] Make a top-ten table of the best lines
-- [ ] Better treatment of the H I line blends
-- [ ] Add the annotations to the remaining one-d spectra
+- [X] Better treatment of the H I line blends
+  - I decided not to bother with this
+- [X] Add the annotations to the remaining one-d spectra
 - [ ] Finish writing the paper
 **** TODO Top-ten line list
 - I have sorted the list in order of flux. Some are unsuitable because of blends, so I will analyze them here
@@ -6051,19 +6052,19 @@ CLOSED: [2022-11-24 Thu 12:28]
   - 7092.29 is nice and clean
 - So now we have 9 hero lines
 ***** Hero lines
-| Index |    Wave | Figure |
-|-------+---------+--------|
-|  1300 | 6221.82 | 6xxx-A |
-|  1632 | 6636.76 | 6xxx-B |
-|  1744 | 6776.75 | 6xxx-B |
-|  1997 | 7092.29 | 7xxx-A |
-|  2844 | 8150.67 | 7xxx-B |
-|  3164 | 8550.06 | 8xxx-B |
-|  3355 | 8789.18 | 8xxx-B |
-|  3405 | 8850.65 | 8xxx-B |
-|  3548 | 9029.22 | 9xxx-A |
-|  3570 | 9057.17 | 9xxx-A |
-|  3762 | 9297.36 | 9xxx-A |
+| Index |    Wave | Figure |    I/0 |  e I/0 |   II/0 | e II/0 | MYSO/0 | e MYSO/0 |
+|-------+---------+--------+--------+--------+--------+--------+--------+----------|
+|  1300 | 6221.82 | 6xxx-A | 0.2535 |      < | 0.5433 |      < | 0.6469 |   0.0835 |
+|  1632 | 6636.76 | 6xxx-B | 0.5374 | 0.1076 | 0.2641 | 0.0800 | 2.6396 |   1.0973 |
+|  1744 | 6776.75 | 6xxx-B | 0.4024 | 0.1387 | 0.3180 | 0.0453 | 0.4512 |   0.0655 |
+|  1997 | 7092.29 | 7xxx-A | 0.2983 | 0.0855 | 0.2376 | 0.0423 | 0.5633 |   0.0610 |
+|  2844 | 8150.67 | 7xxx-B | 0.1304 | 0.0801 | 0.1786 | 0.0194 | 0.2840 |   0.0403 | 
+|  3164 | 8550.06 | 8xxx-B | 0.3664 | 0.0820 | 0.1351 | 0.0590 | 0.1723 |   0.0183 |
+|  3355 | 8789.18 | 8xxx-B | 0.1844 |      < | 0.1274 | 0.0365 | 0.3158 |   0.0229 |
+|  3405 | 8850.65 | 8xxx-B | 0.2482 | 0.0846 | 0.2161 | 0.0228 | 0.3863 |   0.0499 |
+|  3548 | 9029.22 | 9xxx-A | 0.2972 |      < | 0.1474 | 0.0586 | 0.4784 |   0.0755 |
+|  3570 | 9057.17 | 9xxx-A | 0.5435 |      < | 0.0869 | 0.0273 | 0.4695 |        < |
+|  3762 | 9297.36 | 9xxx-A | 0.5151 |      < | 0.2156 |      < | 0.7988 |   0.0708 |
 ***** Comments on particular lines
 - ✘ 8333.95 This is beautifully strong, but is blended with a H line, so it impossible to measure for the other zones
 - ✘ 8459.25 Has strong sky contamination
