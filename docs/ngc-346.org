@@ -6040,8 +6040,10 @@ CLOSED: [2022-11-24 Thu 12:28]
 - [X] Better treatment of the H I line blends
   - I decided not to bother with this
 - [X] Add the annotations to the remaining one-d spectra
+- [ ] Run EMILI on the line lists to try and get IDs
 - [ ] Finish writing the paper
-**** TODO Top-ten line list
+**** DONE Top-ten line list
+CLOSED: [2023-03-13 Mon 12:30]
 - I have sorted the list in order of flux. Some are unsuitable because of blends, so I will analyze them here
 - But I might also want some weaker lines, in the interest of diversity in wavelength bands
   - For instance, some around Ha, such as 6636.8 and 6776.8, which are the strongest ones around there that are not blends
@@ -6120,6 +6122,127 @@ CLOSED: [2022-11-24 Thu 12:28]
 |  2942 |    | 8272.50 |  0.43 | 0.2241 |   0.0043 | Deep Neutral   | False | 0.0882 | 0.0225 | 0.2792 | 0.0406 | 0.1097 |   0.0236 |
 |  2565 |    | 7804.48 |  0.40 | 0.2239 |   0.0013 | Deep Neutral   | False | 0.1569 |      < | 0.0823 |      < | 0.7771 |   0.0159 |
 |  3481 |    | 8945.95 |  0.46 | 0.2118 |   0.0221 | Deep Neutral   | False | 0.6822 | 0.2820 | 0.4673 | 0.1404 | 0.4182 |   0.1076 |
+**** TODO Run EMILI on the line list to get IDs
+***** Specifications of the input files for EMILI
+These are all taken from the manual
+****** Input Line List
+: This is a list of unidentified lines that the user wants to
+: identify. These lines must have observed wavelengths between
+: 3000-11000Ä, the range of a typical optical echelle spectrum.  The
+: user specifies the observed wavelength in Ä, the measurement/systemic
+: error on either side of the o.served value, also in À, the flux of the
+: line with respect to HB, the FWHM in km/s, and the signal-to-noise of
+: the line. Currently the final two parameters, FWHM and signal to
+: noise, are not employed directly by the EMILI code, and are simply
+: propagated into the output to give the user full knowledge of each
+: line the code identifies. Placeholder numeric values can be employed
+: for these parameters.
+: 
+: Users submit a line list in the form of an ASCII text table, with the
+: information specified above for each particular unidentified line
+: comprising an individual line in the table, ended with a carriage
+: return. Information is read in FORTRAN free format, with blank space
+: separating each individual element on the line. Each element in the
+: line is a FORTRAN "REAL" variable. The code currently accepts up to
+: 1500 unidentified lines. No blank lines should be left at the end of
+: the table, and no special indicators need be included to signify the
+: end of the file. The Input Line List is read in by a statement in the
+: main routine: em4.f.  An example of a segment of an Input Line List is
+: given in Figure (from the file ic418.in included with the
+: distribution).
+
+Columns:
+
+1. Observed wavelength in \AA
+2. The measurement/systemic error on either side of the observed value, also in \AA
+3. CONTINUATION of 2, but on the positive side
+4. The flux of the line with respect to HB
+5. The FWHM in km/s
+6. And the signal-to-noise of the line
+
+But only the first four are actually used. The FWHM and s/n are carried through tooutput, but not used by the code. 
+
+Sample from ~ic418.in~ in the distribution:
+:  3512.51  -0.05   0.05    1.36e-03   22.90       37.60   4.09  Real     
+:  3530.50  -0.05   0.05    2.00e-03   24.60    99990.00   4.09  Real     
+:  3554.42  -0.05   0.05    2.34e-03   23.10      127.50   4.09  Real     
+:  3560.62  -0.06   0.06    6.50e-05   20.30        7.30   5.12  Real     
+:  3562.93  -0.06   0.06    1.82e-04   20.70       11.50   5.12  Real     
+:  3574.78  -0.06   0.06    4.68e-05   13.50        7.20   5.12  Real?
+Note that this has some additional columns, which are presumably also ignored
+****** Matched Line List
+This is optional
+
+: If included, the Matched Line List must take the form of an ASCII
+: table, with the information about each specified line comprising one
+: line of the table, individual values separated by blank space, and
+: ended by a carriage return. While read in with the FORTRAN free format
+: the information on each matched line comprising a line in the list
+: must satisfy the following convention in the following order:
+: 
+: - observed wavelength: A FORTRAN "REAL" variable, read in free format.
+: 
+: - laboratory wavelength: Also a FORTRAN "REAL" variable, read in free
+:   format.
+: 
+: - the element notation: This is a three place character variable:
+:   FORTRAN "CHARAC- TER*3". If the line is a forbidden line, the first
+:   character must include the "[" symbol.  Non-forbidden lines or
+:   intercombination lines must start with the elemental notation.  If
+:   the notation doesn't reach three characters the remaining space
+:   should be filled with blank spaces.
+: 
+: - a single blank space between arguments.
+: 
+: - the ion notation: This is six place character variable: FORTRAN
+:   "CHARACTER*6".  The particular ion must be specified in Roman
+:   numeral format, with the standard astronomical convention (i.e. Na I
+:   is neutral sodium, Na II is first ionized sodium etc...).  If the
+:   line is an intercombination of forbidden line, the next character
+:   immediately after the end of the Roman numeral specification must be
+:   the "]" character. If the entire If information comprises less than
+:   six characters, blank spaces should be used to fill out the
+:   remaining places.
+: 
+: - the flux with respect to HB: A FORTRAN "REAL" variable, read in free
+:   format.
+
+It might be better to just copy the sample file and make a few changes.
+
+: 5006.845  5006.843 [O  III]  2.15e+00
+: 6583.467  6583.450 [N  II]   1.63e+00
+: 3726.035  3726.032 [O  II]   1.24e+00
+: 4958.915  4958.911 [O  III]  7.27e-01
+: 6548.088  6548.050 [N  II]   5.36e-01
+: ...
+: 4921.933  4921.931 He  I     1.22e-02 
+: 5889.960  5889.951 Na  I     7.93e-04
+: 4571.161  4571.096 Mg  I]    4.29e-03
+
+Note that the element and ion columns have very precise requirements.
+
+We probably only want to put a few lines in here, but have them be a good spread of the different ionization zones. 
+****** Abundance table
+- We could grab the SMC abundances from Cloudy
+- Only uses Z < 30 but that is fine for us
+
+Sample: 
+: ! 100 10000
+: H  0.10E+01
+: He 0.98E-01
+: Li 0.14E-10
+: Be 0.14E-10
+: B  0.40E-09
+: C  0.36E-03
+: N  0.11E-03
+: O  0.85E-03
+: F  0.36E-07
+
+***** Format the line list for EMILI
+-
+
+
+
 
 ** General points about the globules and filaments
 - The background globules show bright heads and less bright flanks
