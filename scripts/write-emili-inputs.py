@@ -93,7 +93,7 @@ def main(
                     """
                 )
             )
-            if "MYSO" not in zlabel:
+            if "YSO" not in zlabel:
                 f.write(
                     "\n".join([f"deplete {element} 50" for element in ["Fe", "Ni", "Si", "Ca"]])
                 )

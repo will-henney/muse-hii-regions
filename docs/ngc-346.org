@@ -6126,6 +6126,120 @@ CLOSED: [2023-03-13 Mon 12:30]
 |  2565 |    | 7804.48 |  0.40 | 0.2239 |   0.0013 | Deep Neutral   | False | 0.1569 |      < | 0.0823 |      < | 0.7771 |   0.0159 |
 |  3481 |    | 8945.95 |  0.46 | 0.2118 |   0.0221 | Deep Neutral   | False | 0.6822 | 0.2820 | 0.4673 | 0.1404 | 0.4182 |   0.1076 |
 **** TODO Run EMILI on the line list to get IDs
+***** Issues and conclusions from EMILI
+- We want to look for consistency between the MYSO and 0 zones
+  - At the moment, I am letting it find the velocity correction automatically, but this produces large differences between the zones
+****** What to do about the velocities
+- I could fix the per-zone and per-ion velocities using our results from Fig A1
+- But on the other hand, it seems to do a good job of finding the mean velocities of each zone
+-
+******* Velocity comparison between zones
+- Zone 0
+  :  Velocity Structure: Bin/Vel(km/s)
+  :  irvcor 1:    165.700958    
+  :  irvcor 2:    170.145630    
+  :  irvcor 3:    164.595108    
+  :  irvcor 4:    161.649811    
+  :  irvcor 5:    161.649811
+- Zone MYSO
+  :  Velocity Structure: Bin/Vel(km/s)
+  :  irvcor 1:    171.206421    
+  :  irvcor 2:    160.233536    
+  :  irvcor 3:    159.780563    
+  :  irvcor 4:    160.551498    
+  :  irvcor 5:    160.551498
+- Zone I
+  :  Velocity Structure: Bin/Vel(km/s)
+  :  irvcor 1:    173.895447    
+  :  irvcor 2:    173.895447    
+  :  irvcor 3:    160.534256    
+  :  irvcor 4:    129.306076    
+  :  irvcor 5:    129.306076    
+****** Possible identifications
+******* Fe I lines
+- 6502.311, 6699.640, 6616.703 all come from same multiplet
+  - Zone 0: 5.5e-4, 3.4e-4, 1.0e-4
+  - Zone MYSO: 1.7e-4, 1.4e-4, 6.7e-5
+- Data from AtLL 3
+  : -LAB-WAVL-ANG-AIR-|-SPC-|TT|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+  :  * 6502.3111        Fe I E1 y5Go-5F    3 - 2  1.309e+03    30 43137.48 - 58512.38 061
+  :    6533.1344        Fe I E1 y5Go-5F    2 - 2  2.212e+01    30 43210.02 - 58512.38 061
+  :  * 6574.1217        Fe I E1 y5Go-5F    5 - 4  2.382e+03    30 42911.91 - 58118.87 061
+  :  * 6597.3578        Fe I E1 y5Go-5F    2 - 1  8.067e+03    30 43210.02 - 58363.42 061
+  :  * 6616.7027        Fe I E1 y5Go-5F    4 - 3  5.199e+03    30 43022.98 - 58132.08 061
+  :    6622.4911        Fe I E1 y5Go-5F    4 - 4  3.986e+00    30 43022.98 - 58118.87 061
+  :    6667.2297        Fe I E1 y5Go-5F    3 - 3  5.635e+02    30 43137.48 - 58132.08 061
+  :    6673.1069        Fe I E1 y5Go-5F    3 - 4  1.796e+00    30 43137.48 - 58118.87 061
+  :    6699.6402        Fe I E1 y5Go-5F    2 - 3  1.040e+01    30 43210.02 - 58132.08 061
+  :  * 6720.1109        Fe I E1 y5Go-5F    6 - 5  1.201e+04    30 42784.35 - 57660.95 061
+  :    6778.2338        Fe I E1 y5Go-5F    5 - 5  3.179e+02    30 42911.91 - 57660.95 061
+  :    6829.6651        Fe I E1 y5Go-5F    4 - 5  9.277e-02    30 43022.98 - 57660.95 061
+- So there are a few things to check with this identification
+  1. [ ] Where are the missing members of the multiplet?
+  2. [ ] Do the relative intensities pan out?
+     - 6699.640 and 6616.703 come from exactly the same upper level (J = 3), so the relative intensity should just be the ratio of the Einstein A values, which are 10.4 and 52,000, so an enormous disparity
+     - So one would expect 6699.640 to be much weaker than 6616.703
+     - Observed 
+******* Fe II lines
+- Emili's best match for 6655.9 and 6699.3 are Fe II] lines of the same multiplet
+  - Fe II] 6655.996 and 6699.615
+  - Here is the whole multiplet from AtLL 3
+    : -LAB-WAVL-ANG-AIR-|--SPC--|TT|--TERM---|-J_i-J_k-|LEVEL-ENERGY--CM^-1|-REF---|
+    :    6655.9844        Fe II] E1  a2F-z6Fo 7/2 - 5/2 27314.92 - 42334.84 094
+    :    6699.6024        Fe II] E1  a2F-z6Fo 7/2 - 7/2 27314.92 - 42237.06 094
+    :    6754.9289        Fe II] E1  a2F-z6Fo 7/2 - 9/2 27314.92 - 42114.84 094
+    :    6763.6135        Fe II] E1  a2F-z6Fo 5/2 - 3/2 27620.40 - 42401.32 094
+    :    6794.1696        Fe II] E1  a2F-z6Fo 5/2 - 5/2 27620.40 - 42334.84 094
+    :    6839.6236        Fe II] E1  a2F-z6Fo 5/2 - 7/2 27620.40 - 42237.06 094
+  - The predicted doublet intensity ratio is about 1, consistent with observed value
+  - But there are problems with this interpretation
+    - For a start, we are missing some members of the multiplet
+      - 6754.9289 is not seen at all, and it is a very clean part of the spectrum
+      - 6763.6135 might have something very weak in Zone 0
+      - 6794.1696 has nothing, also clean
+      - 6839.6236 is in gap between figures
+    - In general the Fe II lines are much stronger in MYSO than filaments, but these lines are the opposite:
+      - Zone 0: 3.7E-04 (1.6E-05), 3.4E-04 (1.6E-05)
+      - Zone MYSO: 1.0E-04 (7.9E-04), 1.4E-04 (8.0E-04)
+      - This is observed intensity (fraction of H beta) for 6655.996, 6699.615 with predicted values in parentheses. Predictions for MYSO are without depletion, whereas for Zone 0 are for depletion of factor 50. *But note that I still have not put in SMC abundances*
+      - So the absolute values are in the right ball park, assuming an intermediate level of depletion, but this would require 3 to 4 times less depletion in Zone 0 than MYSO, all else being equal, which is hard to reconcile with the other Fe II lines that are detected
+    - For instance for the z4Do-c4D Fe II lines
+      : Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+      : Wavelength range: 0 - inf   Unit: Angstrom   Type: Air
+      : Radial velocity: 0 km/s
+      : Element/Spectrum: Fe II
+      : 
+      : -LAB-WAVL-ANG-AIR-|-SPC--|TT|--TERM---|-J_i-J_k-|LEVEL-ENERGY--CM^-1|-REF---|
+      :    6248.9067        Fe II E1 z4Do-c4D  7/2 - 5/2 44446.91 - 60445.28 094
+      :    6317.9889        Fe II E1 z4Do-c4D  7/2 - 7/2 44446.91 - 60270.35 094
+      :    6383.7302        Fe II E1 z4Do-c4D  5/2 - 5/2 44784.79 - 60445.28 094
+      :    6385.4578        Fe II E1 z4Do-c4D  5/2 - 3/2 44784.79 - 60441.04 094
+      :    6455.8427        Fe II E1 z4Do-c4D  5/2 - 7/2 44784.79 - 60270.35 094
+      :    6491.2544        Fe II E1 z4Do-c4D  3/2 - 5/2 45044.19 - 60445.28 094
+      :    6493.0407        Fe II E1 z4Do-c4D  3/2 - 3/2 45044.19 - 60441.04 094
+      :    6517.0293        Fe II E1 z4Do-c4D  3/2 - 1/2 45044.19 - 60384.37 094
+      :    6562.2051        Fe II E1 z4Do-c4D  1/2 - 3/2 45206.47 - 60441.04 094
+      :    6586.7085        Fe II E1 z4Do-c4D  1/2 - 1/2 45206.47 - 60384.37 094
+      - Seven of these are detected in mYSO, but not all show up in our list. The remaining ones are hidden by Ha and [N II]
+      - For instance 6517.0293
+        - Zone 0: not detected
+        - Zone MYSO: 1.3E-03 (4.5E-03)
+      - Or 6248.9067
+        - Zone 0: 2.1E-04 (8.9E-05)
+        - Zone MYSO: 5.3E-04 (4.4E-03)
+      - Or 6317.9889
+        - Zone 0: not detected
+        - Zone MYSO: 1.1E-03 (4.5E-03)
+      - Or 6455.8427 
+        - Zone 0: not detected
+        - Zone MYSO: 9.4e-4 (??)
+      - Or 6383.7302 + 6385.4578 blend
+        - Zone 0: not detected
+        - Zone MYSO: 3.0E-04 (4.4E-03)
+      - Or 6491.2544
+        - Zone 0: not detected (would be blended with UIL)
+        - Zone MYSO: 2.3E-04 (4.4E-03)
+******* Si I lines
 ***** [3/5] Steps to run EMILI on our lines
 ****** DONE Write our line list in a format that EMILI can use
 CLOSED: [2023-03-13 Mon 21:40]
@@ -6231,7 +6345,7 @@ CLOSED: [2023-03-13 Mon 21:40]
                       """
                   )
               )
-              if "MYSO" not in zlabel:
+              if "YSO" not in zlabel:
                   f.write(
                       "\n".join([f"deplete {element} 50" for element in ["Fe", "Ni", "Si", "Ca"]])
                   )
