@@ -6156,6 +6156,11 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
 ****** Possible identifications
+******* O I lines around 9264
+- We have a DRL at 9264.4 +/- 0.8
+- There is a whole multiplet of O I lines from 9261 to 9266
+- But these should be recombination according to Sharpee:2004a, similar to O I 7772, which we do detect
+  - But mainly from the higher ionization zones, which is rather odd
 ******* Fe I lines
 - 6502.311, 6699.640, 6616.703 all come from same multiplet
   - Zone 0: 5.5e-4, 3.4e-4, 1.0e-4
@@ -6331,7 +6336,7 @@ CLOSED: [2023-03-13 Mon 21:40]
               f.write(
                   dedent(
                       f"""\
-                      A abun.dat
+                      A abun_smc.dat
                       M {zlabel}-emi.match
                       O {zlabel}-emi.out
                       D {zlabel}-emi.dat
@@ -6373,7 +6378,8 @@ CLOSED: [2023-03-13 Mon 21:40]
   - [N II] 6583.45
   - [C I] 8727.13
 - This is now handled in the same script as above
-****** TODO Specify the abundances
+****** DONE Specify the abundances
+CLOSED: [2023-04-04 Tue 22:18]
 - Just to get things started, I have copied the file from the EMILI distribution
 
 
@@ -6492,9 +6498,10 @@ Au 0.10E-10	   |    Au   3.00E-12
 Pb 0.71E-10	   |    Pb   2.13E-11
 #+end_example
 
-****** DONE Setup the ~.cmd~ file
-CLOSED: [2023-03-13 Mon 22:17]
+****** TODO Setup the ~.cmd~ file
 - This is also now done in the above script
+- [X] I have added an SMC abundance file
+- [ ] I am going to try and specify the ICF by hand
 
 ****** TODO Run EMILI and look at the output
 ***** Specifications of the input files for EMILI
