@@ -1,4 +1,4 @@
-A abun.dat
+A abun_smc.dat
 M zone-MYSO-emi.match
 O zone-MYSO-emi.out
 D zone-MYSO-emi.dat
@@ -8,4 +8,4 @@ I 100
 L zone-MYSO-emi.in
 Z COMMENT vel 171 171 171 171 171
 vel+
-icf+
+icf 0.01 0.5 0.5 1e-4 1e-10

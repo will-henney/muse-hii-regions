@@ -6279,6 +6279,16 @@ CLOSED: [2023-03-13 Mon 21:40]
       3579: ("[S  III]", 9068.90),
   }
 
+  # Estimated ionization fractions for the different levels
+  ICF = {
+      "zone-0": "0.01 0.5 0.5 1e-4 1e-10",
+      "zone-I": "0.001 0.5 0.5 1e-4 1e-10",
+      "zone-II": "0.01 0.5 0.5 1e-4 1e-10",
+      "zone-III": "0.001 0.5 0.5 1e-4 1e-10",
+      "zone-IV": "0.0001 0.5 0.5 0.002 2e-6",
+      "zone-MYSO": "0.01 0.5 0.5 1e-4 1e-10",
+      "zone-S": "0.01 0.5 0.5 1e-4 1e-10",
+  }
   def main(
           id_label: str,
           species_file: str="species.yaml",
@@ -6346,13 +6356,14 @@ CLOSED: [2023-03-13 Mon 21:40]
                       L {zlabel}-emi.in
                       Z COMMENT vel 171 171 171 171 171
                       vel+
-                      icf+
+                      icf {ICF[zlabel]}
                       """
                   )
               )
               if "YSO" not in zlabel:
                   f.write(
-                      "\n".join([f"deplete {element} 50" for element in ["Fe", "Ni", "Si", "Ca"]])
+                      "\n".join([f"deplete {element} 10"
+                                 for element in ["Fe", "Ni", "Si", "Ca", "Mg", "Ti", "Al"]])
                   )
 
   if __name__ == "__main__":
@@ -6503,6 +6514,53 @@ Pb 0.71E-10	   |    Pb   2.13E-11
 - [X] I have added an SMC abundance file
 - [ ] I am going to try and specify the ICF by hand
 
+
+******* Deciding on the ICF factors
+- EMILI uses the following ionization bands
+  1. 0-13.6
+     - Mg I], Na I, [S I], [C I], Ca II
+  2. 13.6-24.7
+     - H I
+  3. 24.7-54.5
+     - He I
+  4. 54.5-100.0
+     - He II
+  5. 100+
+     - [Fe X], [Ne V], [Fe VII], [Ar X]
+- It works out ICF factors for each of these bands, according to equations (1) to (4) in Sharpee:2003a
+  - However, there seems to be an error in eq (2): the Y factor must divide, not multiply
+  - There is also the problem that H I and He I overlap almost completely for this nebula, so it does not make much sense to use these lines
+- Still, I will do the calculations by hand, based on the lines that we have
+
+
+| Zone | He I 5876 | He II 4686 | [C I] 8727 |    x1 | x3/x2 | x4/x3 |
+|------+-----------+------------+------------+-------+-------+-------|
+| 0    |  1.24e-01 |          0 |   2.65e-03 |  0.01 | 1.053 | 0.000 |
+| I    |  1.16e-01 |          0 |          0 | 0.001 | 0.985 | 0.000 |
+| II   |  1.30e-01 |          0 |   4.17e-04 |  0.01 | 1.104 | 0.000 |
+| III  |  1.32e-01 |          0 |   6.32e-05 | 0.001 | 1.121 | 0.000 |
+| IV   |  1.15e-01 |   2.31e-03 |          0 |   0.0 | 0.977 | 0.002 |
+| MYSO |  7.98e-02 |          0 |   2.95e-03 |  0.01 | 0.678 | 0.000 |
+| S    |  8.96e-02 |          0 |   6.21e-04 |  0.01 | 0.761 | 0.000 |
+#+TBLFM: $6=0.7 $2 / 0.0824;f3::$7=0.11 $3 / $2;f3
+
+- According to the Sharpee equations, the ICF factors (which add up to 1 by definition) are roughly
+  - x1 = 0.0 to 0.01
+  - x2 = 0.5
+  - x3 = 0.5
+  - x4 = 0 to 0.002
+  - x5 = 0.001, which is minimum
+- However, I would prefer to set a smaller x5 since we see zero evidence of any such lines
+  - For Zone IV we can use x5/x4 = 1e-4 and for all other zones 1e-6
+- So, I will set these all by hand in the ~.cmd~ file
+  - When I ran it by hand, it did correctly assign x1 for Zone 0, but it failed to assign x4 for Zone IV because it thought that C IV was a better ID for the 4686 line
+- In summary
+  - Sharpee level 1 corresponds to our Zone 0
+  - Sharpee levels 2 and 3 both correspond to our Zone III
+  - Sharpee level 4 corresponds to our Zone IV approximately
+  - Sharpee level 5 we do not see at all
+  - There are no Sharpee levels corresponding to our Zones I, and II
+    - Although II will be a small part of Level 2
 ****** TODO Run EMILI and look at the output
 ***** Specifications of the input files for EMILI
 These are all taken from the manual

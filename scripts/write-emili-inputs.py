@@ -22,6 +22,16 @@ MATCH_LINES = {
     3579: ("[S  III]", 9068.90),
 }
 
+# Estimated ionization fractions for the different levels
+ICF = {
+    "zone-0": "0.01 0.5 0.5 1e-4 1e-10",
+    "zone-I": "0.001 0.5 0.5 1e-4 1e-10",
+    "zone-II": "0.01 0.5 0.5 1e-4 1e-10",
+    "zone-III": "0.001 0.5 0.5 1e-4 1e-10",
+    "zone-IV": "0.0001 0.5 0.5 0.002 2e-6",
+    "zone-MYSO": "0.01 0.5 0.5 1e-4 1e-10",
+    "zone-S": "0.01 0.5 0.5 1e-4 1e-10",
+}
 def main(
         id_label: str,
         species_file: str="species.yaml",
@@ -79,7 +89,7 @@ def main(
             f.write(
                 dedent(
                     f"""\
-                    A abun.dat
+                    A abun_smc.dat
                     M {zlabel}-emi.match
                     O {zlabel}-emi.out
                     D {zlabel}-emi.dat
@@ -89,13 +99,14 @@ def main(
                     L {zlabel}-emi.in
                     Z COMMENT vel 171 171 171 171 171
                     vel+
-                    icf+
+                    icf {ICF[zlabel]}
                     """
                 )
             )
             if "YSO" not in zlabel:
                 f.write(
-                    "\n".join([f"deplete {element} 50" for element in ["Fe", "Ni", "Si", "Ca"]])
+                    "\n".join([f"deplete {element} 10"
+                               for element in ["Fe", "Ni", "Si", "Ca", "Mg", "Ti", "Al"]])
                 )
 
 if __name__ == "__main__":
