@@ -6156,6 +6156,84 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
 ****** Possible identifications
+******* N I lines around H alpha
+- We have a bunch of DRL at 6629, 6637, 6646, 6656, which have possible EMILI IDs of an N I multiplet
+#+begin_example
+  Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+  Wavelength range: 0 - inf   Unit: Angstrom   Type: Air
+  Radial velocity: 0 km/s
+  Element/Spectrum: N  I
+
+  -LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+     6606.176        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 5/2 8.871e+04     3 94793.49 - 109926.66 ASD
+     6622.543        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 5/2 7.924e+05     3 94830.89 - 109926.66 ASD
+     6626.990        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 3/2 2.197e+05     3 94770.88 - 109856.52 ASD
+     6636.938        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 3/2 1.400e+06     3 94793.49 - 109856.52 ASD
+     6644.962        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  7/2 - 5/2 3.486e+06     3 94881.82 - 109926.66 ASD
+     6646.503        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 1/2 2.178e+06     3 94770.88 - 109812.23 ASD
+     6653.458        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 3/2 2.735e+06     3 94830.89 - 109856.52 ASD
+     6656.509        3.9e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 1/2 2.168e+06     3 94793.49 - 109812.23 ASD
+
+  gk*Aki weighted average wavelength:    6644.231       
+
+#+end_example
+- Note that the upper level is more than 1 Rydberg above ground level, so if they are pumped then the pumping line can be absorbed by neutral hydrogen
+  - On the other hand, it is only *just* above the threshold, so the line could be pumped by diffuse recombination cradiation in a
+    reas shielded from direct irradiation
+  - This is getting a bit contrived
+- Looking at lines going down from the lower 3p 4Do level of these transitions we find
+#+begin_example
+  Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+  Request: 1
+
+  Wavelength range: 4500 - 9500   Unit: Angstrom   Type: Air
+  Radial velocity: 0 km/s
+  Wavelength accuracy upper limit: 5%
+  Element/Spectrum: N  I
+  Minimum line strength: no restrictions
+  Include lines without atomic data: true
+  Minimum abundance: no minimum
+  Lower level energy range: no restrictions   Unit: cm^-1
+  Upper level energy range: 94770 - 94900
+  Maximum for principal quantum number n: no restrictions
+  Transition types included: all
+  Transitions from auto-ionizing levels: included
+
+  -LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+     8680.282        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 7/2 2.531e+07    15 83364.62 - 94881.82 ASD
+     8683.403        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 5/2 1.881e+07    15 83317.83 - 94830.89 ASD
+     8686.149        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 1/2 - 3/2 1.152e+07    15 83284.07 - 94793.49 ASD
+     8703.247        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 1/2 - 1/2 2.161e+07    15 83284.07 - 94770.88 ASD
+     8711.703        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 3/2 1.288e+07    15 83317.83 - 94793.49 ASD
+     8718.837        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 5/2 6.546e+06    15 83364.62 - 94830.89 ASD
+     8728.901        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 1/2 3.761e+06    15 83317.83 - 94770.88 ASD
+     8747.369        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 3/2 9.662e+05    15 83364.62 - 94793.49 ASD
+#+end_example
+These are the same lines that we mark on Figure 5 and which are relatively strong in MYSO, but they are absent (or at least, much reduced) in zone 0. 
+
+There are additional lines farther to the infrared (note that these are vacuum waves)
+#+begin_example
+  -LAB-WAVL-ANG-VAC-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+    11552.493        1.2e-02  N I] E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  2P-4Do 1/2 - 3/2 5.280e+01    15 86137.35 - 94793.49 ASD
+    11582.748        1.2e-02  N I] E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  2P-4Do 1/2 - 1/2 2.894e+01    15 86137.35 - 94770.88 ASD
+    11613.889        1.2e-02  N I] E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  2P-4Do 3/2 - 5/2 1.813e+02    15 86220.51 - 94830.89 ASD
+    11664.555        1.2e-02  N I] E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  2P-4Do 3/2 - 3/2 1.968e+02    15 86220.51 - 94793.49 ASD
+    11695.400        1.2e-02  N I] E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  2P-4Do 3/2 - 1/2 3.396e+02    15 86220.51 - 94770.88 ASD
+    14761.106        1.9e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 5/2 - 7/2 1.061e+06    15 88107.26 - 94881.82 ASD
+    14872.918        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 5/2 - 5/2 2.827e+05    15 88107.26 - 94830.89 ASD
+    14956.111        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 5/2 - 3/2 4.319e+04    15 88107.26 - 94793.49 ASD
+    14970.687        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 3/2 - 5/2 7.064e+05    15 88151.17 - 94830.89 ASD
+    15054.981        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 3/2 - 3/2 4.933e+05    15 88151.17 - 94793.49 ASD
+    15099.080        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 1/2 - 3/2 4.073e+05    15 88170.57 - 94793.49 ASD
+    15106.402        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 3/2 - 1/2 1.464e+05    15 88151.17 - 94770.88 ASD
+    15150.804        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 1/2 - 1/2 7.728e+05    15 88170.57 - 94770.88 ASD
+#+end_example
+******* Other N I lines
+- The observed DRL at 9029.2 is close to the N I 9028.922 line
+- This is one of the lines mentioned in the N I pumping paper as being excited by the same fluorescent mechanism as 5199
+  - See Table 9 of Ferland:2012a
+  - It is in the Doublet system
 ******* O I lines around 9264
 - We have a DRL at 9264.4 +/- 0.8
 - There is a whole multiplet of O I lines from 9261 to 9266
@@ -6245,7 +6323,7 @@ CLOSED: [2023-03-13 Mon 12:30]
         - Zone 0: not detected (would be blended with UIL)
         - Zone MYSO: 2.3E-04 (4.4E-03)
 ******* Si I lines
-***** [3/5] Steps to run EMILI on our lines
+***** [5/5] Steps to run EMILI on our lines
 ****** DONE Write our line list in a format that EMILI can use
 CLOSED: [2023-03-13 Mon 21:40]
 - Format of [[id:0F83FBDC-6894-4B22-8F1A-8FFFD35A8BF6][Input Line List]]
@@ -6509,10 +6587,11 @@ Au 0.10E-10	   |    Au   3.00E-12
 Pb 0.71E-10	   |    Pb   2.13E-11
 #+end_example
 
-****** TODO Setup the ~.cmd~ file
+****** DONE Setup the ~.cmd~ file
+CLOSED: [2023-04-05 Wed 21:02]
 - This is also now done in the above script
 - [X] I have added an SMC abundance file
-- [ ] I am going to try and specify the ICF by hand
+- [X] I am going to try and specify the ICF by hand
 
 
 ******* Deciding on the ICF factors
@@ -6561,7 +6640,18 @@ Pb 0.71E-10	   |    Pb   2.13E-11
   - Sharpee level 5 we do not see at all
   - There are no Sharpee levels corresponding to our Zones I, and II
     - Although II will be a small part of Level 2
-****** TODO Run EMILI and look at the output
+****** DONE Run EMILI and look at the output
+CLOSED: [2023-04-05 Wed 21:05]
+Run commands like this in a terminal
+#+begin_src sh :dir ../data/n346-lines/emili :eval no
+time ./em4 zone-0-emi.cmd
+#+end_src
+and hit RETURN a few times to get the prompt back
+
+- [X] I have run EMILI on all the zones
+- [X] I have looked at the output
+  
+
 ***** Specifications of the input files for EMILI
 These are all taken from the manual
 ****** Input Line List
