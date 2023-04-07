@@ -5171,6 +5171,13 @@ python ../../scripts/spec1d-wave-range.py c007-chop-mean 6430 6810 --separation 
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6430-6810.pdf]]
 
 
+And a missing section, which is not in the paper but where I want to look for potential N I lines
+#+begin_src sh :dir ../data/n346-lines :results output file
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 6800 7000 --separation 5 --star-scale 5
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-6800-7000.pdf]]
 
 
 ***** 7000 to 8000
@@ -6156,8 +6163,9 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
 ****** Possible identifications
-******* N I lines around H alpha
+******* N I lines around H alpha (5s 4P \to 3p 4Do)
 - We have a bunch of DRL at 6629, 6637, 6646, 6656, which have possible EMILI IDs of an N I multiplet
+- 5s 4P \to 3p 4Do
 #+begin_example
   Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
   Wavelength range: 0 - inf   Unit: Angstrom   Type: Air
@@ -6177,14 +6185,130 @@ CLOSED: [2023-03-13 Mon 12:30]
   gk*Aki weighted average wavelength:    6644.231       
 
 #+end_example
+******** Summary of logic
+- Three arguments against these lines being N I 5s 4P \to 3p 4Do
+  1. Pumping of 5s from ground state requires lambda < 912
+  2. We should also see lines 5s 4P \to 3p 4Po and 5s 4P \to 3p 4So but we do not
+  3. Every transition to 3p 4Do should also produce a 3p 4Do \to 3s 4P line, since this is the only odd-parity quartet state of lower energy
+- We can argue that 1 and 2 are not watertight
+  1. Illumination by diffuse recombination radiation
+  2. Terrestrial absorption gets in the way
+- But 3 is more quantifiable
+  - We need to measure the relative brightnesses
+| Wave |   Zone 0 |     MYSO |   |   |
+|------+----------+----------+---+---|
+| 6629 | 7.73e-04 |  1.44e-3 |   |   |
+| 6637 | 7.32e-04 |  1.93e-3 |   |   |
+| 6646 | 4.39e-04 |  2.49e-4 |   |   |
+| 6656 | 3.72e-04 |  1.05e-4 |   |   |
+|------+----------+----------+---+---|
+|  Sum |  0.00232 |  0.00372 |   |   |
+|------+----------+----------+---+---|
+| 8680 | 9.24e-05 | 5.99e-04 |   |   |
+| 8703 | 1.96e-04 | 2.15e-03 |   |   |
+| 8712 | 1.15e-04 | 2.87e-03 |   |   |
+| 8719 | 2.60e-04 | 1.29e-03 |   |   |
+|------+----------+----------+---+---|
+|      |  0.00066 |  0.00691 |   |   |
+|      |          |          |   |   |
+#+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5
+******** Other downward transitions from 5s
+In principle, we would expect to see these too
+
+********* 5s 4P \to 3p 4Po NOT SEEN
+- We see nothing at all in this wavelength range
+- It is quite messy with telluric absorption and sky lines, so this is not necessarily conclusive
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+   6926.670        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 5/2 8.058e+05     3 95493.69 - 109926.66 ASD
+   6945.177        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 5/2 1.865e+06     3 95532.15 - 109926.66 ASD
+   6951.600        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 3/2 1.107e+06     3 95475.31 - 109856.52 ASD
+   6960.496        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 3/2 3.529e+05     3 95493.69 - 109856.52 ASD
+   6973.074        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 1/2 4.388e+05     3 95475.31 - 109812.23 ASD
+   6979.185        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 3/2 1.182e+06     3 95532.15 - 109856.52 ASD
+   6982.025        4.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 1/2 2.185e+06     3 95493.69 - 109812.23 ASD
+
+gk*Aki weighted average wavelength:    6954.815
+#+end_example
+
+********* 5s 4P \to 3p 4So SEEN ONE OF THREE MAYBE?
+- We have a DRL at 7628.73 ± 0.23 that could possibly be 7628.180 at a stretch. But no other lines
+- This is in the middle of a telluric band, so it is hard to see
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+   7587.571        5.1e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 6.663e+05     3 96750.84 - 109926.66 ASD
+   7628.180        5.2e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 6.557e+05     3 96750.84 - 109856.52 ASD
+   7654.044        5.2e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 6.491e+05     3 96750.84 - 109812.23 ASD
+
+gk*Aki weighted average wavelength:    7611.919       
+#+end_example
+     
+********* TODO Infrared 5s \to 4p lines
+- These are at 3 to 4 microns
+- The first one 3.26 micron is the strongest, with branching ratio of about 30% as opposed to 40% for the optical line
+- [ ] Then there would be more downward transitions from 4p that we should look into
+
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  31754.27         9.0e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 5/2 5.884e+04     3 106778.34 - 109926.66 ASD
+  32122.83         9.2e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 5/2 5.115e+05     3 106814.46 - 109926.66 ASD
+  32272.29         9.3e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 3/2 1.401e+05     3 106758.73 - 109856.52 ASD
+  32477.84         9.4e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 3/2 8.799e+05     3 106778.34 - 109856.52 ASD
+  32691.92         9.5e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  7/2 - 5/2 2.157e+06     3 106868.63 - 109926.66 ASD
+  32740.35         9.6e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 1/2 1.342e+06     3 106758.73 - 109812.23 ASD
+  32863.49         9.6e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 3/2 1.672e+06     3 106814.46 - 109856.52 ASD
+  32951.93         9.7e-02  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 1/2 1.316e+06     3 106778.34 - 109812.23 ASD
+
+gk*Aki weighted average wavelength:   32657.88        
+#+end_example
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  34113.06         1.0e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 5/2 6.990e+05     3 106996.03 - 109926.66 ASD
+  34597.53         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 5/2 1.563e+06     3 107037.07 - 109926.66 ASD
+  34760.55         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 3/2 9.176e+05     3 106980.48 - 109856.52 ASD
+  34949.54         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 3/2 2.889e+05     3 106996.03 - 109856.52 ASD
+  35304.19         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 1/2 3.504e+05     3 106980.48 - 109812.23 ASD
+  35458.23         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 3/2 9.337e+05     3 107037.07 - 109856.52 ASD
+  35499.15         1.1e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 1/2 1.723e+06     3 106996.03 - 109812.23 ASD
+
+gk*Aki weighted average wavelength:   34817.82        
+#+end_example
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  40294.71         1.4e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 2.448e+05     3 107445.62 - 109926.66 ASD
+  41467.01         1.5e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 2.246e+05     3 107445.62 - 109856.52 ASD
+  42243.00         1.6e-01  N I E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 2.125e+05     3 107445.62 - 109812.23 ASD
+
+gk*Aki weighted average wavelength:   40968.43     
+#+end_example
+
+********* Intercombination lines
+There are more transitions to the doublet series, but these have small transition probabilities
+******** Pumping UV lines from ground to the upper 5s level
 - Note that the upper level is more than 1 Rydberg above ground level, so if they are pumped then the pumping line can be absorbed by neutral hydrogen
-  - On the other hand, it is only *just* above the threshold, so the line could be pumped by diffuse recombination cradiation in a
-    reas shielded from direct irradiation
+  - 909.697, 910.278, 910.645 Angstrom (lambda vac)
+  - On the other hand, it is only *just* above the threshold, so the line could be pumped by diffuse recombination radiation in a
+    gas shielded from direct irradiation
   - This is getting a bit contrived
-- Looking at lines going down from the lower 3p 4Do level of these transitions we find
+  - So the perfect scenario for this would be gas that is shielded from the stellar EUV, but is illuminated by diffuse recombination EUV
+    - Photons between 853 and 912 Angstrom can ionize H but not N, so in this scenario we would still have neutral N
+- These are the pumping lines
+#+begin_example
+  -LAB-WAVL-ANG-VAC-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|--LVL-EN--CM-1--|-REF---|
+      909.69742      7.4e-05  N I E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 3.586e+07     3 0.00 - 109926.66 ASD
+      910.27824      7.4e-05  N I E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 3.579e+07     3 0.00 - 109856.52 ASD
+      910.64536      7.4e-05  N I E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 3.575e+07     3 0.00 - 109812.23 ASD
+#+end_example
+******** Cascade down from lower 3p 4Do level
+:PROPERTIES:
+:ID:       B45C9645-CEBB-4066-BD62-753E650085B5
+:END:
+First the optical lines, which are 3p \to 3s
 #+begin_example
   Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
-
   Request: 1
 
   Wavelength range: 4500 - 9500   Unit: Angstrom   Type: Air
@@ -6229,6 +6353,107 @@ There are additional lines farther to the infrared (note that these are vacuum w
     15106.402        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 3/2 - 1/2 1.464e+05    15 88151.17 - 94770.88 ASD
     15150.804        2.0e-02  N I  E1          2s.2p4-2s2.2p2.(3P).3p  4P-4Do 1/2 - 1/2 7.728e+05    15 88170.57 - 94770.88 ASD
 #+end_example
+- The permitted ones of these are to the core-excited level 2s^2 2p^2 3p \to 2s 2p^4
+- But total branching ratio for these looks like it is only about 5%
+******** Fluorescence of the 4s level instead
+- This would be easier since the UV line is longward of Lyman limit
+********* Pumping from ground up to 4s
+#+begin_example
+-LAB-WAVL-ANG-VAC-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|--LVL-EN--CM-1--|-REF---|
+    963.9903       5.9e-04  N I E1         2s2.2p3-2s2.2p2.(3P).4s 4So-4P  3/2 - 5/2 5.940e+07    15 0.00 - 103735.48 ASD
+    964.6256       5.9e-04  N I E1         2s2.2p3-2s2.2p2.(3P).4s 4So-4P  3/2 - 3/2 5.661e+07    15 0.00 - 103667.16 ASD
+    965.0413       5.9e-04  N I E1         2s2.2p3-2s2.2p2.(3P).4s 4So-4P  3/2 - 1/2 5.524e+07    15 0.00 - 103622.51 ASD
+
+gk*Aki weighted average wavelength:     964.3653      
+#+end_example
+********* Transitions down from 4s \to 3p
+- These are the only possibilities
+- The transitions to quartets will dominate over the intercombination lines
+********** 4s 4P \to 3p 4Do at 1.13 micron
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+  11180.13         7.9e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  3/2 - 5/2 2.207e+05    15 94793.49 - 103735.48 ASD
+  11227.09         8.0e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  5/2 - 5/2 2.302e+06    15 94830.89 - 103735.48 ASD
+  11237.58         8.0e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  1/2 - 3/2 6.640e+05    15 94770.88 - 103667.16 ASD
+  11266.21         8.0e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  3/2 - 3/2 4.574e+06    15 94793.49 - 103667.16 ASD
+  11291.67         8.1e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  7/2 - 5/2 1.196e+07    15 94881.82 - 103735.48 ASD
+  11294.26         8.1e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  1/2 - 1/2 7.686e+06    15 94770.88 - 103622.51 ASD
+  11313.89         8.1e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  5/2 - 3/2 1.002e+07    15 94830.89 - 103667.16 ASD
+  11323.18         8.1e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Do-4P  3/2 - 1/2 8.190e+06    15 94793.49 - 103622.51 ASD
+
+gk*Aki weighted average wavelength:   11290.54    
+#+end_example
+
+********** 4s 4P \to 3p 4Po at 1.22 micron
+#+begin_example
+LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+  12129.97         9.3e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  3/2 - 5/2 3.056e+06    15 95493.69 - 103735.48 ASD
+  12186.84         9.4e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  5/2 - 5/2 7.401e+06    15 95532.15 - 103735.48 ASD
+  12203.92         9.4e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  1/2 - 3/2 4.233e+06    15 95475.31 - 103667.16 ASD
+  12231.36         9.5e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  3/2 - 3/2 1.582e+06    15 95493.69 - 103667.16 ASD
+  12270.80         9.5e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  1/2 - 1/2 1.484e+06    15 95475.31 - 103622.51 ASD
+  12289.19         9.6e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  5/2 - 3/2 3.908e+06    15 95532.15 - 103667.16 ASD
+  12298.54         9.6e-02  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4Po-4P  3/2 - 1/2 7.700e+06    15 95493.69 - 103622.51 ASD
+
+gk*Aki weighted average wavelength:   12212.65        
+#+end_example
+
+********** 4s 4P \to 3p 4So at 1.44 micron
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+  14313.22         1.3e-01  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4So-4P  3/2 - 5/2 1.199e+06    15 96750.84 - 103735.48 ASD
+  14454.60         1.3e-01  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4So-4P  3/2 - 3/2 1.079e+06    15 96750.84 - 103667.16 ASD
+  14548.53         1.3e-01  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).4s 4So-4P  3/2 - 1/2 1.015e+06    15 96750.84 - 103622.51 ASD
+
+gk*Aki weighted average wavelength:   14393.57        
+#+end_example
+
+********* Further cascade down from 3p
+- These mostly go to 3s
+
+********** 3p 4So \to 3s 4P at 7423.6, 7442.3, 7468.3
+- We see these in an [[file:../data/n346-lines/spec1d-c007-chop-mean-7370-7760.pdf][in-the-gaps spectrum]], which maybe we should add to paper
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   7423.641        4.9e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4So 1/2 - 3/2 5.649e+06    15 83284.07 - 96750.84 ASD
+   7442.298        4.9e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4So 3/2 - 3/2 1.196e+07    15 83317.83 - 96750.84 ASD
+   7468.312        5.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4So 5/2 - 3/2 1.961e+07    15 83364.62 - 96750.84 ASD
+
+gk*Aki weighted average wavelength:    7453.173       
+#+end_example
+********** 3p 4Po \to 3s 4P around 8200 Angstrom
+- We see all these lines in Fig C4
+- Strongest in MYSO, but weakly in I and 0
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8184.861        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 3/2 - 5/2 8.220e+06    15 83317.83 - 95532.15 ASD
+   8188.012        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 1/2 - 3/2 1.253e+07    15 83284.07 - 95493.69 ASD
+   8200.357        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 1/2 - 1/2 4.684e+06    15 83284.07 - 95475.31 ASD
+   8210.715        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 3/2 - 3/2 5.233e+06    15 83317.83 - 95493.69 ASD
+   8216.336        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 5/2 - 5/2 2.263e+07    15 83364.62 - 95532.15 ASD
+   8223.128        6.0e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 3/2 - 1/2 2.619e+07    15 83317.83 - 95475.31 ASD
+   8242.389        6.1e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Po 5/2 - 3/2 1.312e+07    15 83364.62 - 95493.69 ASD
+
+gk*Aki weighted average wavelength:    8212.242  
+#+end_example
+********** 3p 4Do \to 3s 4P
+- We already discussed these in [[id:B45C9645-CEBB-4066-BD62-753E650085B5][Cascade down from lower 3p 4Do level]]
+- But included again here for completeness
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8680.282        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 7/2 2.531e+07    15 83364.62 - 94881.82 ASD
+   8683.403        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 5/2 1.881e+07    15 83317.83 - 94830.89 ASD
+   8686.149        6.7e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 1/2 - 3/2 1.152e+07    15 83284.07 - 94793.49 ASD
+   8703.247        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 1/2 - 1/2 2.161e+07    15 83284.07 - 94770.88 ASD
+   8711.703        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 3/2 1.288e+07    15 83317.83 - 94793.49 ASD
+   8718.837        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 5/2 6.546e+06    15 83364.62 - 94830.89 ASD
+   8728.901        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 3/2 - 1/2 3.761e+06    15 83317.83 - 94770.88 ASD
+   8747.369        6.8e-03  N I E1 2s2.2p2.(3P).3s-2s2.2p2.(3P).3p  4P-4Do 5/2 - 3/2 9.662e+05    15 83364.62 - 94793.49 ASD
+
+gk*Aki weighted average wavelength:    8690.884       
+#+end_example
+******* 
 ******* Other N I lines
 - The observed DRL at 9029.2 is close to the N I 9028.922 line
 - This is one of the lines mentioned in the N I pumping paper as being excited by the same fluorescent mechanism as 5199
