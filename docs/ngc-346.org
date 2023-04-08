@@ -6195,23 +6195,76 @@ CLOSED: [2023-03-13 Mon 12:30]
   2. Terrestrial absorption gets in the way
 - But 3 is more quantifiable
   - We need to measure the relative brightnesses
-| Wave |   Zone 0 |     MYSO |   |   |
-|------+----------+----------+---+---|
-| 6629 | 7.73e-04 |  1.44e-3 |   |   |
-| 6637 | 7.32e-04 |  1.93e-3 |   |   |
-| 6646 | 4.39e-04 |  2.49e-4 |   |   |
-| 6656 | 3.72e-04 |  1.05e-4 |   |   |
-|------+----------+----------+---+---|
-|  Sum |  0.00232 |  0.00372 |   |   |
-|------+----------+----------+---+---|
-| 8680 | 9.24e-05 | 5.99e-04 |   |   |
-| 8703 | 1.96e-04 | 2.15e-03 |   |   |
-| 8712 | 1.15e-04 | 2.87e-03 |   |   |
-| 8719 | 2.60e-04 | 1.29e-03 |   |   |
-|------+----------+----------+---+---|
-|      |  0.00066 |  0.00691 |   |   |
-|      |          |          |   |   |
-#+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5
+  - Compare the sum of the DRLs around 6650 to the N I multiplet at 8700
+  - Convert to photons instead of energy, so multiply by respective wavelengths
+|      Wave |   Zone 0 |     MYSO |
+|-----------+----------+----------|
+|      6629 | 7.73e-04 |  1.44e-3 |
+|      6637 | 7.32e-04 |  1.93e-3 |
+|      6646 | 4.39e-04 |  2.49e-4 |
+|      6656 | 3.72e-04 |  1.05e-4 |
+|-----------+----------+----------|
+|   Sum DRL |  0.00232 |  0.00372 |
+|-----------+----------+----------|
+|      8680 | 9.24e-05 | 5.99e-04 |
+|      8703 | 1.96e-04 | 2.15e-03 |
+|      8712 | 1.15e-04 | 2.87e-03 |
+|      8719 | 2.60e-04 | 1.29e-03 |
+|-----------+----------+----------|
+|   Sum V1  |  0.00066 |  0.00691 |
+|-----------+----------+----------|
+| V1 / DRL  |    0.372 |    2.430 |
+#+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5::@12$2..@12$3=8700 @11 / 6650 @6;f3
+******** TODO Find the multiplet numbers for all these transitions
+********* UV pumping lines
+- 5s level: UV 3.08 at 910 \AA
+- 3d 4D: UV 3.06 at 952 \AA (forbidden)
+- 3d 4P: UV 3.05 at 954 \AA
+- 4s 4P: UV 3 at 964 \AA
+********* Optical lines
+- V1: 3p 4Do \to 3s 4P around 8700 \AA
+  - Strong in MYSO
+- V2: 3p 4Po \to 3s 4P around 8200 \AA
+  - Strong in MYSO
+- V3: 3p 4So \to 3s 4P around 7440 \AA
+  - Strong in MYSO
+- V20: 5s 4P \to 3p 4Do around 6650 \AA
+  - This is the one with a possible ID as DRLs
+- V8: 3p 2Po \to 3s 2P around 8600 \AA
+  - We see a line at 8630, which might be one of these
+  - But we do not see the others, so I am somewhat doubtful
+  - These are from the doublet spectrum, but may be excited by the same pumping that gives the 5200 \AA lines
+- V55: 5s 4P \to 3p 4Po around 6960 \AA
+  - Not seen
+  - From same upper level as V20
+- V83: 5s 4P \to 3p 4So around 7600 \AA
+  - Maybe 1/3 components seen
+  - From same upper level as V20    
+********* Infrared lines
+- V17: 4s 4P \to 3p 4Do around 11,300 \AA
+- V18.02: 3d 4P \to 3p 4Do around 10,000 \AA
+********* Citation to Charlotte E. Moore (1975) multiplet table
+Please convert the following citation of a technical report to bibtex format:
+
+: Selected Tables of Atomic Spectra, Atomic Energy Levels and Multiplet Tables – N I, N II, N III,
+: C. E. Moore,
+: in Nat. Stand. Ref. Data Ser., NSRDS-NBS 3 (Sect. 5), 80 pp. (Nat. Bur. Stand., U.S., 1975)
+: DOI:10.6028/NBS.NSRDS.3sec5
+: (NIST compilation)
+
+Here's the converted citation in BibTeX format:
+
+#+begin_src 
+@techreport{Moore:1975a,
+  title={Selected Tables of Atomic Spectra, Atomic Energy Levels and Multiplet Tables--N I, N II, N III},
+  author={Moore, C. E.},
+  year={1975},
+  institution={National Bureau of Standards},
+  number={NSRDS-NBS 3 (Sect. 5)},
+  pages={80},
+  doi={10.6028/NBS.NSRDS.3sec5}
+}
+#+end_src
 ******** Other downward transitions from 5s
 In principle, we would expect to see these too
 
