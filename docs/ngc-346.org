@@ -190,7 +190,7 @@
 - Some in violet, some in IR, but also in far red
 - Best recent paper is Syme:2021y
 - Seems there is a band that peaks in the Red
-  - Lines at 9124.0, 9127.4, seem to close together
+  - Lines at 9124.0, 9127.4, seem too close together
 
 
 **** CH lines
@@ -6211,6 +6211,10 @@ Element/Spectrum: C  II
 - /Conclusion: Very unlikely to be a legitimate ID/
 - This is the shortest wavelength out of a multiplet with 15 members
   - multiplet 13 in Nave:1994a, although strangely they are missing the 5-4 component at 6221.6722
+  - a5F - z7Fo
+  - The letters ~a~ and ~z~ are for the configurations of heavy ions:
+    - a, b, c, ... are the even parity configurations in order of increasing energy
+    - z, y, x, ... are the same for the odd parity configurations
 - On the plus side, the upper level is only 23,000 /cm so relatively easy to excite
   - Could be excited from ground configuration by transitions in range 4326-4490 \AA (a5D \to z7Fo, multiplet 2)
   - These are conveniently just outside the MUSE range
@@ -6272,7 +6276,11 @@ Other downward transitions from z7Fo. But these have much lower A values
 - Already done below in [[id:6577FEB2-A7FF-4401-9FF3-9387BA7FF243][N I lines (5s 4P \to 3p 4Do) around H alpha (6629, 6637, 6646, 6656)]]
 - But need to list other EMILI suggestions
 - Note that the  measurement of MYSO/0 for 6637 is clearly an overestimate. It is probably affected by the Raman absorption
-******* 6776.75 
+******** [Co I] 6636.620 candidate ID for 6636.76
+- This is a low-lying level, which should make it easy to excite
+- On the other hand, the abundance should be small
+- There are a whole bunch of forbidden [Co I] lines
+******* 6776.75
 ******* 7092.29
 ******* 8150.67
 ******* 8550.06
@@ -6321,23 +6329,23 @@ Other downward transitions from z7Fo. But these have much lower A values
   - We need to measure the relative brightnesses
   - Compare the sum of the DRLs around 6650 to the N I multiplet at 8700
   - Convert to photons instead of energy, so multiply by respective wavelengths
-|      Wave |   Zone 0 |     MYSO |
-|-----------+----------+----------|
-|      6629 | 7.73e-04 |  1.44e-3 |
-|      6637 | 7.32e-04 |  1.93e-3 |
-|      6646 | 4.39e-04 |  2.49e-4 |
-|      6656 | 3.72e-04 |  1.05e-4 |
-|-----------+----------+----------|
-|   Sum DRL |  0.00232 |  0.00372 |
-|-----------+----------+----------|
-|      8680 | 9.24e-05 | 5.99e-04 |
-|      8703 | 1.96e-04 | 2.15e-03 |
-|      8712 | 1.15e-04 | 2.87e-03 |
-|      8719 | 2.60e-04 | 1.29e-03 |
-|-----------+----------+----------|
-|   Sum V1  |  0.00066 |  0.00691 |
-|-----------+----------+----------|
-| V1 / DRL  |    0.372 |    2.430 |
+|     Wave |   Zone 0 |     MYSO |
+|----------+----------+----------|
+|     6629 | 7.73e-04 |  1.44e-3 |
+|     6637 | 7.32e-04 |  1.93e-3 |
+|     6646 | 4.39e-04 |  2.49e-4 |
+|     6656 | 3.72e-04 |  1.05e-4 |
+|----------+----------+----------|
+|  Sum DRL |  0.00232 |  0.00372 |
+|----------+----------+----------|
+|     8680 | 9.24e-05 | 5.99e-04 |
+|     8703 | 1.96e-04 | 2.15e-03 |
+|     8712 | 1.15e-04 | 2.87e-03 |
+|     8719 | 2.60e-04 | 1.29e-03 |
+|----------+----------+----------|
+|   Sum V1 |  0.00066 |  0.00691 |
+|----------+----------+----------|
+| V1 / DRL |    0.372 |    2.430 |
 #+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5::@12$2..@12$3=8700 @11 / 6650 @6;f3
 ******** DONE Find the multiplet numbers for all these transitions
 CLOSED: [2023-04-08 Sat 19:57]
