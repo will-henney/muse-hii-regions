@@ -6170,11 +6170,15 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 3:    160.534256    
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
-****** TODO Possible identifications of the strongest lines
+****** TODO [2/11] Possible identifications of the strongest lines
 - For each line, we will look what EMILI suggests, then apply common sense
 - We will rule out any III ion and any II ion that has first IP higher than 13 eV
   - We will not completely rule out species like C II, but they seem unlikely, although I suppose we could have excitation from destruction of charged PAH molecules ....
-******* 6221.82
+- Big output files from EMILI for
+  - [[file:../data/n346-lines/emili/zone-0-emi.out][Zone 0]]
+  - [[file:../data/n346-lines/emili/zone-MYSO-emi.out][Zone MYSO]]
+******* DONE 6221.82
+CLOSED: [2023-04-28 Fri 23:26]
 - C II 6221.900 is supposedly the best match, but this seems very unlikely
 - It between highly excited levels
 
@@ -6272,7 +6276,8 @@ Other downward transitions from z7Fo. But these have much lower A values
    9778.2789       1.4e-03  Fe I] E1          3d7.(4F).4s-3d6.(5D).4s.4p.(3Po)  a3F-z7Fo  2 - 2  3.305e-02    30 12968.55 - 23192.50 061
    9856.9121       1.4e-03  Fe I] E1          3d7.(4F).4s-3d6.(5D).4s.4p.(3Po)  a3F-z7Fo  2 - 3                  12968.55 - 23110.94 061
 #+end_example
-******* 6636.76
+******* DONE 6636.76
+CLOSED: [2023-04-28 Fri 23:26]
 - Already done below in [[id:6577FEB2-A7FF-4401-9FF3-9387BA7FF243][N I lines (5s 4P \to 3p 4Do) around H alpha (6629, 6637, 6646, 6656)]]
 - But need to list other EMILI suggestions
 - Note that the  measurement of MYSO/0 for 6637 is clearly an overestimate. It is probably affected by the Raman absorption
@@ -6280,15 +6285,19 @@ Other downward transitions from z7Fo. But these have much lower A values
 - This is a low-lying level, which should make it easy to excite
 - On the other hand, the abundance should be small
 - There are a whole bunch of forbidden [Co I] lines
-******* 6776.75
-******* 7092.29
-******* 8150.67
-******* 8550.06
-******* 8789.18
-******* 8850.65
-******* 9029.22
-******* 9057.17
-******* 9297.36
+******* TODO 6776.75
+- Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::6776.84][Ni II  6776.84]] 
+- Could also be  6776.689  Fe I], 6776.658* Ca I,  6777.120* Ca I
+******* TODO 7092.29
+- Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::7092.51][Ni II  7092.46]], or C I]  7092.51
+- Could also be 7092.077  Fe I, 7092.080  Fe I, 7093.106  Fe I, 7093.230  C  I 
+******* TODO 8150.67
+******* TODO 8550.06
+******* TODO 8789.18
+******* TODO 8850.65
+******* TODO 9029.22
+******* TODO 9057.17
+******* TODO 9297.36
 
 ****** Possible identifications of the 6xxx lines
 - [2023-04-10 Mon] For some reason I have done most of the work on these so far
