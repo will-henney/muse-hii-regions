@@ -5026,7 +5026,8 @@ Index
 
 #+RESULTS:
 
-*** TODO Step 10: Final figures showing highlights from the spectra
+*** DONE Step 10: Final figures showing highlights from the spectra
+CLOSED: [2023-04-30 Sun 13:36]
 - We can show only those spectral ranges that have Deep Neutral lines
 - Show some of the different regions
   - Point out cases where we have blends
@@ -5236,6 +5237,15 @@ Next batch is a nice clean area. The H I lines are brighter, so increase the sep
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8520-8860.pdf]]
 
+
+Gap range of 8860 to 8880
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+  python ../../scripts/spec1d-wave-range.py c007-chop-mean 8800 8900 --separation 25 --star-scale 5
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8800-8900.pdf]]
 
 
 ***** 9000 plus
@@ -6141,7 +6151,7 @@ CLOSED: [2023-03-13 Mon 12:30]
 |  2565 |    | 7804.48 |  0.40 | 0.2239 |   0.0013 | Deep Neutral   | False | 0.1569 |      < | 0.0823 |      < | 0.7771 |   0.0159 |
 |  3481 |    | 8945.95 |  0.46 | 0.2118 |   0.0221 | Deep Neutral   | False | 0.6822 | 0.2820 | 0.4673 | 0.1404 | 0.4182 |   0.1076 |
 **** TODO Run EMILI on the line list to get IDs
-***** Issues and conclusions from EMILI
+***** TODO Issues and conclusions from EMILI
 - We want to look for consistency between the MYSO and 0 zones
   - At the moment, I am letting it find the velocity correction automatically, but this produces large differences between the zones
 ****** What to do about the velocities
@@ -6294,6 +6304,88 @@ CLOSED: [2023-04-28 Fri 23:26]
 ******* TODO 8150.67
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8150.82][Ar II  8150.65]], Ne II  8150.82
 - Could also be 8150.462$ Fe I, 8150.641  Fe I, 8150.682  N  I, 8151.606  Fe II]
+- New ALL also has 8151.3424 [Fe I], which is a forbidden line that connects to ground state
+******** [Fe I] 8151.3424 candidate ID for 8150.67
+- This is a low-lying upper level, which counts in its favor
+- But many other lines of multiplet should be seen:
+  - Summary:
+    - YES 2/12
+    - MAYBE 3/12
+    - PROBABLY NOT 3/12
+    - NO 4/12
+  - ❓✔ 7708.8389 closest match is 7706.79, but that is badly affected by telluric absorption, so counts as MAYBE
+  - ✔✔ 7959.0029 closest match is 7959.35, so that is a YES albeit a blend with OH sky emission line
+  - ❌❌ 7964.2738 definitely nothing close, NO
+  - ✔✔ 8151.3424 is our line, YES
+  - ❓❌ 8231.5783 overlaps with O I 8230, put PROBABLY NOT since not strong in Zone 0
+  - ❓❌ 8275.5825 coincides with OH sky line, no visible excess, so PROBABLY NOT
+  - ❓✔ 8337.6589 closest match is 8334, but that is blended with Paschen 8834, so MAYBE
+  - ❓✔ 8347.5733 too close to Paschen 8346 and also coincides with OH sky, so MAYBE
+  - ❌❌ 8431.5723 nothing there and relatively clean, so NO
+  - ❌❌ 8564.5712 nothing there and relatively clean, so NO (closest is DRL 8560.3)
+  - ❓❌ 8647.9154 coincides with sky O_2 but we see nothing, so PROBABLY NOT
+  - ❌❌ 8868.9231 nothing there and very clean, so NO
+- This is consistent with expectations from chance
+  - The spectral density of ORLs is about 1 line per 20 Angstrom
+  - So, if we have a tolerance of +/- 1 Angstrom, we expect 1/10 of the lines to be within tolerance
+  - And we should not count the initial line, observing 1/11 is not impressive
+#+begin_example
+Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+Wavelength range: 0 - inf   Unit: Angstrom   Type: Air
+Radial velocity: 0 km/s
+Element/Spectrum: Fe I
+
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|-----CONFIGURATION-----|-TERM--|J_i-J_k|--A_ki---|-TPF-|--LVL-EN--CM-1---|-REF---|
+   7708.8389       8.4e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 2                    0.00 - 12968.55 061
+   7959.0029       9.0e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 3                    0.00 - 12560.93 061
+   7964.2738       9.0e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  3 - 2                  415.93 - 12968.55 061
+   8151.3424       9.4e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  2 - 2                  704.01 - 12968.55 061
+   8231.5783       9.6e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  3 - 3                  415.93 - 12560.93 061
+   8275.5825       9.7e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  1 - 2                  888.13 - 12968.55 061
+   8337.6589       9.8e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  0 - 2                  978.07 - 12968.55 061
+   8347.5733       9.9e-04 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 4                    0.00 - 11976.24 061
+   8431.5723       1.0e-03 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  2 - 3                  704.01 - 12560.93 061
+   8564.5712       1.0e-03 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  1 - 3                  888.13 - 12560.93 061
+   8647.9154       1.1e-03 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  3 - 4                  415.93 - 11976.24 061
+   8868.9231       1.1e-03 [Fe I] E2     3d6.4s2-3d7.(4F).4s a5D-a3F  2 - 4                  704.01 - 11976.24 061
+ #+end_example
+******** All the Fe I lines within 1 A of 8150.67
+#+begin_example
+  Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
+
+  Request: 1
+
+  Wavelength range: 8150.67 +/- 1   Unit: Angstrom   Type: Air
+  Radial velocity: 0 km/s
+  Wavelength accuracy upper limit: 5%
+  Element/Spectrum: Fe I
+  Minimum line strength: no restrictions
+  Include lines without atomic data: true
+  Minimum abundance: no minimum
+  Lower level energy range: no restrictions   Unit: cm^-1
+  Upper level energy range: no restrictions
+  Maximum for principal quantum number n: no restrictions
+  Transition types included: all
+  Transitions from auto-ionizing levels: included
+
+  -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--------------CONFIGURATION--------------|-------TERM--------|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+     8149.6904       9.4e-04  Fe I  E1          3d7.(2F).4s-3d6.(3F).4s.4p.(3Po)       d3F-v3Do       3 - 2  2.750e+05    30 36975.59 - 49242.62 061
+     8150.0492       1.5e-03  Fe I] E1       3d6.4s.(6D).5s-3d6.(1G).4s.4p.(3Po)       e7D-s3Go       4 - 5  2.856e-01    30 43163.32 - 55429.82 061
+     8150.087        4.7e-03  Fe I] E1 3d6.(3G).4s.4p.(3Po)-3d6.4s.(6D<3/2>).5g       v5Fo-3/2[7/2]   4 - 4  2.855e-02    30 47929.99 - 60196.43 061
+     8150.280        4.7e-03  Fe I] E1          3d7.(4P).4p-3d6.4s.(4D).4d            u5Do-3S         2 - 1  9.133e+05    30 46888.51 - 59154.66 061
+     8150.372        6.7e-03  Fe I  E1          3d7.(2G).4p-3d6.4s.(6D<5/2>).6d       z1Go-5/2[9/2]   4 - 5  1.204e+02    30 47452.71 - 59718.72 061
+     8150.462        6.7e-03  Fe I  E1 3d6.(3G).4s.4p.(3Po)-3d6.4s.(6D<3/2>).6d       w5Go-3/2[7/2]   2 - 3  2.882e+02    30 47831.15 - 60097.02 061
+     8150.6406       9.4e-04  Fe I  E1 3d6.(3P).4s.4p.(3Po)-3d7.(4F).4d               z5So-f5P        2 - 3  1.019e+03    30 40894.99 - 53160.59 061
+     8150.9350       1.5e-03  Fe I] E1 3d6.(3P).4s.4p.(3Po)-3d7.(4F).4d               x5Po-f3F        2 - 3  1.835e+03    30 42859.78 - 55124.93 061
+     8151.0074       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[5/2]   4 - 3  3.727e-02    30 47452.71 - 59717.76 061
+     8151.0147       9.4e-04  Fe I] E1              3d6.4s2-3d6.(3P).4s.4p.(3Po)       b1D-y3Po       2 - 1  3.378e+03    30 34636.79 - 46901.83 061
+     8151.2992       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[7/2]   4 - 4  1.605e-01    30 47452.71 - 59717.32 061
+     8151.3045       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[7/2]   4 - 3  4.257e-03    30 47452.71 - 59717.32 061
+     8151.3424       9.4e-04 [Fe I] E2              3d6.4s2-3d7.(4F).4s                a5D-a3F        2 - 2                    704.01 - 12968.55 061
+     8151.5524       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[9/2]   4 - 4  1.572e-01    30 47452.71 - 59716.94 061
+     8151.5577       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[9/2]   4 - 5  3.895e-01    30 47452.71 - 59716.94 061
+     8151.6534       2.1e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[11/2]  4 - 5  5.700e-01    30 47452.71 - 59716.79 061
+#+end_example
 ******* TODO 8550.06
 - Supposedly  [[file:../data/n346-lines/emili/zone-0-emi.out::8550.3][Si I  8550.34]]
 - Could also be 8550.441  Cl I, 8549.510  Cr I
