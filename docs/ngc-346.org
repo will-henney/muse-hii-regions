@@ -6180,13 +6180,46 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 3:    160.534256    
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
-****** TODO [2/11] Possible identifications of the strongest lines
+****** TODO [3/11] Possible identifications of the strongest lines
 - For each line, we will look what EMILI suggests, then apply common sense
 - We will rule out any III ion and any II ion that has first IP higher than 13 eV
   - We will not completely rule out species like C II, but they seem unlikely, although I suppose we could have excitation from destruction of charged PAH molecules ....
 - Big output files from EMILI for
   - [[file:../data/n346-lines/emili/zone-0-emi.out][Zone 0]]
   - [[file:../data/n346-lines/emili/zone-MYSO-emi.out][Zone MYSO]]
+******* Summary of possible IDs
+| 6221.82 | Si I   |   6221.70 |
+|         | Fe I]  | 6221.6722 |
+|---------+--------+-----------|
+| 6636.76 | N I    |  6636.938 |
+|         | [Co I] |  6636.620 |
+|---------+--------+-----------|
+| 6776.75 | Fe I]  |  6776.689 |
+|         | Ca I   |  6776.658 |
+|---------+--------+-----------|
+| 7092.29 | C I]   |   7092.51 |
+|         | Fe I   | 7092.077+ |
+|---------+--------+-----------|
+| 8150.67 | [Fe I] | 8151.3424 |
+|         | Fe I   | 8150.641+ |
+|---------+--------+-----------|
+| 8550.06 | Si I   |   8550.34 |
+|         | Cl I   |  8550.441 |
+|---------+--------+-----------|
+| 8789.18 | Fe I   |  8789.660 |
+|         | Si I   |  8790.389 |
+|---------+--------+-----------|
+| 8850.65 | None   |           |
+|---------+--------+-----------|
+| 9029.22 | N  I   |  9028.922 |
+|---------+--------+-----------|
+| 9057.17 | O I    |   9057.02 |
+|         | Fe I   |  9056.759 |
+|---------+--------+-----------|
+| 9297.36 | Fe I   |   9297.61 |
+|         | Ne I   |   9297.99 |
+|---------+--------+-----------|
+|         |        |           |
 ******* DONE 6221.82
 CLOSED: [2023-04-28 Fri 23:26]
 - C II 6221.900 is supposedly the best match, but this seems very unlikely
@@ -6301,7 +6334,8 @@ CLOSED: [2023-04-28 Fri 23:26]
 ******* TODO 7092.29
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::7092.51][Ni II  7092.46]], or C I]  7092.51
 - Could also be 7092.077  Fe I, 7092.080  Fe I, 7093.106  Fe I, 7093.230  C  I 
-******* TODO 8150.67
+******* DONE 8150.67
+CLOSED: [2023-05-01 Mon 17:47]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8150.82][Ar II  8150.65]], Ne II  8150.82
 - Could also be 8150.462$ Fe I, 8150.641  Fe I, 8150.682  N  I, 8151.606  Fe II]
 - New ALL also has 8151.3424 [Fe I], which is a forbidden line that connects to ground state
