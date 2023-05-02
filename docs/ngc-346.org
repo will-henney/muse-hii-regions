@@ -6180,7 +6180,7 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 3:    160.534256    
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
-****** TODO [4/11] Possible identifications of the strongest lines
+****** TODO [6/11] Possible identifications of the strongest lines
 - For each line, we will look what EMILI suggests, then apply common sense
 - We will rule out any III ion and any II ion that has first IP higher than 13 eV
   - We will not completely rule out species like C II, but they seem unlikely, although I suppose we could have excitation from destruction of charged PAH molecules ....
@@ -6224,14 +6224,14 @@ Note that none of these are very convincing, but they are the best we have
 | 6776.75 | Fe I]  |  6776.689 | 44,551.33  |
 |         | Ca I   |   6776.5+ | 59,802     |
 |---------+--------+-----------+------------|
-| 7092.29 | C I]   |   7092.51 |            |
-|         | Fe I   | 7092.077+ |            |
+| 7092.29 | C I]   |   7092.51 | 89,350.10  |
+|         | Fe I   | 7092.077+ | 57,233.84  |
 |---------+--------+-----------+------------|
-| 8150.67 | [Fe I] | 8151.3424 |            |
-|         | Fe I   | 8150.641+ |            |
+| 8150.67 | [Fe I] | 8151.3424 | 12,968.55  |
+|         | Fe I   | 8150.641+ | 60,097.02  |
 |---------+--------+-----------+------------|
-| 8550.06 | Si I   |   8550.34 |            |
-|         | Cl I   |  8550.441 |            |
+| 8550.06 | Si I   |   8550.34 | 61,881.6   |
+|         | Cl I   |  8550.441 | 85,917.94  |
 |---------+--------+-----------+------------|
 | 8789.18 | Fe I   |  8789.660 |            |
 |         | Si I   |  8790.389 |            |
@@ -6383,13 +6383,32 @@ LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---CONF----|-TERM--|J_i-J_k|--A_ki---|-TPF-|L
 
 gk*Aki weighted average wavelength:    6776.50
 #+end_example
-******* TODO 7092.29
+******* DONE 7092.29
+CLOSED: [2023-05-02 Tue 08:54]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::7092.51][Ni II  7092.46]], or C I]  7092.51
 - Could also be 7092.077  Fe I, 7092.080  Fe I, 7093.106  Fe I, 7093.230  C  I 
 ******** C I]  7092.51 candidate ID for 7092.29
-******** Fe I 7092.077+  candidate ID for 7092.29
-- Two unrelated lines with very close wavelengthhs
+- Weak transition from a high-n state
+- Unlikely to be right
+- Mean wavelength of the two lines is 7092.515
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   7092.19         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   1 - 2                  75253.97 - 89350.10 ASD
+   7092.84         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   2 - 2                  75255.27 - 89350.10 ASD
+#+end_example
+******** DONE Fe I 7092.077+  candidate ID for 7092.29
+CLOSED: [2023-05-02 Tue 08:40]
+- Two unrelated lines with very close wavelengths
 - y5Go-5G
+  - 14 lines 7092.0771 \to 7443.9984
+  - ✔❌❌❌❓❓❓❓❓❌❓❓❓
+  - Only the first is seen. Half are definite non-detections. The others are superimposed on [O II] lines, sky lines, and then N I lines
+  - Conclusion: certainly not  
+- v5Do-5F
+  - 12 lines 6968.5746 \to 7422.9602
+  - ❌❌✔❌❓❌❓❌❓❌❓❌
+  - Certainly no additional multiplet IDs, apart from 7165.1130, which might have something there, but about 10 times weaker than the DRLs that we have included so far
+
 #+begin_example
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    7092.0771       1.1e-03  Fe I E1 3d6.(3H).4s.4p.(3Po)-3d6.4s.(6D).5d       y5Go-5G    3 - 2  6.256e+03    30 43137.48 - 57233.84 061
@@ -6408,8 +6427,8 @@ gk*Aki weighted average wavelength:    6776.50
 
 gk*Aki weighted average wavelength:    7268.091       
 #+end_example
-- v5Do-5F
-  #+begin_example
+
+#+begin_example
   -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    6968.5746       2.0e-03  Fe I E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       v5Do-5F    3 - 2  8.209e+04    30 44166.20 - 58512.38 061
    7085.4422       1.6e-03  Fe I E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       v5Do-5F    4 - 3  1.195e+04    30 44022.52 - 58132.08 061
@@ -6515,9 +6534,26 @@ Element/Spectrum: Fe I
      8151.5577       2.7e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[9/2]   4 - 5  3.895e-01    30 47452.71 - 59716.94 061
      8151.6534       2.1e-03  Fe I] E1          3d7.(2G).4p-3d6.4s.(6D<7/2>).5g       z1Go-7/2[11/2]  4 - 5  5.700e-01    30 47452.71 - 59716.79 061
 #+end_example
-******* TODO 8550.06
+******* DONE 8550.06
+CLOSED: [2023-05-02 Tue 09:10]
 - Supposedly  [[file:../data/n346-lines/emili/zone-0-emi.out::8550.3][Si I  8550.34]]
 - Could also be 8550.441  Cl I, 8549.510  Cr I
+******** Si I  8550.34 candidate ID for 8550.06
+- Doublet from high-n level
+- Other component is not seen. It is to side of Paschen line, but would be visible if it were there
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--------TERM---------|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8550.341        4.6e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1D-(3/2,1/2)o  2 - 1                  50189.39 - 61881.62 ASD
+   8593.014        4.7e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1D-(3/2,1/2)o  2 - 2                  50189.39 - 61823.56 ASD
+#+end_example
+******** Cl I 8550.441 candidate ID for 8550.06
+- Excited by FUV
+- The other component at 9045.432 is close to a line that we initially identified as DRL ar 9046.03, but it is severely affected by blend with OH sky line and we eventually decided it was not real
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8550.441        6.5e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 3/2 - 1/2 2.776e+07    21 74225.85 - 85917.94 ASD
+   9045.432        7.3e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 1/2 - 1/2 2.639e+03    21 74865.67 - 85917.94 ASD
+#+end_example
 ******* TODO 8789.18
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8788.8][O II  8788.85]]
 - Could also be 8789.305  Fe II], 8789.660  Fe I, 8790.389$ Si I, 8790.521  Fe I
