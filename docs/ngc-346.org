@@ -6188,14 +6188,16 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 3:    160.534256    
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
-****** TODO [11/12] Possible identifications of the strongest lines
+****** DONE [12/12] Possible identifications of the strongest lines
+CLOSED: [2023-05-03 Wed 11:59]
 - For each line, we will look what EMILI suggests, then apply common sense
 - We will rule out any III ion and any II ion that has first IP higher than 13 eV
   - We will not completely rule out species like C II, but they seem unlikely, although I suppose we could have excitation from destruction of charged PAH molecules ....
 - Big output files from EMILI for
   - [[file:../data/n346-lines/emili/zone-0-emi.out][Zone 0]]
   - [[file:../data/n346-lines/emili/zone-MYSO-emi.out][Zone MYSO]]
-******* TODO Likelihood of false positives from density of different line types
+******* DONE Likelihood of false positives from density of different line types
+CLOSED: [2023-05-03 Wed 11:59]
 - Permitted Fe I lines with A > 1e6 /s
   - Far more common in blue than in red
   - [[file:../data-atomic/fe-i-permitted-A-gt-1e6.txt]]
@@ -6218,8 +6220,19 @@ CLOSED: [2023-03-13 Mon 12:30]
     | 8500 | 137 |        17 | 58.82 |
     | 9500 | 154 |        17 | 58.82 |
     #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
+- All Fe I lines with upper level < 45,000 /cm
+  - [[file:../data-atomic/fe-i-all-E-upper-lt-45000.txt]]
+  - Intermediate energy
+    | 4500 |   18 | N/1000 AA | d wav |
+    |------+------+-----------+-------|
+    | 5500 |  418 |       400 |  2.50 |
+    | 6500 |  763 |       345 |  2.90 |
+    | 7500 | 1046 |       283 |  3.53 |
+    | 8500 | 1184 |       138 |  7.25 |
+    | 9500 | 1374 |       190 |  5.26 |
+    #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
 - All Fe I lines with upper level < 60,000 /cm
-  - [[file:../data-atomic/.#fe-i-all-E-upper-lt-60000.txt]]
+  - [[file:../data-atomic/fe-i-all-E-upper-lt-60000.txt]]
   - There are a lot of these!!!
     | 4500 |    18 | N/1000 AA | d wav |
     |------+-------+-----------+-------|
@@ -6230,43 +6243,62 @@ CLOSED: [2023-03-13 Mon 12:30]
     | 9500 | 13615 |      2453 |  0.41 |
     #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
   - So average spacing less than 0.5 AA across the entire spectrum
-  - This means that it is no surprise to see 
-  
+  - This means that it is no surprise to see several Fe I candidate IDs for each DRL 
+- All C I lines with upper level < 90,000 /cm
+  - [[file:../data-atomic/c-i-all-E-upper-lt-90000.txt]]
+  - This is nearly up to the ionization limit
+    | 4500 |  18 | N/1000 AA | d wav |
+    |------+-----+-----------+-------|
+    | 5500 | 294 |       276 |  3.62 |
+    | 6500 | 596 |       302 |  3.31 |
+    | 7500 | 745 |       149 |  6.71 |
+    | 8500 | 823 |        78 | 12.82 |
+    | 9500 | 976 |       153 |  6.54 |
+    #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
+  - So even weak and high-n C I lines should not have a high false-positive rate
 ******* Summary of possible IDs
 Note that none of these are very convincing, but they are the best we have
-| Wav obs | Ion    |   Wav lab | E upper    |
-|---------+--------+-----------+------------|
-| 6221.82 | Si I   |   6221.70 | 65,468     |
-|         | Fe I]  | 6221.6722 | 22,996.67  |
-|---------+--------+-----------+------------|
-| 6636.76 | N I    |  6636.938 | 109,856.52 |
-|         | [Co I] |  6636.620 | 16,470.60  |
-|---------+--------+-----------+------------|
-| 6776.75 | Fe I]  |  6776.689 | 44,551.33  |
-|         | Ca I   |   6776.5+ | 59,802     |
-|---------+--------+-----------+------------|
-| 7092.29 | C I]   |   7092.51 | 89,350.10  |
-|         | Fe I   | 7092.077+ | 57,233.84  |
-|---------+--------+-----------+------------|
-| 8150.67 | [Fe I] | 8151.3424 | 12,968.55  |
-|         | Fe I   | 8150.641+ | 60,097.02  |
-|---------+--------+-----------+------------|
-| 8550.06 | Si I   |   8550.34 | 61,881.6   |
-|         | Cl I   |  8550.441 | 85,917.94  |
-|---------+--------+-----------+------------|
-| 8789.18 | Fe I   |  8789.660 | 58,118.87  |
-|---------+--------+-----------+------------|
-| 8850.65 | Fe I   | 8850.1114 | 37,521.16  |
-|---------+--------+-----------+------------|
-| 9029.22 | N  I   |  9028.922 | 104,654.03 |
-|---------+--------+-----------+------------|
-| 9057.17 | O I    |   9057.02 | 124,242.58 |
-|         | Fe I   |  9056.759 | 59,514.13  |
-|---------+--------+-----------+------------|
-| 9297.36 | Fe I   |   9297.61 | 51,770.55  |
-|         | Ne I   |   9297.99 | 161,524.17 |
-|---------+--------+-----------+------------|
-|         |        |           |            |
+| Wav obs | Ion    |   Wav lab | E upper    | Pro    | Contra       |
+|---------+--------+-----------+------------+--------+--------------|
+| 6221.82 | Si I   |   6221.70 | 65,468     |        | Mult, BR, FP |
+|         | Fe I]  | 6221.6722 | 22,996.67  |        | Mult         |
+|---------+--------+-----------+------------+--------+--------------|
+| 6636.76 | N I    |  6636.938 | 109,856.52 |        | LC, EUV, BR  |
+|         | [Co I] |  6636.620 | 16,470.60  | Ground | Abun         |
+|---------+--------+-----------+------------+--------+--------------|
+| 6776.75 | Fe I]  |  6776.689 | 44,551.33  |        | BR           |
+|         | Ca I   |   6776.5+ | 59,802     |        | BR           |
+|---------+--------+-----------+------------+--------+--------------|
+| 7092.29 | C I]   |   7092.51 | 89,350.10  |        | BR           |
+|         | Fe I   | 7092.077+ | 57,233.84  |        | Mult, FP     |
+|---------+--------+-----------+------------+--------+--------------|
+| 8150.67 | [Fe I] | 8151.3424 | 12,968.55  | Ground | Mult?        |
+|         | Fe I   | 8150.641+ | 60,097.02  |        | FP, Mult, BR |
+|---------+--------+-----------+------------+--------+--------------|
+| 8550.06 | Si I   |   8550.34 | 61,881.6   | BR?    | Mult         |
+|         | Cl I   |  8550.441 | 85,917.94  | BR     | Abun         |
+|---------+--------+-----------+------------+--------+--------------|
+| 8789.18 | Fe I   |  8789.660 | 58,118.87  |        | Mult, FP, BR |
+|---------+--------+-----------+------------+--------+--------------|
+| 8850.65 | Fe I   | 8850.1114 | 37,521.16  |        | Mult, BR     |
+|---------+--------+-----------+------------+--------+--------------|
+| 9029.22 | N  I   |  9028.922 | 104,654.03 | BR     | LC, Mult     |
+|---------+--------+-----------+------------+--------+--------------|
+| 9057.17 | O I    |   9057.02 | 124,242.58 |        | AI           |
+|         | Fe I   |  9056.759 | 59,514.13  | Mult?  | FP           |
+|---------+--------+-----------+------------+--------+--------------|
+| 9297.36 | Fe I   |   9297.61 | 51,770.55  | Mult?  | BR           |
+|---------+--------+-----------+------------+--------+--------------|
+|         |        |           |            |        |              |
+
+Here are the abbreviations:
+- Mult :: Multiplet. Do we see other components of the same multiplet
+- BR :: Branching Ratio. Does this line have a high Branching Ratio from the upper level, or are the other theoretically brighter lines that we do not see
+- FP :: False Positive. Are there so many of these lines, that it is not surprising we get an ID
+- LC :: Line Class. Is this class of line seen more in other zones than Zone 0
+- Abun :: Abundance. Is this species of low abundance
+- AI :: Autoionizing. Is this a transition from a doubly excited level above the IP, which should be very broad
+- Ground :: Is this a transition to the ground configuration. There are few of these, so less likely to be chance coincidence. Also, easier to excite. 
 ******* DONE 6221.82
 CLOSED: [2023-04-28 Fri 23:26]
 - C II 6221.900 is supposedly the best match, but this seems very unlikely
@@ -6386,6 +6418,10 @@ CLOSED: [2023-05-01 Mon 22:55]
   - 6839.8657 Possibly something weak at 6839
   - 6921.0222 Badly affected by telluric absorption
   - So cannot be ruled out, but high upper level energy so not clear why this line in particular
+- But, considering other transitions down from same upper level
+  - We should have much stronger lines at 6269.1477, 6579.4724, 6586.0036, 8560.9768, 8975.3113
+  - Nothing at 8975, We see one at 8561 but weaker, some would be masked by [N II] 6583, We do see one at 6270.7 but that is more than 1.50 AA away
+  - So, there are some matches but it still makes no sense since they should be much brighter. And there are some blue lines that should be even brighter
 #+begin_example
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    6776.6886       1.0e-03  Fe I] E1              3d6.4s2-3d6.(3F).4s.4p.(3Po)  b1G-w5Fo  4 - 3  6.761e-01    30 29798.93 - 44551.33 061
@@ -6393,6 +6429,51 @@ CLOSED: [2023-05-01 Mon 22:55]
    6921.0222       1.1e-03  Fe I] E1              3d6.4s2-3d6.(3F).4s.4p.(3Po)  b1G-w5Fo  4 - 5  3.214e-01    30 29798.93 - 44243.68 061
 
 gk*Aki weighted average wavelength:    6839.0485
+#+end_example
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--TERM---|J_i-J_k|--A_ki---|-dA_ki-|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   2243.90564      1.1e-04  Fe I  E1  a5D-w5Fo  4 - 3  6.922e+04            30     0.00 - 44551.33 061
+   2265.05427      1.1e-04  Fe I  E1  a5D-w5Fo  3 - 3  5.717e+05            30   415.93 - 44551.33 061
+   2279.93690      1.2e-04  Fe I  E1  a5D-w5Fo  2 - 3  1.158e+07            30   704.01 - 44551.33 061
+   2689.21267      1.6e-04  Fe I  E1  a5F-w5Fo  4 - 3  3.476e+07            30  7376.76 - 44551.33 061
+   2714.86927      1.6e-04  Fe I  E1  a5F-w5Fo  3 - 3  1.499e+06            30  7728.06 - 44551.33 061
+   2734.00553      1.7e-04  Fe I  E1  a5F-w5Fo  2 - 3  4.714e+06            30  7985.78 - 44551.33 061
+   3068.93812      2.1e-04  Fe I] E1  a3F-w5Fo  4 - 3  2.336e+03            30 11976.24 - 44551.33 061
+   3125.03194      2.2e-04  Fe I] E1  a3F-w5Fo  3 - 3  1.941e+04            30 12560.93 - 44551.33 061
+   3165.36639      2.2e-04  Fe I] E1  a3F-w5Fo  2 - 3  2.756e+03            30 12968.55 - 44551.33 061
+   3702.4921       3.1e-04  Fe I] E1  a5P-w5Fo  3 - 3  1.508e+06            30 17550.18 - 44551.33 061
+   3726.8969       3.1e-04  Fe I] E1  a5P-w5Fo  2 - 3  1.303e+06            30 17726.99 - 44551.33 061
+   3819.6259       3.3e-04  Fe I] E1  a3P-w5Fo  2 - 3  3.257e+04            30 18378.19 - 44551.33 061
+   4037.1289       3.6e-04  Fe I] E1  a3H-w5Fo  4 - 3  3.629e+02            30 19788.25 - 44551.33 061
+   4181.1331       3.9e-04  Fe I] E1  b3F-w5Fo  4 - 3  3.290e+03            30 20641.11 - 44551.33 061
+   4222.3454       4.0e-04  Fe I] E1  b3F-w5Fo  3 - 3  1.287e+03            30 20874.48 - 44551.33 061
+   4251.8878       4.0e-04  Fe I] E1  b3F-w5Fo  2 - 3  8.271e+00            30 21038.99 - 44551.33 061
+   4432.9120       4.4e-04  Fe I] E1  a3G-w5Fo  4 - 3  2.603e+02            30 21999.13 - 44551.33 061
+   4482.6643       4.5e-04  Fe I] E1  a3G-w5Fo  3 - 3  6.825e+02            30 22249.43 - 44551.33 061
+   4604.2437       4.7e-04  Fe I] E1  b3P-w5Fo  2 - 3  3.868e+03            30 22838.32 - 44551.33 061
+   4892.7938       5.4e-04  Fe I] E1  b3G-w5Fo  4 - 3  6.246e+00            30 24118.82 - 44551.33 061
+   4945.3024       5.5e-04  Fe I] E1  c3P-w5Fo  2 - 3  7.710e+01            30 24335.76 - 44551.33 061
+   4946.0367       5.5e-04  Fe I] E1  b3G-w5Fo  3 - 3  1.608e+00            30 24338.76 - 44551.33 061
+   5004.4411       5.6e-04  Fe I] E1  a1G-w5Fo  4 - 3  3.776e+00            30 24574.65 - 44551.33 061
+   5455.1034       6.7e-04  Fe I] E1  a3D-w5Fo  3 - 3  7.073e+02            30 26224.97 - 44551.33 061
+   5576.4434       7.0e-04  Fe I] E1  a3D-w5Fo  2 - 3  3.981e-02            30 26623.73 - 44551.33 061
+   5577.6487       7.0e-04  Fe I] E1  b3H-w5Fo  4 - 3  5.296e+01            30 26627.61 - 44551.33 061
+   6269.1477       8.8e-04  Fe I] E1  a1D-w5Fo  2 - 3  1.311e+01            30 28604.61 - 44551.33 061
+   6579.4724       9.7e-04  Fe I] E1  b3D-w5Fo  2 - 3  9.614e+00            30 29356.74 - 44551.33 061
+   6586.0036       9.7e-04  Fe I] E1  b3D-w5Fo  3 - 3  2.920e+01            30 29371.81 - 44551.33 061
+   6776.6886       1.0e-03  Fe I] E1  b1G-w5Fo  4 - 3  6.761e-01            30 29798.93 - 44551.33 061
+   8560.9768       1.6e-03  Fe I] E1  c3F-w5Fo  4 - 3  1.364e+02            30 32873.63 - 44551.33 061
+   8975.3113       1.8e-03  Fe I] E1  c3F-w5Fo  3 - 3  2.033e+02            30 33412.71 - 44551.33 061
+   9268.7101       1.9e-03  Fe I] E1  c3F-w5Fo  2 - 3  1.585e-03            30 33765.30 - 44551.33 061
+  10083.4305       2.3e-03  Fe I] E1  b1D-w5Fo  2 - 3  3.091e-03            30 34636.79 - 44551.33 061
+  13135.727        3.9e-03  Fe I] E1  d3F-w5Fo  2 - 3  1.181e+00            30 36940.59 - 44551.33 061
+  13196.411        3.9e-03  Fe I] E1  d3F-w5Fo  3 - 3  7.383e+01            30 36975.59 - 44551.33 061
+  13320.098        4.0e-03  Fe I] E1  d3F-w5Fo  4 - 3  4.090e+01            30 37045.93 - 44551.33 061
+  27167.070        1.7e-02  Fe I] E1   3P-w5Fo  2 - 3  1.794e-01            30 40871.41 - 44551.33 061
+  72026.01         1.2e-01  Fe I] E1  e7D-w5Fo  4 - 3  2.974e+00            30 43163.32 - 44551.33 061
+  89524.52         1.8e-01  Fe I] E1  e7D-w5Fo  3 - 3  3.684e-01            30 43434.62 - 44551.33 061
+ 108926.27         2.7e-01  Fe I] E1  e7D-w5Fo  2 - 3  1.116e+00            30 43633.53 - 44551.33 061
 #+end_example
 ******** Ca I 6776.658 candidate ID for 6776.75
 I can't find it in AtLL v3 but maybe it is this doublet
@@ -6403,6 +6484,52 @@ LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---CONF----|-TERM--|J_i-J_k|--A_ki---|-TPF-|L
 
 gk*Aki weighted average wavelength:    6776.50
 #+end_example
+
+- Should be lots more transitions down from this level.
+- Blue ones with MUCH higher (100 x) brightness: 4674.939, 4685.295 should be in our range
+- Many red ones should have a similar or a few times higher brightness: 6122.985, 8493.39, 8660.20, 8864.29, 8874.94
+- None of these are seen, although 8864.29 coincides with an H I line
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|CONFIGURATION|-TERM--|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   4533.051        1.3e-02  Ca I  E1  4s.4d-3d.6f   3D-3Do  1 - 1  3.008e+06     3 37748.20 - 59802.21 ASD
+   4533.806        1.3e-02  Ca I  E1  4s.4d-3d.6f   3D-3Do  2 - 1  1.002e+06     3 37751.87 - 59802.21 ASD
+   4674.939        1.4e-02  Ca I  E1    4p2-3d.6f   3P-3Do  0 - 1  6.095e+06     3 38417.54 - 59802.21 ASD
+   4685.295        1.4e-02  Ca I  E1    4p2-3d.6f   3P-3Do  1 - 1  4.541e+06     3 38464.81 - 59802.21 ASD
+   4704.422        1.4e-02  Ca I  E1    4p2-3d.6f   3P-3Do  2 - 1  2.991e+05     3 38551.56 - 59802.21 ASD
+   5238.983        1.7e-02  Ca I] E1    4p2-3d.6f   1D-3Do  2 - 1                  40719.85 - 59802.21 ASD
+   5860.312        2.2e-02  Ca I  E1  4s.5d-3d.6f   3D-3Do  1 - 1  1.032e+05     3 42743.00 - 59802.21 ASD
+   5860.901        2.2e-02  Ca I  E1  4s.5d-3d.6f   3D-3Do  2 - 1  3.439e+04     3 42744.72 - 59802.21 ASD
+   5921.422        2.2e-02  Ca I] E1  4s.5d-3d.6f   1D-3Do  2 - 1                  42919.05 - 59802.21 ASD
+   6122.985        2.4e-02  Ca I  E1    3d2-3d.6f   3F-3Do  2 - 1  5.944e+04     3 43474.83 - 59802.21 ASD
+   6749.247        2.9e-02  Ca I] E1  4s.6d-3d.6f   1D-3Do  2 - 1                  44989.83 - 59802.21 ASD
+   6776.349        2.9e-02  Ca I  E1  4s.6d-3d.6f   3D-3Do  1 - 1  1.190e+04     3 45049.07 - 59802.21 ASD
+   6776.967        2.9e-02  Ca I  E1  4s.6d-3d.6f   3D-3Do  2 - 1  3.965e+03     3 45050.42 - 59802.21 ASD
+   7349.79         4.8e-02  Ca I] E1  4s.7d-3d.6f   1D-3Do  2 - 1                  46200.13 - 59802.21 ASD
+   7405.24         3.5e-02  Ca I  E1  4s.7d-3d.6f   3D-3Do  1 - 1  6.277e+02     3 46301.97 - 59802.21 ASD
+   7406.16         3.5e-02  Ca I  E1  4s.7d-3d.6f   3D-3Do  2 - 1  2.091e+02     3 46303.65 - 59802.21 ASD
+   7778.01         5.4e-02  Ca I] E1  4s.8d-3d.6f   1D-3Do  2 - 1                  46948.98 - 59802.21 ASD
+   7831.16         3.9e-02  Ca I  E1  4s.8d-3d.6f   3D-3Do  1 - 1  8.283e+02     3 47036.22 - 59802.21 ASD
+   7833.48         3.9e-02  Ca I  E1  4s.8d-3d.6f   3D-3Do  2 - 1  2.759e+02     3 47040.01 - 59802.21 ASD
+   8092.89         4.1e-02  Ca I] E1  3d.5s-3d.6f   1D-3Do  2 - 1                  47449.08 - 59802.21 ASD
+   8097.72         4.2e-02  Ca I  E1  3d.5s-3d.6f   3D-3Do  1 - 1                  47456.45 - 59802.21 ASD
+   8104.00         4.2e-02  Ca I  E1  3d.5s-3d.6f   3D-3Do  2 - 1                  47466.01 - 59802.21 ASD
+   8296.78         4.4e-02  Ca I  E1  4s.9d-3d.6f   3D-3Do  1 - 1  5.237e+03     3 47752.65 - 59802.21 ASD
+   8299.97         4.4e-02  Ca I  E1  4s.9d-3d.6f   3D-3Do  2 - 1  1.744e+03     3 47757.29 - 59802.21 ASD
+   8338.12         6.2e-02  Ca I] E1  4s.9d-3d.6f   1D-3Do  2 - 1                  47812.39 - 59802.21 ASD
+   8493.39         6.4e-02  Ca I  E1 4s.10d-3d.6f   3D-3Do  1 - 1  1.199e+04     3 48031.58 - 59802.21 ASD
+   8494.58         6.4e-02  Ca I  E1 4s.10d-3d.6f   3D-3Do  2 - 1  3.995e+03     3 48033.23 - 59802.21 ASD
+   8530.95         6.5e-02  Ca I] E1 4s.10d-3d.6f   1D-3Do  2 - 1                  48083.41 - 59802.21 ASD
+   8660.20         6.7e-02  Ca I  E1 4s.11d-3d.6f   3D-3Do  1 - 1  1.580e+04     3 48258.30 - 59802.21 ASD
+   8660.60         6.7e-02  Ca I  E1 4s.11d-3d.6f   3D-3Do  2 - 1  5.265e+03     3 48258.84 - 59802.21 ASD
+   8684.69         6.7e-02  Ca I] E1 4s.11d-3d.6f   1D-3Do  2 - 1                  48290.85 - 59802.21 ASD
+   8793.28         6.9e-02  Ca I  E1 4s.12d-3d.6f   3D-3Do  1 - 1                  48433.01 - 59802.21 ASD
+   8793.63         6.9e-02  Ca I  E1 4s.12d-3d.6f   3D-3Do  2 - 1                  48433.46 - 59802.21 ASD
+   8807.78         6.9e-02  Ca I] E1 4s.12d-3d.6f   1D-3Do  2 - 1                  48451.73 - 59802.21 ASD
+   8864.29         5.0e-02  Ca I  E1    3d2-3d.6f   3P-3Do  0 - 1  3.484e+04     3 48524.09 - 59802.21 ASD
+   8874.94         5.0e-02  Ca I  E1    3d2-3d.6f   3P-3Do  1 - 1  2.604e+04     3 48537.62 - 59802.21 ASD
+   8895.39         5.0e-02  Ca I  E1    3d2-3d.6f   3P-3Do  2 - 1  1.724e+03     3 48563.52 - 59802.21 ASD
+   #+end_example
 ******* DONE 7092.29
 CLOSED: [2023-05-02 Tue 08:54]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::7092.51][Ni II  7092.46]], or C I]  7092.51
@@ -6415,6 +6542,26 @@ CLOSED: [2023-05-02 Tue 08:54]
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    7092.19         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   1 - 2                  75253.97 - 89350.10 ASD
    7092.84         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   2 - 2                  75255.27 - 89350.10 ASD
+#+end_example
+- Other transitions down from the same upper level
+  - Our line is semi-forbidden. No measured A-value but it must be small
+  - There are some permitted lines down from the same upper state: 8566.42, 9080.31, 9239.20
+  - These ought to be far stronger than 7092
+  - None of them are observed
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   7092.19         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   1 - 2                  75253.97 - 89350.10 ASD
+   7092.84         4.5e-02  C I] E1          2s.2p3-2s2.2p.(2Po).9p 3Po-1D   2 - 2                  75255.27 - 89350.10 ASD
+   8566.42         6.5e-02  C I  E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 1Do-1D   2 - 2  1.354e+04     3 77679.82 - 89350.10 ASD
+   8899.61         7.1e-02  C I] E1 2s2.2p.(2Po).4s-2s2.2p.(2Po).9p 3Po-1D   1 - 2                  78116.74 - 89350.10 ASD
+   8924.52         7.1e-02  C I] E1 2s2.2p.(2Po).4s-2s2.2p.(2Po).9p 3Po-1D   2 - 2                  78148.09 - 89350.10 ASD
+   8965.32         7.2e-02  C I] E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 3Fo-1D   2 - 2                  78199.07 - 89350.10 ASD
+   8978.56         7.2e-02  C I] E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 3Fo-1D   3 - 2                  78215.51 - 89350.10 ASD
+   9041.88         7.3e-02  C I] E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 3Do-1D   1 - 2                  78293.49 - 89350.10 ASD
+   9053.46         7.3e-02  C I] E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 3Do-1D   2 - 2                  78307.63 - 89350.10 ASD
+   9062.18         7.3e-02  C I] E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 3Do-1D   3 - 2                  78318.25 - 89350.10 ASD
+   9080.31         7.4e-02  C I  E1 2s2.2p.(2Po).4s-2s2.2p.(2Po).9p 1Po-1D   1 - 2  3.192e+04     3 78340.28 - 89350.10 ASD
+   9239.20         7.6e-02  C I  E1 2s2.2p.(2Po).3d-2s2.2p.(2Po).9p 1Fo-1D   3 - 2  6.647e+04     3 78529.62 - 89350.10 ASD
 #+end_example
 ******** DONE Fe I 7092.077+  candidate ID for 7092.29
 CLOSED: [2023-05-02 Tue 08:40]
@@ -6517,6 +6664,10 @@ Element/Spectrum: Fe I
 ******** Fe I 8150.462
 - Highly excited levels - seems very unlikely
 - Other two multiplet members at 7993.340, 8059.839. Neither detected
+- A value is 288 and there are *many* other lines from same upper state, but with much higher A values
+- For instance, with A > 1e4: 7253.060, 8377.415, 8477.723 and these are just a sample
+- First coincides with O I line, second with OH, third is to red of DRL 8475.2, where we see nothing
+- But they should all be 100 times stronger than 8150
 ******** All the Fe I lines within 1 A of 8150.67
 #+begin_example
   Atomic Line List version: 3.00b4   Constructed: 2021-07-21 14:47 GMT
@@ -6566,6 +6717,30 @@ CLOSED: [2023-05-02 Tue 09:10]
    8550.341        4.6e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1D-(3/2,1/2)o  2 - 1                  50189.39 - 61881.62 ASD
    8593.014        4.7e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1D-(3/2,1/2)o  2 - 2                  50189.39 - 61823.56 ASD
 #+end_example
+
+- Other lines with same upper state
+  - There actually is a DRL 6848 that matches 6848.5693
+  - Nothing at 7212
+  - 7255 coincides with O I
+  - 7778 is a tiny something
+  - 7797 has nothing
+  - 7876 has sky OH
+  - 8009 has DRL 8008.7
+  - 8550 is our line
+- So we have 2 (and maybe 3) extra matches out of 7, and 2 definite misses
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--------TERM---------|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   2150.45052      2.9e-04  Si I E1              3s2.3p2-3s2.3p.(2Po<3/2>).7s         1S-(3/2,1/2)o  0 - 1                  15394.36 - 61881.62 ASD
+   6848.5693       3.0e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1P-(3/2,1/2)o  1 - 1                  47284.06 - 61881.62 ASD
+   7212.215        3.3e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3D-(3/2,1/2)o  1 - 1                  48020.07 - 61881.62 ASD
+   7255.264        3.3e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3D-(3/2,1/2)o  2 - 1                  48102.32 - 61881.62 ASD
+   7777.946        3.8e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3P-(3/2,1/2)o  0 - 1                  49028.29 - 61881.62 ASD
+   7797.546        3.9e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3P-(3/2,1/2)o  1 - 1                  49060.60 - 61881.62 ASD
+   7876.189        3.9e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3P-(3/2,1/2)o  2 - 1                  49188.62 - 61881.62 ASD
+   8009.366        4.1e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         3S-(3/2,1/2)o  1 - 1                  49399.67 - 61881.62 ASD
+   8550.341        4.6e-03  Si I E1            3s2.3p.4p-3s2.3p.(2Po<3/2>).7s         1D-(3/2,1/2)o  2 - 1                  50189.39 - 61881.62 ASD
+
+#+end_example
 ******** Cl I 8550.441 candidate ID for 8550.06
 - Excited by FUV
 - The other component at 9045.432 is close to a line that we initially identified as DRL ar 9046.03, but it is severely affected by blend with OH sky line and we eventually decided it was not real
@@ -6573,6 +6748,16 @@ CLOSED: [2023-05-02 Tue 09:10]
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    8550.441        6.5e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 3/2 - 1/2 2.776e+07    21 74225.85 - 85917.94 ASD
    9045.432        7.3e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 1/2 - 1/2 2.639e+03    21 74865.67 - 85917.94 ASD
+#+end_example
+- It is by far the dominant line down from its upper level
+- And Cl I does not have many lines at all
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   7444.316        4.9e-03  Cl I] E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  4P-2So 3/2 - 1/2 3.315e+03    21 72488.57 - 85917.94 ASD
+   7636.793        5.2e-03  Cl I] E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  4P-2So 1/2 - 1/2 3.758e+04    21 72827.04 - 85917.94 ASD
+   8550.441        6.5e-03  Cl I  E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 3/2 - 1/2 2.776e+07    21 74225.85 - 85917.94 ASD
+   9045.432        7.3e-03  Cl I  E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 1/2 - 1/2 2.639e+03    21 74865.67 - 85917.94 ASD
+  55662.10         2.8e-01  Cl I] E1 3s2.3p4.(1D).4s-3s2.3p4.(3P).4p  2D-2So 3/2 - 1/2 1.160e+02    21 84121.87 - 85917.94 ASD
 #+end_example
 ******* DONE 8789.18
 CLOSED: [2023-05-02 Tue 10:41]
@@ -6597,6 +6782,35 @@ CLOSED: [2023-05-02 Tue 10:41]
    8937.141         Fe I E1 u5Do-5F    1 - 1  47177.23 - 58363.42 061
    9138.1679        Fe I E1 u5Do-5F    4 - 5  46720.84 - 57660.95 061
 #+end_example
+- Other lines from the same upper level
+  - There are much stronger lines in the blue (4682.1120 is 500x stronger)
+  - And some in red too. 8343.7143 should be 100x stronger. But not observed (although coincides with OH and Paschen)
+  - 
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   4664.4626       6.9e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(4D).4d       y3Fo-5F    4 - 4  7.864e+03    30 36686.17 - 58118.87 061
+   4682.1120       6.9e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       y5Po-5F    3 - 4  1.771e+06    30 36766.96 - 58118.87 061
+   5012.7621       8.0e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(4D).4d       y3Do-5F    3 - 4  5.100e+04    30 38175.35 - 58118.87 061
+   5405.9281       9.2e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       x5Do-5F    4 - 4  2.535e+05    30 39625.80 - 58118.87 061
+   5508.4088       9.6e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       x5Do-5F    3 - 4  2.661e+05    30 39969.85 - 58118.87 061
+   5581.3674       9.9e-04  Fe I] E1      3d5.4s2.(6S).4p-3d6.4s.(4D).4d       y7Po-5F    3 - 4  3.329e+03    30 40207.09 - 58118.87 061
+   5597.0612       9.9e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       x5Fo-5F    5 - 4  1.577e+05    30 40257.31 - 58118.87 061
+   5649.1278       1.0e-03  Fe I] E1      3d5.4s2.(6S).4p-3d6.4s.(4D).4d       y7Po-5F    4 - 4  1.574e+04    30 40421.93 - 58118.87 061
+   5704.7331       1.0e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       x5Fo-5F    4 - 4  8.513e+05    30 40594.43 - 58118.87 061
+   5786.5311       1.1e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).4d       x5Fo-5F    3 - 4  2.633e+05    30 40842.15 - 58118.87 061
+   6574.1217       1.4e-03  Fe I  E1 3d6.(3H).4s.4p.(3Po)-3d6.4s.(4D).4d       y5Go-5F    5 - 4  2.382e+03    30 42911.91 - 58118.87 061
+   6838.3535       1.5e-03  Fe I  E1 3d6.(3P).4s.4p.(3Po)-3d6.4s.(4D).4d       w5Do-5F    4 - 4  3.089e+03    30 43499.50 - 58118.87 061
+   7042.1937       1.6e-03  Fe I  E1 3d6.(3P).4s.4p.(3Po)-3d6.4s.(4D).4d       w5Do-5F    3 - 4  5.407e+03    30 43922.67 - 58118.87 061
+   7092.0802       1.6e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       v5Do-5F    4 - 4  5.316e+04    30 44022.52 - 58118.87 061
+   7165.1130       1.6e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       v5Do-5F    3 - 4  1.401e+04    30 44166.20 - 58118.87 061
+   7295.2360       1.7e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       w5Fo-5F    4 - 4  7.738e+03    30 44415.07 - 58118.87 061
+   7368.5036       2.0e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       w5Fo-5F    3 - 4  2.810e+04    30 44551.33 - 58118.87 061
+   8067.0196       2.1e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(4D).4d       x5Go-5F    5 - 4  2.220e+03    30 45726.13 - 58118.87 061
+   8343.7143       2.2e-03  Fe I] E1          3d7.(4P).4p-3d6.4s.(4D).4d       w5Po-5F    3 - 4  3.362e+05    30 46137.09 - 58118.87 061
+   8771.0357       2.4e-03  Fe I  E1          3d7.(4P).4p-3d6.4s.(4D).4d       u5Do-5F    4 - 4  9.003e+03    30 46720.84 - 58118.87 061
+   8789.6600       2.4e-03  Fe I  E1          3d7.(4P).4p-3d6.4s.(4D).4d       u5Do-5F    3 - 4  2.780e+03    30 46744.99 - 58118.87 061
+   9005.1688       2.6e-03  Fe I] E1          3d7.(4P).4p-3d6.4s.(4D).4d       w3Do-5F    3 - 4  2.896e+03    30 47017.18 - 58118.87 061
+#+end_example
 ******* DONE 8850.65
 CLOSED: [2023-05-02 Tue 10:54]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8850.8][[Mn III]  8850.89]], [Fe II]  8851.15
@@ -6617,6 +6831,23 @@ CLOSED: [2023-05-02 Tue 10:54]
 
 #+end_example
 
+- Should have *much* stronger lines from same upper level
+  - 6065.4822, 6546.2382, 7583.7882, 8994.6288
+  - Nothing there
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|------CONFIGURATION------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   5222.3950       3.9e-04  Fe I] E1      3d6.4s2-3d7.(4F).4p   a3P-y3Fo  2 - 2  7.675e+03    30 18378.19 - 37521.16 061
+   5563.6937       4.4e-04  Fe I] E1      3d6.4s2-3d7.(4F).4p   a3P-y3Fo  1 - 2  1.809e+04    30 19552.48 - 37521.16 061
+   6005.5416       5.1e-04  Fe I  E1      3d6.4s2-3d7.(4F).4p   b3F-y3Fo  3 - 2  8.429e+03    30 20874.48 - 37521.16 061
+   6065.4822       5.2e-04  Fe I  E1      3d6.4s2-3d7.(4F).4p   b3F-y3Fo  2 - 2  1.163e+06    30 21038.99 - 37521.16 061
+   6546.2382       6.1e-04  Fe I  E1  3d7.(2G).4s-3d7.(4F).4p   a3G-y3Fo  3 - 2  9.100e+05   ASD 22249.43 - 37521.16 061
+   6859.4796       6.7e-04  Fe I] E1  3d7.(4P).4s-3d7.(4F).4p   b3P-y3Fo  1 - 2  4.562e+02    30 22946.81 - 37521.16 061
+   7583.7882       8.1e-04  Fe I  E1      3d6.4s2-3d7.(4F).4p   b3G-y3Fo  3 - 2  3.000e+05   ASD 24338.76 - 37521.16 061
+   8850.1114       1.1e-03  Fe I  E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  3 - 2  4.630e+02    30 26224.97 - 37521.16 061
+   8994.6288       1.1e-03  Fe I  E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  1 - 2  1.061e+04    30 26406.46 - 37521.16 061
+   9173.9620       1.2e-03  Fe I  E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  2 - 2  5.513e+03    30 26623.73 - 37521.16 061
+#+end_example
 ******* DONE 9029.22
 CLOSED: [2023-05-02 Tue 11:32]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::9029.3][C II  9029.30]]
@@ -6627,6 +6858,7 @@ CLOSED: [2023-05-02 Tue 11:32]
 - Similar to some lines shown in Fig 8, but in the doublet spectrum rather than the quartets
 - Other component would be in between DRL 9057.2 and He I 9063.29, but we see nothing there
 - Should be pumped by same mechanism as for [N I] 5200, see [[id:63777288-9EC5-4E56-AC58-BFEB9E542B18][Other N I lines]]
+- One thing it has going for it: it is the only line down from its level
 #+begin_example
 -LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
    9028.922        7.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).3d 2So-2P  1/2 - 1/2 3.197e+07    15 93581.55 - 104654.03 ASD
@@ -6658,6 +6890,7 @@ CLOSED: [2023-05-02 Tue 22:17]
 ******** Ne I  9297.99 candidate ID for 9297.36
 - Ne I  9297.99 can be ruled out since there is another component at 9373.3064 with the same upper state, and which has 1000 times higher A-value
 - And also, the transitions are way above the H ionization limit
+- Do not even include it
 #+begin_example
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------------CONFIGURATION---------------|-------TERM--------|J_i-J_k|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
    9297.9890       7.7e-04  Ne I E1 2s2.2p5.(2Po<1/2>).3p-2s2.2p5.(2Po<3/2>).3d  1/2[3/2]-3/2[1/2]o  1 - 1  1.218e+03     6 150772.11 - 161524.17 023
@@ -6677,7 +6910,7 @@ CLOSED: [2023-05-02 Tue 22:17]
 - One by one, check them again and write explicit comments
   - ❌ 8920.0129 In wing of OH sky line. Anything brighter than 5% of DRL 9297.36 is ruled out
   - ❓ 8929.0753 Ditto affected by OH lines, but some undulation here, so could be something at 10% level of DRL 9297.36
-  - ✔ 8945.1893 Could contribute to blue wing of DRL 8945.95
+  - ✔ 8945.1893 Could contribute to blue wing of DRL 8945.95 (Although predicted to be 50 times stronger than 9297.61)
   - ❓ 8984.8870 Underneath OH 8988.4 (which has system frame wave of 8983.5). Could be something at 10% level
   - ❓ 9012.0754
   - ✔ 9019.7445 DRL 9019.36 ± 0.46 with I = 0.322
@@ -6703,7 +6936,35 @@ ldd   8945.1893       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s      
    9513.6430       1.3e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 4  9.248e+04    30 40842.15 - 51350.49 061
 
 #+end_example
+- Other lines from the same upper level with higher A values
+  - So 6627 maybe has something, but very weak
+  - And 6663 coincides with Raman O I absorption - definitely no emission there
+  - And the blue ones are not there either
 
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   4885.4304       3.4e-04  Fe I] E1 3d6.(5D).4s.4p.(3Po)-3d6.4s.(4D).5s       z3Fo-g5D   4 - 3  3.655e+06    30 31307.24 - 51770.55 061
+   4889.1021       3.4e-04  Fe I] E1 3d6.(5D).4s.4p.(3Po)-3d6.4s.(4D).5s       z3Do-g5D   3 - 3  2.303e+06    30 31322.61 - 51770.55 061
+   4977.6482       3.5e-04  Fe I] E1 3d6.(5D).4s.4p.(3Po)-3d6.4s.(4D).5s       z3Do-g5D   2 - 3  2.990e+05    30 31686.35 - 51770.55 061
+   5353.3739       4.1e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Do-g5D   4 - 3  5.018e+06    30 33095.94 - 51770.55 061
+   5473.9008       4.2e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Do-g5D   3 - 3  5.689e+06    30 33507.12 - 51770.55 061
+   5563.5999       4.4e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Do-g5D   2 - 3  4.246e+06    30 33801.57 - 51770.55 061
+   5608.9745       4.5e-04  Fe I] E1 3d6.(5D).4s.4p.(3Po)-3d6.4s.(4D).5s       z3Po-g5D   2 - 3  7.114e+05    30 33946.93 - 51770.55 061
+   5638.2621       4.5e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Fo-g5D   4 - 3  5.243e+06    30 34039.51 - 51770.55 061
+   5731.7619       4.6e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Fo-g5D   3 - 3  2.203e+06    30 34328.75 - 51770.55 061
+   5804.4637       4.8e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(4D).5s       y5Fo-g5D   2 - 3  3.109e+05    30 34547.21 - 51770.55 061
+   6054.0734       5.2e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(4D).5s       z5Go-g5D   4 - 3  1.115e+05    30 35257.32 - 51770.55 061
+   6627.5439       6.2e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(4D).5s       y3Fo-g5D   4 - 3  3.881e+05    30 36686.17 - 51770.55 061
+   6663.2316       6.3e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       y5Po-g5D   3 - 3  1.943e+06    30 36766.96 - 51770.55 061
+   6841.3387       6.6e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       y5Po-g5D   2 - 3  4.375e+06    30 37157.56 - 51770.55 061
+   7353.5104       7.7e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(4D).5s       y3Do-g5D   3 - 3  2.748e+05    30 38175.35 - 51770.55 061
+   8231.7457       9.6e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Do-g5D   4 - 3  3.162e+05    30 39625.80 - 51770.55 061
+   8471.7429       1.0e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Do-g5D   3 - 3  1.306e+06    30 39969.85 - 51770.55 061
+   8663.7166       1.1e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Do-g5D   2 - 3  5.646e+05    30 40231.33 - 51770.55 061
+   8945.1893       1.1e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   4 - 3  7.308e+06    30 40594.43 - 51770.55 061
+   9147.9571       1.2e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 3  1.741e+06    30 40842.15 - 51770.55 061
+   9297.6063       1.2e-03  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   2 - 3  1.432e+05    30 41018.05 - 51770.55 061
+#+end_example
 ****** Possible identifications of the 6xxx lines
 - [2023-04-10 Mon] For some reason I have done most of the work on these so far
 ******* N I lines (5s 4P \to 3p 4Do) around H alpha (6629, 6637, 6646, 6656)
