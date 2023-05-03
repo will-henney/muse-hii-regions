@@ -5258,6 +5258,14 @@ python ../../scripts/spec1d-wave-range.py c007-chop-mean 8880 9305 --separation 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-8880-9305.pdf]]
 
+And the farthest red range
+
+#+begin_src sh :dir ../data/n346-lines :results output file
+python ../../scripts/spec1d-wave-range.py c007-chop-mean 9300 9600 --separation 15 --star-scale 10
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-lines/spec1d-c007-chop-mean-9300-9600.pdf]]
 
 ***** The single green candidate line
 #+begin_src sh :dir ../data/n346-lines :results output file
@@ -6180,14 +6188,14 @@ CLOSED: [2023-03-13 Mon 12:30]
   :  irvcor 3:    160.534256    
   :  irvcor 4:    129.306076    
   :  irvcor 5:    129.306076    
-****** TODO [6/11] Possible identifications of the strongest lines
+****** TODO [11/12] Possible identifications of the strongest lines
 - For each line, we will look what EMILI suggests, then apply common sense
 - We will rule out any III ion and any II ion that has first IP higher than 13 eV
   - We will not completely rule out species like C II, but they seem unlikely, although I suppose we could have excitation from destruction of charged PAH molecules ....
 - Big output files from EMILI for
   - [[file:../data/n346-lines/emili/zone-0-emi.out][Zone 0]]
   - [[file:../data/n346-lines/emili/zone-MYSO-emi.out][Zone MYSO]]
-******* Likelihood of false positives from density of different line types
+******* TODO Likelihood of false positives from density of different line types
 - Permitted Fe I lines with A > 1e6 /s
   - Far more common in blue than in red
   - [[file:../data-atomic/fe-i-permitted-A-gt-1e6.txt]]
@@ -6219,7 +6227,7 @@ Note that none of these are very convincing, but they are the best we have
 |         | Fe I]  | 6221.6722 | 22,996.67  |
 |---------+--------+-----------+------------|
 | 6636.76 | N I    |  6636.938 | 109,856.52 |
-|         | [Co I] |  6636.620 |            |
+|         | [Co I] |  6636.620 | 16,470.60  |
 |---------+--------+-----------+------------|
 | 6776.75 | Fe I]  |  6776.689 | 44,551.33  |
 |         | Ca I   |   6776.5+ | 59,802     |
@@ -6233,18 +6241,17 @@ Note that none of these are very convincing, but they are the best we have
 | 8550.06 | Si I   |   8550.34 | 61,881.6   |
 |         | Cl I   |  8550.441 | 85,917.94  |
 |---------+--------+-----------+------------|
-| 8789.18 | Fe I   |  8789.660 |            |
-|         | Si I   |  8790.389 |            |
+| 8789.18 | Fe I   |  8789.660 | 58,118.87  |
 |---------+--------+-----------+------------|
-| 8850.65 | None   |           |            |
+| 8850.65 | Fe I   | 8850.1114 | 37,521.16  |
 |---------+--------+-----------+------------|
-| 9029.22 | N  I   |  9028.922 |            |
+| 9029.22 | N  I   |  9028.922 | 104,654.03 |
 |---------+--------+-----------+------------|
-| 9057.17 | O I    |   9057.02 |            |
-|         | Fe I   |  9056.759 |            |
+| 9057.17 | O I    |   9057.02 | 124,242.58 |
+|         | Fe I   |  9056.759 | 59,514.13  |
 |---------+--------+-----------+------------|
-| 9297.36 | Fe I   |   9297.61 |            |
-|         | Ne I   |   9297.99 |            |
+| 9297.36 | Fe I   |   9297.61 | 51,770.55  |
+|         | Ne I   |   9297.99 | 161,524.17 |
 |---------+--------+-----------+------------|
 |         |        |           |            |
 ******* DONE 6221.82
@@ -6554,23 +6561,135 @@ CLOSED: [2023-05-02 Tue 09:10]
    8550.441        6.5e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 3/2 - 1/2 2.776e+07    21 74225.85 - 85917.94 ASD
    9045.432        7.3e-03  Cl I E1 3s2.3p4.(3P).4s-3s2.3p4.(3P).4p  2P-2So 1/2 - 1/2 2.639e+03    21 74865.67 - 85917.94 ASD
 #+end_example
-******* TODO 8789.18
+******* DONE 8789.18
+CLOSED: [2023-05-02 Tue 10:41]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8788.8][O II  8788.85]]
 - Could also be 8789.305  Fe II], 8789.660  Fe I, 8790.389$ Si I, 8790.521  Fe I
-******* TODO 8850.65
+******** Fe I 8789.660 candidate ID for 8789.18
+- Middle member of a 12 member multiplet, in which we detect no other member
+- ❌❓❌❓❓❌✔❓❌❌❓❌ where most of the ❓ are due to sky lines
+- The 8891.5365 component would fall exactly in between observed ORLs at 8888.49 and 8893.68, but there is nothing there
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-SPC-|TT|--TERM---|J_i-J_k|LEVEL-ENERGY--CM^-1|-REF---|
+   8495.7248        Fe I E1 u5Do-5F    3 - 2  46744.99 - 58512.38 061
+   8600.625         Fe I E1 u5Do-5F    2 - 2  46888.51 - 58512.38 061
+   8712.276         Fe I E1 u5Do-5F    2 - 1  46888.51 - 58363.42 061
+   8760.8851        Fe I E1 u5Do-5F    4 - 3  46720.84 - 58132.08 061
+   8771.0357        Fe I E1 u5Do-5F    4 - 4  46720.84 - 58118.87 061
+   8779.4662        Fe I E1 u5Do-5F    3 - 3  46744.99 - 58132.08 061
+   8789.6600        Fe I E1 u5Do-5F    3 - 4  46744.99 - 58118.87 061
+   8819.692         Fe I E1 u5Do-5F    1 - 2  47177.23 - 58512.38 061
+   8891.5365        Fe I E1 u5Do-5F    2 - 3  46888.51 - 58132.08 061
+   8932.587         Fe I E1 u5Do-5F    0 - 1  47171.53 - 58363.42 061
+   8937.141         Fe I E1 u5Do-5F    1 - 1  47177.23 - 58363.42 061
+   9138.1679        Fe I E1 u5Do-5F    4 - 5  46720.84 - 57660.95 061
+#+end_example
+******* DONE 8850.65
+CLOSED: [2023-05-02 Tue 10:54]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::8850.8][[Mn III]  8850.89]], [Fe II]  8851.15
-- Could also be 8851.153 [Fe II], 8851.822 [Fe II], 8852.420 [Co II] 
-******* TODO 9029.22
+- Could also be 8851.153 [Fe II], 8851.822 [Fe II], 8852.420 [Co II]
+- AtLL v3 also has Fe I 8850.1114, which is probably the best bet
+******** Fe I 8850.1114 candidate ID for 8850.65
+- Shortest of 6 members in multiplet ❌✔❓
+- ✔❓❌❓||❓❓ The last two are outside MUSE observed range
+
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|------CONFIGURATION------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8850.1114       1.1e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  3 - 2  4.630e+02    30 26224.97 - 37521.16 061
+   8994.6288       1.1e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  1 - 2  1.061e+04    30 26406.46 - 37521.16 061
+   9140.1170       1.2e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  3 - 3  7.741e+03    30 26224.97 - 37162.74 061
+   9173.9620       1.2e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  2 - 2  5.513e+03    30 26623.73 - 37521.16 061
+   9485.9541       1.3e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  2 - 3  1.175e+04    30 26623.73 - 37162.74 061
+   9556.5051       1.3e-03  Fe I E1 3d7.(a2D).4s-3d7.(4F).4p   a3D-y3Fo  3 - 4  1.817e+04    30 26224.97 - 36686.17 061
+
+#+end_example
+
+******* DONE 9029.22
+CLOSED: [2023-05-02 Tue 11:32]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::9029.3][C II  9029.30]]
 - Could also be 9029.825  Fe II], 9029.873  Fe II], 9028.922  N  I 
-******* TODO 9057.17
+
+******** N I 9028.922 candidate ID for 9029.22
+- Doublet transition 3d \to 3p
+- Similar to some lines shown in Fig 8, but in the doublet spectrum rather than the quartets
+- Other component would be in between DRL 9057.2 and He I 9063.29, but we see nothing there
+- Should be pumped by same mechanism as for [N I] 5200, see [[id:63777288-9EC5-4E56-AC58-BFEB9E542B18][Other N I lines]]
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1-|-REF---|
+   9028.922        7.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).3d 2So-2P  1/2 - 1/2 3.197e+07    15 93581.55 - 104654.03 ASD
+   9060.475        7.3e-03  N I E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).3d 2So-2P  1/2 - 3/2 3.208e+07    15 93581.55 - 104615.47 ASD
+#+end_example
+******* DONE 9057.17
+CLOSED: [2023-05-02 Tue 11:48]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::9057.0][O I  9057.02]], Ne II  9057.61
 - Could also be 9056.759$ Fe I, 9057.400  Cr I 
-******* TODO 9297.36
+******** Fe I 9056.759 candidate ID for 9057.17
+- Triplet from high-n level
+- ✔❓✔ Which is not a bad score
+- 8944.720 is very close to observed DRL 8946.0, which indeed has a blue wing
+- 9036.735 is close to observed DRL 9034.7, although it is very weak
+- So this is the only multiplet that is not ruled out observationally
+  - But in part this is due to it being harder to falsify a triplet
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|------TERM-------|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8944.720        8.0e-03  Fe I E1 3d6.(3G).4s.4p.(3Po)-3d6.4s.(6D<7/2>).6d      y5Ho-7/2[5/2]  4 - 3  5.214e+01    30 48361.88 - 59538.59 061
+   9036.735        8.3e-03  Fe I E1 3d6.(3G).4s.4p.(3Po)-3d6.4s.(6D<7/2>).6d      y5Ho-7/2[5/2]  3 - 3  5.656e+01    30 48475.68 - 59538.59 061
+   9056.759        8.4e-03  Fe I E1 3d6.(3G).4s.4p.(3Po)-3d6.4s.(6D<7/2>).6d      y5Ho-7/2[5/2]  3 - 2  1.234e+02    30 48475.68 - 59514.13 061
+#+end_example
+******** O I  9057.02 candidate ID for 9057.17
+- This can be ruled out straight away since both the upper and lower levels are autoionizing, so even if the line existed it would be very broad because of the short lifetime (femtoseconds) of the upper level
+
+******* DONE 9297.36
+CLOSED: [2023-05-02 Tue 22:17]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::9297.2][Fe II  9297.27]], Fe II  9297.30, N II  9297.34, Fe I  9297.61, Ne I  9297.99
-- Fe I 9297.61 has two other detections from same multiplet:
+******** Ne I  9297.99 candidate ID for 9297.36
+- Ne I  9297.99 can be ruled out since there is another component at 9373.3064 with the same upper state, and which has 1000 times higher A-value
+- And also, the transitions are way above the H ionization limit
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------------CONFIGURATION---------------|-------TERM--------|J_i-J_k|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+   9297.9890       7.7e-04  Ne I E1 2s2.2p5.(2Po<1/2>).3p-2s2.2p5.(2Po<3/2>).3d  1/2[3/2]-3/2[1/2]o  1 - 1  1.218e+03     6 150772.11 - 161524.17 023
+   9310.5827       7.7e-04  Ne I E1 2s2.2p5.(2Po<1/2>).3p-2s2.2p5.(2Po<3/2>).3d  1/2[3/2]-3/2[1/2]o  1 - 0  2.376e+06     6 150772.11 - 161509.63 023
+   9373.3064       7.8e-04  Ne I E1 2s2.2p5.(2Po<1/2>).3p-2s2.2p5.(2Po<3/2>).3d  1/2[3/2]-3/2[1/2]o  2 - 1  1.396e+06     6 150858.51 - 161524.17 023
+#+end_example
+
+******** Fe I 9297.61 candidate ID for 9297.36
+- Fe I 9297.61 has two other detections from same multiplet according to EMILI:
   - 9062.239 -16.5 /But that is clearly He I 9063.32/
-  - 9155.647 -10.8 (this is indeed a DRL)
+  - 9155.647 -10.8 (this is indeed a DRL), so put as ✔
+- Checking them all by hand
+  - ❌❓✔ ❓❓✔ ❓✔✔  ❓✔❓
+  - 8945.1893 is close to DRL 8945.95 ± 0.46, which has a blue wing, so put as ✔
+  - 9147.9571 is a bit too far from DRL 9145.25 ± 0.47, so put as ❓
+  - 9294.5342 would be blended with DRL 9297.4, so put as ❓
+- One by one, check them again and write explicit comments
+  - ❌ 8920.0129 In wing of OH sky line. Anything brighter than 5% of DRL 9297.36 is ruled out
+  - ❓ 8929.0753 Ditto affected by OH lines, but some undulation here, so could be something at 10% level of DRL 9297.36
+  - ✔ 8945.1893 Could contribute to blue wing of DRL 8945.95
+  - ❓ 8984.8870 Underneath OH 8988.4 (which has system frame wave of 8983.5). Could be something at 10% level
+  - ❓ 9012.0754
+  - ✔ 9019.7445 DRL 9019.36 ± 0.46 with I = 0.322
+  - ❓ 9062.2394 Blend with He I 9063.32
+  - ❓ 9147.9571 Should be 2 pixels to red of DRL 9145.25 and we see nothing there, BUT that is under a telluric absorption so it is hard to say
+  - ✔ 9155.6472 DRL 9155.28 ± 0.78 with I = 0.092
+  - ❓ 9294.5342 Blend with DRL 9297.4. We don't see anything there, but cannot exclude something at 10% level
+  - ✔ 9297.6063 Bright DRL 9297.37 ± 0.27 with I = 0.250
+  - ❓ 9513.6430 Outside the MUSE wavelength range
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8920.0129       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 2  6.468e+06    30 40842.15 - 52049.82 061
+   8929.0753       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   2 - 1  6.494e+06    30 41018.05 - 52214.34 061
+ldd   8945.1893       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   4 - 3  7.308e+06    30 40594.43 - 51770.55 061
+   8984.8870       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   1 - 0  9.992e+06    30 41130.60 - 52257.34 061
+   9012.0754       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   5 - 4  8.455e+06    30 40257.31 - 51350.49 061
+   9019.7445       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   1 - 1  2.841e+06    30 41130.60 - 52214.34 061
+   9062.2394       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   2 - 2  2.370e+06    30 41018.05 - 52049.82 061
+   9147.9571       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 3  1.741e+06    30 40842.15 - 51770.55 061
+   9155.6472       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   1 - 2  2.195e+05    30 41130.60 - 52049.82 061
+   9294.5342       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   4 - 4  9.861e+05    30 40594.43 - 51350.49 061
+   9297.6063       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   2 - 3  1.432e+05    30 41018.05 - 51770.55 061
+   9513.6430       1.3e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 4  9.248e+04    30 40842.15 - 51350.49 061
+
+#+end_example
 
 ****** Possible identifications of the 6xxx lines
 - [2023-04-10 Mon] For some reason I have done most of the work on these so far
@@ -6923,6 +7042,9 @@ gk*Aki weighted average wavelength:    8690.884
 #+end_example
 ******* 
 ******* Other N I lines
+:PROPERTIES:
+:ID:       63777288-9EC5-4E56-AC58-BFEB9E542B18
+:END:
 - The observed DRL at 9029.2 is close to the N I 9028.922 line
 - This is one of the lines mentioned in the N I pumping paper as being excited by the same fluorescent mechanism as 5199
   - See Table 9 of Ferland:2012a
