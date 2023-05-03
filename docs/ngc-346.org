@@ -6208,7 +6208,7 @@ CLOSED: [2023-03-13 Mon 12:30]
     | 9500 | 787 |  44 | 22.73 |
     #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
 - All Fe I lines with upper level < 30,000 /cm
-  - [[file:../data-atomic/.#fe-i-all-E-upper-lt-30000.txt]]
+  - [[file:../data-atomic/fe-i-all-E-upper-lt-30000.txt]]
   - These are much sparser but still more common in blue than in red
     | 4500 |  18 | N/1000 AA | d wav |
     |------+-----+-----------+-------|
@@ -6218,6 +6218,19 @@ CLOSED: [2023-03-13 Mon 12:30]
     | 8500 | 137 |        17 | 58.82 |
     | 9500 | 154 |        17 | 58.82 |
     #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
+- All Fe I lines with upper level < 60,000 /cm
+  - [[file:../data-atomic/.#fe-i-all-E-upper-lt-60000.txt]]
+  - There are a lot of these!!!
+    | 4500 |    18 | N/1000 AA | d wav |
+    |------+-------+-----------+-------|
+    | 5500 |  3349 |      3331 |  0.30 |
+    | 6500 |  6202 |      2853 |  0.35 |
+    | 7500 |  8995 |      2793 |  0.36 |
+    | 8500 | 11162 |      2167 |  0.46 |
+    | 9500 | 13615 |      2453 |  0.41 |
+    #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
+  - So average spacing less than 0.5 AA across the entire spectrum
+  - This means that it is no surprise to see 
   
 ******* Summary of possible IDs
 Note that none of these are very convincing, but they are the best we have
