@@ -6257,7 +6257,9 @@ CLOSED: [2023-05-03 Wed 11:59]
     #+TBLFM: $3=$2 - @-1$2::$4=1000/$3;f2
   - So even weak and high-n C I lines should not have a high false-positive rate
 ******* Summary of possible IDs
-Note that none of these are very convincing, but they are the best we have
+- Note that none of these are very convincing, but they are the best we have
+- The canonical version of the table is now in the LaTeX document. The version here is no longer up to date.
+
 | Wav obs | Ion    |   Wav lab | E upper    | Pro    | Contra       |
 |---------+--------+-----------+------------+--------+--------------|
 | 6221.82 | Si I   |   6221.70 | 65,468     |        | Mult, BR, FP |
@@ -6407,6 +6409,43 @@ CLOSED: [2023-04-28 Fri 23:26]
 - This is a low-lying level, which should make it easy to excite
 - On the other hand, the abundance should be small
 - There are a whole bunch of forbidden [Co I] lines
+- Other lines of the same multiplet. Remove M1 contributions since they have smaller A
+  - 5958.4838 ? Overlaps with Si II 5958
+  - 6263.0898 O? DRL at 6261.68 ± 0.53
+  - 6386.1346 ? Overlaps with Fe II 6383.73, 6385.46
+  - 6503.8366 O? DRL at 6501.74 ± 0.55
+  - 6636.6227 .. This is the target DRL at 6636.76 ± 0.57
+  - 6678.7039 ? Overlaps with He I 6678.15
+  - 6818.8033 ? Coincides with a feature that was dismissed as noise, but may be a weak DRL
+- Conclusion is marginally favorable: we have two coincidences but they are at the 3-sigma level of wavelength difference. Plus one possible. 
+  
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|-----CONFIGURATION-----|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|---LVL-EN--CM-1---|-REF---|
+   5958.4838       5.0e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 9/2 - 5/2 1.537e-01    30    0.00 - 16778.15 071
+   6263.0898       5.6e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 7/2 - 5/2 3.314e-02    30  816.00 - 16778.15 071
+   6386.1346       5.8e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 7/2 - 3/2 1.152e-01    30  816.00 - 16470.60 071
+   6503.8366       6.0e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 5/2 - 5/2 8.905e-03    30 1406.85 - 16778.15 071
+   6636.6227       6.2e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 5/2 - 3/2 5.373e-02    30 1406.85 - 16470.60 071
+   6678.7039       6.3e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 3/2 - 5/2 1.360e-03    30 1809.31 - 16778.15 071
+   6818.8033       6.6e-04 [Co I] E2     3d7.4s2-3d8.(1D).4s a4F-a2D 3/2 - 3/2 2.219e-02    30 1809.31 - 16470.60 071
+#+end_example
+
+- Other transitions from the same upper level. Pruned the ones of same multiplet, and also with A < 0.01
+  - 8109.4084 X Nothing there
+  - 8486.3041 ? Overlaps with sky OH
+  - 8773.5166 ? Overlaps with sky OH
+- Conclusions is mildly negative. For 2 lines, we cannot say, while another is certainly missing. 
+    
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|-----CONFIGURATION-----|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   8109.4084       9.3e-04 [Co I] E2 3d8.(3F).4s-3d8.(1D).4s b4F-a2D 7/2 - 3/2 7.020e-02    30  4142.63 - 16470.60 071
+   8486.3041       1.0e-03 [Co I] M1 3d8.(3F).4s-3d8.(1D).4s b4F-a2D 5/2 - 3/2 1.578e-01    30  4690.14 - 16470.60 071
+   8486.3041       1.0e-03 [Co I] E2 3d8.(3F).4s-3d8.(1D).4s b4F-a2D 5/2 - 3/2 5.855e-02    30  4690.14 - 16470.60 071
+   8773.5166       1.1e-03 [Co I] M1 3d8.(3F).4s-3d8.(1D).4s b4F-a2D 3/2 - 3/2 6.561e-02    30  5075.79 - 16470.60 071
+   8773.5166       1.1e-03 [Co I] E2 3d8.(3F).4s-3d8.(1D).4s b4F-a2D 3/2 - 3/2 9.873e-03    30  5075.79 - 16470.60 071
+  11073.3749       1.7e-03 [Co I] E2 3d8.(3F).4s-3d8.(1D).4s a2F-a2D 7/2 - 3/2 8.563e-03    30  7442.40 - 16470.60 071
+  12481.2696       2.2e-03 [Co I] M1 3d8.(3F).4s-3d8.(1D).4s a2F-a2D 5/2 - 3/2 1.872e-02    30  8460.78 - 16470.60 071
+#+end_example
 ******* DONE 6776.75
 CLOSED: [2023-05-01 Mon 22:55]
 - Supposedly [[file:../data/n346-lines/emili/zone-0-emi.out::6776.84][Ni II  6776.84]] 
@@ -6594,6 +6633,29 @@ CLOSED: [2023-05-02 Tue 08:40]
 
 gk*Aki weighted average wavelength:    7268.091       
 #+end_example
+
+- Other transitions from the same upper level and with A > 6000 /s
+  - Note that some of these have A-values that are more than 100 times larger than our target line
+  - So this is ruled out by branching ratio
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC--|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
+   4623.5779       4.8e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(6D).5d       z5Go-5G    3 - 2  6.861e+05    30 35611.62 - 57233.84 061
+   4676.5198       4.9e-04  Fe I  E1          3d7.(4F).4p-3d6.4s.(6D).5d       z5Go-5G    2 - 2  2.951e+04    30 35856.40 - 57233.84 061
+   4725.8115       5.0e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(6D).5d       z3Go-5G    3 - 2  1.487e+04    30 36079.37 - 57233.84 061
+   4884.5796       5.3e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       y5Po-5G    3 - 2  7.097e+03    30 36766.96 - 57233.84 061
+   4979.6143       5.5e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       y5Po-5G    2 - 2  4.726e+04    30 37157.56 - 57233.84 061
+   5042.9114       5.7e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       y5Po-5G    1 - 2  1.767e+04    30 37409.55 - 57233.84 061
+   5071.4629       5.8e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(6D).5d       y3Fo-5G    2 - 2  1.032e+04    30 37521.16 - 57233.84 061
+   5481.5024       6.7e-04  Fe I] E1          3d7.(4F).4p-3d6.4s.(6D).5d       y3Do-5G    1 - 2  1.708e+04    30 38995.73 - 57233.84 061
+   5879.8563       7.7e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       x5Do-5G    2 - 2  1.346e+05    30 40231.33 - 57233.84 061
+   5940.3635       7.9e-04  Fe I] E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       x5Do-5G    1 - 2  1.232e+05    30 40404.51 - 57233.84 061
+   6165.1223       8.5e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       x5Fo-5G    2 - 2  1.305e+05    30 41018.05 - 57233.84 061
+   6208.2116       8.6e-04  Fe I  E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(6D).5d       x5Fo-5G    1 - 2  2.494e+06    30 41130.60 - 57233.84 061
+   7092.0771       1.1e-03  Fe I  E1 3d6.(3H).4s.4p.(3Po)-3d6.4s.(6D).5d       y5Go-5G    3 - 2  6.256e+03    30 43137.48 - 57233.84 061
+   7776.6318       1.7e-03  Fe I  E1 3d6.(3F).4s.4p.(3Po)-3d6.4s.(6D).5d       w5Fo-5G    1 - 2  1.376e+04    30 44378.34 - 57233.84 061
+   7796.5352       1.4e-03  Fe I] E1 3d6.(3P).4s.4p.(3Po)-3d6.4s.(6D).5d       w5Do-5G    1 - 2  2.139e+04    30 44411.16 - 57233.84 061
+#+end_example
+
 
 #+begin_example
   -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
@@ -6924,7 +6986,7 @@ CLOSED: [2023-05-02 Tue 22:17]
 -LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|--------------CONFIGURATION--------------|--TERM---|J_i-J_k|--A_ki---|-TPF-|LEVEL-ENERGY--CM^-1|-REF---|
    8920.0129       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   3 - 2  6.468e+06    30 40842.15 - 52049.82 061
    8929.0753       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   2 - 1  6.494e+06    30 41018.05 - 52214.34 061
-ldd   8945.1893       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   4 - 3  7.308e+06    30 40594.43 - 51770.55 061
+   8945.1893       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   4 - 3  7.308e+06    30 40594.43 - 51770.55 061
    8984.8870       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   1 - 0  9.992e+06    30 41130.60 - 52257.34 061
    9012.0754       1.1e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   5 - 4  8.455e+06    30 40257.31 - 51350.49 061
    9019.7445       1.2e-03  Fe I E1 3d6.(5D).4s.4p.(1Po)-3d6.4s.(4D).5s       x5Fo-g5D   1 - 1  2.841e+06    30 41130.60 - 52214.34 061
