@@ -78,7 +78,7 @@ def main(
     ax.minorticks_on()
     ax.yaxis.set_tick_params(which='minor', left=False)
     ax.grid(which="major", linewidth=0.5)
-    ax.set_ylim(-3 * separation, 9 * separation)
+    ax.set_ylim(-3 * separation, (2 + len(zones)) * separation)
     ax.set_xlim(None, wave_range[1])
     ax.set_xlabel("STP wavelength in rest frame of nebula, Å")
     ax.set_ylabel(

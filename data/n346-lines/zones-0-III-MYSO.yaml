@@ -1,0 +1,21 @@
+-
+  label: zone-0
+  fits_file: type-deep-neutral/uil-s09-sum.fits
+  percentiles: [10, 80]
+  min_bright: 0.5
+  max_bright: 4.0
+  husl: [0, 0, 0]               # black is black
+-
+  label: zone-III
+  fits_file: type-med-neb/3579-s-iii-9068-90.fits
+  percentiles: [10, 90]
+  min_bright: 0.2
+  max_bright: 2.0
+  husl: [352, 80, 50]           # a nice magenta
+-
+  label: zone-MYSO
+  fits_file: type-neutral/3081-o-i-8446-48.fits
+  percentiles: [10, 98]
+  min_bright: 0.5
+  max_bright: 5.0
+  husl: [10, 100, 50]           # a bright red
