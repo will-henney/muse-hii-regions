@@ -7079,7 +7079,7 @@ CLOSED: [2023-05-02 Tue 22:17]
 - Three arguments against these lines being N I 5s 4P \to 3p 4Do
   1. Pumping of 5s from ground state requires lambda < 912
   2. We should also see lines 5s 4P \to 3p 4Po and 5s 4P \to 3p 4So but we do not
-  3. Every transition to 3p 4Do should also produce a 3p 4Do \to 3s 4P line, since this is the only odd-parity quartet state of lower energy
+  3. Every transition to 3p 4Do should also produce a 3p 4Do \to 3s 4P line, since this is the only even-parity quartet state of lower energy
 - We can argue that 1 and 2 are not watertight
   1. Illumination by diffuse recombination radiation
   2. Terrestrial absorption gets in the way
@@ -7105,6 +7105,83 @@ CLOSED: [2023-05-02 Tue 22:17]
 |----------+----------+----------|
 | V1 / DRL |    0.372 |    2.430 |
 #+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5::@12$2..@12$3=8700 @11 / 6650 @6;f3
+******** TODO Reanalysis of V1 / V20 test
+- I did this in the above table, but I want to get an error estimate for it, so I am going back to the individual yaml files to get the data
+- We will use the ~Strength~, and ~Gauss_Fit.Amplitude~ values, with ~Sigma~ for the uncertainty
+|          | Zone 0          | Zone MYSO        |  Wav |
+|----------+-----------------+------------------+------|
+| DRL 66xx | 12.41 +/- 1.86  | 90.79 +/- 54.47  | 6640 |
+| N I V1   | 3.56 +/- 1.78   | 168.14 +/- 16.81 | 8700 |
+|----------+-----------------+------------------+------|
+| V1 / DRL | 0.376 +/- 0.196 | 2.427 +/- 1.476  |      |
+#+TBLFM: @2$2=remote(zone-0-DRL-66xx, @II$3) (1 +/- (0.01 remote(zone-0-DRL-66xx, @II$5)));f2::@2$3=remote(zone-MYSO-DRL-66xx, @II$3) (1 +/- (0.01 remote(zone-MYSO-DRL-66xx, @II$5)));f2::@3$2=remote(zone-0-NI-87xx, @II$3) (1 +/- (0.01 remote(zone-0-NI-87xx, @II$5)));f2::@3$3=remote(zone-MYSO-NI-87xx, @II$3) (1 +/- (0.01 remote(zone-MYSO-NI-87xx, @II$5)));f2::@4$2..@4$3=(@3 @3$4) / (@2 @2$4);f3
+
+- Hurray! This result is almost identical to my earlier calculation, and now I have the uncertainties
+- This time I did it with raw intensities, instead of normalizing to H beta
+- But if I *do* normalize to H beta, I can check the MYSO/0 value for these DRLs
+
+  
+
+********* Zone 0
+
+
+#+name: zone-0-DRL-66xx
+|  DRL | Strength | G Strength |  Sigma | % Sig | % Dif |
+|------+----------+------------+--------+-------+-------|
+| 6629 |   3.6349 |     4.1484 | 1.0295 |  28.3 |  14.1 |
+| 6637 |   3.5747 |     3.9239 | 0.4624 |  12.9 |   9.8 |
+| 6646 |    2.271 |     2.3421 |  0.142 |   6.3 |   3.1 |
+| 6656 |   1.9202 |      1.994 | 0.1532 |   8.0 |   3.8 |
+|------+----------+------------+--------+-------+-------|
+|      |          |      12.41 |        |    15 |    10 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1::@6$3=vsum(@I..@II);f2::@6$5=15::@6$6=10
+
+#+name: zone-0-Hbeta
+| H beta |  Strength | G Strength |    Sigma | % Sig | % Dif |
+|--------+-----------+------------+----------+-------+-------|
+|   4861 | 5174.6966 |  5363.4732 | 192.4817 |   3.7 |   3.6 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1
+
+#+name: zone-0-NI-87xx
+| N I V1 | Strength | G Strength |  Sigma | % Sig | % Dif |
+|--------+----------+------------+--------+-------+-------|
+|   8680 |   0.3197 |     0.4956 | 0.2593 |  81.1 |  55.0 |
+|   8703 |   0.9116 |     1.0528 | 0.1734 |  19.0 |  15.5 |
+|   8712 |   0.4784 |     0.6154 | 0.1814 |  37.9 |  28.6 |
+|   8719 |   0.8601 |      1.395 | 0.6067 |  70.5 |  62.2 |
+|--------+----------+------------+--------+-------+-------|
+|        |          |       3.56 |        |    50 |    40 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1::@6$3=vsum(@I..@II);f2::@6$5=15::@6$6=10
+
+
+********* Zone MYSO
+#+name: zone-MYSO-DRL-66xx
+|  DRL | Strength | G Strength |   Sigma | % Sig | % Dif |
+|------+----------+------------+---------+-------+-------|
+| 6629 |  22.2545 |    35.1666 | 16.3897 |  73.6 |  58.0 |
+| 6637 |  31.5175 |     47.301 | 18.0581 |  57.3 |  50.1 |
+| 6646 |   5.8628 |     5.8627 |  0.2254 |   3.8 |  2e-3 |
+| 6656 |   2.4612 |      2.461 |  0.5491 |  22.3 |  8e-3 |
+|------+----------+------------+---------+-------+-------|
+|      |          |      90.79 |         |    60 |    50 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1::@6$3=vsum(@I..@II);f2::@6$5=60::@6$6=50
+
+#+name: zone-MYSO-Hbeta
+| H beta |  Strength | G Strength |    Sigma | % Sig | % Dif |
+|--------+-----------+------------+----------+-------+-------|
+|   4861 | 23531.115 | 24493.5804 | 964.0874 |   4.1 |   4.1 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1
+
+#+name: zone-MYSO-NI-87xx
+| N I V1 | Strength | G Strength |  Sigma | % Sig | % Dif |
+|--------+----------+------------+--------+-------+-------|
+|   8680 |  14.0973 |     13.634 | 4.8458 |  34.4 |   3.3 |
+|   8703 |  48.1393 |    52.6126 | 5.1697 |  10.7 |   9.3 |
+|   8712 |  66.7244 |     70.265 | 3.7714 |   5.7 |   5.3 |
+|   8719 |  29.8532 |    31.6259 | 1.8697 |   6.3 |   5.9 |
+|--------+----------+------------+--------+-------+-------|
+|        |          |     168.14 |        |    10 |     6 |
+#+TBLFM: $5=100 $4/$2;f1::$6=100 abs($3-$2)/$2;f1::@6$3=vsum(@I..@II);f2::@6$5=15::@6$6=10
 ******** DONE Find the multiplet numbers for all these transitions
 CLOSED: [2023-04-08 Sat 19:57]
 
@@ -7172,6 +7249,195 @@ Here's the converted citation in BibTeX format:
 
 ******** Other downward transitions from 5s
 In principle, we would expect to see these too
+
+
+********* All of the downward transitions from 5s
+
+********** Branching ratios weighted by g_k
+| Transition |     Wav | Br (J = 5/2) | Br (J = 3/2) | Br  (J = 1/2) | Average |
+|------------+---------+--------------+--------------+---------------+---------|
+| UV 3.08    |     910 |        0.735 |        0.738 |         0.740 | 0.737   |
+| V 20       |    6650 |        0.089 |        0.090 |         0.090 | 0.090   |
+| V 55       |    6960 |        0.055 |        0.054 |         0.054 | 0.055   |
+| V 83       |    7600 |        0.014 |        0.014 |         0.013 | 0.014   |
+| IR         | 3-4 mic |        0.107 |        0.104 |         0.102 | 0.105   |
+#+TBLFM: $6=(6 $3 + 4 $4 + 2 $5) / (6 + 4 + 2);f3
+- Conclusions: 
+  - The UV lines are the dominant decay channel: 74%
+  - The IR lines are the next most important: 10%
+  - The V 20 line is the next most important: 9%
+  - The V 55 line is the next most important: 5%
+  - The V 83 line is the least important: 2%
+********** J = 5/2
+Branching ratio
+| Transition |     Wav |         A |    Br |
+|------------+---------+-----------+-------|
+| UV 3.08    |     910 | 3.586e+07 | 0.735 |
+| V 20       |    6650 | 4.367e+06 | 0.089 |
+| V 55       |    6960 |   2.671e6 | 0.055 |
+| V 83       |    7600 | 6.663e+05 | 0.014 |
+| IR         | 3-4 mic |   5.234e6 | 0.107 |
+|------------+---------+-----------+-------|
+|            |         |    4.88e7 | 1.000 |
+#+TBLFM: $4=$-1 / @II$-1;f3::@7$3=vsum(@I..@II);s3
+
+UV transitions 
+#+begin_example
+-LAB-WAVL-ANG-VAC-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+    909.69742      7.4e-05  N I  E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 3.586e+07     3      0.00 - 109926.66 ASD
+   1102.50913      1.1e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Do-4P  5/2 - 5/2                  19224.46 - 109926.66 ASD
+   1102.61505      1.1e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Do-4P  3/2 - 5/2                  19233.18 - 109926.66 ASD
+   1233.23791      1.4e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Po-4P  3/2 - 5/2                  28839.31 - 109926.66 ASD
+#+end_example
+
+Optical transitions
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+   6606.176        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 5/2 8.871e+04     3  94793.49 - 109926.66 ASD
+   6622.543        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 5/2 7.924e+05     3  94830.89 - 109926.66 ASD
+   6644.962        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  7/2 - 5/2 3.486e+06     3  94881.82 - 109926.66 ASD
+
+   6926.670        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 5/2 8.058e+05     3  95493.69 - 109926.66 ASD
+   6945.177        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 5/2 1.865e+06     3  95532.15 - 109926.66 ASD
+
+   7587.571        5.1e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 6.663e+05     3  96750.84 - 109926.66 ASD
+
+   7608.846        5.2e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 5/2                  96787.68 - 109926.66 ASD
+   7653.331        5.2e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Do-4P  5/2 - 5/2                  96864.05 - 109926.66 ASD
+   8247.999        6.1e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 5/2                  97805.84 - 109926.66 ASD
+#+end_example
+
+Infrared transitions
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  31754.27         9.0e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 5/2 5.884e+04     3 106778.34 - 109926.66 ASD
+  32122.83         9.2e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 5/2 5.115e+05     3 106814.46 - 109926.66 ASD
+  32691.92         9.5e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  7/2 - 5/2 2.157e+06     3 106868.63 - 109926.66 ASD
+  34113.06         1.0e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 5/2 6.990e+05     3 106996.03 - 109926.66 ASD
+  34597.53         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 5/2 1.563e+06     3 107037.07 - 109926.66 ASD
+  36434.90         1.2e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 5/2                 107182.79 - 109926.66 ASD
+  37393.18         1.2e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Do-4P  5/2 - 5/2                 107253.11 - 109926.66 ASD
+  40294.71         1.4e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 5/2 2.448e+05     3 107445.62 - 109926.66 ASD
+  43497.08         1.7e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 5/2                 107628.28 - 109926.66 ASD
+#+end_example
+
+********** J = 3/2
+Branching ratio
+| Transition |     Wav |         A |    Br |
+|------------+---------+-----------+-------|
+| UV 3.08    |     910 | 3.579e+07 | 0.738 |
+| V 20       |    6650 | 4.355e+06 | 0.090 |
+| V 55       |    6960 | 2.642e+06 | 0.054 |
+| V 83       |    7600 | 6.557e+05 | 0.014 |
+| IR         | 3-4 mic | 5.057e+06 | 0.104 |
+|------------+---------+-----------+-------|
+|            |         |    4.85e7 | 1.000 |
+#+TBLFM: $4=$-1 / @II$-1;f3::@7$3=vsum(@I..@II);s3
+
+
+UV
+#+begin_example
+-LAB-WAVL-ANG-VAC-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+    910.27824      7.4e-05  N I  E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 3.579e+07     3      0.00 - 109856.52 ASD
+   1103.36237      1.1e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Do-4P  5/2 - 3/2                  19224.46 - 109856.52 ASD
+   1103.46845      1.1e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Do-4P  3/2 - 3/2                  19233.18 - 109856.52 ASD
+   1234.29971      1.4e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Po-4P  1/2 - 3/2                  28838.92 - 109856.52 ASD
+   1234.30559      1.4e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Po-4P  3/2 - 3/2                  28839.31 - 109856.52 ASD
+#+end_example
+
+Optical/IR  
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+   6142.705        3.4e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2So-4P  1/2 - 3/2                  93581.55 - 109856.52 ASD
+   
+   6626.990        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 3/2 2.197e+05     3  94770.88 - 109856.52 ASD
+   6636.938        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 3/2 1.400e+06     3  94793.49 - 109856.52 ASD
+   6653.458        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 3/2 2.735e+06     3  94830.89 - 109856.52 ASD
+   
+   6951.600        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 3/2 1.107e+06     3  95475.31 - 109856.52 ASD
+   6960.496        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 3/2 3.529e+05     3  95493.69 - 109856.52 ASD
+   6979.185        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 3/2 1.182e+06     3  95532.15 - 109856.52 ASD
+   
+   7628.180        5.2e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 6.557e+05     3  96750.84 - 109856.52 ASD
+   
+   7649.683        5.2e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 3/2                  96787.68 - 109856.52 ASD
+   7694.648        5.3e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Do-4P  5/2 - 3/2                  96864.05 - 109856.52 ASD
+   8271.530        6.1e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Po-4P  1/2 - 3/2                  97770.18 - 109856.52 ASD
+   8296.007        6.1e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 3/2                  97805.84 - 109856.52 ASD
+  #+end_example
+
+  IR
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  29588.94         7.8e-02  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2So-4P  1/2 - 3/2                 106477.80 - 109856.52 ASD
+  32272.29         9.3e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 3/2 1.401e+05     3 106758.73 - 109856.52 ASD
+  32477.84         9.4e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 3/2 8.799e+05     3 106778.34 - 109856.52 ASD
+  32863.49         9.6e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  5/2 - 3/2 1.672e+06     3 106814.46 - 109856.52 ASD
+  34760.55         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 3/2 9.176e+05     3 106980.48 - 109856.52 ASD
+  34949.54         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 3/2 2.889e+05     3 106996.03 - 109856.52 ASD
+  35458.23         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  5/2 - 3/2 9.337e+05     3 107037.07 - 109856.52 ASD
+  37390.71         1.2e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 3/2                 107182.79 - 109856.52 ASD
+  38400.63         1.3e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Do-4P  5/2 - 3/2                 107253.11 - 109856.52 ASD
+  41467.01         1.5e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 3/2 2.246e+05     3 107445.62 - 109856.52 ASD
+  44078.70         1.7e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Po-4P  1/2 - 3/2                 107588.47 - 109856.52 ASD
+  44866.30         1.8e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 3/2                 107628.28 - 109856.52 ASD
+  #+end_example
+
+********** J = 1/2
+Branching ratio
+| Transition |     Wav |         A |    Br |
+|------------+---------+-----------+-------|
+| UV 3.08    |     910 | 3.575e+07 | 0.740 |
+| V 20       |    6650 |   4.346e6 | 0.090 |
+| V 55       |    6960 |   2.624e6 | 0.054 |
+| V 83       |    7600 | 6.491e+05 | 0.013 |
+| IR         | 3-4 mic |   4.944e6 | 0.102 |
+|------------+---------+-----------+-------|
+|            |         |    4.83e7 | 1.000 |
+#+TBLFM: $4=$-1 / @II$-1;f3::@7$3=vsum(@I..@II);s3
+
+UV
+#+begin_example
+-LAB-WAVL-ANG-VAC-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+    910.64536      7.4e-05  N I  E1         2s2.2p3-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 3.575e+07     3      0.00 - 109812.23 ASD
+   1104.00797      1.1e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Do-4P  3/2 - 1/2                  19233.18 - 109812.23 ASD
+   1234.97479      1.4e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Po-4P  1/2 - 1/2                  28838.92 - 109812.23 ASD
+   1234.98067      1.4e-04  N I] E1         2s2.2p3-2s2.2p2.(3P).5s 2Po-4P  3/2 - 1/2                  28839.31 - 109812.23 ASD
+#+end_example
+
+Optical
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+   6159.466        3.4e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2So-4P  1/2 - 1/2                  93581.55 - 109812.23 ASD
+
+   6646.503        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 1/2 2.178e+06     3  94770.88 - 109812.23 ASD
+   6656.509        3.9e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 1/2 2.168e+06     3  94793.49 - 109812.23 ASD
+
+   6973.074        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 1/2 4.388e+05     3  95475.31 - 109812.23 ASD
+   6982.025        4.3e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 1/2 2.185e+06     3  95493.69 - 109812.23 ASD
+
+   7654.044        5.2e-03  N I  E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 6.491e+05     3  96750.84 - 109812.23 ASD
+
+   7675.694        5.3e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 1/2                  96787.68 - 109812.23 ASD
+
+   8301.950        6.1e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Po-4P  1/2 - 1/2                  97770.18 - 109812.23 ASD
+   8326.608        6.2e-03  N I] E1 2s2.2p2.(3P).3p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 1/2                  97805.84 - 109812.23 ASD
+#+end_example
+
+IR
+#+begin_example
+-LAB-WAVL-ANG-AIR-|-DLAM--|-SPC-|TT|---------CONFIGURATION---------|-TERM--|-J_i-J_k-|--A_ki---|-TPF-|-LEVEL-ENERGY--CM^-1-|-REF---|
+  29981.93         8.0e-02  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2So-4P  1/2 - 1/2                 106477.80 - 109812.23 ASD
+  32740.35         9.6e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  1/2 - 1/2 1.342e+06     3 106758.73 - 109812.23 ASD
+  32951.93         9.7e-02  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Do-4P  3/2 - 1/2 1.316e+06     3 106778.34 - 109812.23 ASD
+  35304.19         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  1/2 - 1/2 3.504e+05     3 106980.48 - 109812.23 ASD
+  35499.15         1.1e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4Po-4P  3/2 - 1/2 1.723e+06     3 106996.03 - 109812.23 ASD
+  38020.47         1.3e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Do-4P  3/2 - 1/2                 107182.79 - 109812.23 ASD
+  42243.00         1.6e-01  N I  E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 4So-4P  3/2 - 1/2 2.125e+05     3 107445.62 - 109812.23 ASD
+  44956.54         1.8e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Po-4P  1/2 - 1/2                 107588.47 - 109812.23 ASD
+  45776.11         1.9e-01  N I] E1 2s2.2p2.(3P).4p-2s2.2p2.(3P).5s 2Po-4P  3/2 - 1/2                 107628.28 - 109812.23 ASD
+#+end_example
+
 
 ********* 5s 4P \to 3p 4Po NOT SEEN
 - We see nothing at all in this wavelength range
