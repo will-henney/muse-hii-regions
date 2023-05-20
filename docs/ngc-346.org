@@ -7105,9 +7105,14 @@ CLOSED: [2023-05-02 Tue 22:17]
 |----------+----------+----------|
 | V1 / DRL |    0.372 |    2.430 |
 #+TBLFM: @6$2..@6$3=vsum(@I..@II);f5::@11$2..@11$3=vsum(@III..@IIII);f5::@12$2..@12$3=8700 @11 / 6650 @6;f3
-******** TODO Reanalysis of V1 / V20 test
+******** Citation for transition probabilities in N I
+- Turns out that Froese-Fischer:2009a (that is cited in the Ferland::2012a N I paper) does not go as high as the 5s level, so that can not be the source of our transition probabilities
+- And neither can Hibbert:1991a, since they do not go that high either
+******** DONE Reanalysis of V1 / V20 test
+CLOSED: [2023-05-19 Fri 12:15]
 - I did this in the above table, but I want to get an error estimate for it, so I am going back to the individual yaml files to get the data
 - We will use the ~Strength~, and ~Gauss_Fit.Amplitude~ values, with ~Sigma~ for the uncertainty
+#+name: ni-versus-drl
 |          | Zone 0          | Zone MYSO        |  Wav |
 |----------+-----------------+------------------+------|
 | DRL 66xx | 12.41 +/- 1.86  | 90.79 +/- 54.47  | 6640 |
@@ -7116,12 +7121,19 @@ CLOSED: [2023-05-02 Tue 22:17]
 | V1 / DRL | 0.376 +/- 0.196 | 2.427 +/- 1.476  |      |
 #+TBLFM: @2$2=remote(zone-0-DRL-66xx, @II$3) (1 +/- (0.01 remote(zone-0-DRL-66xx, @II$5)));f2::@2$3=remote(zone-MYSO-DRL-66xx, @II$3) (1 +/- (0.01 remote(zone-MYSO-DRL-66xx, @II$5)));f2::@3$2=remote(zone-0-NI-87xx, @II$3) (1 +/- (0.01 remote(zone-0-NI-87xx, @II$5)));f2::@3$3=remote(zone-MYSO-NI-87xx, @II$3) (1 +/- (0.01 remote(zone-MYSO-NI-87xx, @II$5)));f2::@4$2..@4$3=(@3 @3$4) / (@2 @2$4);f3
 
-- Hurray! This result is almost identical to my earlier calculation, and now I have the uncertainties
+- Hurray! This result is almost identical to my earlier calculation, and now I have the uncertainties too
 - This time I did it with raw intensities, instead of normalizing to H beta
 - But if I *do* normalize to H beta, I can check the MYSO/0 value for these DRLs
 
-  
+| Zone   | 100 sum (DRL 66xx) / H beta |
+|--------+-----------------------------|
+| 0      | 0.24 +/- 0.04               |
+| MYSO   | 0.39 +/- 0.23               |
+|--------+-----------------------------|
+| MYSO/0 | 1.63 +/- 1.00               |
+#+TBLFM: @2$2=100 (remote(ni-versus-drl, @2$2)) / remote(zone-0-Hbeta, @2$2);f2::@3$2=100 (remote(ni-versus-drl, @2$3)) / remote(zone-MYSO-Hbeta, @2$2);f2::@4$2=@3/@2;f2
 
+- So this does confirm the earlier estimates that MYSO/0 is of order 1 for these lines (much larger than for typical DRLs)
 ********* Zone 0
 
 
