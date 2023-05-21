@@ -62,6 +62,41 @@
 ** Deep neutral/molecular lines
 
 
+*** [/] [2023-05-20 Sat] Comparison with other regions
+This is for the discussion section of the paper
+**** TODO Orion
+***** Comparison of brightnesses
+- Orion is much brighter, with Ha brightness of 2e8 in MUSE units in peak near Trapezium, and average about 9e7 in Bar
+  - Whereas NGC 346 has typical brightness of 2e4, with peak in mYSO C of 2e5
+- [C I] 8727 has peak 6e4 near Trapezium, and average 1e4 in Bar
+  - 100 1e4 / (9e7 / 2.87) = 0.032
+  - So this gives about 0.032 on a scale of Hb = 100
+    - Compare with literature values:
+      - Esteban:2004a gives 0.017, but that is after reddening correction (it was 0.053 before). But that is reddening from Hb to [C I], whereas in our case we only need to correct from Ha to [C I]. *Therefore, the results are very similar*
+      - Reddening from Ha to Hb is 1.38 (Baldwin) or 1.62 (Esteban)
+      - Reddening from [C I] to Hb is 3.1176 (Esteban), which implies 1.9244 from [C I ] to Ha, which seems excessive
+  - So [C I] is relatively fainter in Orion, although in NGC 346 we were comparing with Zone 0, which is dominated by neutral gas. Maybe we should also calculate the relative brightness for the nebula as a whole
+    - Brightness about 40 in brightest filaments, or 300 in mYSO C
+    - Filament to nebula: 100 I/Hb = 100 40 / (2e4 / 2.87) = 0.57
+    - mYSO: 100 I/Hb = 100 300 / (2e5 / 2.87) = 0.43
+    - So very similar in the two, and still at least 10 times higher than in Orion
+- We see some very faint lines in Orion 
+  - For instance, He I 8608.294 has a peak of about 3000, or average 1800 in Bar
+    - 100 1800 / (9e7 / 2.87) = 0.0057
+  - So that is 0.005 on a scale of Hb = 100
+- DRL 9029 is the brightest Deep Red Line in NGC 346.
+  - In Zone 0 it has 100 I/Hb of 0.399 +/- 0.028 from our Table
+    - Measuring on the cube, it has about 30 in brightest filament, so 100 30 / (2e4 / 2.87) = 0.43, which is nearly identical
+  - We will now try to measure it in Orion
+    - There are some other lines in the same range, which /are/ seen
+      - Ca I] 9052 for instance, which is close to DRL 9057 and DRL 9049
+      - [Fe II] 9033 is observed, and this may be what we see with DRL 9034.71
+***** Median filter applied to Orion cube
+- This is working really well!
+  
+
+**** TODO 30 Doradus
+
 *** Possible atomic candidates
 
 **** Si I lines
