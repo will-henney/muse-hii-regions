@@ -91,6 +91,63 @@ This is for the discussion section of the paper
     - There are some other lines in the same range, which /are/ seen
       - Ca I] 9052 for instance, which is close to DRL 9057 and DRL 9049
       - [Fe II] 9033 is observed, and this may be what we see with DRL 9034.71
+    - We see a line at 9029.45, but its distribution is different from [C I]
+      - Still, we can't rule it out entirely. It's distribution is somewhat similar to that of [Fe II] and Ca I] 8125 lines,
+        but with differences (e.g. it is exceedingly weak in the Bar, and not seen in the HH objects)
+      - Brightness measurements
+        - Bar: 800 +/- 500 and is really marginal
+          - So that is 100 800 / (9e7 / 2.87) = 0.0026 % of Hb, which is tiny
+          - 100 times weaker than in NGC 346
+          - And we have DRL 9029 / [C I] 8727 = 0.0026 / 0.032 = 0.081, as opposed to 0.399 / 0.43 = 0.93 in NGC 346
+        - Orion S: 2000 +/- 500
+          - So comparing to [C I] 8727, we have 2000 / 6e4 = 0.033, which is even less than in the Bar
+          - Partly explained by fact that we are using peak of DRL in Bar, but comparing with average of [C I]
+          - So, the Orion S comparison is probably a fairer one.
+          - Comparing with Hb we have 100 2000 / (2e8 / 2.87) = 0.003, which is still tiny
+- Other DRLs
+  - DRL 9113 *YES* this is clearly seen in Orion
+    - It is not one of the brightest DRLs in NGC 346, but this is probably because of underlying telluric absorption, which completely eliminates the line in the MYSO region, and probably reduces its apparent intensity even in Zone 0
+    - Peak is around 6000 in Orion S and broad band at 2000 in Orion Bar
+      - So DRL 9113 / [C I] 8727 = 6000 / 6e4 = 0.1
+      - Compare with NGC 346: DRL 9113 / [C I] 8727 = 0.1 / 0.5 = 0.2
+      - So, again, Orion is fainter, but not by a huge amount (although we need to take account of telluric absorption in NGC 346, which may mean that we are underestimating the true value there)
+  - DRL 9297 Marginal.
+    - Very noisy and spatial distribution does not look like [C I]
+    - Peak brightness is 1900 in Orion S
+    - So DRL 9297 / [C I] 8727 = 1900 / 6e4 = 0.032, so similar to 9029
+  - DRL 7306 is close to an observed line at 7308, but it is probably unrelated.
+    - Morphology is not like [C I]
+    - Looks more like [Fe II]
+    - Peak brightness is about 500
+  - DRL 7291 coincides with [Ca II] 7291
+    - I am not sure why this got classified as a DRL in the paper. It is not on the original list
+    - The spatial distribution in Orion of this line is unique, stronger in upper Bar than lower Bar. Plus filaments up near HH 210
+  - Null results
+    - DRL 8946 is on top of a sky line in Orion
+    - DRL 8894 overlaps with [Fe II] 8892, which is super strong in Orion
+    - DRL 8851 is in the middle of a bunch of helium lines (8845, 8848, 8854) and we see nothing at 8851
+    - DRL 8810 has literally nothing there
+      - Upper limit of about 500, so DRL 8810 / [C I] 8727 < 500 / 6e4 = 0.008
+    - DRL 8789 is in wing of sky line, and we see nothing
+    - DRL 8738 is in wing of He I 8733, and we see nothing
+    - DRL 8695 coincides with [Co II] 8695 (or may be [Fe II])
+    - DRL 8685 coincides with N I V1 multiplet lines
+    - DRL 8660 is in wing of H I 8665 and we see nothing
+    - DRL 8648 coincides with He I 8650
+    - DRL 8620 is in wings of [Fe II] 8617
+    - DRL 8611 coincides with ionized line at 8609
+    - DRL 8550 is in wing of H I 8545
+    - DRL 8151 is in clean area, but literally nothing there
+      - Again upper limit of about 500, so DRL 8151 / [C I] 8727 < 500 / 6e4 = 0.008
+    - DRL 7890 coincides with Ca I] 7890, which is super strong in Orion
+    - DRL 6646 is close to [Cr IV] 
+  - Lines in Orion that are not seen in NGC 346
+    - There is something interesting at 8107, but it is right at the limit of detection
+      - Intensity peak is about 500 at Orion S
+    - Interesting line at 6814
+      - Broad peak just behind the ionization front in the Orion Bar
+      - Peak in about 3000 in Orion S, and about 800 in Bar
+    - Possible structure at 6285, but it coincides with telluric absorption band, so may be spurious
 ***** Median filter applied to Orion cube
 - This is working really well!
   
