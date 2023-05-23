@@ -207,12 +207,47 @@ CLOSED: [2023-05-22 Mon 21:22]
   
 
 **** TODO 30 Doradus
-- We see several liens, so I will make a table of them
-| Line     | Wave(obs) | Globule | Filament |
-|----------+-----------+---------+----------|
-| DRL 8151 |   8157.49 |       9 |       12 |
-| [C I]    |   8734.99 |      50 |       10 |
-|          |           |         |          |
+
+***** Summary for 30 Dor
+- Physical
+  - 
+- Intermediate [C I]/H I compared with NGC 346
+  - 100 [C I] 8727 / Hb = 0.12 in Globule and 0.06 in Clump (as opposed to 0.5 in NGC 346)
+  - But about twice as high as in Orion
+  - This makes me thing that [C I] in NGC 346 might be collisionally excited, like it is in planetary nebulae
+    - Would be important to measure the redder lines to check the line ratio
+- A good fraction of the DRLs are detected
+  - DRL/[C I] ~= 1.5 for the brightest (8151, 8851, 9029, 9114) in the Clump
+    - In the Globule it is lower: DRL/[C I] <= 0.2
+  - As in Orion, DRL 9114 is more prominent than in NGC 346, with DRL/[C I] = 0.9
+  - We do not see 6814
+
+***** Measuring the lines in 30 Dor
+- We see several lines, so I will make a table of them
+  - We do not see any red of 9150, but 9297 is right on top of a sky line
+- Globule is the lower of the two globules just left of the center of field A
+- Clump is the big peak in DRL emission in center right of field A
+| Line     | Wave(obs) | Globule | Clump |                    | 100 I/Hb G | 100 I/Hb C | 
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| DRL 8151 |   8157.49 |       9 |    12 |                    |     0.0215 |     0.0689 |
+| DRL 8650 |   8657.49 |       5 |     5 | V. diffuse         |     0.0120 |     0.0287 |
+| DRL 8660 |   8667.49 |       5 |    10 |                    |     0.0120 |     0.0574 |
+| [C I]    |   8734.99 |      50 |    10 |                    |     0.1196 |     0.0574 |
+| DRL 8789 |   8797.49 |       2 |     5 |                    |     0.0048 |     0.0287 |
+| DRL 8851 |   8858.74 |       8 |    12 |                    |     0.0191 |     0.0689 |
+| DRL 8888 |   8897.49 |       0 |     3 | Marginal           |     0.0000 |     0.0172 |
+| DRL 8946 |   8953.74 |       2 |     3 |                    |     0.0048 |     0.0172 |
+| DRL 9019 |   9027.49 |       1 |     3 | Very marginal      |     0.0024 |     0.0172 |
+| DRL 9029 |   9036.24 |       9 |    15 | Sky OH on red side |     0.0215 |     0.0861 |
+| DRL 9035 |   9043.74 |       0 |     2 | Very marginal      |     0.0000 |     0.0115 |
+| DRL 9057 |   9064.99 |       2 |     6 |                    |     0.0048 |     0.0344 |
+| DRL 9099 |   9107.49 |       2 |     7 |                    |     0.0048 |     0.0402 |
+| DRL 9114 |   9121.24 |       5 |     8 |                    |     0.0120 |     0.0459 |
+| DRL 9145 |   9153.74 |       3 |     8 |                    |     0.0072 |     0.0459 |
+| DRL 9163 |   9171.24 |       0 |     0 | Seen, but from IF  |     0.0000 |     0.0000 |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| Ha       |   6568.74 |  120000 | 50000 | Slightly saturated |   287.0000 |   287.0000 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4
 
 *** Possible atomic candidates
 
