@@ -217,8 +217,10 @@ CLOSED: [2023-05-22 Mon 21:22]
   - This makes me thing that [C I] in NGC 346 might be collisionally excited, like it is in planetary nebulae
     - Would be important to measure the redder lines to check the line ratio
 - A good fraction of the DRLs are detected
-  - DRL/[C I] ~= 1.5 for the brightest (8151, 8851, 9029, 9114) in the Clump
+  - DRL/[C I] ~= 1.5 for the brightest (8151, 8660, 8851, 9029, 9114) in the Clump
     - In the Globule it is lower: DRL/[C I] <= 0.2
+  - 100 DRL / Hb = 0.1 in Clump, or 0.02 in Globule for the strongest DRLs
+    - Compare with 0.4 in NGC 346 Zone 0, 0.2 in Zone MYSO, 0.01 in Orion
   - As in Orion, DRL 9114 is more prominent than in NGC 346, with DRL/[C I] = 0.9
   - We do not see 6814
 
@@ -227,8 +229,17 @@ CLOSED: [2023-05-22 Mon 21:22]
   - We do not see any red of 9150, but 9297 is right on top of a sky line
 - Globule is the lower of the two globules just left of the center of field A
 - Clump is the big peak in DRL emission in center right of field A
-| Line     | Wave(obs) | Globule | Clump |                    | 100 I/Hb G | 100 I/Hb C | 
+| Line     | Wave(obs) | Globule | Clump |                    | 100 I/Hb G | 100 I/Hb C |
 |----------+-----------+---------+-------+--------------------+------------+------------|
+| DRL 7848 |   7844.99 |       4 |     3 | Sky blend          |     0.0096 |     0.0172 |
+| DRL 7959 |   7967.49 |       4 |     6 | Sky blend          |     0.0096 |     0.0344 |
+| DRL 8038 |   8044.99 |       0 |     1 | Very marginal      |     0.0000 |     0.0057 |
+| DRL 8523 |   8529.99 |       1 |     3 | Marginal           |     0.0024 |     0.0172 |
+| DRL 8550 |   8557.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
+| DRL 8560 |   8567.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
+| DRL 8660 |   8667.49 |       4 |    13 |                    |     0.0096 |     0.0746 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
 | DRL 8151 |   8157.49 |       9 |    12 |                    |     0.0215 |     0.0689 |
 | DRL 8650 |   8657.49 |       5 |     5 | V. diffuse         |     0.0120 |     0.0287 |
 | DRL 8660 |   8667.49 |       5 |    10 |                    |     0.0120 |     0.0574 |
