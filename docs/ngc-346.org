@@ -263,8 +263,16 @@ CLOSED: [2023-05-22 Mon 21:22]
 **** TODO M17
 
 ***** Measuring the lines in M17 Tile 03
+Note that I see no lines at shorter wavelengths.
+
 | Line     | Wave(obs) |   Near |   Far |                       | 100 I/Hb N | 100 I/Hb F |
 |----------+-----------+--------+-------+-----------------------+------------+------------|
+| DRL 7782 |   7782.78 |      4 |     5 |                       |            |            |
+| DRL 7790 |   7790.28 |      2 |     2 | Extremely marginal    |            |            |
+| DRL 7804 |   7802.78 |      2 |     1 | Extremely marginal    |            |            |
+| DRL 7838 |   7837.78 |      6 |     5 |                       |            |            |
+| DRL 7960 |   7960.28 |      7 |     7 |                       |            |            |
+| DRL 8047 |   8046.53 |        |     5 | [Cl IV] blend         |            |            |
 | DRL 8459 |   8459.03 |     10 |    11 | Strong! And no sky    |     0.0191 |     0.0734 |
 | DRL 8151 |   8150.28 |      5 |     6 |                       |     0.0096 |     0.0400 |
 | [C I]    |   8727.78 |    140 |   110 |                       |     0.2679 |     0.7342 |
