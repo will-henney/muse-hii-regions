@@ -62,8 +62,48 @@
 ** Deep neutral/molecular lines
 
 
-*** [1/3] [2023-05-20 Sat] Comparison with other regions
+*** [1/4] [2023-05-20 Sat] Comparison with other regions
 This is for the discussion section of the paper
+
+**** TODO Comparison table of all the regions
+|                | I([C I] 8727) | I(Sum DRL) | Number DRL |
+|----------------+---------------+------------+------------|
+| Orion S        |          0.17 |      0.026 |          3 |
+| Orion Bar      |          0.06 |      0.017 |          3 |
+| M 17 A         |          0.27 |       0.16 |         15 |
+| M 17 B         |          0.73 |       0.63 |         16 |
+| 30 Dor Glob    |          0.12 |       0.16 |         18 |
+| 30 Dor Clump   |          0.06 |       0.71 |         20 |
+| NGC 346 Zone 0 |           0.5 |            |        114 |
+| NGC 346 MYSO   |               |            |            |
+
+**** NGC 346
+- Obviously we have already done this, but I want to draw the relevant material together
+- Take material from the yaml files
+- Use the peak of the line to copy the methodology of the other regions
+- Do the top ten DRL by hand
+| Line        | Wave(obs) | Zone 0 | Zone MYSO |   | 100 I/Hb 0 | 100 I/Hb M |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| DRL 6221.82 |   6224.94 |    1.3 |       3.2 |   |     0.0424 |     0.0235 |
+| DRL 6636.76 |   6639.94 |    1.6 |      12.0 |   |     0.0522 |     0.0883 |
+| DRL 6776.75 |   6779.94 |    1.6 |       3.3 |   |     0.0522 |     0.0243 |
+| DRL 7092.29 |   7096.19 |    2.9 |       7.4 |   |     0.0946 |     0.0545 |
+| DRL 8150.67 |   8154.94 |   7.14 |      11.3 |   |     0.2329 |     0.0832 |
+| DRL 8550.06 |           |        |           |   |     0.0000 |     0.0000 |
+| DRL 8789.18 |           |        |           |   |     0.0000 |     0.0000 |
+| DRL 8850.65 |           |        |           |   |     0.0000 |     0.0000 |
+| DRL 9029.22 |           |        |           |   |     0.0000 |     0.0000 |
+| DRL 9057.17 |           |        |           |   |     0.0000 |     0.0000 |
+| DRL 9297.36 |           |        |           |   |     0.0000 |     0.0000 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| Ha          |   6566.19 |   8800 |     39000 |   |   287.0000 |   287.0000 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| [C I]       |   8732.44 |    6.5 |        32 |   |     0.2120 |     0.2355 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| DRL sum     |           |  14.54 |      37.2 |   |     0.4742 |     0.2738 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@15$3..@15$4=vsum(@I..@II)
+
+8154.94 
 **** DONE Orion
 CLOSED: [2023-05-22 Mon 21:22]
 ***** Summary for Orion
@@ -111,6 +151,24 @@ CLOSED: [2023-05-22 Mon 21:22]
     - But with original pixels, it would be roughly the same
 
 ***** Comparison of brightnesses
+We will do a table for consistency with the other regions
+| Line     | Wave(obs) | Orion S            | Bar                |         | 100 I/Hb N        | 100 I/Hb F        |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| DRL 6814 |   6814.35 | 3000 +/- 300       | 1500 +/- 300       | Unique  | 0.0086 +/- 0.0009 | 0.0086 +/- 0.0017 |
+| DRL 9029 |   9029.45 | 1500 +/- 200       | 700 +/- 300        |         | 0.0043 +/- 0.0006 | 0.0040 +/- 0.0017 |
+| DRL 9114 |   9112.75 | 4800 +/- 300       | 1600 +/- 300       |         | 0.0138 +/- 0.0009 | 0.0092 +/- 0.0017 |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| Ha       |   6562.75 | 1e8                | 5e7                | 5x5 bin | 287.0000          | 287.0000          |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| [C I]    |   8727.78 | 6e4                | 1e4                |         | 0.1722            | 0.0574            |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| DRL sum  |           | 9300 +/- 469.04158 | 3800 +/- 519.61524 |         | 0.0267 +/- 0.0013 | 0.0218 +/- 0.0030 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@7$3..@7$4=vsum(@I..@II)
+
+
+
+
+
 - Orion is much brighter, with Ha brightness of 2e8 in MUSE units in peak near Trapezium, and average about 9e7 in Bar
   - *Wait*, it turns out the 05x05 binning was a sum, not an average, so all brightnesses need to be divided by 25 to put them in the same MUSE units as NGC 346: 1e-20 erg/s/cm2/Angstrom/pixel
   - So, we actually have 8e+06 in peak near Trapezium, and average about 3.6e+06 in Bar
@@ -166,6 +224,7 @@ CLOSED: [2023-05-22 Mon 21:22]
     - Very noisy and spatial distribution does not look like [C I]
     - Peak brightness is 1900 in Orion S
     - So DRL 9297 / [C I] 8727 = 1900 / 6e4 = 0.032, so similar to 9029
+    - *Now decided this is not a DRL* 
   - DRL 7306 is close to an observed line at 7308, but it is probably unrelated.
     - Morphology is not like [C I]
     - Looks more like [Fe II]
@@ -214,7 +273,7 @@ CLOSED: [2023-05-22 Mon 21:22]
 - Intermediate [C I]/H I compared with NGC 346
   - 100 [C I] 8727 / Hb = 0.12 in Globule and 0.06 in Clump (as opposed to 0.5 in NGC 346)
   - But about twice as high as in Orion
-  - This makes me thing that [C I] in NGC 346 might be collisionally excited, like it is in planetary nebulae
+  - This makes me think that [C I] in NGC 346 might be collisionally excited, like it is in planetary nebulae
     - Would be important to measure the redder lines to check the line ratio
 - A good fraction of the DRLs are detected
   - DRL/[C I] ~= 1.5 for the brightest (8151, 8660, 8851, 9029, 9114) in the Clump
@@ -233,17 +292,15 @@ CLOSED: [2023-05-22 Mon 21:22]
 |----------+-----------+---------+-------+--------------------+------------+------------|
 | DRL 7848 |   7844.99 |       4 |     3 | Sky blend          |     0.0096 |     0.0172 |
 | DRL 7959 |   7967.49 |       4 |     6 | Sky blend          |     0.0096 |     0.0344 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
 | DRL 8038 |   8044.99 |       0 |     1 | Very marginal      |     0.0000 |     0.0057 |
+| DRL 8151 |   8157.49 |       9 |    12 |                    |     0.0215 |     0.0689 |
 | DRL 8523 |   8529.99 |       1 |     3 | Marginal           |     0.0024 |     0.0172 |
 | DRL 8550 |   8557.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
 | DRL 8560 |   8567.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
-| DRL 8660 |   8667.49 |       4 |    13 |                    |     0.0096 |     0.0746 |
-|          |           |         |       |                    |     0.0000 |     0.0000 |
-|          |           |         |       |                    |     0.0000 |     0.0000 |
-| DRL 8151 |   8157.49 |       9 |    12 |                    |     0.0215 |     0.0689 |
 | DRL 8650 |   8657.49 |       5 |     5 | V. diffuse         |     0.0120 |     0.0287 |
 | DRL 8660 |   8667.49 |       5 |    10 |                    |     0.0120 |     0.0574 |
-| [C I]    |   8734.99 |      50 |    10 |                    |     0.1196 |     0.0574 |
 | DRL 8789 |   8797.49 |       2 |     5 |                    |     0.0048 |     0.0287 |
 | DRL 8851 |   8858.74 |       8 |    12 |                    |     0.0191 |     0.0689 |
 | DRL 8888 |   8897.49 |       0 |     3 | Marginal           |     0.0000 |     0.0172 |
@@ -258,24 +315,30 @@ CLOSED: [2023-05-22 Mon 21:22]
 | DRL 9163 |   9171.24 |       0 |     0 | Seen, but from IF  |     0.0000 |     0.0000 |
 |----------+-----------+---------+-------+--------------------+------------+------------|
 | Ha       |   6568.74 |  120000 | 50000 | Slightly saturated |   287.0000 |   287.0000 |
-#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| [C I]    |   8734.99 |      50 |    10 |                    |     0.1196 |     0.0574 |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| DRL sum  |           |      68 |   124 |                    |     0.1626 |     0.7118 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@27$3..@27$4=vsum(@I..@II)
 
 **** TODO M17
+
+
+***** Summary for M17
 
 ***** Measuring the lines in M17 Tile 03
 Note that I see no lines at shorter wavelengths.
 
 | Line     | Wave(obs) |   Near |   Far |                       | 100 I/Hb N | 100 I/Hb F |
 |----------+-----------+--------+-------+-----------------------+------------+------------|
-| DRL 7782 |   7782.78 |      4 |     5 |                       |            |            |
-| DRL 7790 |   7790.28 |      2 |     2 | Extremely marginal    |            |            |
-| DRL 7804 |   7802.78 |      2 |     1 | Extremely marginal    |            |            |
-| DRL 7838 |   7837.78 |      6 |     5 |                       |            |            |
-| DRL 7960 |   7960.28 |      7 |     7 |                       |            |            |
-| DRL 8047 |   8046.53 |        |     5 | [Cl IV] blend         |            |            |
+| DRL 7782 |   7782.78 |      4 |     5 |                       |     0.0077 |     0.0334 |
+| DRL 7790 |   7790.28 |      2 |     2 | Extremely marginal    |     0.0038 |     0.0133 |
+| DRL 7804 |   7802.78 |      2 |     1 | Extremely marginal    |     0.0038 |     0.0067 |
+| DRL 7838 |   7837.78 |      6 |     5 |                       |     0.0115 |     0.0334 |
+| DRL 7960 |   7960.28 |      7 |     7 |                       |     0.0134 |     0.0467 |
+| DRL 8047 |   8046.53 |        |     5 | [Cl IV] blend         |     0.0000 |     0.0334 |
 | DRL 8459 |   8459.03 |     10 |    11 | Strong! And no sky    |     0.0191 |     0.0734 |
 | DRL 8151 |   8150.28 |      5 |     6 |                       |     0.0096 |     0.0400 |
-| [C I]    |   8727.78 |    140 |   110 |                       |     0.2679 |     0.7342 |
 | DRL 8789 |   8789.03 |      2 |     3 | Very marginal         |     0.0038 |     0.0200 |
 | DRL 8851 |   8850.28 |      7 |    10 |                       |     0.0134 |     0.0667 |
 | DRL 8888 |           |        |       | Sky                   |     0.0000 |     0.0000 |
@@ -289,7 +352,11 @@ Note that I see no lines at shorter wavelengths.
 | DRL 9163 |   9162.78 |      3 |     2 | Very marginal         |     0.0057 |     0.0133 |
 |----------+-----------+--------+-------+-----------------------+------------+------------|
 | Ha       |   6568.74 | 150000 | 43000 | Slightly saturated    |   287.0000 |   287.0000 |
-#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| [C I]    |   8727.78 |    140 |   110 |                       |     0.2679 |     0.7342 |
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| DRL sum  |           |     85 |    95 |                       |     0.1626 |     0.6341 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@23$3..@23$4=vsum(@I..@II)
 
 
 
