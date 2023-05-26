@@ -66,16 +66,77 @@
 This is for the discussion section of the paper
 
 **** TODO Comparison table of all the regions
+#+name: drl-regions-table
 |                | I([C I] 8727) | I(Max DRL) | I(Sum DRL) | Number DRL | Max DRL |
 |----------------+---------------+------------+------------+------------+---------|
-| Orion S        |          0.17 |      0.014 |      0.026 |          3 |    9114 |
+| Orion South    |          0.17 |      0.014 |      0.026 |          3 |    9114 |
 | Orion Bar      |          0.06 |      0.009 |      0.017 |          3 |    9114 |
+|----------------+---------------+------------+------------+------------+---------|
 | M 17 A         |          0.27 |      0.019 |       0.16 |         15 |    8459 |
 | M 17 B         |          0.73 |      0.080 |       0.63 |         16 |    8894 |
-| 30 Dor Glob    |          0.12 |      0.022 |       0.16 |         18 |    9029 |
+|----------------+---------------+------------+------------+------------+---------|
+| 30 Dor Globule |          0.12 |      0.022 |       0.16 |         18 |    9029 |
 | 30 Dor Clump   |          0.06 |      0.086 |       0.71 |         20 |    9029 |
-| NGC 346 Zone 0 |          0.21 |      0.399 |       1.96 |        114 |    9029 |
-| NGC 346 MYSO   |          0.24 |      0.200 |       0.80 |         80 |    9297 |
+|----------------+---------------+------------+------------+------------+---------|
+| NGC 346 MYSO   |          0.24 |      0.200 |       5.93 |         80 |    9297 |
+| NGC 346 Zone 0 |          0.21 |      0.399 |      14.83 |        114 |    9029 |
+
+- So summed DRL relative brightness is 570 times in NGC 346 than in Orion
+  - This means that absolute DRL brightness is higher than in Orion
+  - Since H alpha brightness is 100 times higher in Orion
+  -
+
+ 
+***** Graph of DRL comparison between regions
+
+#+header: :var TAB=drl-regions-table
+#+begin_src python :tangle ../scripts/drl-regions-comparison.py :eval no
+  import numpy as np
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  sns.set_context("talk")
+  sns.set_palette("icefire", n_colors=6)
+  tab = Table(rows=TAB[1:], names=TAB[0])
+  figfile = "drl-regions-comparison.pdf"
+  fig, ax = plt.subplots(figsize=(6, 6))
+  xxx = tab["I([C I] 8727)"]
+  yyy = tab["I(Max DRL)"]
+  zzz = tab["Number DRL"]
+  xx = np.vstack([xxx[0::2], xxx[1::2]])
+  yy = np.vstack([yyy[0::2], yyy[1::2]])
+  zz = np.vstack([zzz[0::2], zzz[1::2]])
+  icols = [0, 1, -2, -1]
+  for i, x, y, z in zip(icols, xx.T, yy.T, zz.T):
+      color = sns.color_palette()[i]
+      line, = ax.plot(x, y, linewidth=3, zorder=-100, color=color)
+      ax.scatter(x[0], y[0], s=20 + z[0]*10, color=color)
+      ax.scatter(x[1], y[1], s=20 + z[1]*10, color=color, facecolor="white", linewidths=3)
+  ax.set(
+      xlabel=r"100 $\times$  [C I] λ8727 / Hβ",
+      ylabel=r"100 $\times$  max( DRL ) / Hβ",
+      xlim=[0.03, 2.0],
+      ylim=[0.003, 0.9],
+      xscale="log",
+      yscale="log",
+  )
+  ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+  ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+  ax.set_xticks([0.1, 0.3, 1.0])
+  ax.set_yticks([0.01, 0.03, 0.1, 0.3])
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(figfile, bbox_inches="tight")
+  print(figfile, end="")
+#+end_src
+
+#+begin_src sh :results file
+  python ../scripts/drl-regions-comparison.py # 1>&2
+#+end_src
+
+#+RESULTS:
+[[file:drl-regions-comparison.pdf]]
 
 **** NGC 346
 - Obviously we have already done this, but I want to draw the relevant material together
@@ -103,7 +164,57 @@ This is for the discussion section of the paper
 | DRL sum     |           |  60.24 |     109.1 |   |     1.9646 |     0.8029 |
 #+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@15$3..@15$4=vsum(@I..@II)
 
-8154.94 
+- We could do the sum better by counting all the DRLs. This will be similar to the production of the big table for the paper
+  - This is done in the next section, which gives a much higher value than from the top-ten, indicating that the other lines are important too!
+  - The top ten represent 13% of the total
+  - Mean brightness is 0.13% of Hb and median is 0.09% of Hb
+
+
+
+***** DONE Add up the intensities of all the DRLs
+CLOSED: [2023-05-25 Thu 10:20]
+#+begin_src python :eval no :tangle ../scripts/sum-drl-intensities.py
+  import pandas as pd
+  import numpy as np
+
+
+  df = pd.read_csv("uil-final-table.csv")
+
+  # For Zone 0, sum all the relative fluxes, however weak
+  sum_0 = df["flux"].sum()
+  median_0 = df["flux"].median()
+  mean_0 = df["flux"].mean()
+
+  # For MYSO, first back out the ratio to get relative fluxes
+  flux_myso = df["MYSO / 0"] * df["flux"]
+  # And then mask out lines that are blends or upper limits before summing
+  invalid = (df["E(MYSO / 0)"] == "<") | df["blend"]
+  flux_myso[invalid] = np.nan
+  sum_myso = np.nansum(flux_myso)
+  median_myso = np.nanmedian(flux_myso)
+  mean_myso = np.nanmean(flux_myso)
+
+  # Report statistics of sums and counts
+  print(f"Sum of fluxes: Zone 0 = {sum_0:.2f}, MYSO = {sum_myso:.2f}")
+  print(f"Number of lines: Zone 0 = {len(df)}, MYSO = {np.sum(~invalid)}")
+  print(f"Mean brightness: Zone 0 = {mean_0:.3f}, MYSO = {mean_myso:.3f}")
+  print(f"Median brightness: Zone 0 = {median_0:.3f}, MYSO = {median_myso:.3f}")
+
+
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines/all-lines-c007-chop-mean :results output verbatim
+  python ../../../scripts/sum-drl-intensities.py
+#+end_src
+
+#+RESULTS:
+: Sum of fluxes: Zone 0 = 14.83, MYSO = 5.93
+: Number of lines: Zone 0 = 114, MYSO = 80
+: Mean brightness: Zone 0 = 0.130, MYSO = 0.074
+: Median brightness: Zone 0 = 0.091, MYSO = 0.043
+
+
+
 **** DONE Orion
 CLOSED: [2023-05-22 Mon 21:22]
 ***** Summary for Orion
@@ -358,7 +469,7 @@ Note that I see no lines at shorter wavelengths.
 | DRL sum  |           |     85 |    95 |                       |     0.1626 |     0.6341 |
 #+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@23$3..@23$4=vsum(@I..@II)
 
-
+*** 
 
 *** Possible atomic candidates
 
@@ -7566,11 +7677,11 @@ In principle, we would expect to see these too
 ********** Branching ratios weighted by g_k
 | Transition |     Wav | Br (J = 5/2) | Br (J = 3/2) | Br  (J = 1/2) | Average |
 |------------+---------+--------------+--------------+---------------+---------|
-| UV 3.08    |     910 |        0.735 |        0.738 |         0.740 | 0.737   |
-| V 20       |    6650 |        0.089 |        0.090 |         0.090 | 0.090   |
-| V 55       |    6960 |        0.055 |        0.054 |         0.054 | 0.055   |
-| V 83       |    7600 |        0.014 |        0.014 |         0.013 | 0.014   |
-| IR         | 3-4 mic |        0.107 |        0.104 |         0.102 | 0.105   |
+| UV 3.08    |     910 |        0.735 |        0.738 |         0.740 |   0.737 |
+| V 20       |    6650 |        0.089 |        0.090 |         0.090 |   0.090 |
+| V 55       |    6960 |        0.055 |        0.054 |         0.054 |   0.055 |
+| V 83       |    7600 |        0.014 |        0.014 |         0.013 |   0.014 |
+| IR         | 3-4 mic |        0.107 |        0.104 |         0.102 |   0.105 |
 #+TBLFM: $6=(6 $3 + 4 $4 + 2 $5) / (6 + 4 + 2);f3
 - Conclusions: 
   - The UV lines are the dominant decay channel: 74%
