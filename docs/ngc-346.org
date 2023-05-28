@@ -61,8 +61,23 @@
 
 ** Deep neutral/molecular lines
 
+*** Even more other regions
+These will not be in the first paper
 
-*** [2/4] [2023-05-20 Sat] Comparison with other regions
+**** Giant proplyd 244-440
+
+**** Carina
+- This has the lines very strong, and we see many of them
+  - But I think that it is because we see a shielded region where [C I] is strong
+- We see mainly the same lines as in NGC 346
+- But some have different distributions
+  - In particular, 8550 comes from very deep in the cloud
+  - Although, I am worried that it might be affected by negative ringing from the adjacent H I line
+  - So we need to look at it with different widths of the median filter
+- There are other interesting lines, such as [Ca II] 7291, 7324
+  - Possibly associated with SNR, or at least there is hot gas coincident with this, as seen in XMM maps
+
+*** [3/4] [2023-05-20 Sat] Comparison with other regions
 This is for the discussion section of the paper
 
 **** DONE Comparison table of all the regions
@@ -377,7 +392,8 @@ We will do a table for consistency with the other regions
 - This is working really well!
   
 
-**** TODO 30 Doradus
+**** DONE 30 Doradus
+CLOSED: [2023-05-26 Fri 13:54]
 
 ***** Summary for 30 Dor
 - Physical
@@ -440,6 +456,7 @@ We will do a table for consistency with the other regions
   - REITER/ KLAASSEN/ MCLEOD/ DALE/ POVICH/ MOTTRAM
   - [[http://archive.eso.org/wdb/wdb/eso/sched_rep_arc/query?tel=UT4&from_date=01-Apr-2019&progid=0103.C-0288(A)][Link to program]]
 ***** Summary for M17
+- Luminosity of OB stars is 4e6 Lsun (from Povich:2007a), which is about 20 times Orion
 
 ***** Measuring the lines in M17 Tile 03
 Note that I see no lines at shorter wavelengths.
@@ -473,7 +490,6 @@ Note that I see no lines at shorter wavelengths.
 | DRL sum  |           |     85 |    95 |                       |     0.1626 |     0.6341 |
 #+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@23$3..@23$4=vsum(@I..@II)
 
-*** 
 
 *** Possible atomic candidates
 
@@ -678,9 +694,11 @@ Note that I see no lines at shorter wavelengths.
     - There are some genuine emission lines, probably Deep Neutral, which complicate things on this side: #1524 (6505 observed) and #1547 (6534 observed)
     - There may be some absorption here, but it is hard to tell
 
-** TODO Automatic line finding
+** DONE Automatic line finding
+CLOSED: [2023-05-27 Sat 20:37]
 :PROPERTIES:
 :header-args:sh: :results output verbatim :dir ../scripts
+:EXPORT_FILE_NAME: ngc-346-drl-analysis-steps
 :END:
 - Started work on this [2022-10-04 Tue]
   - Early tests and proof of concept in notebook
@@ -5349,7 +5367,8 @@ Index
 [114 rows x 12 columns]
 #+end_example
 
-**** TODO Write a latex version of the table
+**** DONE Write a latex version of the table
+CLOSED: [2023-05-27 Sat 20:37]
 - I am going to try and do this using the pandas facility for writing latex
 - This works OK, but there are a few issues that need sorting
   - [ ] alignment of the columns is not great, especially when we have a colon
@@ -6500,14 +6519,15 @@ CLOSED: [2022-11-24 Thu 12:28]
         - This is entirely due to adding in more N I lines, so it is legitimate 
       - [X] Need to add the plots to the Affinity figure
 
-*** TODO Step 14: Final things to do [2022-11-27 Sun] 
+*** DONE Step 14: Final things to do [2022-11-27 Sun] 
+CLOSED: [2023-05-27 Sat 20:36]
 - [X] Write a latex table of all the UIL lines to include in paper
 - [X] Make a top-ten table of the best lines
 - [X] Better treatment of the H I line blends
   - I decided not to bother with this
 - [X] Add the annotations to the remaining one-d spectra
 - [X] Run EMILI on the line lists to try and get IDs
-- [ ] Finish writing the paper
+- [X] Finish writing the paper
 **** DONE Top-ten line list
 CLOSED: [2023-03-13 Mon 12:30]
 - I have sorted the list in order of flux. Some are unsuitable because of blends, so I will analyze them here
