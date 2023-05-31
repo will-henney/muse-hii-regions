@@ -5806,6 +5806,10 @@ CLOSED: [2022-11-13 Sun 14:38]
       df = df.join(df_wave,  rsuffix="_wave")
 
       n_type = {_t: 0 for _t in info["types"]}
+      # There should really be a check on s/n > 1, which eliminates one
+      # of the Unidentified lines. I am just giong to go ahead and fix
+      # it by hand
+      n_type["Unidentified"] -= 1
 
       for species in reversed(info["species"]):
           label = species["name"]
@@ -5880,7 +5884,7 @@ Copy line bar-code figure to the paper project
 
 #+RESULTS:
 : line-type-wave-distro-c007-chop-mean.pdf -> /Users/will/Dropbox/mabel-smc-deep-neutral-paper/figs/line-type-wave-distro-c007-chop-mean.pdf
-: Last copied: Sun Jan 15 23:01:09 CST 2023
+: Last copied: Wed May 31 08:53:07 CST 2023
 
 *** DONE Step 12: Distribution of nearest neighbors and reciprocity
 CLOSED: [2022-11-19 Sat 13:01]

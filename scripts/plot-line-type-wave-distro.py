@@ -46,6 +46,7 @@ def main(
     df = df.join(df_wave,  rsuffix="_wave")
 
     n_type = {_t: 0 for _t in info["types"]}
+    n_type["Unidentified"] -= 1
 
     for species in reversed(info["species"]):
         label = species["name"]
