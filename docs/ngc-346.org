@@ -8704,6 +8704,41 @@ Sample:
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
+*** Return to bow project 2023 Summer
+- What remains to be done?
+  - [-] Rerun all the notebooks since I seem to have lost all the results cells
+    - Looks like best way is with nbconvert
+  - [ ] Maybe repeat for the Peter Zeigler cube
+  - [ ] Think what are the essentials for the paper
+**** TODO Rerunning the notebooks [2023-06-01 Thu]
+- I have lost all the results cells in the notebooks, so I need to rerun them
+- Here is a [[https://mljar.com/blog/run-jupyter-notebook-command-line/][useful blog post]] with various methods
+- Looks like ~nbconvert~ is best for our purposes here
+  - Example command line
+    #+begin_src sh :eval no :dir ../notebooks/ngc346-orig
+      jupyter nbconvert --execute --to notebook --inplace 01-00-line-ratios.ipynb
+    #+end_src
+  - Also make an html version for ease of viewing
+    #+begin_src sh :eval no :dir ../notebooks/ngc346-orig
+      jupyter nbconvert --to html 01-00-line-ratios.ipynb 
+    #+end_src
+- Problems encountered
+  - I have to adjust some relative paths in the notebooks since I moved them into subdirectories
+    - Best to do that in the pure python version and use jupytext to convert to ipynb
+    - Now sorted for [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py][01-01-more-line-ratios.py]], which was much messier than it should have been because I decided to do things properly with ~Pathlib~ but had forgotten that MPDAF does not support that, so had to convert back to strings
+- [3/10] Files fully processed
+  - [ ] 00-01-extract-subregions
+  - [X] 01-00-line-ratios
+  - [X] 01-01-more-line-ratios
+  - [X] 01-02-yet-more-line-ratios
+  - [ ] 01-03-pretty-images
+  - [ ] 
+  - [ ] 
+  - [ ] 
+  - [ ] 
+  - [ ] 
+
+  
 *** Lines to use for the bow shock
 + [X] He II 4685.71
   + 3-4 transition, so equivalent to Paschen \alpha

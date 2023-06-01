@@ -73,13 +73,14 @@ def trim_edges(im, m):
 
 ```python pycharm={"name": "#%%\n"}
 datadir = Path.cwd().parent.parent / "data"
+figdir = Path.cwd().parent.parent / "figs"
 ```
 
 ```python pycharm={"name": "#%%\n"}
-im6716 = Image(str(datadir / "ngc346-sii-6716-bin01-sum".fits))
-im6731 = Image(str(datadir / "ngc346-sii-6731-bin01-sum".fits))
-imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum".fits))
-imcont = Image(str(datadir / "ngc346-cont-6312-mean".fits))
+im6716 = Image(str(datadir / "ngc346-sii-6716-bin01-sum.fits"))
+im6731 = Image(str(datadir / "ngc346-sii-6731-bin01-sum.fits"))
+imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
+imcont = Image(str(datadir / "ngc346-cont-6312-mean.fits"))
 imha
 ```
 
@@ -356,13 +357,8 @@ im_n_sii.write(str(datadir) + "/ngc346-N-sii.fits", savemask="nan")
 ```
 
 ```python pycharm={"name": "#%%\n"}
-im_T_siii = Image(str(datadir / "ngc346-T-siii".fits))
-imhb = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-im_T_siii = Image("../data/ngc346-T-siii.fits")
-imhb = Image("../data/ngc346-hi-4861-correct.fits")
+im_T_siii = Image(str(datadir / "ngc346-T-siii.fits"))
+imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}
@@ -493,21 +489,12 @@ muse_bright_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2 / (0.2 * u.arcsec) ** 2
 ```
 
 ```python pycharm={"name": "#%%\n"}
-im4686 = Image(str(datadir / "ngc346-heii-4686-correct".fits))
-im5875 = Image(str(datadir / "ngc346-hei-5875-correct".fits))
-imhb = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-imariv = Image(str(datadir / "ngc346-ariv-4711-plus-4740-correct".fits))
-imariii = Image(str(datadir / "ngc346-ariii-7136-correct".fits))
-imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-im4686 = Image("../data/ngc346-heii-4686-correct.fits")
-im5875 = Image("../data/ngc346-hei-5875-correct.fits")
-imhb = Image("../data/ngc346-hi-4861-correct.fits")
-imariv = Image("../data/ngc346-ariv-4711-plus-4740-correct.fits")
-imariii = Image("../data/ngc346-ariii-7136-correct.fits")
-imoiii = Image("../data/ngc346-oiii-5007-bin01-sum.fits")
+im4686 = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
+im5875 = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
+imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
+imariv = Image(str(datadir / "ngc346-ariv-4711-plus-4740-correct.fits"))
+imariii = Image(str(datadir / "ngc346-ariii-7136-correct.fits"))
+imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}
@@ -571,7 +558,7 @@ ax.set(
     ylim=[-199, 1400],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-brightness-cuts.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-brightness-cuts.pdf")
 ```
 
 <!-- #region pycharm={"name": "#%% md\n"} -->
@@ -746,17 +733,10 @@ Q2
 <!-- #endregion -->
 
 ```python pycharm={"name": "#%%\n"}
-im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum".fits))
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum".fits))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum".fits))
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-im6300 = Image("../data/ngc346-oi-6300-bin01-sum.fits")
-im5518 = Image("../data/ngc346-cliii-5518-bin01-sum.fits")
-im5538 = Image("../data/ngc346-cliii-5538-bin01-sum.fits")
-im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum.fits"))
+im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
+im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
+im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}
@@ -805,7 +785,7 @@ ax.set(
     ylim=[0, 3.9],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-lowion-cuts.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-lowion-cuts.pdf")
 ```
 ```python pycharm={"name": "#%%\n"}
 
@@ -980,13 +960,8 @@ he1.getEmissivity(tem=T0, den=dgrid, wave=5048) / he1.getEmissivity(
 ```
 
 ```python pycharm={"name": "#%%\n"}
-im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum".fits))
-im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-im5048 = Image("../data/ngc346-hei-5048-bin01-sum.fits")
-im5876 = Image("../data/ngc346-hei-5875-bin01-sum.fits")
+im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum.fits"))
+im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}
@@ -1069,19 +1044,7 @@ yyslice = slice(180, 200)  # top half ultra narrow
 n_sii_profile = make_profile(im_n_sii)
 T_siii_profile = make_profile(im_T_siii)
 sii_profile = make_profile(im6731)
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum".fits))
-siii_profile = make_profile(im9069)
-```
-
-```python pycharm={"name": "#%%\n"}
-# yyslice = slice(164, 204) # original
-# yyslice = slice(160, 210) # broader
-# yyslice = slice(170, 200) # narrower
-yyslice = slice(180, 200)  # top half ultra narrow
-n_sii_profile = make_profile(im_n_sii)
-T_siii_profile = make_profile(im_T_siii)
-sii_profile = make_profile(im6731)
-im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
 siii_profile = make_profile(im9069)
 ```
 
@@ -1116,7 +1079,7 @@ ax.set(
     ylim=[0, 3.45],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-sii-siii-ne-te.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ne-te.pdf")
 ```
 
 <!-- #region pycharm={"name": "#%% md\n"} tags=["temperature"] -->
@@ -1147,19 +1110,13 @@ ax.set(
     ylim=[0, 2.1],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
 ```
 
 ```python pycharm={"name": "#%%\n"}
-imhei_c = Image(str(datadir / "ngc346-hei-5875-correct".fits))
-imhi_c = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-imheii_c = Image(str(datadir / "ngc346-heii-4686-correct".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-imhei_c = Image("../data/ngc346-hei-5875-correct.fits")
-imhi_c = Image("../data/ngc346-hi-4861-correct.fits")
-imheii_c = Image("../data/ngc346-heii-4686-correct.fits")
+imhei_c = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
+imhi_c = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
+imheii_c = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}
@@ -1211,21 +1168,14 @@ ax.set(
     ylim=[-0.005, 0.015],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-he-ratios.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-he-ratios.pdf")
 ```
 
 ```python pycharm={"name": "#%%\n"}
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum".fits))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum".fits))
-imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum".fits))
-imcont = Image(str(datadir / "ngc346-cont-4686-mean".fits))
-```
-
-```python pycharm={"name": "#%%\n"}
-im5518 = Image("../data/ngc346-cliii-5518-bin01-sum.fits")
-im5538 = Image("../data/ngc346-cliii-5538-bin01-sum.fits")
-imha = Image("../data/ngc346-hi-6563-bin01-sum.fits")
-imcont = Image("../data/ngc346-cont-4686-mean.fits")
+im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
+im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
+imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
+imcont = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
 ```
 
 ```python pycharm={"name": "#%%\n"}

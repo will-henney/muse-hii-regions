@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.11.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -34,17 +34,20 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
+```python
+# ## Path to the root of this repo
+ROOT = Path.cwd().parent.parent 
+```
+
 ## Calculate reddening from Balmer decrement
 
-
-Load the Hα and Hβ maps
-
 ```python
-imha = Image("../data/ngc346-hi-6563-bin01-sum.fits")
+# Load the Hα and Hβ maps
+imha = Image(str(ROOT / "data/ngc346-hi-6563-bin01-sum.fits"))
 ```
 
 ```python
-imhb = Image("../data/ngc346-hi-4861-bin01-sum.fits")
+imhb = Image(str(ROOT / "data/ngc346-hi-4861-bin01-sum.fits"))
 ```
 
 ### Look at the raw Hα/Hβ ratio:
@@ -340,7 +343,7 @@ imEBV.mask = imEBV.mask | badpix
 Save it to a file:
 
 ```python
-imEBV.write("../data/ngc346-reddening-E_BV.fits", savemask="nan")
+imEBV.write(str(ROOT / "data/ngc346-reddening-E_BV.fits"), savemask="nan")
 ```
 
 Lots of regions are affected by the stellar absorption.  There are apparent increases in reddening at the position of each star.  This is not real, but is due to the photospheric absorption having more of an effect on Hb (mainly because the emission line is weaker). 
@@ -365,9 +368,9 @@ sns.despine();
 ## Calculate the [S III] temperature
 
 ```python
-im6312 = Image("../data/ngc346-siii-6312-bin01-sum.fits")
-im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
-cont6312 = Image("../data/ngc346-cont-6312-mean.fits")
+im6312 = Image(str(ROOT / "data/ngc346-siii-6312-bin01-sum.fits"))
+im9069 = Image(str(ROOT / "data/ngc346-siii-9069-bin01-sum.fits"))
+cont6312 = Image(str(ROOT / "data/ngc346-cont-6312-mean.fits"))
 ```
 
 The raw ratio:
@@ -602,7 +605,7 @@ imT_siii.mask = imT_siii.mask | badpix
 ```
 
 ```python
-imT_siii.write("../data/ngc346-T-siii.fits", savemask="nan")
+imT_siii.write(str(ROOT / "data/ngc346-T-siii.fits"), savemask="nan")
 ```
 
 The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there. 
@@ -613,7 +616,7 @@ Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise
 ## Calculate [O III]/[S III]
 
 ```python
-im5007 = Image("../data/ngc346-oiii-5007-bin01-sum.fits")
+im5007 = Image(str(ROOT / "data/ngc346-oiii-5007-bin01-sum.fits"))
 ```
 
 Correct for extinction:
@@ -740,7 +743,7 @@ g.fig.suptitle("Correlation between [S III] 9069 and [O III] / [S III] ratio");
 
 ```python
 imR_oiii_siii = (im5007cc - 55000)/im9069cc
-imR_oiii_siii.write("../data/ngc346-R-oiii-5007-siii-9069.fits", savemask="nan")
+imR_oiii_siii.write(str(ROOT / "data/ngc346-R-oiii-5007-siii-9069.fits"), savemask="nan")
 ```
 
 ## Calculate [O III] / Hβ
@@ -826,7 +829,7 @@ g.fig.suptitle("Correlation between Hβ 4861 and [O III] / Hβ ratio");
 
 ```python
 imR_oiii_hb = (im5007 - 33000)/(imhb - hbfix)
-imR_oiii_hb.write("../data/ngc346-R-oiii-5007-hi-4861.fits", savemask="nan")
+imR_oiii_hb.write(str(ROOT / "data/ngc346-R-oiii-5007-hi-4861.fits"), savemask="nan")
 ```
 
 ```python
@@ -850,9 +853,9 @@ axes[1].set_title("[O III] / Hβ")
 Let us see if this has a hole in it where the He II is coming from.
 
 ```python
-im5875 = Image("../data/ngc346-hei-5875-bin01-sum.fits")
-im4922 = Image("../data/ngc346-hei-4922-bin01-sum.fits")
-im5048 = Image("../data/ngc346-hei-5048-bin01-sum.fits")
+im5875 = Image(str(ROOT / "data/ngc346-hei-5875-bin01-sum.fits"))
+im4922 = Image(str(ROOT / "data/ngc346-hei-4922-bin01-sum.fits"))
+im5048 = Image(str(ROOT / "data/ngc346-hei-5048-bin01-sum.fits"))
 ```
 
 ```python
@@ -956,7 +959,7 @@ So if we correct it for reddening, then lots of spurious structure disappears.  
 
 
 ```python
-im4686 = Image("../data/ngc346-heii-4686-bin01-sum.fits")
+im4686 = Image(str(ROOT / "data/ngc346-heii-4686-bin01-sum.fits"))
 ```
 
 ```python
@@ -1022,12 +1025,12 @@ sns.histplot(
 ## Ratio of [Ar IV] / [Ar III]
 
 ```python
-im4711 = Image("../data/ngc346-ariv-4711-bin01-sum.fits")
-im4740 = Image("../data/ngc346-ariv-4740-bin01-sum.fits")
-im7171 = Image("../data/ngc346-ariv-7171-bin01-sum.fits")
-im7237 = Image("../data/ngc346-ariv-7237-bin01-sum.fits")
-im7263 = Image("../data/ngc346-ariv-7263-bin01-sum.fits")
-im7136 = Image("../data/ngc346-ariii-7136-bin01-sum.fits")
+im4711 = Image(str(ROOT / "data/ngc346-ariv-4711-bin01-sum.fits"))
+im4740 = Image(str(ROOT / "data/ngc346-ariv-4740-bin01-sum.fits"))
+im7171 = Image(str(ROOT / "data/ngc346-ariv-7171-bin01-sum.fits"))
+im7237 = Image(str(ROOT / "data/ngc346-ariv-7237-bin01-sum.fits"))
+im7263 = Image(str(ROOT / "data/ngc346-ariv-7263-bin01-sum.fits"))
+im7136 = Image(str(ROOT / "data/ngc346-ariii-7136-bin01-sum.fits"))
 ```
 
 ```python
@@ -1161,18 +1164,18 @@ avHe_corr_4686
 ```
 
 ```python
-(im4686 * avHe_corr_4686).write("../data/ngc346-heii-4686-correct.fits")
+(im4686 * avHe_corr_4686).write(str(ROOT / "data/ngc346-heii-4686-correct.fits"))
 ```
 
 ```python
 ((imhb - hbfix) * 10**(0.4 * avHe_EBV * rc.X(4861))).write(
-    "../data/ngc346-hi-4861-correct.fits",
+    str(ROOT / "data/ngc346-hi-4861-correct.fits"),
 )
 (im5875 * 10**(0.4 * avHe_EBV * rc.X(5875))).write(
-    "../data/ngc346-hei-5875-correct.fits",   
+    str(ROOT / "data/ngc346-hei-5875-correct.fits"),   
 )
 (im7136 * 10**(0.4 * avHe_EBV * rc.X(7136))).write(
-    "../data/ngc346-ariii-7136-correct.fits",
+    str(ROOT / "data/ngc346-ariii-7136-correct.fits"),
 )
 ```
 
@@ -1187,7 +1190,7 @@ im4711c = im4711 - im_fake_4713
 Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
 
 ```python
-cont4686 = Image("../data/ngc346-cont-4686-mean.fits")
+cont4686 = Image(str(ROOT / "data/ngc346-cont-4686-mean.fits"))
 ```
 
 I need to decide how bright a star needs to be before I mask out that bit of the image. 5000 in the `cont4686` image seems a reasonable value. 
@@ -1288,11 +1291,11 @@ ariv_R3_plus_R4.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=0.08, cmap="inferno", 
 Save the combined image, corrected for extinction:
 
 ```python
-im_ariv_sum.write("../data/ngc346-ariv-4711-plus-4740-correct.fits", savemask="nan")
-im4740r.write("../data/ngc346-ariv-4740-correct.fits", savemask="nan")
-im4711r.write("../data/ngc346-ariv-4711-correct.fits", savemask="nan")
-im7171r.write("../data/ngc346-ariv-7171-correct.fits", savemask="nan")
-im7263r.write("../data/ngc346-ariv-7263-correct.fits", savemask="nan")
+im_ariv_sum.write(str(ROOT / "data/ngc346-ariv-4711-plus-4740-correct.fits"), savemask="nan")
+im4740r.write(str(ROOT / "data/ngc346-ariv-4740-correct.fits"), savemask="nan")
+im4711r.write(str(ROOT / "data/ngc346-ariv-4711-correct.fits"), savemask="nan")
+im7171r.write(str(ROOT / "data/ngc346-ariv-7171-correct.fits"), savemask="nan")
+im7263r.write(str(ROOT / "data/ngc346-ariv-7263-correct.fits"), savemask="nan")
 ```
 
 ```python
@@ -1811,7 +1814,7 @@ g.axes[1, 0].set_ylim(zzmin, zzmax)
 g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
 g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 
-g.fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics.pdf")
+g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics.pdf")
 #g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
 ```
@@ -1891,7 +1894,7 @@ g.axes[1, 0].set_ylim(zzmin, zzmax)
 g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
 g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 
-g.fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics-R1-R3.pdf")
+g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-R1-R3.pdf")
 #g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
 ```
@@ -1924,7 +1927,7 @@ ww.plot(ax=axes[0], colorbar="v", vmin=w_low_cutoff, vmax=None, cmap="Blues")
 zz.plot(ax=axes[1], colorbar="v", vmin=zzmin, vmax=zzmax, cmap=cmr.amber)
 xy.plot(ax=axes[2], colorbar="v", vmin=xymin, vmax=xymax, cmap=cmr.ember)
 fig.tight_layout()
-fig.savefig("../figs/ngc346-bow-shock-ariv-diagnostics-maps.pdf");
+fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-maps.pdf");
 ```
 
 ```python

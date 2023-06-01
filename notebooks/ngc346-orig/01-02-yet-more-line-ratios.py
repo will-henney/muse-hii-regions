@@ -71,12 +71,13 @@ def trim_edges(im, m):
 
 # + pycharm={"name": "#%%\n"}
 datadir = Path.cwd().parent.parent / "data"
+figdir = Path.cwd().parent.parent / "figs"
 
 # + pycharm={"name": "#%%\n"}
-im6716 = Image(str(datadir / "ngc346-sii-6716-bin01-sum".fits))
-im6731 = Image(str(datadir / "ngc346-sii-6731-bin01-sum".fits))
-imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum".fits))
-imcont = Image(str(datadir / "ngc346-cont-6312-mean".fits))
+im6716 = Image(str(datadir / "ngc346-sii-6716-bin01-sum.fits"))
+im6731 = Image(str(datadir / "ngc346-sii-6731-bin01-sum.fits"))
+imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
+imcont = Image(str(datadir / "ngc346-cont-6312-mean.fits"))
 imha
 
 # + pycharm={"name": "#%%\n"}
@@ -332,12 +333,8 @@ im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax
 im_n_sii.write(str(datadir) + "/ngc346-N-sii.fits", savemask="nan")
 
 # + pycharm={"name": "#%%\n"}
-im_T_siii = Image(str(datadir / "ngc346-T-siii".fits))
-imhb = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-
-# + pycharm={"name": "#%%\n"}
-im_T_siii = Image("../data/ngc346-T-siii.fits")
-imhb = Image("../data/ngc346-hi-4861-correct.fits")
+im_T_siii = Image(str(datadir / "ngc346-T-siii.fits"))
+imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
 
 # + pycharm={"name": "#%%\n"}
 n = 16
@@ -448,20 +445,12 @@ import astropy.units as u
 muse_bright_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2 / (0.2 * u.arcsec) ** 2
 
 # + pycharm={"name": "#%%\n"}
-im4686 = Image(str(datadir / "ngc346-heii-4686-correct".fits))
-im5875 = Image(str(datadir / "ngc346-hei-5875-correct".fits))
-imhb = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-imariv = Image(str(datadir / "ngc346-ariv-4711-plus-4740-correct".fits))
-imariii = Image(str(datadir / "ngc346-ariii-7136-correct".fits))
-imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum".fits))
-
-# + pycharm={"name": "#%%\n"}
-im4686 = Image("../data/ngc346-heii-4686-correct.fits")
-im5875 = Image("../data/ngc346-hei-5875-correct.fits")
-imhb = Image("../data/ngc346-hi-4861-correct.fits")
-imariv = Image("../data/ngc346-ariv-4711-plus-4740-correct.fits")
-imariii = Image("../data/ngc346-ariii-7136-correct.fits")
-imoiii = Image("../data/ngc346-oiii-5007-bin01-sum.fits")
+im4686 = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
+im5875 = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
+imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
+imariv = Image(str(datadir / "ngc346-ariv-4711-plus-4740-correct.fits"))
+imariii = Image(str(datadir / "ngc346-ariii-7136-correct.fits"))
+imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum.fits"))
 
 # + pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
@@ -521,7 +510,7 @@ ax.set(
     ylim=[-199, 1400],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-brightness-cuts.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-brightness-cuts.pdf")
 
 # + [markdown] pycharm={"name": "#%% md\n"}
 # From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
@@ -668,16 +657,10 @@ Q2
 # ## Also do profiles of low ionization lines
 
 # + pycharm={"name": "#%%\n"}
-im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum".fits))
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum".fits))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum".fits))
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum".fits))
-
-# + pycharm={"name": "#%%\n"}
-im6300 = Image("../data/ngc346-oi-6300-bin01-sum.fits")
-im5518 = Image("../data/ngc346-cliii-5518-bin01-sum.fits")
-im5538 = Image("../data/ngc346-cliii-5538-bin01-sum.fits")
-im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum.fits"))
+im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
+im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
+im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
 
 # + pycharm={"name": "#%%\n"}
 oi_profile = make_profile(im6300)
@@ -724,7 +707,7 @@ ax.set(
     ylim=[0, 3.9],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-lowion-cuts.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-lowion-cuts.pdf")
 # + pycharm={"name": "#%%\n"}
 
 
@@ -873,12 +856,8 @@ he1.getEmissivity(tem=T0, den=dgrid, wave=5048) / he1.getEmissivity(
 )
 
 # + pycharm={"name": "#%%\n"}
-im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum".fits))
-im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum".fits))
-
-# + pycharm={"name": "#%%\n"}
-im5048 = Image("../data/ngc346-hei-5048-bin01-sum.fits")
-im5876 = Image("../data/ngc346-hei-5875-bin01-sum.fits")
+im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum.fits"))
+im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum.fits"))
 
 # + pycharm={"name": "#%%\n"}
 n = 1
@@ -954,18 +933,7 @@ yyslice = slice(180, 200)  # top half ultra narrow
 n_sii_profile = make_profile(im_n_sii)
 T_siii_profile = make_profile(im_T_siii)
 sii_profile = make_profile(im6731)
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum".fits))
-siii_profile = make_profile(im9069)
-
-# + pycharm={"name": "#%%\n"}
-# yyslice = slice(164, 204) # original
-# yyslice = slice(160, 210) # broader
-# yyslice = slice(170, 200) # narrower
-yyslice = slice(180, 200)  # top half ultra narrow
-n_sii_profile = make_profile(im_n_sii)
-T_siii_profile = make_profile(im_T_siii)
-sii_profile = make_profile(im6731)
-im9069 = Image("../data/ngc346-siii-9069-bin01-sum.fits")
+im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
 siii_profile = make_profile(im9069)
 
 # + pycharm={"name": "#%%\n"}
@@ -999,7 +967,7 @@ ax.set(
     ylim=[0, 3.45],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-sii-siii-ne-te.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ne-te.pdf")
 
 # + [markdown] pycharm={"name": "#%% md\n"} tags=["temperature"]
 # So the [S III] temperature is significantly larger than the [O III] temperature from the nebula. It is around 14000 K and has a drop towards W 3 coming from the east side, and then a step and a very constant region.  But the step occurs before the bow shock, so is probably unrelated.
@@ -1028,17 +996,12 @@ ax.set(
     ylim=[0, 2.1],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
 
 # + pycharm={"name": "#%%\n"}
-imhei_c = Image(str(datadir / "ngc346-hei-5875-correct".fits))
-imhi_c = Image(str(datadir / "ngc346-hi-4861-correct".fits))
-imheii_c = Image(str(datadir / "ngc346-heii-4686-correct".fits))
-
-# + pycharm={"name": "#%%\n"}
-imhei_c = Image("../data/ngc346-hei-5875-correct.fits")
-imhi_c = Image("../data/ngc346-hi-4861-correct.fits")
-imheii_c = Image("../data/ngc346-heii-4686-correct.fits")
+imhei_c = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
+imhi_c = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
+imheii_c = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
 
 # + pycharm={"name": "#%%\n"}
 m = imcont.data > 500.0
@@ -1087,19 +1050,13 @@ ax.set(
     ylim=[-0.005, 0.015],
 )
 sns.despine()
-fig.savefig("../figs/ngc346-bow-shock-he-ratios.pdf")
+fig.savefig(figdir / "ngc346-bow-shock-he-ratios.pdf")
 
 # + pycharm={"name": "#%%\n"}
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum".fits))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum".fits))
-imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum".fits))
-imcont = Image(str(datadir / "ngc346-cont-4686-mean".fits))
-
-# + pycharm={"name": "#%%\n"}
-im5518 = Image("../data/ngc346-cliii-5518-bin01-sum.fits")
-im5538 = Image("../data/ngc346-cliii-5538-bin01-sum.fits")
-imha = Image("../data/ngc346-hi-6563-bin01-sum.fits")
-imcont = Image("../data/ngc346-cont-4686-mean.fits")
+im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
+im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
+imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
+imcont = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
 
 # + pycharm={"name": "#%%\n"}
 cl3 = pn.Atom("Cl", 3)
