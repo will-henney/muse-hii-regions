@@ -10,10 +10,13 @@
 - What remains to be done?
   - [-] Rerun all the notebooks since I seem to have lost all the results cells
     - Looks like best way is with nbconvert
+    - 
   - [ ] Maybe repeat for the Peter Zeigler cube
   - [ ] Think what are the essentials for the paper
 *** TODO Rerunning the notebooks [2023-06-01 Thu]
 - I have lost all the results cells in the notebooks, so I need to rerun them
+  - Turns out that I had not actually lost the outputs in my working tree, they were just stripped out by the git filter
+  - So there is no longer any need to re-run them all, but I will do it anyway, since it has revealed a problem with the relative paths now that I have moved them to a sub-folder
 - Here is a [[https://mljar.com/blog/run-jupyter-notebook-command-line/][useful blog post]] with various methods
 - Looks like ~nbconvert~ is best for our purposes here
   - Example command line
@@ -29,18 +32,54 @@
      - Best to do that in the pure python version and use jupytext to convert to ipynb
      - Now sorted for [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py][01-01-more-line-ratios.py]], which was much messier than it should have been because I decided to do things properly with ~Pathlib~ but had forgotten that MPDAF does not support that, so had to convert back to strings
   2. It looks like I am running some sort of hook that strips out all of the notebook outputs when it pushes
-     - Why would I have done that
-- [3/10] Files fully processed
-  - [ ] 00-01-extract-subregions
+     - Why would I have done that?
+     - This is now solved. It turns out I had a filter that was running ~nbstripout~ on all notebooks. I have now removed that filter. And I have learned that git filters and hooks are different things. And I should not have been blaming pre-commit, which is actually great.
+  3. moments.py is now part of whispy, so we need
+     #+begin_src python
+       from whispy import moments
+     #+end_src
+- [13/15] Files fully processed
+  - [X] 00-01-extract-subregions
   - [X] 01-00-line-ratios
   - [X] 01-01-more-line-ratios
   - [X] 01-02-yet-more-line-ratios
-  - [ ] 01-03-pretty-images
+  - [X] 01-03-pretty-images
+  - [X] 02-00-raman-wings
+  - [X] 02-01-Raman-Wings-IR-Source-C
+  - [X] 03-00-ha-moment-maps
+  - [X] 03-01-oiii-moment-maps
+  - [X] 03-02-sii-moment-maps
+  - [X] 03-03-oi-lines-sharp-cube
+  - [X] 03-04-blue-lines-sharp-extract
+    - More than 2 min to execute
+  - [X] 03-05-green-and-red-lines-extract
+    - Nearly 8 min to execute!
   - [ ] 
-  - [ ] 
-  - [ ] 
-  - [ ] 
-  - [ ] 
+  - [ ]
+*** Steps to update the notebooks
+For example, for this notebook:
+#+begin_src sh
+STEM=02-01-Raman-Wings-IR-Source-C
+#+end_src
+1. Edit the ~$STEM.py~ file to fix any relative paths and optionally remove any Dataspell metadata that is lying around
+2. Save the file, which for me automatically runs black on it. Delete buffer in Emacs to avoid confusion
+3. Sync all versions of the notebook to the pure python version
+   #+begin_src sh
+     jupytext -d --sync $STEM.ipynb
+   #+end_src
+4. Re-execute the notebook
+   #+begin_src sh
+     time jupyter nbconvert --execute --to notebook --inplace $STEM.ipynb
+   #+end_src
+5. Sync all versions again (this time it will be from the ipynb version because it is the most recently updated)
+   #+begin_src sh
+     jupytext -d --sync $STEM.ipynb
+   #+end_src
+6. Now open the notebook in jupyter to check that it looks OK
+7. Finally, convert to html
+   #+begin_src sh
+     jupyter nbconvert --to html $STEM.ipynb
+   #+end_src
 
   
 ** Lines to use for the bow shock

@@ -28,7 +28,6 @@ import seaborn as sns
 from mpdaf.obj import Cube
 import regions
 import sys
-sys.path.append("../lib")
 from whispy import moments
 from whispy import extract
 
@@ -37,8 +36,8 @@ sns.set_color_codes()
 ```
 
 ```python
-moments.FIGPATH = Path("../figs")
-moments.SAVEPATH = Path("../data")
+moments.FIGPATH = Path("../../figs")
+moments.SAVEPATH = Path("../../data")
 ```
 
 Load up both cubes, as per previous notebooks. 
@@ -234,7 +233,7 @@ sns.despine();
 ```
 
 ```python
-prefix = f"../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
 csubcube = (cube - contcube)
 cdivcube = (cube / contcube)
 csubcube.write(
@@ -252,7 +251,7 @@ contcube.write(
 ```
 
 ```python
-prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = (mcube - mcontcube)
 mcdivcube = (mcube / mcontcube)
 mcsubcube.write(
@@ -659,7 +658,7 @@ sns.despine();
 ```
 
 ```python
-prefix = f"../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
 csubcube = (cube - contcube)
 cdivcube = (cube / contcube)
 csubcube.write(
@@ -677,7 +676,7 @@ contcube.write(
 ```
 
 ```python
-prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = (mcube - mcontcube)
 mcdivcube = (mcube / mcontcube)
 mcsubcube.write(
@@ -733,7 +732,7 @@ ax.set(
     ylim=[-1, 20],
 )
 sns.despine()
-fig.savefig(f"../figs/ngc346-bow-shock-spec-{wav1}-{wav2}.pdf")
+fig.savefig(moments.FIGPATH / f"ngc346-bow-shock-spec-{wav1}-{wav2}.pdf")
 ```
 
 Left to right
@@ -1190,7 +1189,7 @@ sns.despine();
 ```
 
 ```python
-prefix = f"../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
 csubcube = (cube - contcube)
 cdivcube = (cube / contcube)
 csubcube.write(
@@ -1208,7 +1207,7 @@ contcube.write(
 ```
 
 ```python
-prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = (mcube - mcontcube)
 mcdivcube = (mcube / mcontcube)
 mcsubcube.write(
@@ -1443,7 +1442,7 @@ sns.despine();
 Those continuum fits are not very good, but nothing could fit those wobbles
 
 ```python
-prefix = f"../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-sharp-{wavmin:d}-{wavmax:d}-cube"
 csubcube = (cube - contcube)
 cdivcube = (cube / contcube)
 csubcube.write(
@@ -1461,7 +1460,7 @@ contcube.write(
 ```
 
 ```python
-prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = (mcube - mcontcube)
 mcdivcube = (mcube / mcontcube)
 mcsubcube.write(

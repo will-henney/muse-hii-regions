@@ -22,20 +22,21 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from mpdaf.obj import Cube
 import astropy.units as u
+
 sns.set_context("talk")
 
-# Load the data cube from the FITS file. 
+# Load the data cube from the FITS file.
 
 datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
 fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 
 import sys
-sys.path.append("../lib")
-import moments
 
-moments.FIGPATH = Path("../figs")
-moments.SAVEPATH = Path("../data")
+from whispy import moments
+
+moments.FIGPATH = Path("../../figs")
+moments.SAVEPATH = Path("../../data")
 
 # ## Select the wavelength range
 #
@@ -47,9 +48,9 @@ hacube = cube.select_lambda(6558.0, 6576.0)
 
 fig, ax = plt.subplots(figsize=(10, 5))
 hacube.mean(axis=(1, 2)).plot(label="mean")
-(0.01*hacube.max(axis=(1, 2))).plot(label="max x 0.01")
+(0.01 * hacube.max(axis=(1, 2))).plot(label="max x 0.01")
 hacube.median(axis=(1, 2)).plot(label="median")
-(0.1*hacube.min(axis=(1, 2))).plot(label="min x 0.1")
+(0.1 * hacube.min(axis=(1, 2))).plot(label="min x 0.1")
 ax.legend()
 
 # ## Subtract the continuum
@@ -62,7 +63,7 @@ ha_cont = 0.5 * (left_continuum + right_continuum)
 
 ha_cont.plot(colorbar="v")
 
-# Promote the continuum image to a cube by taking a copy of the the line cube and pasting in new data and variance: 
+# Promote the continuum image to a cube by taking a copy of the the line cube and pasting in new data and variance:
 
 contcube = hacube.copy()
 contcube.data = np.ones_like(contcube.data) * ha_cont.data[None, :, :]
@@ -70,17 +71,17 @@ contcube.var = np.ones_like(contcube.var) * ha_cont.var[None, :, :]
 
 # Subtract the continuum.
 
-hacube_contsub = hacube - contcube 
+hacube_contsub = hacube - contcube
 
-# Another way of doing it would have been to just subtract `ha_cont.data[None, :, :]` from the `.data` array of `hacube`.  But in that case, the `.var` would not have been propagated automatically and we would have to calculate it by hand. 
+# Another way of doing it would have been to just subtract `ha_cont.data[None, :, :]` from the `.data` array of `hacube`.  But in that case, the `.var` would not have been propagated automatically and we would have to calculate it by hand.
 #
 # Now we do the same plot:
 
 fig, ax = plt.subplots(figsize=(10, 5))
 hacube_contsub.mean(axis=(1, 2)).plot(label="mean")
-(0.03*hacube_contsub.max(axis=(1, 2))).plot(label="max x 0.03")
+(0.03 * hacube_contsub.max(axis=(1, 2))).plot(label="max x 0.03")
 hacube_contsub.median(axis=(1, 2)).plot(label="median")
-(0.1*hacube_contsub.min(axis=(1, 2))).plot(label="min x 0.1")
+(0.1 * hacube_contsub.min(axis=(1, 2))).plot(label="min x 0.1")
 ax.legend()
 
 # This looks good – the continuum has been eliminated in all but the min aggregation, which is presumably dominated by a small number of pixels that have strange profiles.
@@ -108,7 +109,7 @@ wavcube.info()
 hacore = hacube_contsub.select_lambda(6562.0, 6572.0)
 wavcore = wavcube.select_lambda(6562.0, 6572.0)
 
-# The velocity moments are now trivial sums over this window.  
+# The velocity moments are now trivial sums over this window.
 
 mom0 = hacore.sum(axis=0)
 wav0 = 6566.5
@@ -119,7 +120,7 @@ mom1.data = np.sum(hacore.data * (wavcore.data - wav0), axis=0) / mom0.data
 fig, ax = plt.subplots(figsize=(8, 8))
 mom1.plot(
     cmap="seismic",
-    vmin=-1.0, 
+    vmin=-1.0,
     vmax=1.0,
     colorbar="v",
 )
@@ -130,8 +131,8 @@ mom1.plot(
 
 fig, ax = plt.subplots(figsize=(8, 8))
 mom0.plot(
-#    vmin=0.5*mom0.data.min(),
-#    vmax=0.0,
+    #    vmin=0.5*mom0.data.min(),
+    #    vmax=0.0,
     vmin=-10000,
     vmax=10000,
     cmap="viridis",
@@ -148,9 +149,9 @@ hacube[:, 260, 160].plot()
 
 # ### Look for a strategy for finding a good sky profile
 #
-# We want to find a profile that we can subtract from every pixel and it will give a decent profile.  By decent, I mean that it is almost exclusively positive (more or less) and doesn't look weirdly broad, narrow, or asymmetric. 
+# We want to find a profile that we can subtract from every pixel and it will give a decent profile.  By decent, I mean that it is almost exclusively positive (more or less) and doesn't look weirdly broad, narrow, or asymmetric.
 #
-# I have tried various approaches. The best one seems to be selecting pixels that are (i) not strong continuum and (2) have integrated line flux < 20000 
+# I have tried various approaches. The best one seems to be selecting pixels that are (i) not strong continuum and (2) have integrated line flux < 20000
 #
 # I test this out here on the 4 pixels that were selected as representative of those with negative line profiles (see previous graph).  It works OK at converting most of them to positive.  Three of them do still have small dips on the blue side, but these are very minor in two cases.  The only one that doesn't look good is the [10, 300] one.
 
@@ -163,7 +164,7 @@ skyspec = skycube.mean(axis=(1, 2))
 fig, ax = plt.subplots(figsize=(10, 5))
 for (j, i) in [[300, 60], [10, 300], [150, 150], [260, 160]]:
     (hacube[:, j, i] - skyspec).plot(label=f"{j}, {i}")
-ax.legend();
+ax.legend()
 
 # It turns out that there are only 3 pixels that get used for the sky mask!  Here they are:
 
@@ -182,20 +183,20 @@ _mom0 = _hacore.sum(axis=0)
 _mom1 = _mom0.copy()
 _mom1.data = np.sum(_hacore.data * (wavcore.data - wav0), axis=0) / _mom0.data
 
-# Note that I prepend an underscore to all the variables for the sky-corrected versions.  
+# Note that I prepend an underscore to all the variables for the sky-corrected versions.
 #
 # Here is a map of the Ha intensity:
 
 _mom0.plot(vmin=0.0, vmax=1.5e5, scale="sqrt", colorbar="v")
 
-# Looks good – at least, it does not go negative except for at some stars. 
+# Looks good – at least, it does not go negative except for at some stars.
 #
 # Now, we plot the first moment.  Note this is the wavelength shift from `wav0` in Å.  Multiply by about 50 to get velocity in km/s
 
 fig, ax = plt.subplots(figsize=(8, 8))
 _mom1.plot(
     cmap="seismic",
-    vmin=-0.75, 
+    vmin=-0.75,
     vmax=0.25,
     colorbar="v",
 )
@@ -203,64 +204,72 @@ fig.suptitle(
     f"Sky-corrected first moment: $\Delta\lambda$ from {wav0} Å",
     y=0.92,
 )
-fig.tight_layout(pad=0);
+fig.tight_layout(pad=0)
 
 # Maybe we can even trust this result, except for near the borders.
 #
 # Next, here are a sampling of particular pixels.  Faint regions in the top row to bright regions in the bottom row. The blue line shows the original profile, while the orange line shows the profile after correcting the sky.
 
 testpixels = [
-    [250, 160], [150, 150], [10, 300],
-    [70, 250], [75, 200], [310, 225],
-    [100, 30], [50, 120], [140, 110], #[180, 290],
+    [250, 160],
+    [150, 150],
+    [10, 300],
+    [70, 250],
+    [75, 200],
+    [310, 225],
+    [100, 30],
+    [50, 120],
+    [140, 110],  # [180, 290],
 ]
 fig, axes = plt.subplots(
-    3, 3, 
-    figsize=(10, 8), 
+    3,
+    3,
+    figsize=(10, 8),
     sharex=True,
     sharey="row",
 )
 for (j, i), ax in zip(testpixels, axes.flat):
     hacore[:, j, i].plot(ax=ax)
-    _hacore[:, j, i].plot(ax=ax) 
+    _hacore[:, j, i].plot(ax=ax)
     ax.set(xlabel="", ylabel="")
     ax.set_title(f"[{j}, {i}]")
-fig.suptitle(
-    "Before/after sky correction for faint/moderate/bright pixels"
-)
+fig.suptitle("Before/after sky correction for faint/moderate/bright pixels")
 sns.despine()
-fig.tight_layout();
+fig.tight_layout()
 
 # The correction is a really large fraction of the total profile, except for the brightest pixels, which is rather scary.
 
 # ### Try looking at joint distribution of unnormalized moments
 #
-# The unnormalized moments should behave better since they can pass through zero without having the 0/0 problem. . 
+# The unnormalized moments should behave better since they can pass through zero without having the 0/0 problem. .
 
 # #### Before correcting the sky
 
 mom0 = hacore.sum(axis=0)
 mom1 = mom0.copy()
-#wav0 = 6566.5
+# wav0 = 6566.5
 wav0 = 6566.6
 mom1.data = np.sum(hacore.data * (wavcore.data - wav0), axis=0)
 mom2 = mom0.copy()
-mom2.data = np.sum(hacore.data * (wavcore.data - wav0)**2, axis=0)
+mom2.data = np.sum(hacore.data * (wavcore.data - wav0) ** 2, axis=0)
 
 # Note that we do not divide `mom1` by `mom0`
 
 import pandas as pd
+
 sns.set_color_codes()
 
 # We mask out the brightest parts and also the outliers in velocity so that we can see the part that passes through zero better.
 
 starmask = ha_cont.data > 1e4
 m = starmask | mom0.mask | (mom0.data > 3e4) | (np.abs(mom1.data) > 1e4)
-df = pd.DataFrame({
-    "mom0": mom0.data[~m],
-    "mom1": mom1.data[~m],
-    "mom2": mom2.data[~m],
-})
+df = pd.DataFrame(
+    {
+        "mom0": mom0.data[~m],
+        "mom1": mom1.data[~m],
+        "mom2": mom2.data[~m],
+    }
+)
 df.describe()
 
 # Make a corner plot of the moment distributions:
@@ -276,11 +285,11 @@ g.axes[2, 0].axvline(0.0, color="r", linestyle="dashed")
 g.axes[2, 0].axhline(0.0, color="r", linestyle="dashed")
 g.axes[2, 1].axhline(0.0, color="r", linestyle="dashed")
 g.fig.suptitle("Uncorrected, unnormalized moments")
-g.tight_layout();
+g.tight_layout()
 
-# Note that for an emission line, mom0 and mom2 should be positive definite.  They are not, which clearly shows the proplem. 
+# Note that for an emission line, mom0 and mom2 should be positive definite.  They are not, which clearly shows the proplem.
 #
-# In principle, the sky correction should add constant values to all 3 un-normalized moments (that is, constant with position).  We can see more-or-less what must be added to mom0 and mom2 to make them always, positive but with mom1 there is no requirement that the value should be positive (and it is relative to our aribitrary `wav0` anyway). 
+# In principle, the sky correction should add constant values to all 3 un-normalized moments (that is, constant with position).  We can see more-or-less what must be added to mom0 and mom2 to make them always, positive but with mom1 there is no requirement that the value should be positive (and it is relative to our aribitrary `wav0` anyway).
 #
 # However, so long as we get mom0 and mom2 right, I think that it doen't matter if there is a systematic uncertainty in mom1, since the relative velocities will be unaffected.
 
@@ -293,22 +302,26 @@ _mom1 = _mom0.copy()
 wav0 = 6566.4
 _mom1.data = np.sum(_hacore.data * (wavcore.data - wav0), axis=0)
 _mom2 = _mom0.copy()
-_mom2.data = np.sum(_hacore.data * (wavcore.data - wav0)**2, axis=0)
+_mom2.data = np.sum(_hacore.data * (wavcore.data - wav0) ** 2, axis=0)
 
 # We take a less restrictive mask, only masking out the outliers in any of the moments:
 
 m = (
-    starmask 
-    | _mom0.mask 
-    | (_mom0.data > 15e4) 
-    | (_mom1.data < -2e4) | (_mom1.data > 2e4)
-    | (_mom2.data < -1e4)  | (_mom2.data > 1.5e5) 
+    starmask
+    | _mom0.mask
+    | (_mom0.data > 15e4)
+    | (_mom1.data < -2e4)
+    | (_mom1.data > 2e4)
+    | (_mom2.data < -1e4)
+    | (_mom2.data > 1.5e5)
 )
-df = pd.DataFrame({
-    "mom0": _mom0.data[~m],
-    "mom1": _mom1.data[~m],
-    "mom2": _mom2.data[~m],
-})
+df = pd.DataFrame(
+    {
+        "mom0": _mom0.data[~m],
+        "mom1": _mom1.data[~m],
+        "mom2": _mom2.data[~m],
+    }
+)
 df.describe()
 
 g = sns.pairplot(
@@ -320,7 +333,7 @@ g = sns.pairplot(
     diag_kws=dict(color="g"),
 )
 g.fig.suptitle("Corrected, unnormalized moments")
-g.tight_layout(pad=0);
+g.tight_layout(pad=0)
 
 # So that looks like it has worked. Note that mom1 fans out as a triangle as mom0 increases, but it stays roughly centered on zero. This is because of the judicious adjustment to wav0 above.
 
@@ -332,37 +345,40 @@ _mom0 = _hacore.sum(axis=0)
 _mom1 = _mom0.copy()
 _mom1.data = np.sum(_hacore.data * (wavcore.data - wav0), axis=0) / _mom0.data
 _mom2 = _mom0.copy()
-_mom2.data = np.sum(_hacore.data * (wavcore.data - wav0 - _mom1.data)**2, axis=0) / _mom0.data
+_mom2.data = (
+    np.sum(_hacore.data * (wavcore.data - wav0 - _mom1.data) ** 2, axis=0) / _mom0.data
+)
 
 m = (
-    starmask 
-    | _mom0.mask 
-    | (_mom0.data < 0.6e4) | (_mom0.data > 15e4)
-    | (_mom1.data < -0.4) | (_mom1.data > 0.4)
-    | (_mom2.data > 1.75) | (_mom2.data < 0.5)
+    starmask
+    | _mom0.mask
+    | (_mom0.data < 0.6e4)
+    | (_mom0.data > 15e4)
+    | (_mom1.data < -0.4)
+    | (_mom1.data > 0.4)
+    | (_mom2.data > 1.75)
+    | (_mom2.data < 0.5)
 )
 KMS_PER_ANGSTROM = 3e5 / 6563.0
-df2 = pd.DataFrame({
-    "log10 I(Ha)": np.log10(_mom0.data[~m]),
-    "V(Ha)": _mom1.data[~m] * KMS_PER_ANGSTROM,
-    "sig(Ha)": np.sqrt(_mom2.data[~m]) * KMS_PER_ANGSTROM,
-})
+df2 = pd.DataFrame(
+    {
+        "log10 I(Ha)": np.log10(_mom0.data[~m]),
+        "V(Ha)": _mom1.data[~m] * KMS_PER_ANGSTROM,
+        "sig(Ha)": np.sqrt(_mom2.data[~m]) * KMS_PER_ANGSTROM,
+    }
+)
 df2.describe()
 
-            
 
 fig, ax = plt.subplots(figsize=(8, 8))
 _mom2.mask = _mom2.mask | m
 _mom2.plot(
     cmap="gray",
-    vmin=0.5, 
+    vmin=0.5,
     vmax=1.75,
     colorbar="v",
 )
-ax.contour(
-    KMS_PER_ANGSTROM * _mom1.data,
-    levels=[-10, -5, 0, 5, 10],
-    cmap="bwr")
+ax.contour(KMS_PER_ANGSTROM * _mom1.data, levels=[-10, -5, 0, 5, 10], cmap="bwr")
 
 # ## Redo it all using my moments library
 #
@@ -376,7 +392,7 @@ mom_pars_6563 = dict(
     restwav=6562.79,
     irange=[3.0e3, 1.0e6],
     vrange=[135, 195],
-    srange=[30, 70],    
+    srange=[30, 70],
 )
 
 moments.save_moments_to_fits(
@@ -386,18 +402,12 @@ moments.save_moments_to_fits(
     **mom_pars_6563,
 )
 
-plot_pars_6563=dict(
+plot_pars_6563 = dict(
     ilabel="H I",
     label="6563",
     flabel="ngc346-hi",
     **mom_pars_6563,
 )
-g = moments.moments_corner_plot(
-    mom6563, rebin=1, **plot_pars_6563
-)
+g = moments.moments_corner_plot(mom6563, rebin=1, **plot_pars_6563)
 
-g = moments.moments_corner_plot(
-    mom6563, rebin=8, **plot_pars_6563
-)
-
-
+g = moments.moments_corner_plot(mom6563, rebin=8, **plot_pars_6563)

@@ -13,13 +13,11 @@ jupyter:
     name: python3
 ---
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 # Kinematics of [S II]
 
 I want to do a low-ionization line for comparison.  We already have a good handle on the sky correction for the [S II] doublet, at least when integrated over wavelength.
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -29,39 +27,34 @@ import astropy.units as u
 import pandas as pd
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 sns.set_context("talk")
 sns.set_color_codes()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
 fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 import sys
-sys.path.append("../lib")
-import moments
+from whispy import moments
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 Add folder paths for saving figures and saving FITS images:
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
-moments.FIGPATH = Path("../figs")
-moments.SAVEPATH = Path("../data")
+```python
+moments.FIGPATH = Path("../../figs")
+moments.SAVEPATH = Path("../../data")
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 We mainly follow the same steps in the [O III] notebook, which is much better documented.
 
 ## Separate line from continuum
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 jstrips = [
     [0, 50],
     [50, 100],
@@ -79,7 +72,7 @@ ax.set(yscale="log")
 sns.despine()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 wlim = {
     "6716": {
         "core": [6715.0, 6725.0],
@@ -95,7 +88,7 @@ wlim = {
 rangecolors = {"core": "g", "blue": "b", "red": "r"}
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 medium_band = cube.select_lambda(6700, 6750)
 fig, ax = plt.subplots(figsize=(10, 8))
 for (j1, j2) in jstrips:
@@ -116,7 +109,7 @@ sns.despine()
 ```
 
 
-```python pycharm={"name": "#%%\n"}
+```python
 def extract_core_and_cont(cube, spandata):
     """Return continuum-subtracted line core and continuum map
 
@@ -129,20 +122,18 @@ def extract_core_and_cont(cube, spandata):
     return core, cont
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 core6716, cont6716 = extract_core_and_cont(medium_band, wlim["6716"])
 core6731, cont6731 = extract_core_and_cont(medium_band, wlim["6731"])
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 ## Sort out sky correction
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 core6716.sum(axis=0).data.min()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 fig, axes = plt.subplots(
     2,
     2,
@@ -172,19 +163,15 @@ axes[1, 1].contour(cont6731.data, levels=[0.0], colors="r")
 fig.tight_layout(pad=0)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 The distribution of negative pixels is different from with the high-ionization lines
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 np.where((core6716.sum(axis=0).data < -800.0) & (core6716.sum(axis=0).data > -850.0))
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 Looks like we found the fully negative part to subtract.  I will try out various rectangles for selecting the region:
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 skyoptions = {
     "minimalist": [slice(287, 289), slice(165, 166)],
     "wider": [slice(287, 289), slice(165, 167)],
@@ -192,7 +179,7 @@ skyoptions = {
 }
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 fig, ax = plt.subplots(figsize=(8, 4))
 for label, (jslice, islice) in skyoptions.items():
     skyspec_medium = medium_band[:, jslice, islice].mean(axis=(1, 2))
@@ -203,11 +190,9 @@ fig.tight_layout()
 sns.despine()
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 The three options look almost identical, but amazingly it does make a difference.  I originally used "minimalist", which worked fine for 6716, but caused velocities to go very red at low brightnesses for 6731.  I have now switched to "taller", which seems to work better.
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 fig, ax = plt.subplots(figsize=(10, 8))
 jslice, islice = skyoptions["taller"]
 skyspec_medium = medium_band[:, jslice, islice].mean(axis=(1, 2))
@@ -223,13 +208,13 @@ ax.set(yscale="linear", ylim=[0.0, 1500])
 sns.despine()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 jslice, islice = skyoptions["taller"]
 skyspec6716 = core6716[:, jslice, islice].mean(axis=(1, 2))
 skyspec6731 = core6731[:, jslice, islice].mean(axis=(1, 2))
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 testpixels = [
     [250, 160],
     [150, 150],
@@ -258,11 +243,9 @@ sns.despine()
 fig.tight_layout()
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 Repeat for the 6731 component
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 fig, axes = plt.subplots(
     3,
     3,
@@ -282,7 +265,7 @@ sns.despine()
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 mom6716 = moments.find_moments(core6716 - skyspec6716)
 mom6731 = moments.find_moments(core6731 - skyspec6731)
 wav6716 = np.median(mom6716[1].data.data)
@@ -310,17 +293,14 @@ fig, axes = plt.subplots(
 fig.tight_layout()
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 
-<!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
+
 These look great!
 
 ~The only disagreement is in the low-intensity regions where the sky correction may need finessing.~ This is now fixed
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 fig, axes = plt.subplots(
     1,
     2,
@@ -344,7 +324,7 @@ mom6731[2].plot(
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 mom_pars_6716 = dict(
     restwav=6716.44,
     irange=[10, 4.0e4],
@@ -365,64 +345,55 @@ moments.save_moments_to_fits(
 )
 ```
 
-```python pycharm={"name": "#%%\n"}
-plot_pars_6716=dict(
+```python
+plot_pars_6716 = dict(
     ilabel="[S II]",
     label="6716",
     flabel="ngc346-sii",
     **mom_pars_6716,
 )
+g = moments.moments_corner_plot(mom6716, rebin=1, **plot_pars_6716)
+```
+
+This shows some interesting structure in the I-V distribution. We see the same two velocity components of [O III] (158 and 164), plus an additional one at 150 (which is very weak in [O III])
+
+```python
+g = moments.moments_corner_plot(mom6716, rebin=2, **plot_pars_6716)
+```
+
+Rebinning doesn't help as much as I had hoped.  But it does reduce the spread in the sigma for the lower intensities.
+
+```python
+g = moments.moments_corner_plot(mom6716, rebin=4, **plot_pars_6716)
+```
+
+```python
+g = moments.moments_corner_plot(mom6716, rebin=8, **plot_pars_6716)
+```
+
+As we increase the binning, the sig distribution becomes narrower, but the V and I remain almost unchanged.  This is a sign that th scale of significant variations is large (steep spatial power law)
+
+```python
 g = moments.moments_corner_plot(
-    mom6716, rebin=1, **plot_pars_6716
+    mom6716,
+    rebin=16,
+    **plot_pars_6716,
+    hist_bins=40,
+    image_bins=20,
 )
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
-This shows some interesting structure in the I-V distribution. We see the same two velocity components of [O III] (158 and 164), plus an additional one at 150 (which is very weak in [O III])
-<!-- #endregion -->
-
-```python pycharm={"name": "#%%\n"}
+```python
 g = moments.moments_corner_plot(
-    mom6716, rebin=2, **plot_pars_6716
-);
-```
-
-<!-- #region pycharm={"name": "#%% md\n"} -->
-Rebinning doesn't help as much as I had hoped.  But it does reduce the spread in the sigma for the lower intensities.
-<!-- #endregion -->
-
-```python pycharm={"name": "#%%\n"}
-g = moments.moments_corner_plot(
-    mom6716, rebin=4, **plot_pars_6716
-);
-```
-
-```python pycharm={"name": "#%%\n"}
-g = moments.moments_corner_plot(
-    mom6716, rebin=8, **plot_pars_6716
-);
-```
-
-<!-- #region pycharm={"name": "#%% md\n"} -->
-As we increase the binning, the sig distribution becomes narrower, but the V and I remain almost unchanged.  This is a sign that th scale of significant variations is large (steep spatial power law)
-<!-- #endregion -->
-
-```python pycharm={"name": "#%%\n"}
-g = moments.moments_corner_plot(
-    mom6716, rebin=16, **plot_pars_6716,
+    mom6716,
+    rebin=32,
+    **plot_pars_6716,
     hist_bins=40,
     image_bins=20,
-);
+)
 ```
 
-```python pycharm={"name": "#%%\n"}
-g = moments.moments_corner_plot(
-    mom6716, rebin=32, **plot_pars_6716,
-    hist_bins=40, image_bins=20,
-);
-```
-
-```python pycharm={"name": "#%%\n"}
+```python
 mom0 = mom6731[0].rebin(2)
 mom1 = mom6731[1].rebin(2)
 mom2 = mom6731[2].rebin(2)
@@ -445,7 +416,7 @@ df = pd.DataFrame(
 df.describe()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 g = sns.pairplot(
     df,
     kind="hist",
@@ -458,7 +429,7 @@ g.fig.suptitle("[S II] 6731 corrected, normalized moments (2 x 2 rebin)")
 g.tight_layout(pad=0)
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 mom0 = mom6731[0].rebin(8)
 mom1 = mom6731[1].rebin(8)
 mom2 = mom6731[2].rebin(8)
@@ -492,15 +463,13 @@ g.tight_layout(pad=0)
 df.describe()
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 An aggressive rebinning of 8x8 tightens up the dispersion of the sigma to 46 +/- 3, but this is not so much as with the 6716 component (49 +/- 2.4), although probably not significant.
 
 More importantly, the upturn in V(6731) at low intensity ~does not go away~ (**this is hardly noticeable now**), meaning that it is certainly due to systematic error in the zero point (it is not seen at all in V(6716).  **This is now largely fixed. The tail for V(6731) > 180 has been almost completely eliminated.**
 
 I fixed this by using a slightly different rectangle for estimating the bad sky: see `skyoptions["taller"]` above.
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 rest6716 = 6716.44
 
 mom0_A = mom6716[0]
@@ -545,7 +514,7 @@ df2 = pd.DataFrame(
 df2.corr()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 xvars = [_ for _ in df2.columns if label_A in _]
 yvars = [_ for _ in df2.columns if label_B in _]
 
@@ -561,7 +530,7 @@ g.fig.suptitle("Correlations between 6716 and 6731")
 g.tight_layout(pad=0)
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 df3 = df2[["log10 I(6716)"]].copy()
 df3["6716 / 6731"] = 10 ** (df2["log10 I(6716)"] - df2["log10 I(6731)"])
 df3["dV"] = df2["V(6716)"] - df2["V(6731)"]
@@ -569,7 +538,7 @@ df3["sig ratio"] = df2["sig(6716)"] / df2["sig(6731)"]
 df3.describe()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 m = (
     (df3["6716 / 6731"] < 0.6)
     | (df3["6716 / 6731"] > 1.6)
@@ -582,7 +551,7 @@ df3 = df3[~m]
 df3.corr()
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 g = sns.pairplot(
     df3,
     kind="hist",
@@ -595,11 +564,9 @@ g.fig.suptitle("[O III] 6716 vs 6731 ratios and differences")
 g.tight_layout(pad=0)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 We see that for the faint pixels, there is a large spread in R, dV and sig ratio, which is entirely due to noise.
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 N = 4
 mom0_A = mom6716[0].rebin(N)
 mom1_A = mom6716[1].rebin(N)
@@ -644,14 +611,11 @@ g = sns.pairplot(
     y_vars=yvars,
     plot_kws=dict(color="b"),
 )
-g.fig.suptitle(
-    f"Correlations between {label_A} and {label_B}"
-    + f" ({N} x {N} rebin)"
-)
+g.fig.suptitle(f"Correlations between {label_A} and {label_B}" + f" ({N} x {N} rebin)")
 g.tight_layout(pad=0)
 ```
 
-```python pycharm={"name": "#%%\n"}
+```python
 df3 = df2[["log10 I(6716)"]].copy()
 df3["6716 / 6731"] = 10 ** (df2["log10 I(6716)"] - df2["log10 I(6731)"])
 df3["dV"] = df2["V(6716)"] - df2["V(6731)"]
@@ -672,19 +636,14 @@ g = sns.pairplot(
     plot_kws=dict(color="r"),
     diag_kws=dict(color="r"),
 )
-g.fig.suptitle(
-    f"{label_A} vs {label_B} ratios and differences"
-    + f" (rebin {N} x {N})"
-)
+g.fig.suptitle(f"{label_A} vs {label_B} ratios and differences" + f" (rebin {N} x {N})")
 g.tight_layout(pad=0)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} -->
 By binning at 4x4 we can see that we do still have a small problem at low brightnesses: dV starts bending negative and sig_ratio increases.  This is almost certainly due to residual sky errors, but it isn't very important.
 
 The same thing is probably causing the apparent correlation between sig ratio and R(6716/6731).
-<!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"}
+```python
 
 ```
