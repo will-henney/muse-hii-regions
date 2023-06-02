@@ -1,0 +1,1671 @@
+* A possible high-ionization bow shock around Walborn 3 :bowshock:
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ Seen in He II 4686 and [Ar IV]
++ Also visible in [O III]
++ Radius is about 4 arcsec = 1 pc
+  [[file:ngc-346_att/screenshot-20210602-085328.png]]
+** Return to bow project 2023 Summer
+- What remains to be done?
+  - [-] Rerun all the notebooks since I seem to have lost all the results cells
+    - Looks like best way is with nbconvert
+  - [ ] Maybe repeat for the Peter Zeigler cube
+  - [ ] Think what are the essentials for the paper
+*** TODO Rerunning the notebooks [2023-06-01 Thu]
+- I have lost all the results cells in the notebooks, so I need to rerun them
+- Here is a [[https://mljar.com/blog/run-jupyter-notebook-command-line/][useful blog post]] with various methods
+- Looks like ~nbconvert~ is best for our purposes here
+  - Example command line
+    #+begin_src sh :eval no :dir ../notebooks/ngc346-orig
+      jupyter nbconvert --execute --to notebook --inplace 01-00-line-ratios.ipynb
+    #+end_src
+  - Also make an html version for ease of viewing
+    #+begin_src sh :eval no :dir ../notebooks/ngc346-orig
+      jupyter nbconvert --to html 01-00-line-ratios.ipynb 
+    #+end_src
+- Problems encountered
+  1. I have to adjust some relative paths in the notebooks since I moved them into subdirectories
+     - Best to do that in the pure python version and use jupytext to convert to ipynb
+     - Now sorted for [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py][01-01-more-line-ratios.py]], which was much messier than it should have been because I decided to do things properly with ~Pathlib~ but had forgotten that MPDAF does not support that, so had to convert back to strings
+  2. It looks like I am running some sort of hook that strips out all of the notebook outputs when it pushes
+     - Why would I have done that
+- [3/10] Files fully processed
+  - [ ] 00-01-extract-subregions
+  - [X] 01-00-line-ratios
+  - [X] 01-01-more-line-ratios
+  - [X] 01-02-yet-more-line-ratios
+  - [ ] 01-03-pretty-images
+  - [ ] 
+  - [ ] 
+  - [ ] 
+  - [ ] 
+  - [ ] 
+
+  
+** Lines to use for the bow shock
++ [X] He II 4685.71
+  + 3-4 transition, so equivalent to Paschen \alpha
++ Lots of [Ar IV] lines!
+  + [X] [Ar IV] 4740
+  + [-] [Ar IV] 4711
+    + Can give density diagnostic *but* it is blended with He I 4713
+    + We can try and de-blend it using other helium lines
+    + And it looks like the the He I contribution is small
+  + [X] [Ar IV] red lines
+    + 7170.5 and 7262.7 are clearly detected
+      + But not 7237.4 strangely
+      + Possibly because of contamination with C II
+    + We can calculate a temperature from this!
+      + See [[id:8B4C1164-B47D-47BE-9012-7DD0B661E014][[Ar IV] density and T indicators]]
+    + Theory of [Ar IV] lines
+      + (Ne, Te) diagnostic diagrams given in 
++ [Cl IV] 7530.8 and 8046.3
+  + Unfortunately, the ratio gives us nothing since they come from the same upper state (S/N is not good enough to give useful reddening)
+  + The auroral line is 5322.99 but it is not detected
+  + [X] 7530.8 done, but contaminated by C II 7530.57
+    + This is seen in the map, which shows emission from the filaments and clumps
+    + The C II emission seems to come from much closer to the ionization front than it does in Orion
+    + This is probably an ionization effect - the C^+ column in the ionized gas is much smaller because the spectrum is harder
+    + But may also be a contribution of the low metallicity
+  + [X] 8046.3
+    + Also contaminated
++ He I 4713 - see above
++ [X] Look for other He I lines
+  + [X] He I 4921.93
+  + He I 5015.68 - on wing of 5007 but not excessively blended
+  + [X] He I 5047.74 - weak
+  + [X] Use PyNeb to find lines (or combinations of lines) that should be a fixed ratio to 4713, so that we can subtract it.
++ [X] Look for other He II lines
+  + *none are usable* Or maybe they are
+  + 4859.319 (4-8 Br \delta) - completely swamped by H\beta
+  + 5411.52 (4-7 Br \gamma), which coincides with [Fe III]. Although that should not be a problem because there is no [Fe III] from the bow shock region (see below)
+    + But it shows no emission - just photospheric absorption
+    + Update [2022-10-26 Wed] Yes it does show emission
+  + 6560.1 (4-6 Br \beta)
+    + Probably too blended with H\alpha
+
+  + 8236.78 (5-9) is clearly detected [2022-10-26 Wed]
++ [X] [Ar III] 5193.69
+  - very weak and diffuse
+  - does not seem to show any peak at the bow shock
+  - T indicator with red [Ar III] line
++ [X] [Ar III] 7135.78
++ [X] H\alpha and H\beta to get reddening
+  + [X] Extract line maps
+  + [X] Fine correction for zero point offset
+  + [X] Calculate reddening
+    + We have a reddening map [[file:~/Dropbox/muse-hii-regions/data/ngc346-reddening-E_BV.fits][ngc346-reddening-E_BV.fits]]
+    + Average reddening of bow shock region is E(B-V) = 0.087
+    + We have a SMC reddening curve that we calculate from pyneb using parameters from Gordon:2003l
+    + I am ignoring the stellar absorption EW for now, but that needs to be dealt with if we ever look at more reddened regions. 
++ [X] [S III] lines for temperature
++ [X] [Cl III] lines for density
+  + These are rubbish, unfortunately.  Signal-to-noise is too low to say anything at all
++ [ ] [S II] lines for density
+  + This works much better - s/n is high and we are clearly away from the low-density limit
+  + We can distinguish the denser gas close to ionization fronts on filaments from the lower-density diffuse component
+    + The latter has densities of order
+*** Additional high ionization lines [2022-10-22 Sat]
+- This is a by-product of work on the deep neutral lines
+**** O II 4649 and 4642
+- 4649 looks like the other high ionization lines
+  - It looks very different from [O III], which makes me think that it *must be fluorescence*
+  - We should compare prediction of recombination contribution, given the O abundance determined from the forbidden lines
+  - I suspect that it may mainly be fluorescence though
+- 4642 looks a bit different, but that is mainly due to stars
+  - Doing a cut, you can see an increase at the bow shock
+**** Si III 5740
+- This also looks similar to the [Ar IV] and [Cl IV] lines, but a bit more diffuse
+- Not clear if it is recombination or fluorescence
+  
+
+*** Lines that that do NOT come from bow shock
++ [Fe III] 4987.20 - has broad range of emission, but concentrated in the E of the field
++ [Fe III] 4658.1 - weaker than 4987, but similar distribution
+  + Except for the mYSO, where it is super-bright
++ Lots of other [Fe III] and [Fe II] lines that only show up in the mYSO
++ Si II 5041.03 - mYSO and SE clump (which may be another mYSO)
++ [N I] 5200 comes from filaments and clumps, but not from ionized gas
++ 
++
+*** RGB velocity images in 3 channels for each line
+- [ ] I need to compare this against the moment-based velocities that I used earlier and to find out whether it truly is better or not
+  - These are in
+    - [[file:../notebooks/03-01-oiii-moment-maps.py]] etc
+    - [[file:../notebooks/03-02-sii-moment-maps.py]]
+    - 
+**** Script to grab the channel limits
+#+begin_src sh :results output verbatim
+  for RGB in red green blue; do
+      xpaset -p smc rgb $RGB
+      xpaget smc file
+      xpaget smc scale limits
+  done
+#+end_src
+
+#+RESULTS:
+
+
+**** Table generated from getting the channels 
+
+#+name: rgb-channels-by-hand
+| ci 8727.13    | ci   | 8732.24 |     -3 |    35 |
+|               | ci   | 8731.19 |     -3 |    30 |
+|               | ci   | 8729.94 |     -2 |    15 |
+| cliv 8045.62  | cliv | 8051.19 |     -2 |    10 |
+|               | cliv | 8049.94 |     -2 |    20 |
+|               | cliv | 8048.69 |     -2 |    10 |
+| oiii 5006.84  | oiii | 5011.22 |  -8500 | 25000 |
+|               | oiii | 5009.97 | -17500 | 65000 |
+|               | oiii | 5008.72 | -14000 | 60000 |
+| xxx 8037.0    | xxx  | 8043.69 |     -1 |    10 |
+|               | xxx  | 8042.44 |     -1 |    12 |
+|               | xxx  | 8041.19 |     -1 |    10 |
+| xxx 8151.3424 | xxx  | 8156.19 |     -1 |    25 |
+|               | xxx  | 8154.94 |     -2 |    35 |
+|               | xxx  | 8153.69 |     -1 |    25 |
+| oi 6363.78    | oi   | 6368.69 |    -13 |    60 |
+|               | oi   | 6367.44 |    -25 |   150 |
+|               | oi   | 6366.19 |    -18 |   150 |
+| ariv 4740.17  | ariv | 4743.72 |    -10 |    70 |
+|               | ariv | 4742.47 |    -15 |    90 |
+|               | ariv | 4741.22 |    -10 |    40 |
+| oi 8446.36    | oi   | 8452.44 |      0 |    30 |
+|               | oi   | 8451.19 |      0 |    40 |
+|               | oi   | 8449.94 |      0 |    30 |
+| oiii 4958.91  | oiii | 4962.47 |  -5200 | 15000 |
+|               | oiii | 4961.22 |  -5500 | 20000 |
+|               | oiii | 4959.97 |  -2600 |  8000 |
+| siii 9068.90  | siii | 9074.94 |   -320 |  2000 |
+|               | siii | 9073.69 |   -475 |  3500 |
+|               | siii | 9072.44 |   -250 |  2000 |
+
+
+- Adjustments
+  - oiii 4959 do not worry about the black bits at the bottom since they have artefacts due to being close to the edge
+
+**** Process the table to calculate mean wavelength maps
+#+header: :var TABLE=rgb-channels-by-hand
+#+begin_src python :eval no :tangle ../scripts/rgb-meanwavs.py
+  from pathlib import Path
+  import numpy as np
+  from astropy.io import fits
+  import astropy.units as u
+  from astropy.constants import c as light_speed
+  import json
+
+  DATADIR = Path.cwd().parent / "data"
+  data = {}
+  for maybe_lineid, ion, wav, fmin, fmax in TABLE:
+       # Reorganize input data
+       wavstring = f"{wav:.2f}".replace(".", "_")
+       filename = f"ngc346-slice-{ion}-{wavstring}"
+       if maybe_lineid:
+            lineid = maybe_lineid
+            wav0 = float(lineid.split()[-1])
+            prefix = f"{ion}-{round(wav0)}"
+            data[lineid] = {
+                 "ion": ion,
+                 "prefix": prefix,
+                 "wavs": [wav],
+                 "wav0": wav0,
+                 "fmins": [fmin],
+                 "fmaxs": [fmax],
+                 "filenames": [filename],
+            }
+       else:
+            data[lineid]["wavs"].append(wav)
+            data[lineid]["fmins"].append(fmin)
+            data[lineid]["fmaxs"].append(fmax)
+            data[lineid]["filenames"].append(filename)
+
+  with open("rgb-channels-data.json", "w") as f:
+       json.dump(data, f, indent=3)
+
+  for lineid, d in data.items():
+       # Get list of HDUs, one for each channel
+       hdus = [
+            fits.open(DATADIR / (fname + ".fits"))[0]
+            for fname in d["filenames"]
+       ]
+       # Stack the three data arrays in a cube
+       imstack = np.stack([hdu.data for hdu in hdus], axis=0)
+       # Make matching stacks of the min fluxes and wavelengths
+       fmins = np.array(d["fmins"]).reshape((3, 1, 1))
+       wavs = np.array(d["wavs"]).reshape((3, 1, 1))
+       wav0 = d["wav0"]
+       # Correct zeropoint in each channel
+       imstack -= fmins
+       # Calculate maps of total flux and mean wavelength
+       imsum = np.sum(imstack, axis=0)
+       imwav = np.sum(imstack * wavs, axis=0) / imsum
+       imvel = (((imwav - wav0) / wav0) * light_speed).to(u.km / u.s).value
+       bfrac = imstack[2] / imsum
+       rfrac = imstack[0] / imsum
+       imm1 = rfrac - bfrac
+       imm2 = bfrac + rfrac
+       # Write out the results
+       header = hdus[0].header
+       prefix = "ngc346-rgbchan-" + d["prefix"] 
+       fits.PrimaryHDU(header=header, data=imsum).writeto(
+            DATADIR / f"{prefix}-sum.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imwav).writeto(
+            DATADIR / f"{prefix}-mean-wav.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imvel).writeto(
+            DATADIR / f"{prefix}-mean-vel.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=bfrac).writeto(
+            DATADIR / f"{prefix}-3wav-b.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=rfrac).writeto(
+            DATADIR / f"{prefix}-3wav-r.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imm1).writeto(
+            DATADIR / f"{prefix}-3wav-m1.fits", overwrite=True,
+       )
+       fits.PrimaryHDU(header=header, data=imm2).writeto(
+            DATADIR / f"{prefix}-3wav-m2.fits", overwrite=True,
+       )
+
+
+#+end_src
+
+#+begin_src sh :results verbatim
+python ../scripts/rgb-meanwavs.py
+#+end_src
+
+#+RESULTS:
+
+
+
+**** Comments on the velocity patterns
+- The siii 9069 line looks great now
+- It shows more variation than the oiii lines, but they are correlated
+  - It seems like the oiii has an additional diffuse component that has less variation
+  - *AHA* that is not it at all - it is just that the d\lambda is smaller for the green lines than for the red lines, given the same velocity shift.  And our velocity pixels are fixed width in \lambda
+    - If we shrink the range on the oiii then 4959 looks very similar to 9069 but with added artefacts
+    - And 5007 also looks similar but with even more artefacts
+  - The oi lines show even more variation than siii (and this is not explained by the different wavelengths)
+- Things seem consistent wit the majority of the variation being due to brightness variations coupled with a general expansion along the line of sight
+  - For instance, there are places where an apparent dust absorption causes the velocity to get bluer, which seems to be because the redder emission from the background layer is blocked
+  - But there are other regions where a reduction in brightness is associated with redder velocities, which seems to be due to a gap between foreground blueshifted emission filaments
+- [Cl IV] 8046
+  - [[file:CleanShot 2022-08-28 at 15.01.34.jpg]]
+  - [[file:CleanShot 2022-08-28 at 15.01.34.cleanshot]] editable version
+
+**** The bias in the 3 channel method and how to overcome it
+
+***** Theory of 3-wav method
+- We can use erf function to describe gaussian contribution to the three channels
+- If we assume that channel intensities are A, B, C where B is peak and C > A
+  - Say that C > A (if necessary invert velocity scale) so that mean velocity is between B and C
+  - Then we can use C/A and (A+C)/B to characterise width and offset
+  - Use a velocity scale {-1, 0, +1} for centers of channels A, B, C
+    - Channel edges are [-1.5, -0.5], [-0.5, +0.5], [+0.5, +1.5]
+  - Gaussian profile g(x, x0, sig) with x0 in range [0, +1]
+  - So we can find the flux in each channel as
+    - A = Int(g, -1.5 - x0, -0.5 - x0)
+    - B = Int(g, -0.5 - x0, +0.5 - x0)
+    - C = Int(g, +0.5 - x0, +1.5 - x0)
+  - The integrals can be expressed as error functions:
+    - Int(g, p - x0, q - x0) = (1/2) (erf((q  - x0)/ sig sqrt(2)) - erf((p - x0) / sig sqrt(2)))
+    - Or Int(g, p - x0, q - x0) = E(q) - E(p)
+      - with E(x) = (1/2) erf((x - x0) / sig sqrt(2))
+    - If the profiles are not Gaussian, we can just replace erf by the CDF of the profile shape
+  - So we get our two diagnostic ratios as
+    - C/A = [E(+1.5) - E(+0.5)] / [E(-0.5) - E(-1.5)]
+    - (A+C)/B = [E(-0.5) - E(-1.5) + E(+1.5) - E(+0.5)] / [E(+0.5) - E(-0.5)]
+  - Alternatively, we could define moment-like linear functions
+    - M_k = Sum(x^k F) = (-1)^k A + (0)^k B + (+1)^k C
+    - M_0 = A + B + C
+      - E(+1.5) - E(-1.5)
+      - Signature -00+ 
+    - M_1 = C - A (and same for all odd moments)
+      - E(+1.5) + E(-1.5) - E(+0.5) - E(-0.5)
+      - Signature +--+
+    - M_2 = A + C (and same for all even moments)
+      - E(-0.5) + E(+1.5) - E(-1.5) - E(+0.5)
+      - Signature -+-+
+  - Then we have the normalized moments
+    - m_1 = M_1 / M_0
+      - [+E(-1.5)-E(-0.5)-E(+0.5)+E(+1.5)] / [E(+1.5) - E(-1.5)]
+      - This is exactly the same as the mean wavelength over the 3 channels
+    - m_2 = M_2 / M_0
+      - [-E(-1.5)+E(-0.5)-E(+0.5)+E(+1.5)] / [E(+1.5) - E(-1.5)]
+      - This is the broadness parameter
+  - [ ] Third alternative: use A and C directly
+    - A / (A + B + C) = (m_2 - m_1) / 2
+    - C / (A + B + C) = (m_2 + m_1) / 2
+    - These have the advantage that they can be called Left and Right, or even Blue Fraction and Red Fraction
+    - They tend to 1/3 when sigma is large
+    - And they are both positive definite
+    - The only disadvantage is that they do not separate into the significant and insignificant variations
+    - And that we lose the approximate proportionality between \mu and m_1
+
+
+***** TODO Sensitivity to noise of 3-wav method
+- How does it compare with summing over a broader wave window?
+- This will be different for strong lines or weak lines (as compared with the continuum)
+- And also will depend on whether the "noise" in the continuum is independent in each pixel or not
+
+***** Implementation of 3-wav method
+
+****** Library file to calculate the moments
+#+begin_src python :eval no :tangle ../lib/three_wav_moments.py
+  import numpy as np
+  from scipy.special import erf
+  import scipy.stats as ss
+  def _E_erf(x, x0, sig):
+      "Special case of erf for gaussian profile"
+      return 0.5 * erf((x - x0) / (sig * np.sqrt(2)))
+
+  _PROFILE = ss.norm       # Gaussian
+  #_PROFILE = ss.cauchy            # Lorentzian
+  def _E_cdf(x, x0, sig):
+      "General case of any profile via the CDF"
+      return _PROFILE.cdf(x, loc=x0, scale=sig)
+
+  # Use the general CDF form so that functional form of profile can be
+  # changed (see the _PROFILE variable above)
+  E = _E_cdf
+
+  def M0(x0, sig):
+      return E(1.5, x0, sig) - E(-1.5, x0, sig)
+
+  def M1(x0, sig):
+      return E(1.5, x0, sig) + E(-1.5, x0, sig) - E(0.5, x0, sig) - E(-0.5, x0, sig)
+
+  def M2(x0, sig):
+      return E(1.5, x0, sig) + E(-0.5, x0, sig) - E(0.5, x0, sig) - E(-1.5, x0, sig)
+
+#+end_src
+****** Graphs of moments as function of mean wave and sigma
+
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+
+  plotfile = "3wav-test.pdf"
+  fig, axes = plt.subplots(3, 1, sharex=True, figsize=(5, 6.5))
+  x0grid = np.linspace(0.0, 1.0)
+  #sigs = [0.1, 0.25, 0.5, 1.0, 1.5]
+  sigs = [0.6, 0.8, 1.0, 1.2]
+
+  ax = axes[0]
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      ax.plot(x0grid, M1(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [0, 1], color='k', linestyle='dashed')
+  ax.legend()
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      ylabel="$m_1 = (C - A) / (A + B + C)$",
+  )
+
+  ax = axes[1]
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      ax.plot(x0grid, M2(x0grid, sig) / M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [2/3, 2/3], color='k', linestyle='dashed')
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      ylabel="$m_2 = (A + C) / (A + B + C)$",
+  )
+
+  ax = axes[2]
+
+  for sig in sigs:
+      label = fr"$\sigma = {sig:.2f}$"
+      ax.plot(x0grid, M0(x0grid, sig), label=label)
+  ax.plot([0, 1], [1, 1], color='k', linestyle='dashed')
+
+  ax.set(
+      xlim=[0, 1],
+      ylim=[-0.01, 1.01],
+      xlabel=r"$\mu$",
+      ylabel="$M_0 = (A + B + C)$",
+  )
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-test.pdf]]
+
+****** Contours of moments in (mu, sigma) plane
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import cmasher as cmr
+
+  NMU, NSIG = 400, 400
+  mu, sig = np.meshgrid(
+      np.linspace(0.0, 1.0, NMU),
+      np.logspace(-1.5, 1.5, NSIG),
+  )
+
+  m1 = M1(mu, sig) / M0(mu, sig)
+  m2 = M2(mu, sig) / M0(mu, sig)
+  m1[m1 < 0.0] = 0.0
+  plotfile = "3wav-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels1 = [
+      0.0, 0.001,
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+      0.999, 1.0,
+  ]
+  levels2 = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.65, 0.66, 0.666, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.fall", 0.25, 0.95)
+  cmap2 = cmr.get_sub_cmap("cmr.horizon_r", 0.2, 0.95)
+  c1 = ax.contourf(
+      mu, sig, m1,
+      levels=levels1,
+      cmap=cmap1,
+      alpha=0.8,
+  )
+  c2 = ax.contour(
+      mu, sig, m2,
+      levels=levels2,
+      #linestyles="dashed",
+      cmap=cmap2,
+      label="m2",
+  )
+  #ax.clabel(c1, c1.levels[::2], inline=True, fontsize=6)
+  ax.clabel(c2, c2.levels, inline=True, fontsize=6, inline_spacing=1)
+  fig.colorbar(c1, label=r"$m_1$")
+  ax.set(
+      xlabel="mu",
+      ylabel="sigma",
+      yscale="log",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-contours.pdf]]
+
+
+****** Finding mean wave and sigma from moments
+For this we can use interpolation
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  from scipy.interpolate import griddata
+  sys.path.append("../lib")
+  import three_wav_moments
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import scipy.stats as ss
+  import seaborn as sns
+  import cmasher as cmr
+
+  #three_wav_moments._PROFILE = ss.cauchy
+
+  N = 200
+  mu_grid, sig_grid = np.meshgrid(
+      np.linspace(0.0, 1.0, N),
+      np.concatenate(
+          (np.linspace(0.0, 2.0, N, endpoint=False),
+           np.linspace(2.0, 10.0, N)),
+      ),
+  )
+
+
+  m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m1[m1 < 0.0] = 0.0
+  m2[m2 < 0.0] = 0.0
+  mask = np.isfinite(m1 * m2)
+
+
+  m1_grid, m2_grid = np.meshgrid(
+      np.linspace(0.0, 0.8, 4*N),
+      np.linspace(0.0, 0.8, 4*N),
+  )
+
+
+  # Two-dimensional interpolation from (mu, sig) -> (m1, m2) plane
+  points = (m1[mask], m2[mask])
+  xi = (m1_grid, m2_grid)
+  mu = griddata(points, mu_grid[mask], xi, method="linear")
+  sig = griddata(points, sig_grid[mask], xi, method="linear")
+  mu[m1_grid > m2_grid] = np.nan
+  sig[m1_grid > m2_grid] = np.nan
+  mu[mu >= 1.0] = np.nan
+  sig[mu >= 1.0] = np.nan
+
+
+  # Find upper envelope of m2, which corresponds to mu = 1
+  m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
+  outside = m2_grid > m2_max
+  mu[outside] = np.nan
+  sig[outside] = np.nan
+
+
+  plotfile = "3wav-inverse-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
+  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  sigmax = 2.0
+  c2 = ax.contourf(
+      m1_grid, m2_grid, np.where(sig > sigmax, sigmax, sig),
+      vmin=0, vmax=sigmax, 
+      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
+      #linestyles="dashed",
+      cmap=cmap2,
+      alpha=0.5,
+  )
+  c1 = ax.contour(
+      m1_grid, m2_grid, mu,
+      levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      cmap=cmap1,
+      alpha=1.0,
+  )
+  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  # labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  ax.clabel(
+      c1,
+      c1.levels[::2],
+      fmt=lambda x: fr"$\mu = {x:.1f}$",
+      inline=True,
+      inline_spacing=2,
+  )
+  #ax.clabel(c2, c2.levels, inline=True)
+  #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
+  #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
+  ax.set(
+      xlabel=r"$m_1 = (C - A) / (A + B + C)$",
+      ylabel=r"$m_2 = (A + C) / (A + B + C)$",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-inverse-contours.pdf]]
+
+
+****** Apply algorithm to a particular line
+#+begin_src python :return plotfile :results file
+  import sys
+  import json
+  from pathlib import Path
+  import numpy as np
+  from scipy.interpolate import griddata
+  sys.path.append("../lib")
+  import three_wav_moments
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import scipy.stats as ss
+  import seaborn as sns
+  import cmasher as cmr
+  from astropy.io import fits
+
+  lineid = "siii-9069"
+
+  N = 200
+  mu_grid, sig_grid = np.meshgrid(
+      np.linspace(0.0, 1.0, N),
+      np.concatenate(
+          (np.linspace(0.0, 2.0, N, endpoint=False),
+           np.linspace(2.0, 10.0, N)),
+      ),
+  )
+
+
+  m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m1[m1 < 0.0] = 0.0
+  m2[m2 < 0.0] = 0.0
+  mask = np.isfinite(m1 * m2)
+
+
+  m1_grid, m2_grid = np.meshgrid(
+      np.linspace(0.0, 0.8, 4*N),
+      np.linspace(0.0, 0.8, 4*N),
+  )
+
+
+  # Two-dimensional interpolation from (mu, sig) -> (m1, m2) plane
+  points = (m1[mask], m2[mask])
+  xi = (m1_grid, m2_grid)
+  mu = griddata(points, mu_grid[mask], xi, method="linear")
+  sig = griddata(points, sig_grid[mask], xi, method="linear")
+  mu[m1_grid > m2_grid] = np.nan
+  sig[m1_grid > m2_grid] = np.nan
+  mu[mu >= 1.0] = np.nan
+  sig[mu >= 1.0] = np.nan
+
+
+  # Find upper envelope of m2, which corresponds to mu = 1
+  m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
+  outside = m2_grid > m2_max
+  mu[outside] = np.nan
+  sig[outside] = np.nan
+
+
+  plotfile = "3wav-inverse-contours.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
+  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  sigmax = 2.0
+  c2 = ax.contourf(
+      m1_grid, m2_grid, np.where(sig > sigmax, sigmax, sig),
+      vmin=0, vmax=sigmax, 
+      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
+      #linestyles="dashed",
+      cmap=cmap2,
+      alpha=0.5,
+  )
+  c1 = ax.contour(
+      m1_grid, m2_grid, mu,
+      levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      cmap=cmap1,
+      alpha=1.0,
+  )
+  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  # labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  ax.clabel(
+      c1,
+      c1.levels[::2],
+      fmt=lambda x: fr"$\mu = {x:.1f}$",
+      inline=True,
+      inline_spacing=2,
+  )
+  #ax.clabel(c2, c2.levels, inline=True)
+  #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
+  #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
+  ax.set(
+      xlabel=r"$m_1 = (C - A) / (A + B + C)$",
+      ylabel=r"$m_2 = (A + C) / (A + B + C)$",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+      #+end_src
+
+*** Ionization potentials
+- Where did I get these from? [2022-10-22 Sat]
+  - Looks like https://en.wikipedia.org/wiki/Ionization_energies_of_the_elements_(data_page)
+     
+|      |       eV |   Ryd |
+|------+----------+-------|
+| K^0   |  4.34066 | 0.319 |
+| S^0   |  10.3600 | 0.762 |
+| Cl^0  |  12.9676 | 0.954 |
+|------+----------+-------|
+| H^0   |  13.5984 | 1.000 |
+| O^0   |  13.6181 | 1.001 |
+| N^0   |  14.5341 | 1.069 |
+| Ar^0  |  15.7596 | 1.159 |
+| Ne^0  |  21.5646 | 1.586 |
+| S^{+}   |   23.338 | 1.716 |
+| Cl^{+}  |   23.814 | 1.751 |
+| C^{+}   |   24.385 | 1.793 |
+|------+----------+-------|
+| He^0  |  24.5874 | 1.808 |
+| Ar^{+}  |   27.630 | 2.032 |
+| N^{+}   |   29.601 | 2.177 |
+| K^{+}   |    31.63 | 2.326 |
+| S^{+2}  |    34.86 | 2.564 |
+| O^{+}   |   35.121 | 2.583 |
+| Cl^{+2} |    39.80 | 2.927 |
+| Ne^{+}  | 40.96328 | 3.012 |
+| Ar^{+2} |   40.735 | 2.996 |
+| K^{+2}  |   45.806 | 3.368 |
+| S^{+3}  |   47.222 | 3.473 |
+| Cl^{+3} |    53.24 | 3.915 |
+|------+----------+-------|
+| He^{+}  |   54.418 | 4.002 |
+| O^{+2}  |   54.936 | 4.040 |
+| Ar^{+3} |    59.58 | 4.381 |
+| K^{+3}  |    60.91 | 4.479 |
+| Ne^{+2} |    63.45 | 4.666 |
+| K^{+4}  |    82.66 | 6.079 |
+#+TBLFM: $3=$2 / 13.5984;f3
++ So this might explain why [O III] does not overlap with He II, but [Ar IV] does
+|   IP | Edge     | H        | He         | S       | Ar       | O       | Cl       | K      | Ne       |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |          |        |          |
+| 13.0 | Cl 0     |          |            | [S II]  |          | [O I]   | [Cl II]  |        |          |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  | [Cl II]  |        |          |
+| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  |        |          |
+| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl II]  |        |          |
+| 23.8 | Cl +     | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
+| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  | [Cl III] |        |          |
+| 34.9 | S +2     | H I 4861 | He I 5875  |         | [Ar III] | [O II]  | [Cl III] |        |          |
+| 35.1 | O +      | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl III] |        |          |
+| 39.8 | Cl +2    | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl IV]  |        |          |
+| 40.7 | Ar +2    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        |          |
+| 41.0 | Ne +     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        | [Ne III] |
+| 45.8 | K +2     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
+| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
+| 53.2 | Cl +3    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
+|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
+| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
+| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |          | [K IV] | [Ne III] |
+| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |          | [K IV] | [Ne III] |
+| 60.9 | K +3     | H I 4861 | He II 4686 |         |          |         |          |        | [Ne III] |
+| 63.5 | Ne +2    | H I 4861 | He II 4686 |         |          |         |          |        |          |
+*** General thoughts on the ionization structure
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ The projected area around W 3 shows
+  + small arc in He II
+  + larger but still centrally-concentrated arc in [Ar IV]
+  + no particular concentration in [O III], He I, [Ar III], H I, etc
++ This suggests that the ionizing illumination is dominated by W 3 for E > 40.735 eV
+  + But it does not dominate the illumination for E = 35 \to 40.735 eV or any of the softer bands
++ From the ACS H\alpha image, there is small region that shows the bow shell cleanly
+  [[file:ngc-346_att/screenshot-20210614-130218.png]]
+  Between about 3 and 7 arcsec from W3.  Beyond this, the globules start to dominate the H alpha and other medium ionization lines
+**** Ionization balance of Ar
++ We should have
+  \[
+  \frac{Ar^{3+}}{Ar^{2+}} =
+  \frac{F \sigma}{\alpha n_e}
+  \]
+  + F is the ionizing flux for h\nu > 40.7 eV
+  + \sigma is the Ar^{2+} photoionization cross section
+  + \alpha is the Ar^{3+} recombination rate
++ Assume constant T and that F only varies by geometrical dilution: F ~ 1/R^2
+  + 
+  
+*** [Ar IV] density and T indicators
+:PROPERTIES:
+:ID:       8B4C1164-B47D-47BE-9012-7DD0B661E014
+:END:
++ This is now done better in one of the notebook files
+  + But might be worth revisiting now I have better idea of the zero levels
++ From just visual inspection of the spectra I get
+  | 4711.37 |  85 |
+  | 4740.17 |  60 |
+  |  7170.5 |   3 |
+  |  7237.4 | 3.5 |
+  |  7262.7 | 2.5 |
++ According to ratios specified by Keenan:
+  + R_1 = 4711.37 /  4740.17 = 1.417 -> 0.1513 on log scale
+    + This is low-density limit
+    + In principle there may be some contamination by He I
+      + But even if the density is high as 200 or so, there is hardly any effect on the temperature diagnostics
+  + R_2 = 7238 / (4711 + 4730) = 3.5 / (60 + 85) = 0.02414 -> -1.617
+    + implies T a bit bigger than 20,000 K !!!
+    + *this one is bad* it is contaminated by C II 7236.19 or something
+      + The map shows that most of the emission comes from the filament not from the bow shock
+      + The contamination is not with C II, but is a deep neutral line at 7238.6, which seems slightly to red of the Ar IV emission
+      + We could actually probably still extract the Ar IV line in the golden triangle
+  + R_3 = 7263 / (4711 + 4740) =  2.5 / (60 + 85) = 0.01724 -> -1.763
+    + gives T = 17500 K, approx
+  + R_4 = 7171 / (4711 + 4740) = 3 / (60 + 85) = 0.02069 -> -1.684
+    + but theoretically R_4 / R_2 = 1.33
+    + We find R_4/R_2 = 7171 / 7238 = 3 / 3.5 = 0.8571, which must be due to contamination of 7238
+    + So assuming R_2 = R_4 / 1.33, then R_2 = 0.02069 / 1.33 = 0.01556 -> -1.808
+      + gives 17500 K, same as R_3
+  + *Conclusion* Both R_3 and R_4 imply 17,500 K, while R_2 is hopelessly contaminated
+  + *Except* I have not included the reddening
+
+  
+*** [Ar IV] and [Cl IV] from Atomic Line List
+: -LAB-WAVL-ANG-AIR-|--SPC--|TT|-CONFIGURATION-|-TERM--|-J_i-J_k-|--A_ki--|-TPF-|-LEVEL-ENERGY--EV--|-REF---|
+:    4711.37         [Ar IV] M1 3s2.3p3-3s2.3p3 4So-2Do 3/2 - 5/2 1.60e-03   ASD 0.000000 - 2.630860 058
+:    4711.37         [Ar IV] E2 3s2.3p3-3s2.3p3 4So-2Do 3/2 - 5/2 8.00e-03   ASD 0.000000 - 2.630860 058
+:    4740.17         [Ar IV] M1 3s2.3p3-3s2.3p3 4So-2Do 3/2 - 3/2 7.20e-02   ASD 0.000000 - 2.614880 058
+:    4740.17         [Ar IV] E2 3s2.3p3-3s2.3p3 4So-2Do 3/2 - 3/2 5.10e-03   ASD 0.000000 - 2.614880 058
+:    5322.99         [Cl IV] E2 3s2.3p2-3s2.3p2  1D-1S    2 - 0   2.79e+00    19 1.706960 - 4.035540 006
+:    7170.5          [Ar IV] M1 3s2.3p3-3s2.3p3 2Do-2Po 3/2 - 3/2 8.10e-01   ASD 2.614880 - 4.343490 058
+:    7170.5          [Ar IV] E2 3s2.3p3-3s2.3p3 2Do-2Po 3/2 - 3/2 9.80e-02   ASD 2.614880 - 4.343490 058
+:    7237.4          [Ar IV] M1 3s2.3p3-3s2.3p3 2Do-2Po 5/2 - 3/2 4.44e-01   ASD 2.630860 - 4.343490 058
+:    7237.4          [Ar IV] E2 3s2.3p3-3s2.3p3 2Do-2Po 5/2 - 3/2 2.26e-01   ASD 2.630860 - 4.343490 058
+:    7261.4          [Cl IV] E2 3s2.3p2-3s2.3p2  3P-1D    0 - 2   1.53e-05    19 0.000000 - 1.706960 006
+:    7262.7          [Ar IV] M1 3s2.3p3-3s2.3p3 2Do-2Po 3/2 - 1/2 4.88e-01   ASD 2.614880 - 4.321530 058
+:    7262.7          [Ar IV] E2 3s2.3p3-3s2.3p3 2Do-2Po 3/2 - 1/2 1.90e-01   ASD 2.614880 - 4.321530 058
+:    7331.4          [Ar IV] E2 3s2.3p3-3s2.3p3 2Do-2Po 5/2 - 1/2 1.22e-01   ASD 2.630860 - 4.321530 058
+:    7530.8          [Cl IV] M1 3s2.3p2-3s2.3p2  3P-1D    1 - 2   6.52e-02    19 0.061060 - 1.706960 006
+:    7530.8          [Cl IV] E2 3s2.3p2-3s2.3p2  3P-1D    1 - 2   1.13e-04    19 0.061060 - 1.706960 006
+:    8046.3          [Cl IV] M1 3s2.3p2-3s2.3p2  3P-1D    2 - 2   1.64e-01    19 0.166500 - 1.706960 006
+:    8046.3          [Cl IV] E2 3s2.3p2-3s2.3p2  3P-1D    2 - 2   5.75e-04    19 0.166500 - 1.706960 006
+
+
+** Other diagnostic ratios
+- [ ] [Ar III] 5192 is extremely weak, but we can maybe make a measurement of Te
+- [Cl III] lines are too noisy to be useful
+
+
+** Extraction of Spitzer spectra
+- [2022-09-21 Wed] This is being done by Jesús
+- I have provided him with a DS9 regions file with the following regions that correspond to the same regions that I have used to calculate the optical line excesses below
+  - BS :: Bow Shock
+    - Note that I have moved this a bit to the left to make sure that we include the He II emission zone
+  - MIP :: Medium Ionization Peak
+  - GLOB :: Globule
+  - Each region has its associated BG background region
+- Also I have added a couple of extra regions
+  - YSO :: This is mYSO-C from Rubio et al 2018
+  - FIL :: A clean section of neutral filament in a region where nebula and stellar emission is weak
+
+
+*** Return to Spitzer spectra
+- [2022-12-14 Wed] Jesús sent the spectra
+  - Analyzed in notebook [[file:../notebooks/spitzer/01-jesus-ngc346-spitzer.ipynb]]
+  - Made spectrum figure for BS, YSO, and background
+    - YSO has silicate peaks
+    - BS has spectrum approximately of warm black body at 145 K
+    - Background has cool spectrum
+  - Added figure to paper
+- [2023-01-19 Thu] Jesús sent the spectral images
+  - Turns out the [Ne III] traces bow shock quite well, as well as medium ionization zones
+  - And [S IV] especially
+- [2023-01-20 Fri]
+  - Realized that we need to use a better background so as not to oversubtract  the medium ionization lines
+** Look at fractional excess in different features
+- Compare the following
+  - medium ionization peak
+  - globules
+  - bow shock
+- In a bunch of different lines
+  - measure in DS9
+
+| Line      | sii 6731        | hei 5875        | hi 4861         | siii 9069       | ariii 7136      | oiii 5007       |
+|-----------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------|
+| BG left   | 380 +/- 30      | 1200 +/- 100    | 12000 +/- 1000  | 1490 +/- 90     | 980 +/- 60      | 83800 +/- 3900  |
+| Med Peak  | 620             | 1630            | 15600           | 2200            | 1300            | 98200           |
+| BG mid    | 770 +/- 30      | 1590 +/- 50     | 15500 +/- 380   | 1590 +/- 90     | 1170 +/- 40     | 99700 +/- 1500  |
+| Bow shock | 990             | 2210            | 21120           | 1910            | 1530            | 135600          |
+| BG Glob   | 1420 +/- 115    | 2160 +/- 60     | 20600 +/- 330   | 1750 +/- 90     | 1500 +/- 50     | 129000 +/- 3000 |
+| Globule   | 1940            | 2480            | 23000           | 2360            | 1760            | 136600          |
+| BG right  | 590 +/- 100     | 1800 +/- 100    | 17200 +/- 930   | 1910 +/- 100    | 1410 +/- 50     | 115500 +/- 2800 |
+|-----------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------|
+| Med Peak  | 0.078 +/- 0.037 | 0.168 +/- 0.041 | 0.135 +/- 0.039 | 0.429 +/- 0.045 | 0.209 +/- 0.034 | 0.070 +/- 0.023 |
+| Bow Shock | 0.286 +/- 0.041 | 0.390 +/- 0.034 | 0.363 +/- 0.026 | 0.201 +/- 0.058 | 0.308 +/- 0.036 | 0.360 +/- 0.016 |
+| Globule   | 0.930 +/- 0.104 | 0.253 +/- 0.030 | 0.217 +/- 0.027 | 0.290 +/- 0.038 | 0.210 +/- 0.025 | 0.117 +/- 0.017 |
+#+TBLFM: @9$7..@9$2=2 (@3 - (@2 + @4)/2)/(@2 + @4);f3::@10$7..@10$2=(@5 - @4)/@4;f3::@11$7..@11$2=2 (@7 - (@6 + @8)/2)/(@6 + @8);f3
+
+- Final table of the contrasts for each line and each feature
+  - I have omitted sii from bow shock, since that is clearly the flank of the second globule peak
+  - I have also omitted Hi and Hei since they do not really add anything
+
+
+#+name: emline-excess-table
+| Line             |    MP |   eMP |    BS |   eBS |    BG |  eBG" |
+| [S II]\n6731"    | 0.078 | 0.037 |     0 |     0 | 0.930 | 0.104 |
+| "[S III]\n9069"  | 0.429 | 0.045 | 0.201 | 0.058 | 0.290 | 0.038 |
+| "[Ar III]\n7136" | 0.209 | 0.034 | 0.308 | 0.036 | 0.210 | 0.025 |
+| "H I\n4861"      | 0.135 | 0.039 | 0.363 | 0.026 | 0.217 | 0.027 |
+| "[O III]\n5007"  | 0.070 | 0.023 | 0.360 | 0.016 | 0.117 | 0.017 |
+
+#+header: :var TAB=emline-excess-table
+#+begin_src python :tangle ../scripts/emline-excess.py :eval no
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  sns.set_context("talk")
+  tab = Table(rows=TAB[1:], names=TAB[0])
+  figfile = "emline-excess-plot.pdf"
+  fig, ax = plt.subplots()
+  line, = ax.plot(tab["Line"], tab["MP"])
+  ax.errorbar(tab["Line"], tab["MP"], yerr=tab["eMP"], fmt="o", color=line.get_color())
+  line, = ax.plot(tab["Line"], tab["BS"])
+  ax.errorbar(tab["Line"], tab["BS"], yerr=tab["eBS"], fmt="D", color=line.get_color())
+  line, = ax.plot(tab["Line"], tab["BG"])
+  ax.errorbar(tab["Line"], tab["BG"], yerr=tab["eBG"], fmt="s", color=line.get_color())
+  ax.set(ylabel="Brightness / Background")
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(figfile)
+  print(figfile, end="")
+#+end_src
+
+#+begin_src sh :results file
+  python ../scripts/emline-excess.py # 1>&2
+#+end_src
+
+#+RESULTS:
+[[file:emline-excess-plot.pdf]]
+
+
+- [X] Next job is to plot this
+** References for pyneb calculations
+#+name: pyneb-refs
+#+header: :var ATOM="S2"
+#+begin_src python :results output verbatim
+  import pyneb as pn
+  print(pn.atomicData.getDataFile(atom=ATOM))
+  pn.atomicData.printAllSources(at_set=[ATOM])
+#+end_src
+
+*** Cl IV
+#+call: pyneb-refs("Cl4")
+
+#+RESULTS:
+#+begin_example
+warng _ManageAtomicData: rec data not available for Cl4
+warng _ManageAtomicData: trc data not available for Cl4
+('cl_iv_atom_KS86-MZ82-EM84.dat', 'cl_iv_coll_GMZ95.dat', None, None)
+Cl4: Calculated energy value of 6-1: Huang, 1985, ADNDT, 32, 503: 
+Cl4: All other A-values: Kaufman & Sugar, 1986, JPCRD, 15, 341: 
+Cl4: A-values for 3-1, 4-1 & 5-3: Mendoza & Zeippen, 1982, 199, 1025: 
+Cl4: A-values for 6-2, 6-3: Ellis & Martinson, 1984, Phys. Scr., 30, 255: 
+Cl4: Energy levels: 
+    Ref. uang 1985 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=uang 1985&comment_code=&element=Cl&spectr_charge=4&)
+  + Ref. 495 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=495&comment_code=&element=Cl&spectr_charge=4&): 
+Cl4: All collision strengths: Galavis, Mendoza & Zeippen, 1995, A&A Supp., 111, 347: 
+#+end_example
+
+*** S II
+#+call: pyneb-refs()
+
+#+RESULTS:
+: warng _ManageAtomicData: rec data not available for S2
+: warng _ManageAtomicData: trc data not available for S2
+: ('s_ii_atom_RGJ19.dat', 's_ii_coll_TZ10.dat', None, None)
+: S2: All A-values for levels 1-5: Rynkun, P., Gaigalas, G., & Jonsson, P. 2019, Astronomy and Astrophysics, 623, A155: 
+: S2: Energy levels: 
+:     Ref. 7237 of NIST 2014 (try this: http://physics.nist.gov/cgi-bin/ASBib1/get_ASBib_ref.cgi?db=el&db_id=7237&comment_code=&element=S&spectr_charge=2&): 
+: S2: collision strengths: Tayal & Zatsarinny 2010, ApJ 188, 32: 
+
+** Cl IV diagnostics
+
+#+begin_src python :results output verbatim
+  import pyneb as pn
+  cl4 = pn.Atom("Cl", 4)
+  Ts = [10000, 15000, 20000]
+  dens = [1.0, 10.0, 100.0]
+  e8046 = cl4.getEmissivity(tem=Ts, den=dens, wave=8046)
+  e7531 = cl4.getEmissivity(tem=Ts, den=dens, wave=7531)
+  e5323 = cl4.getEmissivity(tem=Ts, den=dens, wave=5323)
+  print("8046", e8046)
+  print("7531/8046", e7531 / e8046)
+  print("5323/7531", e5323 / e7531)
+#+end_src
+
+#+RESULTS:
+: 8046 [[1.67869951e-20 1.67889008e-20 1.68077082e-20]
+:  [2.67346244e-20 2.67362017e-20 2.67518043e-20]
+:  [3.31965858e-20 3.31978359e-20 3.32102162e-20]]
+: 7531/8046 [[0.28610481 0.28610481 0.28610481]
+:  [0.28610481 0.28610481 0.28610481]
+:  [0.28610481 0.28610481 0.28610481]]
+: 5323/7531 [[0.08643893 0.08643919 0.08644182]
+:  [0.22672898 0.22673009 0.22674121]
+:  [0.35442452 0.35442619 0.35444295]]
+
+** Stellar parameters of W 3
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ Rivero-Gonzalez:2012w
+  [[file:ngc-346_att/screenshot-20210531-223450.png]]
++ T_eff = 55000 K or 51000 K with an alternative solution
++ Wind parameters:
+  + Mdot = 2.5e-6 Msun/yr
+    + I no longer have faith in this value.
+    + Supposedly it is from the Ha and He II 4686 lines, but these are not well produced by the Fastwind models.
+      + The model predicts emission in the wings of the He II line, which is not seen at all
+        [[file:ngc-346_att/screenshot-20210612-122838.png]]
+      + Green is the observations.  Red, blue, black is different T_eff models. Red is supposedly the average of blue (cooler) and black (hotter), so it is odd that it does not lie between them.
+      + Also the POWR models give He II 4686 emission for the high mass-loss case (SMC-OB-III grid)
+    + Observed He II line from W3 from MUSE:
+      [[file:ngc-346_att/screenshot-20210612-130804.png]]
+    + Same for W1 (O4 If+)
+      [[file:ngc-346_att/screenshot-20210612-130853.png]]
+    + So W1 has clear wind signature in the He II line
+      + A velocity of 2000 km/s is \Delta\lambda = 31 \AA at 4686
+      + The wings go from 4667 to 4710 -> +/- 20 \AA -> +/- 1280 km/s
+    + [X] But note that they both have broad bumps in the wings of the H\beta line
+      + *I now think these are not real*
+        + I looked at the original spectra, and I think it is more likely to be a broad absorption feature around 4750 that has thrown off the continuum fit
+        + Orion stars show the same, see Simon-Diaz paper
+        + Might be some broad DIB
+      + These don't seem to be predicted by any of the atmosphere models
+      + /Could they be Raman scattering?/
+        + No I don't think so
+      + 4809 to 4919 \AA in H\beta -> +/- 55 \AA -> +/- 3000 km/s
+      + Seems a bit excessive to be a velocity
+  + Vw = 2800 km/s
+  + Ram pressure at 1 pc
+    + \rho V^2 = Mdot V / 4 \pi R^2
+    + => = 3.687e-10 dyne / cm^2
+    + P_ram / k = 2.67e6
+    + **Lower Mdot value** Mdot = 2.2e-7 from Q_2 fitting of POWR models
+      + Also, use R = 1.2 pc
+      + P_ram = 2.2e-7 1.989e33 2800 1.0e5 / 3.15576e7 4 pi 1.2**2 3.085677582e18**2 = 2.253e-11 dyne / cm^2
+      + P_ram / k = 1.632e+05
+  + [2022-07-24 Sun] New measurements of wind parameters from Rickard:2022z
+    + These agree with the values I got from the POWR models
+  + Compare with thermal pressure of H II gas
+    + P_gas / k = n_H (1 + y + 1 + 1.5 y)  T
+      + Assuming x++ = 0.5
+      + Also, ne = (1 + 1.5 y) n_H
+        + y = 0.0824
+        + P / k = ne T (2 + 2.5 y) / (1 + 1.5 y) = 1.963 ne T
+      + Assume T = 13500 K
+      + n = 1.632e+05 / 1.963 13500 = 6.2 pcc
+    + Best estimate now is about n = 14 pcc from He II measurements
+    + **Conclusions** We want a mass loss rate of about 5e-7 for ram pressure balance to work
+      + This is slightly higher than we got from the He II analysis, but much less than the 2e-6 from before
+  + We could also have a ram pressure component, so multiply by 1 + M^2
+    + We can't have M much larger than 1, otherwise the density would have to be too low
+    + And this makes no sense anyway, since the density measurement is for the inner rim, which must be static
++ Momentum efficiency of the wind:
+  + Assume log L = 5.98
+    + Radiation pressure at shell: P_rad = L / c 4 pi R^2 = 7.063e-10 dyne / cm^2
+    + But only a fraction of this is trapped by shell
+      + We estimate \tau_{abs} = 0.01 from infrared luminosity
+      + And this gets multiplied by Q_P / Q_{abs} ~= 1.2
+      + So the absorbed radiation pressure is 8.476e-12
+        + => P/k = 6.139e+04
+        + => n = 2.32 pcc
+  + This means that the radiation support is not completely negligible
+    + It amounts to about 20% of the total pressure
+*** Atmosphere models for W3
++ The POWR OB models only go up to 50,000 K
+  + This is just about acceptable if we take the lower T solution from Rivero-Gonzalez
++ There are 3 sets of SMC O star models with different wind strengths
++ I am first looking at the intermediate set
++ Model parameters for 50-42 (Teff = 50 kK, log g = 4.2)
+  : ********************************************************************************
+  : *
+  : * FUNDAMENTAL PARAMETERS
+  : * ======================
+  : *
+  : * MODEL START 16/09/18    21:34:14
+  : *   50kK/logQ-13.5/3020 logg=4.2 L=5.76 H73 N3E-5 C2E-4 O1E-3 Fe3.5E-4
+  : *
+  : * TEFF    =  50000 K       (INPUT)
+  : * LOG L   =  5.760 L_SUN   (INPUT)
+  : * RSTAR   = 10.137 R_SUN   (CALCULATED FROM LUMINOSITY AND TEFF)
+  : * M-DOT   = -6.771 DEX, IN M_SUN/YR   (CALCULATED FROM RTRANS)
+  : * RTRANS  =375.582 =  2.575 DEX   (INPUT)
+  : * VFINAL  =   3020 KM/S
+  : * VDOP    =     30 KM/S
+  : * DENSCON(1) =  10.00    FILLFAC(1) =0.1000
+  : * LOG G_GRAV =   4.20 [CGS]   (INPUT)
+  : *   IMPLIED STELLAR MASS = 59.47 M_SUN
+  : *   CALCULATED LOG G_EFF =  4.19 [CGS] VIA EDDINGTON_GAMMA =  0.02
+  : * VTURB   =  10.00 KM/S
+  : * RMAX    = 100.00 RSTAR = 1013.71 R_SUN
+  : *
+  : ********************************************************************************
++ So that has L = 5.75e5, whereas the observationally derived value is 9.5e5 to 1.2e6
+  + And the derived gravity is 4.0 rather than 4.2
+  + Radius is 12.5 Rsun, as opposed to 10.1 Rsun
+  + Implied stellar mass ~ R^2 g, so modified by (12.5 / 10.1)**2 10**(4.0 - 4.2) = 0.966
+    + So should be 57.5 Msun
+  + Derived log Q = -12.51 versus -13.5 in the model
+    + Model mass loss: 1.7e-7 Msun/yr
+    + Fastwind value: 2.e-6 Msun/yr
+    + 
+** Photospheric absorption lines from W3
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
++ We might be able to get a radial velocity
+  + (assuming it is not a binary)
++ There is an absorption line around 4740, which in most stars is to the red of the [Ar IV] emission line
+  + But in W3 it is to the blue
+  + So if it is the same line, this suggests a large negative radial velocity
+  + But I need to check other lines.  It would be odd for nobody to have noticed this before
++ The He II 4686 line and H\beta 4881 look better
+  + These show W3 is not special
+  + And most stars are blue-shifted with respect to the gas
+  + Although this is assuming that the lines are symmetrical, which may not be the case if they are affected by the stellar wind
++ [X] Or we could look at red lines - the wavelength resolution is better there
+  + But the lines are weaker
+  + For the hot stars, we have the narrow line N IV 6380, which could give a precise velocity
++ [ ] Castro:2018a use the He II 5411.5 line to measure the radial velocities
+  + Yes, this looks the best line
+    [[file:ngc-346_att/screenshot-20210620-144147.png]]
+    This shows the profiles of several bright stars.  The thick yellow one is W 3.  It is considerably more blue-shifted than the others.
+  + We should modify the moment calculations to work with the ~contdiv~ files and determine EW and mean velocity (and sigma, and skewness ...)
+** Relevant papers on bow shocks in SMC
++ Gvaramadze:2011b
+  - Massive runaway stars in the Small Magellanic Cloud
+  - Detects several bow shocks in 24 micron emission
+  - One is just SW of NGC 346, but it came from somewhere else
+  - Sizes are 3 to 30 arcsec
+    + 1 to 10 pc
++ Sheets:2013v
+  - DUSTY OB STARS IN THE SMALL MAGELLANIC CLOUD. I. OPTICAL SPECTROSCOPY REVEALS PREDOMINANTLY MAIN-SEQUENCE OB STARS
++ Adams:2013a
+  - DUSTY OB STARS IN THE SMALL MAGELLANIC CLOUD. II. EXTRAGALACTIC DISKS OR EXAMPLES OF THE PLEIADES PHENOMENON?
+  - Has an "interacting hotspot model" that seems to be very similar to a dust wave
+** Possible runway of W3
+- Look at the stellar radial velocity in more detail
+  - Although the possibility of binarity means this cannot be relied upon
+- What about transverse motions?
+  - If W3 was ejected from the core of the cluster, then it has moved about 6 pc to the west, which is in the right direction to form the bow shock
+  - Assuming an age of about 2 million years, then this gives a velocity of
+    - 6 pc / 2e6 yr km
+    - 6 3.085677582e18 / 2e6 3.15576e7 1.0e5 = 3 km/s
+  - This is very slow and would not produce a supersonic bow shock
+- The internal velocity dispersion within the nebula is larger than this
+  - 6 km/s sigma(POS) from Javier paper
+  - 9 km/s sigma(LOS) from
+** The SNR to the E of the nebula
+- Names: SNR J0059.4−7210, B0057-72.2, DEM S103, IKT 18
+- Matsuura:2022v have a possible detection of 24 micron emission from the SNR
+  - This is much weaker than the emission from the bow shock
+- Maggi:2019q have x rays from the SNR, which show a nice circular morphology.  They do not see any significant diffuse x rays from the H II region
+** Velocity profiles across bow shock
+:PROPERTIES:
+:ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
+:END:
+[[file:ngc-346_att/screenshot-20210610-133815.png]]
++ Basically, all fully ionized lines are similar: V = +162 +/- 2
++ [O I] and [S II] are significantly redder: V = 172 more or less
++ The [Ar IV] is similar to others: +162
++ But He II is redder: +157 +/- 2
+  + But the difference may not be significant
+** Velocity patterns in the nebula
+- In low ionization lines, there is a clear N-S gradient
+  - In the S, the foreground filaments are blueshifted: V = 150
+  - In the N, the background globules are redshifted: V = 170
+- In the ionized lines, the variation is much less: 160 to 165 approx in Ha
+  - There is a flip in behavior between the N and S half of field
+  - In both halves, the ionized velocity variation tracks the sii velocity
+    - But in the S half, the ionized velocity is redshifted from sii
+    - Whereas in N half it is blueshifted from sii
+- So on the one hand, this looks like a sort of Hubble flow, as in a PN, with expansion speed increasing with radius
+  - although it is not spherical since we see it varying on the plane of the sky
+- But on the other hand, we could interpret it as that the neutral globules are accelerated by the rocket effect, and then the photoevaporation flows largely undo that for the ionized  gas by flowing inwards in the frame of the i front
+** Cloudy models for the bow shock
+Separate file: [[file:cloudy-bow-shock.org]]
+** Infrared observations of the bow shock
++ The bow shock is hiding in plain sight in the archival images
++ It is bright at 12 and 24 micron
+  + But invisible at 8 micron
+  + And seemingly invisible at 70 micron too
+*** Brightness profiles of the different bands
++ Table of image files
+  + Brightness conversions in column 3
+    + Convert to MJy/sr
+    + Mostly taken from [[id:89455F87-7DCB-4B64-842B-F8FF63EBC815][More SEDS]] in dust wave project
+    + PACS-100 has 2 arcsec pixels, so 1 Jy/beam = 1e-6 (206265 / 2)**2 = 10636.3 MJy/sr
+    + *No* it turns out that  all the herschel maps are now already in MJy/sr
++ Root folder is ~/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/~
+#+name: infrared-images
+|    3.6 | IRAC1    |     1.0 | ~Spitzer/r4384256/ch1/pbcd/SPITZER_I1_4384256_0000_7_E8758509_maic.fits~         |
+|    4.5 | IRAC2    |     1.0 | ~Spitzer/r4384256/ch2/pbcd/SPITZER_I2_4384256_0000_7_E8758310_maic.fits~         |
+|  5.731 | IRAC3    |     1.0 | ~Spitzer/r4384256/ch3/pbcd/SPITZER_I3_4384256_0000_7_E8758299_maic.fits~         |
+|    8.0 | IRAC4    |     1.0 | ~Spitzer/r4384256/ch4/pbcd/SPITZER_I4_4384256_0000_7_E8758329_maic.fits~         |
+|  8.276 | MSX-A    | 7.133e6 | ~MSX/SMCA.FIT~                                                                   |
+| 12.082 | WISE3    | 0.04123 | ~WISE/0145m727_ac51-w3-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits~ |
+| 22.194 | WISE4    |   1.176 | ~WISE/0145m727_ac51-w4-int-3_ra14.756957499999999_dec-72.17516_asec600.000.fits~ |
+| 12.126 | MSX-C    | 2.863e7 | ~MSX/SMCC.FIT~                                                                   |
+| 14.649 | MSX-D    | 3.216e7 | ~MSX/SMCD.FIT~                                                                   |
+| 21.411 | MSX-E    | 2.476e7 | ~MSX/SMCE.FIT~                                                                   |
+|  23.68 | MIPS1    |     1.0 | ~Spitzer/r4384512/ch1/pbcd/SPITZER_M1_4384512_0000_10_E6046561_maic.fits~        |
+|  71.42 | MIPS2    |     1.0 | ~Spitzer/r10743808/ch2/pbcd/SPITZER_M2_10743808_0000_10_E6429330_maic.fits~      |
+|    100 | PACS-B   |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS100.img.fits~   |
+|    160 | PACS-R   |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.PACS160.img.fits~   |
+|    250 | SPIRE250 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE250.img.fits~  |
+|    350 | SPIRE350 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE350.img.fits~  |
+|    500 | SPIRE500 |     1.0 | ~Herschel/science/0001_14.75696000_-72.17516000_SMC.HERITAGE.SPIRE500.img.fits~  |
++ [X] Copy them all to this repo?
++ [X] Make profiles along the slits
+  + [[file:../data/ngc346-infrared-slit-A.reg]]
+  + [[file:../data/ngc346-infrared-slit-B.reg]]
+  + Options:
+    1. Write some library routines to calculate profiles from DS9 regions
+    2. [X] Or, we could just rebin to a common RA, Dec grid.
+       - Since, then we can simply sum along the y direction.
+       - This would also allow us to calculate ratios
+       - Seems like the best bet
+**** MSX coordinates
++ These need a slight shift
++ But there is something strange with the rotation
+  + There is a ~CROTA2 = 51.115~ keyword, together with ~CDELT1~ and ~CDELT2~
+  + But there is also a ~CD~ matrix
+    + Greissen:2002a say that
+      : CDELTi and CROTAi are allowed to coexist with CDi_j as an aid to old FITS interpreters, but are to be ignored by new readers.
+    + Which means that the CROTA2 is being ignored?
++ When I fixed the ~CRPIX~ and ~CRVAL~ it also made a rotation, which seems wrong
++ 0.00166666 [cos(51.115), sin(51.115)] = [0.001046, 0.001297]
+**** Re-project all infrared images to a common grid
++ Make a new grid with 1 arcsec square pixels, centered on Walborn 3
+
+#+header: :var filetab=infrared-images 
+#+begin_src python :tangle ../scripts/ir-reproject.py :eval no
+  import sys
+  import numpy as np
+  from pathlib import Path
+  from astropy.io import fits
+  from astropy.wcs import WCS
+  from astropy.coordinates import SkyCoord
+  import reproject
+  sys.path.append("../lib")
+  from wcsfile import wcsfile
+
+
+  indir = Path("~/Work/Muse-Hii-Data/SMC-NGC-346").expanduser()
+  outdir = Path("../data")
+  c0 = SkyCoord.from_name("Cl* NGC 346 W 3")
+
+  wmsx = WCS(wcsfile.read(outdir / "ngc346-msx-correct2.wcs"))
+
+  NY, NX = 5 * 300, 5 * 300
+  w0 = WCS(naxis=2)
+  w0.wcs.crpix = [NX / 2, NY / 2]
+  w0.wcs.crval = [c0.ra.deg, c0.dec.deg]
+  w0.wcs.cdelt = np.array([-0.2, 0.2]) / 3600.0
+  w0.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+
+  for wav, cam, norm, pathstring in filetab:
+      print(wav, cam)
+      pathstring = str(indir / pathstring.strip("~"))
+      hdulist = fits.open(pathstring)
+      hdu = hdulist[0]
+      if "MSX" in cam.upper():
+          # Remove all trace of 3rd dimension
+          del hdu.header["*3"]
+          hdu.header["NAXIS"] = 2
+          hdu.data = hdu.data[0, :, :]
+          # Small shift to alignment
+          hdu.header.update(wmsx.to_header())
+      print(WCS(hdu.header))
+      newdata, footprint = reproject.reproject_interp(
+          hdu,
+          w0,
+          (NY, NX),
+          order="nearest-neighbor",
+      )
+      newfile = outdir / f"ngc346-ir-{int(10*wav):04d}-{cam}.fits"
+      fits.PrimaryHDU(
+          data=newdata * norm,
+          header=w0.to_header()
+      ).writeto(newfile, overwrite=True)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src sh :results verbatim
+  python ../scripts/ir-reproject.py 1>&2
+#+end_src
+
+#+RESULTS:
+*** Profiles along a broad slit
+Try this in a notebook
+*** Try and get the SED
++ Where are the infrared images stored?
+*** Spitzer IRS spectra
++ There are loads of these, with slits that seem to go across the bow shock
++ I have downloaded a bunch of spectra
+  + [[file:../big-data/spitzer/tgt-108-selected_Post_BCDs/]]
+  + (Not in the git repo)
++ The table of observations is also saved:
+  + [[file:../data/pbcdByPosition.tbl]]
+  + This is in IPAC format
++ These might be useful for a follow up project
++ But it looks tricky to analyse the data
+  + I tried installing Cubism, but it is not compatible with macos 11
+*** Dust opacity spectra
++ We need these in order to plot spectrum of modified black-body: \(\kappa_\lambda B_\lambda\)
++ Since currently, we are just using a \beta law, which is fine in the far-infrared but not in mid-infrared
+  + But is it really worth it?
++ We can follow the same approach as in [[id:D71FC23A-3AE0-4603-8305-D7F6B7244A71][Effects of rotational disruption of large grains]] in the dust-wave project
+
+#+name: xsec-dust
+#+header: :var GRAINTYPE="silicate_ism_10"
+#+BEGIN_SRC python :return figfile :results file
+  import numpy as np
+  from astropy.table import Table
+  import astropy.units as u
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+  import sys
+  import os
+
+  CDC = "../../cloudy-dust-charging"
+
+  figfile = f"../figs/xsec-infrared-dust-{GRAINTYPE}.pdf"
+
+  sns.set_color_codes()
+  fig, ax = plt.subplots(1, 1, figsize=(5, 3))
+
+  total = None
+
+  mass_per_H = 1.3*1.67262158e-24
+
+  xsecfile = os.path.join(CDC, "dust-opacity", f"{GRAINTYPE}.abs")
+  t = Table.read(xsecfile, format="ascii.no_header")
+  ts = Table.read(xsecfile.replace(".abs", ".sca"), format="ascii.no_header")
+  tg = Table.read(xsecfile.replace(".abs", ".ggg"), format="ascii.no_header")
+
+  rwav = t['col1']/0.0912
+  wav = 1.0/rwav
+
+  total = np.zeros_like(wav)
+
+  for i, name in enumerate(t.colnames[1:]):
+      # total += t[name] + ts[name]
+      # tot_ratd += (t[name] + ts[name])*ratd_weights[i]
+      total += t[name]
+
+  ax.plot(wav, total/mass_per_H, '-', color='k', label=GRAINTYPE)
+  beta = 1.5
+  ax.plot(wav, 3e-3 * (wav / 1000) ** (-beta), lw=0.5, linestyle="dashed")
+  ax.legend()
+
+  ax.set(
+      xscale='log',
+      yscale='log',
+      xlim=[0.01, 1000.0],
+      ylim=[0.0001, 1000.0],
+      xlabel=r"Wavelength $\lambda$, $\mu$m",
+      ylabel=r"Opacity $\kappa_{\mathrm{abs}}$, $\mathrm{cm}^2\ \ \mathrm{g}^{-1}$",
+  )
+
+  sns.despine()
+  #fig.suptitle("Graphite+Silicate: " + GRAINTYPE)
+  fig.tight_layout()
+  fig.savefig(figfile)
+
+  # Make a new table
+  out_tab = Table(
+      data={"Wavelength": wav, "Opacity": total / mass_per_H},
+      units={"Wavelength": u.micron, "Opacity": u.cm**2 / u.g},
+  )
+  tabfile = figfile.replace(".pdf", ".ecsv").replace("/figs/", "/data/")
+  out_tab.write(tabfile, format="ascii.ecsv")
+#+END_SRC
+
+#+RESULTS: xsec-dust-ratd
+[[file:../figs/xsec-infrared-dust-silicate_ism_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="silicate_orion_10")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-silicate_orion_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="graphite_ism_10")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-graphite_ism_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_ab08_10")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_ab08_10.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_c120")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_c120.pdf]]
+
+#+call: xsec-dust(GRAINTYPE="pah1_c15")
+
+#+RESULTS:
+[[file:../figs/xsec-infrared-dust-pah1_c15.pdf]]
+
+** Analysis of bow shock density, etc
+
+*** He II lines
++ I have already tried to do this analysis in notebook 01-02:
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.py]]
+  + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.ipynb]]
++ But I was getting inconsistent results, so I am going to start again
++ I had used a few different approaches:
+  1. (Comes second in the notebook). Use the total He II luminosity to derive the ionizing photon rate Q_2.  The only assumption here is that all the He II emission comes from recombination (in photoionization equilibrium).
+     - We find a flux of 2.04e-15 erg/s/cm^2
+     - This corresponds to a luminosity of 9.28e32 erg/s = 0.242 Lsun
+     - PyNeb is used to get emissivity of 4686 and \alpha_B(He^++)
+       - but I had assumed T = 18000 and 12000
+       - Switched this now to 12500, 15500 as more representative of measured values
+     - This gives Q_2 = \alpha_B(He^++) L(4686) / e(4686) (\Omega / 4\pi)
+       - Q_2 = (2.8 +/- 0.1)e45
+     - This can be compared with stellar atmosphere models
+       - See [[id:262D3FA1-80BD-4225-BE22-7970BD1FF6FF][Rearrange and rescale the models]] in this file. 
+  2. (First in notebook).  Use peak He II brightness to estimate the electron density
+  3. (Not in notebook, but see [[id:CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2][Consistency check on the ionization fraction and thickness of the He II zone]] in this file). Estimate the thickness of the He++ zone. 
+
+
+*** Ionization state based upon multiple lines
+From the analysis of the
+
+
+
+*** Other diagnostics
+- We have the [Cl IV] lines
+  - 7530.8
+    - This is well detected, peak is about 7 over BG of about 1
+  - 8045.62 
+    - Wavelength from NIST but Atomic Line List has 8046.3
+    - Blended with low ionization, but recoverable
+    - Peak is about 15 over BG of 1
+    - Maybe 7531/8046 is density sensitive?
+      - *no* it should be 0.286 always
+      - I measure 7/13 = 0.538, which seems rather high
+  - 5323.2 auroral line
+    - Wavelength is from Young:2011b
+    - ALL has 5322.99
+    - Very weak, but maybe detected with peak of about 1
+- We can use the [Fe III] density from 4986/4658
+  - Mabel did this for the entire nebula, getting about unity => n = 100 +/- 20
+  - The lines are very weak, but it looks to me like we have 4986/4658 = 2, implying a lower density
+    - That is in the E of nebula, it is more like unity around the bow shock area
+- We also have the [Fe III] 5270 line, which can possibly be used as  T indicator
+- Strangely, the [Fe III] lines are stronger in the NE and S edge than in the NW region
+*** New lines
+- UNIDENTIFIED at 8660 approx
+  - There are a few N I lines around here, but this seems different
+  - Aha, it is one of the unidentified lines from the Tarantula cubes too
+  - Look for more of these lines
+    - 8151 is there - very strong in the filaments
+      - [Fe I] 8151.3424 
+    - Si I 8035 clearly detected in filaments, but not in YSO
+      - But now I think 8039 is the wavelength, so probably not Si I
+      - Note that 30 Dor has a line around here, but it is clearly ionized
+    - *Have these filaments had a SNR pass through them?*
+    - Line at 8047 from filaments that blends with [Cl IV] 8046
+      - perhaps 8038 is from same multiplet, in which case it can be removed
+      - In 30 Dor there is no sign of this line at all
+    - More from the 7800-8200 range
+      - 7802, 7838, 7848 anf 7863 both weak with sky contam, 7891, 7926 super weak, 7959, 7997 super weak, 8009, 8017 super weak, 8039, 8069 super weak, 8083, 8151 strong, 8193 weak
+      - Fourth one could be [Fe I] 7959.0029 
+        - 3d6.4s2-3d7.(4F).4s a5D-a3F  4 - 3
+        - Same multiplet as 8151 (2-2) and 7709 (4-2)
+        - But why is 7964 (3-2) missing?
+    - Comparison with 30 Dor 
+      - The 8083 line seems there, BUT at 8083.5 and it traces ionized gas
+        - It is next to a much stronger sky line
+      - Another line at 8034.5 (observed 8041.24) is also ionized and might correspond to the 8039 line, but the wavelength does not seem right
+      - 8009 (observed 8016) has a sky line right on top (how come this was not an issue for NGC 346?)
+      - 7999 is strong in PDR in 30 Dor but we only see it in YSO in NGC 346
+    - 6750-7800
+      - 7463.5, 7238.5,
+        - Second one might be [V I] 7238.64
+          - Overlaps with C II 7236.42
+        - First one might be [Ni I] 7464.367 except wavelength is not close enough
+      - 7221 extremely weak
+      - very weak: 7195, 7179, 7144 (broad), 7111, 7106
+        - Second one could be Fe I 7179.9948
+          - 3d7.(4F).4s-3d6.(5D).4s.4p.(3Po)
+          - a3F-z5Do
+          - 4 - 4
+          - A = 8.463e+02 /s, which is largest for its multiplet
+      - 7092.5 (blend with red wing), 7057.5 very weak
+      - 7044
+        - not a deep neutral line, but a very weird distribution
+      - 7039 very weak
+        - looks like a neutral fluorescence line (except not seen from YSO)
+      - 7011 very weak
+      - 7002 very weak except for YSO
+        - clearly is O I 7001.92
+      - 6987 weak
+      - 6945 neutral only, 6963 super weak
+      - Nothing much can be seen in range 6860-6940 due to O_2 telluric band
+      - 6817 super weak, 6847 very weak
+      - 6795 highly ionized bow shock line
+        - This is [K IV] 6795.1, which is the weaker doublet member to 6101.79
+        - It is good that I found this again independently
+      - 6776, 6698 very weak, 6656 very weak, 6646 very weak
+        - [Ni II] 6667 only from YSO
+      - 6636, 6628
+        - These flank either side of the 6634 Raman O I absorption feature
+      - 7791, 7782 (blended wing to blue), 7768
+      - 7747 (in blue wing of [Ar III] 7751), 7741 very weak
+      - 7707 very weak,  7724 super super weak
+      - These are in range 7590-7700 that is affected by telluric O_2 absorption band, so I am not sure how real they are:
+        - But they do show up cleanly in the GLOB sample, so there must be something there
+        - 7663 (broad multiplet/band), 7637 weak, 7628 weak
+          - these look slightly more diffuse than the other lines, maybe
+      - 7577 super weak
+      - 7567 has something in FIL and NEUT-C, but I do not know if it is real
+        - *No, this is sky*
+      - 7531 [Cl IV] in bow shock
+      - 7527 weak, 7488.5 weak
+        - also diffuse
+      - 7468.5, 7442 very weak, 7254
+        - Clearly these are
+          - N I 7468.31, 7442.30
+          - O I 7254.15
+        - Distribution much smoother than the other lines
+        - Bright from mYSO-C and from Raman clump
+      - 7463 is a clear deep neutral lines, right in the midst of those fluorescent lines
+      - 7707 weak
+        - This is close to Fe I 7708.8389, which is same multiplet as 8151
+        - /Is this the same line?/ It is off by nearly 2 angstrom
+        - *It turns out I was using the wrong velocity*
+          - Should be +160 for the BG filaments or 150 for the foreground ones
+        - [2022-09-23 Fri] But there are at least two lines here. We  need to investigate further
+        - [2022-10-03 Mon] And these lines are strong from neutral regions, that is if they are not sky
+          - Turns out that longer wave one is sky, at 7718.69 observed
+          - Shorter one is certainly a neutral line, but also seems contaminated by sky
+      - 7724 very weak
+    - 6000 to 6530
+      - 6503 very weak
+      - 6460 very weak
+        - This is certainly not C II 6462, which is perhaps detected from the bow shock region, but is even weaker
+      - 6451.5 weak, 6448 very weak
+      - 6434 very weak
+      - 6371.5 ionized
+        - probably Si II 6371.36
+      - 6347
+        - likely to be Si II 6347.11
+        - Note that this looks like Si II 5978.93 and 5957.56 in its spatial distribution
+      - 6270.3 very weak
+      - 6221.6 very weak
+      - 6084.2 weakest ever
+      - 6046 also very weak
+        - clearly is O I 6046.23
+      - 6038 extremely weak
+      - 5979, 5958 weak
+        - Clearly Si II 5978.93 and 5957.56
+      - 5740 very weak
+        - Probably Si III 5739.73
+        - Only seen in *bow shock area*, to W of W 3
+      - 5577 badly affected by sky
+        - But we can just about detect the redshifted [O I] line from the nebula, especially in the globules just south of W 2
+      - 5412 He II emission from inside edge of bow shock, but affected by stellar absorption
+  - YSO only
+    - 7999 (maybe [Fe II] 7999.47) maybe also from jet (?) in globule
+    - 8107, 8111, 8115 (maybe seen in Orion)
+    - 8126 maybe Ca I 8125.31
+      - seen faintly in 3 globules in addition to YSO, including one of the foreground globules
+    - 8188
+      - observed in Orion but unidentified?
+      - also seen in lower globule (different one from above)
+    - 7468.5 similar to 8188, likely to be N I 7468.3
+    - 7452 probably [Fe II] 7452.54
+    - 7442 probably N I 7442.30
+    - 7412 probably [Ni II] 7411.61
+    - 7378 probably [Ni II] 7377.83
+    - 7172 probably [Fe II] 7172.00
+- Si II 5041
+  - This is very weak
+  - But with a strange clump in the bottom left corner
+    - Just north of the star at 0:59:08.5822 -72:10:57.667
+- At about 7262 angstrom
+  - No, of course this is Ar IV 7263
+- At about 7500
+  - He I 7499.85
+  - But it seems more bow shock-y than the other He I lines
+- Cl IV 7531 looks pretty strong
+- Cl IV 8046 is contaminated, but it could be removed, perhaps by N I
+- [K IV] 6101.79 ( ^3P_2 - ^1D_2 )
+  - Weaker than the [Ar IV] lines, but definitely detected from the bow shock
+  - There is another line of same multiplet at 6795.1 that we should look for
+    - ^3P_1 - ^1D_2
+    - Strangely, we do not seem to have a continuum-subtracted cube that covers this wavelength. The Ha raman wing section stops at 6800
+    - Now we have it, and the line is detected, but it is very weak
+    - Weaker than 6101.79 by a factor of 4 *as expected*
+  - This is isoelectronic to [Ar III]
+    - Equivalent lines are 7135.8 and 7751.1
+    - Of which the redder one is also 4 times weaker (unlike what I first thought)
+
+
+*** TODO Find the K+++ / Ar+++ ratio
+- This can come from the [K IV] lines
+- We could also do the Cl+++ abundance form the [Cl IV] lines
+  - Best to use 7531 even though it is weaker than 8046 because it is less blended with low ionization lines
+
+
+*** What is origin of second peak in [Ar IV]?
+- This is centered on 0:59:07.3344,-72:10:48.188 in the lower left of the field
+- The only O star there is MPG 500, which is classified as O6V
+  - That does not seem to be hot enough to generate much [Ar IV]
+  - On the other hand, Orion has some [Ar IV] emission, so it could be that
+  - Alternatively, it could be related to the SNR to the East
+*** Density and/or dust opacity from the infrared emission
++ From section 2 of Paper III
+  + \Sigma = \tau / \kappa
+  + \rho = \Sigma / h = \tau / \kappa h = n m
++ We have
+  + \tau = 0.01
+  + \kappa = 600 \kappa_600 cm^2/g
+  + h = H R = 1.2 H pc
+  + m = 2e-24 g
++ This gives us
+  + n = \tau / \kappa h m = 0.01 / 600 \kappa_600 H 1.2 3.085677582e18 2e-24
+  + => n = 2.251 / \kappa_600 H
++ So with H = 1, and using the He II determination of 13 pcc for n
+  + => \kappa_600 = 2.251 / 13 = 0.173
+  + => \kappa = 104 cm^2 / g
+  + This seems reasonable for a SMC metallicity
++ We can convert this to a \sigma per H
+  + \sigma = 2.1e-20 cm^2 / H
+
+

@@ -1,0 +1,591 @@
+* Deep neutral/molecular lines
+
+** Even more other regions
+These will not be in the first paper
+
+*** Giant proplyd 244-440
+
+*** Carina
+- This has the lines very strong, and we see many of them
+  - But I think that it is because we see a shielded region where [C I] is strong
+- We see mainly the same lines as in NGC 346
+- But some have different distributions
+  - In particular, 8550 comes from very deep in the cloud
+  - Although, I am worried that it might be affected by negative ringing from the adjacent H I line
+  - So we need to look at it with different widths of the median filter
+- There are other interesting lines, such as [Ca II] 7291, 7324
+  - Possibly associated with SNR, or at least there is hot gas coincident with this, as seen in XMM maps
+
+** [3/4] [2023-05-20 Sat] Comparison with other regions
+This is for the discussion section of the paper
+
+*** DONE Comparison table of all the regions
+CLOSED: [2023-05-26 Fri 09:32]
+#+name: drl-regions-table
+|                | I([C I] 8727) | I(Max DRL) | I(Sum DRL) | Number DRL | Max DRL |
+|----------------+---------------+------------+------------+------------+---------|
+| Orion South    |          0.17 |      0.014 |      0.026 |          3 |    9114 |
+| Orion Bar      |          0.06 |      0.009 |      0.017 |          3 |    9114 |
+|----------------+---------------+------------+------------+------------+---------|
+| M 17 A         |          0.27 |      0.019 |       0.16 |         15 |    8459 |
+| M 17 B         |          0.73 |      0.080 |       0.63 |         16 |    8894 |
+|----------------+---------------+------------+------------+------------+---------|
+| 30 Dor Globule |          0.12 |      0.022 |       0.16 |         18 |    9029 |
+| 30 Dor Clump   |          0.06 |      0.086 |       0.71 |         20 |    9029 |
+|----------------+---------------+------------+------------+------------+---------|
+| NGC 346 MYSO   |          0.24 |      0.200 |       5.93 |         80 |    9297 |
+| NGC 346 Zone 0 |          0.21 |      0.399 |      14.83 |        114 |    9029 |
+
+- So summed DRL relative brightness is 570 times in NGC 346 than in Orion
+  - This means that absolute DRL brightness is higher than in Orion
+  - Since H alpha brightness is 100 times higher in Orion
+  -
+
+ 
+**** Graph of DRL comparison between regions
+
+#+header: :var TAB=drl-regions-table
+#+begin_src python :tangle ../scripts/drl-regions-comparison.py :eval no
+  import numpy as np
+  from astropy.table import Table
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  sns.set_context("talk")
+  sns.set_palette("icefire", n_colors=6)
+  tab = Table(rows=TAB[1:], names=TAB[0])
+  figfile = "drl-regions-comparison.pdf"
+  fig, ax = plt.subplots(figsize=(6, 6))
+  xxx = tab["I([C I] 8727)"]
+  yyy = tab["I(Max DRL)"]
+  zzz = tab["Number DRL"]
+  xx = np.vstack([xxx[0::2], xxx[1::2]])
+  yy = np.vstack([yyy[0::2], yyy[1::2]])
+  zz = np.vstack([zzz[0::2], zzz[1::2]])
+  icols = [0, 1, -2, -1]
+  for i, x, y, z in zip(icols, xx.T, yy.T, zz.T):
+      color = sns.color_palette()[i]
+      line, = ax.plot(x, y, linewidth=3, zorder=-100, color=color)
+      ax.scatter(x[0], y[0], s=20 + z[0]*10, color=color)
+      ax.scatter(x[1], y[1], s=20 + z[1]*10, color=color, facecolor="white", linewidths=3)
+  ax.set(
+      xlabel=r"100 $\times$  [C I] λ8727 / Hβ",
+      ylabel=r"100 $\times$  max( DRL ) / Hβ",
+      xlim=[0.03, 2.0],
+      ylim=[0.003, 0.9],
+      xscale="log",
+      yscale="log",
+  )
+  ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+  ax.get_yaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+  ax.set_xticks([0.1, 0.3, 1.0])
+  ax.set_yticks([0.01, 0.03, 0.1, 0.3])
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(figfile, bbox_inches="tight")
+  print(figfile, end="")
+#+end_src
+
+#+begin_src sh :results file
+  python ../scripts/drl-regions-comparison.py # 1>&2
+#+end_src
+
+#+RESULTS:
+[[file:drl-regions-comparison.pdf]]
+
+*** NGC 346
+- Obviously we have already done this, but I want to draw the relevant material together
+- Take material from the yaml files
+- Use the peak of the line to copy the methodology of the other regions
+- Do the top ten DRL by hand
+| Line        | Wave(obs) | Zone 0 | Zone MYSO |   | 100 I/Hb 0 | 100 I/Hb M |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| DRL 6221.82 |   6224.94 |    1.3 |       3.2 |   |     0.0424 |     0.0235 |
+| DRL 6636.76 |   6639.94 |    1.6 |      12.0 |   |     0.0522 |     0.0883 |
+| DRL 6776.75 |   6779.94 |    1.6 |       3.3 |   |     0.0522 |     0.0243 |
+| DRL 7092.29 |   7096.19 |    2.9 |       7.4 |   |     0.0946 |     0.0545 |
+| DRL 8150.67 |   8154.94 |   7.14 |      11.3 |   |     0.2329 |     0.0832 |
+| DRL 8550.06 |   8554.94 |    7.6 |       6.7 |   |     0.2479 |     0.0493 |
+| DRL 8789.18 |   8793.69 |    6.8 |       9.0 |   |     0.2218 |     0.0662 |
+| DRL 8850.65 |   8856.19 |    7.5 |      12.9 |   |     0.2446 |     0.0949 |
+| DRL 9029.22 |   9034.94 |    9.7 |      20.0 |   |     0.3164 |     0.1472 |
+| DRL 9057.17 |   9062.44 |    7.3 |         0 |   |     0.2381 |     0.0000 |
+| DRL 9297.36 |   9302.44 |    6.8 |      23.3 |   |     0.2218 |     0.1715 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| Ha          |   6566.19 |   8800 |     39000 |   |   287.0000 |   287.0000 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| [C I]       |   8732.44 |    6.5 |        32 |   |     0.2120 |     0.2355 |
+|-------------+-----------+--------+-----------+---+------------+------------|
+| DRL sum     |           |  60.24 |     109.1 |   |     1.9646 |     0.8029 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@15$3..@15$4=vsum(@I..@II)
+
+- We could do the sum better by counting all the DRLs. This will be similar to the production of the big table for the paper
+  - This is done in the next section, which gives a much higher value than from the top-ten, indicating that the other lines are important too!
+  - The top ten represent 13% of the total
+  - Mean brightness is 0.13% of Hb and median is 0.09% of Hb
+
+
+
+**** DONE Add up the intensities of all the DRLs
+CLOSED: [2023-05-25 Thu 10:20]
+#+begin_src python :eval no :tangle ../scripts/sum-drl-intensities.py
+  import pandas as pd
+  import numpy as np
+
+
+  df = pd.read_csv("uil-final-table.csv")
+
+  # For Zone 0, sum all the relative fluxes, however weak
+  sum_0 = df["flux"].sum()
+  median_0 = df["flux"].median()
+  mean_0 = df["flux"].mean()
+
+  # For MYSO, first back out the ratio to get relative fluxes
+  flux_myso = df["MYSO / 0"] * df["flux"]
+  # And then mask out lines that are blends or upper limits before summing
+  invalid = (df["E(MYSO / 0)"] == "<") | df["blend"]
+  flux_myso[invalid] = np.nan
+  sum_myso = np.nansum(flux_myso)
+  median_myso = np.nanmedian(flux_myso)
+  mean_myso = np.nanmean(flux_myso)
+
+  # Report statistics of sums and counts
+  print(f"Sum of fluxes: Zone 0 = {sum_0:.2f}, MYSO = {sum_myso:.2f}")
+  print(f"Number of lines: Zone 0 = {len(df)}, MYSO = {np.sum(~invalid)}")
+  print(f"Mean brightness: Zone 0 = {mean_0:.3f}, MYSO = {mean_myso:.3f}")
+  print(f"Median brightness: Zone 0 = {median_0:.3f}, MYSO = {median_myso:.3f}")
+
+
+
+#+end_src
+#+begin_src sh :dir ../data/n346-lines/all-lines-c007-chop-mean :results output verbatim
+  python ../../../scripts/sum-drl-intensities.py
+#+end_src
+
+#+RESULTS:
+: Sum of fluxes: Zone 0 = 14.83, MYSO = 5.93
+: Number of lines: Zone 0 = 114, MYSO = 80
+: Mean brightness: Zone 0 = 0.130, MYSO = 0.074
+: Median brightness: Zone 0 = 0.091, MYSO = 0.043
+
+
+
+*** DONE Orion
+CLOSED: [2023-05-22 Mon 21:22]
+**** Summary for Orion
+- Physical (all very approximate):
+  - Surface brightness 100 times higher
+  - Luminosity 40 times smaller
+  - Distance 150 times closer
+  - Physical Diameter 30 times smaller
+    - Angular Diameter 5 times bigger
+  - Density 50 times higher
+  - Ionization parameter is roughly the same
+- Low [C I]/H I compared with NGC 346
+  - 100 [C I] 8727 / Hb = 0.03 in Bar and 0.09 in Orion S (as opposed to 0.5 in NGC 346)
+- Very few DRLs are detected and DRL/[C I] is low
+  - Brightest DRL in NGC 346 is DRL 9029, which is just detected
+    - DRL 9029 / [C I] 8727 = 0.08 in Bar and 0.033 in Orion S (as opposed to 0.8 in NGC 346)
+    - So 100 DRL 9029 / Hb = 0.003 in both, which is 100 times weaker than in NGC 346!!!
+  - Also detect DRL 9113 (brightest DRL in Orion)
+    - DRL 9113 / [C I] 8727 = 0.1 in Orion S
+    - So 100 DRL 9113 / Hb = 0.01 in Orion S
+  - Marginal detection of DRL 9297
+    - DRL 9297 / [C I] 8727 ~ 0.03 in Orion S
+  - Upper limits for DRL 8810 and DRL 8151
+    - DRL / [C I] < 0.01 (3 sigma)
+  - Additional DRL 6814 that is not seen in NGC 346
+    - DRL 6814 / [C I] 8727 = 0.05
+**** Physical parameters (workings)
+- H I surface brightness is roughly 100 times higher than NGC 346
+  - Luminosity 40 times smaller
+  - Distance 150 times closer -> Flux is 150**2 / 40 = 560 times higher
+  - Radius 30 times smaller (0.1 pc vs 3 pc for separation of closest molecular clumps)
+    - Clump size is 0.05 pc vs 0.5 pc so only 10 times smaller
+    - Sanity check on brightness: (1/40) / (1/30)**2 = 22.5 (different from 100, why?)
+    - Or 560 / (150/30)**2 = 22.4 - the same
+    - FOV is 30 times smaller (mosaic of 6x5 positions for Orion, single field for 346)
+  - Density 50 times higher (5000 vs 1e2)
+    - second sanity check on brightness: n^2 H => 50**2 / 10 = 250
+    - This also means that photon mean free paths are 50 times smaller
+    - But the angular size of photon mean free path is 3 times larger 
+  - Filling factor or covering factor of globules/filaments may be higher in Orion
+  - Ionization parameter: (L n)**(1/3) or (R n) is about the same.
+  - Exposure time was 10 s per field, as opposed to 12600 s for NGC 346, so 1260 times less
+    - Binning at 5x5 gives 1260 / 10 25 = 5 times less exposure per pixel
+    - So with 100 times brighter, this is 20 times higher counts/pixel of H alpha
+    - But with original pixels, it would be roughly the same
+
+**** Comparison of brightnesses
+We will do a table for consistency with the other regions
+| Line     | Wave(obs) | Orion S            | Bar                |         | 100 I/Hb S        | 100 I/Hb B        |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| DRL 6814 |   6814.35 | 3000 +/- 300       | 1500 +/- 300       | Unique  | 0.0086 +/- 0.0009 | 0.0086 +/- 0.0017 |
+| DRL 9029 |   9029.45 | 1500 +/- 200       | 700 +/- 300        |         | 0.0043 +/- 0.0006 | 0.0040 +/- 0.0017 |
+| DRL 9114 |   9112.75 | 4800 +/- 300       | 1600 +/- 300       |         | 0.0138 +/- 0.0009 | 0.0092 +/- 0.0017 |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| Ha       |   6562.75 | 1e8                | 5e7                | 5x5 bin | 287.0000          | 287.0000          |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| [C I]    |   8727.78 | 6e4                | 1e4                |         | 0.1722            | 0.0574            |
+|----------+-----------+--------------------+--------------------+---------+-------------------+-------------------|
+| DRL sum  |           | 9300 +/- 469.04158 | 3800 +/- 519.61524 |         | 0.0267 +/- 0.0013 | 0.0218 +/- 0.0030 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@7$3..@7$4=vsum(@I..@II)
+
+
+
+
+
+- Orion is much brighter, with Ha brightness of 2e8 in MUSE units in peak near Trapezium, and average about 9e7 in Bar
+  - *Wait*, it turns out the 05x05 binning was a sum, not an average, so all brightnesses need to be divided by 25 to put them in the same MUSE units as NGC 346: 1e-20 erg/s/cm2/Angstrom/pixel
+  - So, we actually have 8e+06 in peak near Trapezium, and average about 3.6e+06 in Bar
+    - We will take typical value of 1e8 -> 4e6
+  - Whereas NGC 346 has typical brightness of 3e4, with peak in mYSO C of 3e5
+  - So Orion is about 130 times brighter (this makes more sense)
+    - Or comparing Orion S with MYSO, Orion is 20 times brighter
+- [C I] 8727 has peak 6e4 near Trapezium, and average 1e4 in Bar
+  - 100 1e4 / (9e7 / 2.87) = 0.032 in Bar
+  - 100 6e4 / (2e8 / 2.87) = 0.09 in Orion S
+  - So this gives about 0.032 on a scale of Hb = 100
+    - Compare with literature values:
+      - Esteban:2004a gives 0.017, but that is after reddening correction (it was 0.053 before). But that is reddening from Hb to [C I], whereas in our case we only need to correct from Ha to [C I]. *Therefore, the results are very similar*
+      - Reddening from Ha to Hb is 1.38 (Baldwin) or 1.62 (Esteban)
+      - Reddening from [C I] to Hb is 3.1176 (Esteban), which implies 1.9244 from [C I ] to Ha, which seems excessive
+  - So [C I] is relatively fainter in Orion, although in NGC 346 we were comparing with Zone 0, which is dominated by neutral gas. Maybe we should also calculate the relative brightness for the nebula as a whole
+    - Brightness about 40 in brightest filaments, or 300 in mYSO C
+    - Filament to nebula: 100 I/Hb = 100 40 / (2e4 / 2.87) = 0.57
+    - mYSO: 100 I/Hb = 100 300 / (2e5 / 2.87) = 0.43
+    - So very similar in the two, and still at least 10 times higher than in Orion
+- We see some very faint lines in Orion 
+  - For instance, He I 8608.294 has a peak of about 3000, or average 1800 in Bar
+    - 100 1800 / (9e7 / 2.87) = 0.0057
+  - So that is 0.005 on a scale of Hb = 100
+- DRL 9029 is the brightest Deep Red Line in NGC 346.
+  - In Zone 0 it has 100 I/Hb of 0.399 +/- 0.028 from our Table
+    - Measuring on the cube, it has about 30 in brightest filament, so 100 30 / (2e4 / 2.87) = 0.43, which is nearly identical
+  - We will now try to measure it in Orion
+    - There are some other lines in the same range, which /are/ seen
+      - Ca I] 9052 for instance, which is close to DRL 9057 and DRL 9049
+      - [Fe II] 9033 is observed, and this may be what we see with DRL 9034.71
+    - We see a line at 9029.45, but its distribution is different from [C I]
+      - Still, we can't rule it out entirely. Its distribution is somewhat similar to that of [Fe II] and Ca I] 8125 lines,
+        but with differences (e.g. it is exceedingly weak in the Bar, and not seen in the HH objects)
+      - Brightness measurements
+        - Bar: 800 +/- 500 and is really marginal
+          - So that is 100 800 / (9e7 / 2.87) = 0.0026 % of Hb, which is tiny
+          - 100 times weaker than in NGC 346
+          - And we have DRL 9029 / [C I] 8727 = 0.0026 / 0.032 = 0.081, as opposed to 0.399 / 0.43 = 0.93 in NGC 346
+        - Orion S: 2000 +/- 500
+          - So comparing to [C I] 8727, we have 2000 / 6e4 = 0.033, which is even less than in the Bar
+          - Partly explained by fact that we are using peak of DRL in Bar, but comparing with average of [C I]
+          - So, the Orion S comparison is probably a fairer one.
+          - Comparing with Hb we have 100 2000 / (2e8 / 2.87) = 0.003, which is still tiny
+- Other DRLs
+  - DRL 9113 *YES* this is clearly seen in Orion
+    - It is not one of the brightest DRLs in NGC 346, but this is probably because of underlying telluric absorption, which completely eliminates the line in the MYSO region, and probably reduces its apparent intensity even in Zone 0
+    - Peak is around 6000 in Orion S and broad band at 2000 in Orion Bar
+      - So DRL 9113 / [C I] 8727 = 6000 / 6e4 = 0.1
+      - Compare with NGC 346: DRL 9113 / [C I] 8727 = 0.1 / 0.5 = 0.2
+      - So, again, Orion is fainter, but not by a huge amount (although we need to take account of telluric absorption in NGC 346, which may mean that we are underestimating the true value there)
+  - DRL 9297 Marginal.
+    - Very noisy and spatial distribution does not look like [C I]
+    - Peak brightness is 1900 in Orion S
+    - So DRL 9297 / [C I] 8727 = 1900 / 6e4 = 0.032, so similar to 9029
+    - *Now decided this is not a DRL* 
+  - DRL 7306 is close to an observed line at 7308, but it is probably unrelated.
+    - Morphology is not like [C I]
+    - Looks more like [Fe II]
+    - Peak brightness is about 500
+  - DRL 7291 coincides with [Ca II] 7291
+    - I am not sure why this got classified as a DRL in the paper. It is not on the original list
+    - The spatial distribution in Orion of this line is unique, stronger in upper Bar than lower Bar. Plus filaments up near HH 210
+  - Null results
+    - DRL 8946 is on top of a sky line in Orion
+    - DRL 8894 overlaps with [Fe II] 8892, which is super strong in Orion
+    - DRL 8851 is in the middle of a bunch of helium lines (8845, 8848, 8854) and we see nothing at 8851
+    - DRL 8810 has literally nothing there
+      - Upper limit of about 500, so DRL 8810 / [C I] 8727 < 500 / 6e4 = 0.008
+    - DRL 8789 is in wing of sky line, and we see nothing
+    - DRL 8738 is in wing of He I 8733, and we see nothing
+    - DRL 8695 coincides with [Co II] 8695 (or may be [Fe II])
+    - DRL 8685 coincides with N I V1 multiplet lines
+    - DRL 8660 is in wing of H I 8665 and we see nothing
+    - DRL 8648 coincides with He I 8650
+    - DRL 8620 is in wings of [Fe II] 8617
+    - DRL 8611 coincides with ionized line at 8609
+    - DRL 8550 is in wing of H I 8545
+    - DRL 8151 is in clean area, but literally nothing there
+      - Again upper limit of about 500, so DRL 8151 / [C I] 8727 < 500 / 6e4 = 0.008
+    - DRL 7890 coincides with Ca I] 7890, which is super strong in Orion
+    - Lots of other lines show up nothing at all
+    - DRL 6646 is close to [Cr IV] 
+  - Lines in Orion that are not seen in NGC 346
+    - There is something interesting at 8107, but it is right at the limit of detection
+      - Intensity peak is about 500 at Orion S
+    - Interesting line at 6814
+      - Broad peak just behind the ionization front in the Orion Bar
+      - Peak in about 3000 in Orion S, and about 800 in Bar
+      - So DRL 6814 / [C I] 8727 = 3000 / 6e4 = 0.05
+    - Possible structure at 6285, but it coincides with telluric absorption band, so may be spurious
+      - No, turns out that this is a DIB, which is why it looks so weird
+**** Median filter applied to Orion cube
+- This is working really well!
+  
+
+*** DONE 30 Doradus
+CLOSED: [2023-05-26 Fri 13:54]
+
+**** Summary for 30 Dor
+- Physical
+  - 
+- Intermediate [C I]/H I compared with NGC 346
+  - 100 [C I] 8727 / Hb = 0.12 in Globule and 0.06 in Clump (as opposed to 0.5 in NGC 346)
+  - But about twice as high as in Orion
+  - This makes me think that [C I] in NGC 346 might be collisionally excited, like it is in planetary nebulae
+    - Would be important to measure the redder lines to check the line ratio
+- A good fraction of the DRLs are detected
+  - DRL/[C I] ~= 1.5 for the brightest (8151, 8660, 8851, 9029, 9114) in the Clump
+    - In the Globule it is lower: DRL/[C I] <= 0.2
+  - 100 DRL / Hb = 0.1 in Clump, or 0.02 in Globule for the strongest DRLs
+    - Compare with 0.4 in NGC 346 Zone 0, 0.2 in Zone MYSO, 0.01 in Orion
+  - As in Orion, DRL 9114 is more prominent than in NGC 346, with DRL/[C I] = 0.9
+  - We do not see 6814
+
+**** Measuring the lines in 30 Dor
+- We see several lines, so I will make a table of them
+  - We do not see any red of 9150, but 9297 is right on top of a sky line
+- Globule is the lower of the two globules just left of the center of field A
+- Clump is the big peak in DRL emission in center right of field A
+| Line     | Wave(obs) | Globule | Clump |                    | 100 I/Hb G | 100 I/Hb C |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| DRL 7848 |   7844.99 |       4 |     3 | Sky blend          |     0.0096 |     0.0172 |
+| DRL 7959 |   7967.49 |       4 |     6 | Sky blend          |     0.0096 |     0.0344 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
+|          |           |         |       |                    |     0.0000 |     0.0000 |
+| DRL 8038 |   8044.99 |       0 |     1 | Very marginal      |     0.0000 |     0.0057 |
+| DRL 8151 |   8157.49 |       9 |    12 |                    |     0.0215 |     0.0689 |
+| DRL 8523 |   8529.99 |       1 |     3 | Marginal           |     0.0024 |     0.0172 |
+| DRL 8550 |   8557.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
+| DRL 8560 |   8567.49 |       3 |     6 |                    |     0.0072 |     0.0344 |
+| DRL 8650 |   8657.49 |       5 |     5 | V. diffuse         |     0.0120 |     0.0287 |
+| DRL 8660 |   8667.49 |       5 |    10 |                    |     0.0120 |     0.0574 |
+| DRL 8789 |   8797.49 |       2 |     5 |                    |     0.0048 |     0.0287 |
+| DRL 8851 |   8858.74 |       8 |    12 |                    |     0.0191 |     0.0689 |
+| DRL 8888 |   8897.49 |       0 |     3 | Marginal           |     0.0000 |     0.0172 |
+| DRL 8946 |   8953.74 |       2 |     3 |                    |     0.0048 |     0.0172 |
+| DRL 9019 |   9027.49 |       1 |     3 | Very marginal      |     0.0024 |     0.0172 |
+| DRL 9029 |   9036.24 |       9 |    15 | Sky OH on red side |     0.0215 |     0.0861 |
+| DRL 9035 |   9043.74 |       0 |     2 | Very marginal      |     0.0000 |     0.0115 |
+| DRL 9057 |   9064.99 |       2 |     6 |                    |     0.0048 |     0.0344 |
+| DRL 9099 |   9107.49 |       2 |     7 |                    |     0.0048 |     0.0402 |
+| DRL 9114 |   9121.24 |       5 |     8 |                    |     0.0120 |     0.0459 |
+| DRL 9145 |   9153.74 |       3 |     8 |                    |     0.0072 |     0.0459 |
+| DRL 9163 |   9171.24 |       0 |     0 | Seen, but from IF  |     0.0000 |     0.0000 |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| Ha       |   6568.74 |  120000 | 50000 | Slightly saturated |   287.0000 |   287.0000 |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| [C I]    |   8734.99 |      50 |    10 |                    |     0.1196 |     0.0574 |
+|----------+-----------+---------+-------+--------------------+------------+------------|
+| DRL sum  |           |      68 |   124 |                    |     0.1626 |     0.7118 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@27$3..@27$4=vsum(@I..@II)
+
+*** TODO M17
+
+**** Origin of MUSE data cube for M17
+- Proposal was by Megan Reiter et al
+  - REITER/ KLAASSEN/ MCLEOD/ DALE/ POVICH/ MOTTRAM
+  - [[http://archive.eso.org/wdb/wdb/eso/sched_rep_arc/query?tel=UT4&from_date=01-Apr-2019&progid=0103.C-0288(A)][Link to program]]
+**** Summary for M17
+- Luminosity of OB stars is 4e6 Lsun (from Povich:2007a), which is about 20 times Orion
+
+**** Measuring the lines in M17 Tile 03
+Note that I see no lines at shorter wavelengths.
+
+| Line     | Wave(obs) |   Near |   Far |                       | 100 I/Hb N | 100 I/Hb F |
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| DRL 7782 |   7782.78 |      4 |     5 |                       |     0.0077 |     0.0334 |
+| DRL 7790 |   7790.28 |      2 |     2 | Extremely marginal    |     0.0038 |     0.0133 |
+| DRL 7804 |   7802.78 |      2 |     1 | Extremely marginal    |     0.0038 |     0.0067 |
+| DRL 7838 |   7837.78 |      6 |     5 |                       |     0.0115 |     0.0334 |
+| DRL 7960 |   7960.28 |      7 |     7 |                       |     0.0134 |     0.0467 |
+| DRL 8047 |   8046.53 |        |     5 | [Cl IV] blend         |     0.0000 |     0.0334 |
+| DRL 8459 |   8459.03 |     10 |    11 | Strong! And no sky    |     0.0191 |     0.0734 |
+| DRL 8151 |   8150.28 |      5 |     6 |                       |     0.0096 |     0.0400 |
+| DRL 8789 |   8789.03 |      2 |     3 | Very marginal         |     0.0038 |     0.0200 |
+| DRL 8851 |   8850.28 |      7 |    10 |                       |     0.0134 |     0.0667 |
+| DRL 8888 |           |        |       | Sky                   |     0.0000 |     0.0000 |
+| DRL 8894 |   8894.03 |     10 |    12 | [Fe II] blend to blue |     0.0191 |     0.0801 |
+| DRL 8946 |   8946.53 |      7 |     9 | Sky blend to blue     |     0.0134 |     0.0601 |
+| DRL 9019 |           |        |       | H I wing too strong   |     0.0000 |     0.0000 |
+| DRL 9029 |   9029.03 |      8 |     8 |                       |     0.0153 |     0.0534 |
+| DRL 9035 |           |        |       | [Fe II] dominates     |     0.0000 |     0.0000 |
+| DRL 9114 |   9112.78 |     10 |     8 |                       |     0.0191 |     0.0534 |
+| DRL 9145 |   9145.28 |      2 |     1 | Extremely marginal    |     0.0038 |     0.0067 |
+| DRL 9163 |   9162.78 |      3 |     2 | Very marginal         |     0.0057 |     0.0133 |
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| Ha       |   6568.74 | 150000 | 43000 | Slightly saturated    |   287.0000 |   287.0000 |
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| [C I]    |   8727.78 |    140 |   110 |                       |     0.2679 |     0.7342 |
+|----------+-----------+--------+-------+-----------------------+------------+------------|
+| DRL sum  |           |     85 |    95 |                       |     0.1626 |     0.6341 |
+#+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@23$3..@23$4=vsum(@I..@II)
+
+
+** Possible atomic candidates
+
+*** Si I lines
+- According to Garcia-Rojas:2005a there are Si I lines at
+  - 8150.57
+  - 8046.80
+- These coincide very well with some of our observed lines
+- BUT vdW line list has nothing at those wavelengths
+- AND neither does NIST
+- Closest is 8154.87, 8049.60
+- So I need to find where Jorge gets his data from
+  - Either he knows something that we do not, or it could be that he was misidentifying the lines
+  - But either way, he seems to have observed some of the same lines that we have from S311, 
+
+*** C I lines
+- Although 8727 is recombination in Orion, according to Vladimir, it is more likely to be collisionally excited in most planetary nebulae according to Liu et al. 1995
+  - This is because the ratio of (9824 +9850)/8727 is predicted to be around 5 to 10 with recombination, whereas it is observed to be typically 30 in planetary nebulae
+- There  are other potential recombination lines mentioned by Liu, but we do not see them in NGC 346
+  - Ci M3 3p3 P-3s3 P° at 9089À,
+    - strongest component 9094.289
+  - M2 3p3 S-3s3 P° at 9642 À
+  - and M26 4d3 F°-3p3 D at 7116Ä
+    - supposedly strongest component is 7113.180
+- I do not see any of those lines
+  - The 9095 line is badly affected by telluric absorption on both sides, which makes it look like there might be a line in the S and MYSO regions, but I think this is spurious.
+  - [ ] I should check with the wider median filters
+*** Fe I lines
+** Possible molecular candidates
+- Diffuse clouds are known to show optical/IR absorption in lines of CN, C_2, CH, CH+, NH, C_3
+  - See Table 2 of Snow:2006e ARAA review
+- Emission lines are only seen in comets and the Red Rectangle
+
+
+
+*** Molecular line databases
+- Best overview paper by far
+  - McKemmish:2021z
+  - [McK21] Laura K. McKemmish. Molecular diatomic spectroscopy data. WIREs Computational Molecular Science, 11(5):e1520, March 2021.
+  - Explains all the different sorts of data sources and calculations. Gives list of all available line lists with advantages ans limitations of each of them
+**** ExoMol
+- https://www.exomol.com
+- This has OH+ lines
+  - See Hodges:2017j, Wang:2020g
+- I have downloaded some of the data
+  - [[file:../molecules/ExoMol/]]
+    - for smaller files
+    - All the ~.def~ and ~.states~ files
+      - CN, CH, C_{2}, NH, OH, OH^{+}, H_{2}
+      - Common isotopes only
+    - ~.trans~ files where they are smaller than 10 MB
+  - [[file:../big-data/ExoMol/]]
+    - for big files to keep them out of git
+    - ~.trans~ files for C_{2} and CN
+    - Opacity files if I ever bother with them
+      - So far I only have OH^{+}
+      - These assume LTE I think, but might still be useful
+*** How to calculate wavelengths
+- Although this is interesting to understand, it would be better to use the line lists from modern databases instead. 
+- We can use the data from Huber & Herzberg (1979) for calculating the transition energies
+  - Earlier version in Appendix of Herzberg (1950)
+- The equations to use are in Chapter III of Herzberg (1950)
+  #+begin_example
+    From the data of Table.39, the positions of the rotational and vibrational levels in any of the electronic states may be derived with the aid of the formulae (III, 116) and (III, 121) or, for multiplet states, of the formulae given in Chapter V. The same data may also be used for a calculation of the potential curves either using the Morse function (III, 98) or more involved functions (see p. 102). Furthermore, from these data the positions of the bands and of the lines within the bands may be derived according to the formulae developed in Chapters III, IV, and V. For the wavelengths of the observed bands of the various molecules, the reader is referred to the extensive tables of Pearse and Gaydon (47).
+  #+end_example
+						
+- 
+*** OH lines
+- These are a major component of the night sky airglow spectrum
+  - Osterbrock:1996a, Osterbrock:1997a
+- But SMC is at sufficiently high velocity (+160) that any emission from the nebula should be shifted away from the sky line
+- I looked at the
+*** Molecular ions
+- CH+ is detected by mm emission lines in Orion Bar
+  - Nagy:2013a
+  - Could it have optical/ir lines too?
+    - Yes, see ExoMol section above
+- OH- 
+*** C_{2} lines
+- There is the (2-0) band at 8751, but these are very weak and narrow  when seen in absorption, and are separated by 2 to 4 Angstrom
+  | J" |     R (J") |       |      Q(J") |       |    P(J') |       |
+  |----+------------+-------+------------+-------+----------+-------|
+  |  0 | * 8757.686 | 1.000 |            |       |          |       |
+  |  2 |   8753.949 | 0.400 | * 8761.194 | 0.500 | 8766.031 | 0.100 |
+  |  4 |   8751.685 | 0.334 | * 8763.751 | 0.500 | 8773.430 | 0.166 |
+  |  6 |   8750.848 | 0.308 | * 8767.759 | 0.500 | 8782.308 | 0.192 |
+  |  8 |   8751.486 | 0.294 | * 8773.221 | 0.499 | 8792.648 | 0.205 |
+  | 10 |   8753.578 | 0.286 |   8780.141 | 0.499 | 8804.499 | 0.213 |
+  | 12 |   8757.127 | 0.280 |   8788.559 | 0.498 | 8817.826 | 0.219 |
+  | 14 |   8762.145 | 0.276 |   8798.459 | 0.498 | 8832.679 | 0.222 |
+  | 16 |   8768.627 | 0.272 |   8809.841 | 0.497 | 8849.071 | 0.225 |
+  | 18 |   8776.607 | 0.270 |   8822.725 | 0.496 | 8866.993 | 0.227 |
+  - But we see nothing around there at all until 8790
+  - Update [2022-10-17 Mon]
+    - Mabel has found a possible match for 8809.841
+    - But we need to see if any other lines match up
+    - [ ] Most pressing question: are these vacuum or air wavelengths?
+    - [ ] And where did this table come from?
+- More on the C_2 lines [2022-10-17 Mon]
+  - Introduction to theory is given in van Dishoek & Black 1982ApJ...258..533V
+  - Lines are probably fluorescent
+    - Excitation is via the Phillips band system in optical/nir, which is the same one we might be seeing emission lines of
+    - Although this makes it hard to see how we can have very bright lines, as compared with the stellar continuum
+      - But maybe they are not that bright - we should work out the equivalent widths
+  - Excitation is from ground electronic state X to excited electronic state A
+    - All these are very approximate
+    - The v = 0-0 transition has wn = 8500 => 1.18 micron
+      - Interval of about 1500 cm^-1 between vibrational states of A
+    - The v = 1-0 transition has wn = 10000 => 1 micron
+    - The v = 2-0 transition has wn = 11500 => 8700 \AA
+    - The v = 3-0 transition has wn = 13000 => 7690 \AA
+    - The v = 4-0 transition has wn = 14500 => 6900 \AA
+    - The v = 5-0 transition has wn = 16000 => 6250 \AA
+    - Etc ...
+    - The v = 8-0 transition has wn = 20500 => 4880 \AA
+  - But there is also the rotational structure
+  - And we could also have return to a vibrationally excited state of X
+    - Interval of about 1800 cm^-1 between vibrational states of X
+    - So, for instance 8-3 would be wn = 20500 - 5400 = 15100 => 6620 \AA
+- This all looks very promising, as compared to the wavelengths that we have. However, we need to get some precise matches in order to be feasible
+*** TODO Finding C_2 wavelengths from ExoMol
+
+
+  
+*** CN lines
+
+- Some in violet, some in IR, but also in far red
+- Best recent paper is Syme:2021y
+- Seems there is a band that peaks in the Red
+  - Lines at 9124.0, 9127.4, seem too close together
+
+
+*** CH lines
+- Data in ExoMol comes from Masseron:2014n but these are all in blue
+
+*** DIBs
+- These have only ever been seen in absorption as far as I know, but maybe it would be possible to see them in emission
+- There are some near coincidences with our lines:
+  - The 862 nm feature has a rest wavelength of 8620.86 ± 0.019 Å in air according to Gaia-collaboration:2022a, which is close to one of our lines at 8620.31 ± 0.74
+  - But FWHM of this feature is 5 Angstrom, see Zhao:2023a, which is far broader than what we see
+- So the conclusion would be that our lines are unlikely to be DIBs
+** 6400 to 6800 Angstrom
+- These are in the same range as the Ha Raman wings
+- 6626.5
+  - Most clearly molecular by its distribution. The filaments are very sharp
+- 6635.5, 6644.5, 6654.5
+  - These could be neutral or low ionization, given their distribution
+- 6698
+  - Weak and moderately diffuse
+  - Probably medium ionization
+- 6527.5
+  - Look like medium ionization
+- 6501, 6484.5 (weak)
+  - Probably low ionization
+- 6458
+  - Possibly neutral but weak
+- 6594.5 absorption
+  - This is seen best in the diffuse Raman zone in the NW
+  - It is very broad (10 Angstrom) and a very smooth parabola shape in the summed spectrum
+
