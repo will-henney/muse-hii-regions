@@ -8723,9 +8723,11 @@ Sample:
       jupyter nbconvert --to html 01-00-line-ratios.ipynb 
     #+end_src
 - Problems encountered
-  - I have to adjust some relative paths in the notebooks since I moved them into subdirectories
-    - Best to do that in the pure python version and use jupytext to convert to ipynb
-    - Now sorted for [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py][01-01-more-line-ratios.py]], which was much messier than it should have been because I decided to do things properly with ~Pathlib~ but had forgotten that MPDAF does not support that, so had to convert back to strings
+  1. I have to adjust some relative paths in the notebooks since I moved them into subdirectories
+     - Best to do that in the pure python version and use jupytext to convert to ipynb
+     - Now sorted for [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py][01-01-more-line-ratios.py]], which was much messier than it should have been because I decided to do things properly with ~Pathlib~ but had forgotten that MPDAF does not support that, so had to convert back to strings
+  2. It looks like I am running some sort of hook that strips out all of the notebook outputs when it pushes
+     - Why would I have done that
 - [3/10] Files fully processed
   - [ ] 00-01-extract-subregions
   - [X] 01-00-line-ratios
