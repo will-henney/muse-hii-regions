@@ -34,11 +34,26 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
+<span style="color:red">**<<<<<<< local**</span>
+
+
 ## Path to the root of this repo
 
 ```python
 ROOT = Path.cwd().parent.parent 
 ```
+
+<span style="color:red">**=======**</span>
+
+
+## Path to the root of this repo
+
+```python
+ROOT = Path.cwd().parent.parent 
+```
+
+<span style="color:red">**>>>>>>> remote**</span>
+
 
 ## Calculate reddening from Balmer decrement
 
