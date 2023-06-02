@@ -34,8 +34,9 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
+## Path to the root of this repo
+
 ```python
-# ## Path to the root of this repo
 ROOT = Path.cwd().parent.parent 
 ```
 

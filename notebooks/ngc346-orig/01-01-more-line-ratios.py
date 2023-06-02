@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.1
+#       jupytext_version: 1.11.1
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -35,6 +35,7 @@ sns.set_color_codes()
 # -
 
 # ## Path to the root of this repo
+
 ROOT = Path.cwd().parent.parent 
 
 # ## Calculate reddening from Balmer decrement

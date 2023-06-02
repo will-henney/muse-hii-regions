@@ -7,13 +7,14 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.11.1
   kernelspec:
     display_name: Python 3
     language: python
     name: python3
 ---
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 # Kinematics of [O III]
 
 We will calculate the velocity moments for [O III] to compare with the ones we already calculated for H alpha.  There are some advantages in using [O III] over H alpha:
@@ -27,11 +28,13 @@ On the other hand, there is at least one disadvantage:
 
 * The spectral resolution is lower (in velocity units)
 
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Load libraries and data cube (identical to earlier notebooks):
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -42,41 +45,47 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 datapath = Path("/Users/will/Work/Muse-Hii-Data/SMC-NGC-346/")
 fitsfilepath = datapath / "ADP.2017-10-16T11_04_19.247.fits"
 cube = Cube(str(fitsfilepath))
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 I have now moved functions for dealing with the velocity moments to a separate library:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 import sys
 sys.path.append("../lib")
 import moments
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Where to save figures and FITS images:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 moments.FIGPATH = Path("../figs")
 moments.SAVEPATH = Path("../data")
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ## Choose the wavelength range
 
 ### Broad overview
 
 First we inspect the spectrum in 6 broad horizontal strips across the image, from south to north. 
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 jstrips = [
     [0, 50], [50, 100], [100, 150], 
     [150, 200], [200, 250], [250, -1],
 ]
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 wide_band = cube.select_lambda(4850, 5050)
 fig, ax = plt.subplots(figsize=(10, 8))
 for (j1, j2) in jstrips:
@@ -88,14 +97,17 @@ ax.set(yscale="log")
 sns.despine();
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 So, this makes it look like all the lines are positive (but this is unfortunately not the case!).  The other weak lines that we see are He I 4922 and 5016 Å.
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ### Narrow in on the [O III] doublet
 
 Set some limits for the continuum and line extraction:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 wlim = {
     "4959": {
         "core": [4953.0, 4969.0],
@@ -111,9 +123,11 @@ wlim = {
 rangecolors = {"core": "g", "blue": "b", "red": "r"}
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Plot these limits zoomed in on the two [O III] lines:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 medium_band = cube.select_lambda(4940, 5040)
 fig, ax = plt.subplots(figsize=(10, 8))
 for (j1, j2) in jstrips:
@@ -134,13 +148,15 @@ ax.set(yscale="linear", ylim=[0.0, 1000])
 sns.despine();
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 That seems to look fine.  Note that the red continuum band for 5007 is separated a bit from the core to allow space for the He I line (although it is so weak that this probably doesn't matter).
 
 ### Do continuum subtraction
 
 Now, we can use the same `wlim` data to extract the line and continuum:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 def extract_core_and_cont(cube, spandata):
     """Return continuum-subtracted line core and continuum map
     
@@ -153,14 +169,16 @@ def extract_core_and_cont(cube, spandata):
     return core, cont
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 core5007, cont5007 = extract_core_and_cont(medium_band, wlim["5007"])
 core4959, cont4959 = extract_core_and_cont(medium_band, wlim["4959"])
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Plot the line core and the continuum for 5007 and 4959
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(
     2, 2,
     figsize=(10, 10), 
@@ -178,19 +196,23 @@ axes[1, 1].contour(cont4959.data, levels=[0.0], colors="r")
 fig.tight_layout(pad=0);
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 The red contours show the zero level.  Both lines pass through zero in exactly the same place.  The two continuum maps also have negative regions, but they are completely unrelated to in the line maps (although very similar between themsleves).
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ## Wavelength moments
 
 We now use the functions defined in my `moments` package (`../lib/moments.py`).
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ### First look without having fixed the sky
 
 This comes out bad because of the zero crossing of the intensity
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 mom5007 = moments.find_moments(core5007)
 fig, ax = plt.subplots(figsize=(8, 8))
 mom5007[1].plot(
@@ -201,21 +223,26 @@ mom5007[1].plot(
 );
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 This looks remarkably similar to the Ha moment map before correction
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ### Make the correction for the bad sky subtraction
 
 We will first assume that we can correct with exactly the same 3 pixels as we used for H alpha:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 skyspec5007 = core5007[:, 8:9, 103:106].mean(axis=(1, 2))
 skyspec4959 = core4959[:, 8:9, 103:106].mean(axis=(1, 2))
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Inspect the profile in the sky pixels:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(8,4))
 skyspec4959.plot(ax=ax, label="4959", linewidth=2)
 ax.plot(
@@ -230,14 +257,17 @@ fig.tight_layout()
 sns.despine()
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Note that I have shifted the 5007 line to match up the rest wavelengths and divided the intensity by 3.  The lines agree very well. 
 
 Note also the displacement in wavelength bin centers in their respective rest wavelength frame.  In principle, we could take advantage of this to more finely sample the line profile.
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Now look at the effect of the sky correction on a similar sample of pixels as those that we used for H alpha.  I have changed the bottom row ones, in order to find pixels that were truly bright in [O III]:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 testpixels = [
     [250, 160], [150, 150], [10, 300],
     [70, 250], [75, 200], [310, 225],
@@ -261,14 +291,17 @@ sns.despine()
 fig.tight_layout();
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Apart from the brightest pixels (bottom row), the correction is very substantial.
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 ### Recalculate the moments after correcting the sky
 
 Side-by-side comparison of the first moment for 5007 and 4959:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 mom5007 = moments.find_moments(core5007 - skyspec5007)
 mom4959 = moments.find_moments(core4959 - skyspec4959)
 fig, axes = plt.subplots(1, 2, figsize=(10, 5))
@@ -289,11 +322,13 @@ mom4959[1].plot(
 fig.tight_layout(h_pad=10);
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 These look very similar to the H alpha map in general.  They are also extremely similar to one another.  Both of these facts are reassuring.  
 
 On the negative side, there do be some artefacts, particularly horizontal stripes. These tend to occur at "significant" j values, such as 80, 160, 240, which correspond to different IFUs I think.
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(
     1, 2, 
     figsize=(10, 5),
@@ -316,7 +351,7 @@ mom4959[2].plot(
 fig.tight_layout();
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots()
 wav5007 = np.median(mom5007[1].data.data)
 wav4959 = np.median(mom4959[1].data.data)
@@ -336,7 +371,7 @@ for i0 in [80, 160, 240]:
 wav5007, wav4959
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots()
 ax.plot(
     np.median(mom5007[1].data.data, axis=0)
@@ -353,11 +388,11 @@ ax.set(ylim=[-0.12, 0.12]);
 #    ax.axvline(i0, lw=0.5, color="k", alpha=0.2)
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 import pandas as pd
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 moments.save_moments_to_fits(
     mom5007,
     label="5007",
@@ -369,7 +404,7 @@ moments.save_moments_to_fits(
 )
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 plot_pars_5007=dict(
     ilabel="[O III]",
     label="5007",
@@ -384,13 +419,13 @@ g = moments.moments_corner_plot(
 )
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = moments.moments_corner_plot(
     mom5007, rebin=4, **plot_pars_5007
 )
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = moments.moments_corner_plot(
     mom5007, rebin=16, **plot_pars_5007,
     hist_bins=40,
@@ -398,7 +433,7 @@ g = moments.moments_corner_plot(
 )
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 m = (mom5007[0].mask 
      | (mom5007[0].data < 2e4)
      | (mom5007[1].data < 5009.2) 
@@ -414,7 +449,7 @@ df = pd.DataFrame({
 df.describe()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = sns.pairplot(
     df,
     kind="hist",
@@ -427,7 +462,7 @@ g.fig.suptitle("[O III] 5007 corrected, normalized moments")
 g.tight_layout(pad=0);
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 m = (mom4959[0].mask 
      | (mom4959[0].data < 0.67e4)
      | (mom4959[1].data < 4961.2) 
@@ -443,7 +478,7 @@ df4959 = pd.DataFrame({
 df4959.describe()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = sns.pairplot(
     df4959,
     kind="hist",
@@ -456,16 +491,19 @@ g.fig.suptitle("[O III] 4959 corrected, normalized moments")
 g.tight_layout(pad=0);
 ```
 
+<!-- #region pycharm={"name": "#%% md\n"} -->
 The distributions are very consistent between the two [O III] lines.  They are also quite similar to H alpha, especially in the mid-range of intensity.
 
 There is clear evidence for a bimodal distribution of velocities, separated by about 6 km/s. A narrow component at 164 km/s and a broader component at 158 km/s. Then there is a third, weaker component at 166 km/s.  These are all from 5007 - the same is seen for 4959, but with a shift of -2 km/s.  Width is also higher for 4959 - could this be due to a blend with something?
 
 There is a very slight reduction in line width with velocity, which is seen in all the lines.
+<!-- #endregion -->
 
-
+<!-- #region pycharm={"name": "#%% md\n"} -->
 Now look at the cross-correlations between the two lines:
+<!-- #endregion -->
 
-```python
+```python pycharm={"name": "#%%\n"}
 m = (mom5007[0].mask 
      | (mom5007[0].data < 2e4)
      | (mom5007[1].data < 5009.2) 
@@ -490,13 +528,13 @@ df2 = pd.DataFrame({
 df2.corr()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 xvars = [_ for _ in df2.columns if "5007" in _]
 yvars = [_ for _ in df2.columns if "4959" in _]
 xvars, yvars
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = sns.pairplot(
     df2,
     kind="hist",
@@ -509,7 +547,7 @@ g.fig.suptitle("Correlations between 5007 and 4959")
 g.tight_layout(pad=0);
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 df3 = df2[["log10 I(5007)"]].copy()
 df3["5007 / 4959"] = 10**(df2["log10 I(5007)"] - df2["log10 I(4959)"])
 df3["dV"] = df2["V(5007)"] - df2["V(4959)"]
@@ -517,7 +555,7 @@ df3["sig ratio"] = df2["sig(5007)"] / df2["sig(4959)"]
 df3.describe()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 m = (
     (df3["5007 / 4959"] < 2.9)
     | (df3["5007 / 4959"] > 3.1)
@@ -530,7 +568,7 @@ df3 = df3[~m]
 df3.corr()
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 g = sns.pairplot(
     df3,
     kind="hist",
@@ -543,10 +581,10 @@ g.fig.suptitle("[O III] 5007 vs 4959 ratios and differences")
 g.tight_layout(pad=0);
 ```
 
-```python
+```python pycharm={"name": "#%%\n"}
 df3.loc?
 ```
-```python
+```python pycharm={"name": "#%%\n"}
 
 ```
 

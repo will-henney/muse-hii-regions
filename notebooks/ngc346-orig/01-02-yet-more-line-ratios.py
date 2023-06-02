@@ -711,6 +711,7 @@ fig.savefig(figdir / "ngc346-bow-shock-lowion-cuts.pdf")
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + [markdown] pycharm={"name": "#%% md\n"}
 # ## Ar ionization balance
 #
