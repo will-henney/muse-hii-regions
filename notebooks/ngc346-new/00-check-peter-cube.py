@@ -238,6 +238,7 @@ ax.set(
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + [markdown] pycharm={"name": "#%% md\n"}
 # ## Make some maps
 
@@ -293,7 +294,9 @@ Table(rows=extra_region_dict.items())
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + pycharm={"name": "#%%\n"}
+
 
 
 # + [markdown] pycharm={"name": "#%% md\n"}
@@ -598,7 +601,9 @@ ax.set(yscale='linear', ylim=[0, 500])
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + pycharm={"name": "#%%\n"}
+
 
 
 # + [markdown] pycharm={"name": "#%% md\n"}
@@ -619,6 +624,7 @@ ax.legend()
 ax.set(yscale='log', ylim=[1e0, 1e5])
 
 # + pycharm={"name": "#%%\n"}
+
 
 
 # + pycharm={"name": "#%%\n"}
@@ -1311,6 +1317,7 @@ line_list_low = [
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + pycharm={"name": "#%%\n"}
 _min, _max = 1e-5, 2.0
 N = 10
@@ -1363,6 +1370,7 @@ df[line_list_low].corr()
 #
 
 # + pycharm={"name": "#%%\n"}
+
 
 
 # + pycharm={"name": "#%%\n"}
@@ -1835,7 +1843,9 @@ fig.savefig("peter-region-extras-strip-ratio-diff-spectra.pdf")
 # + pycharm={"name": "#%%\n"}
 
 
+
 # + pycharm={"name": "#%%\n"}
+
 
 
 # + [markdown] pycharm={"name": "#%% md\n"}

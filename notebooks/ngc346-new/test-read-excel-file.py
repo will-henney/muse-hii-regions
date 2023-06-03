@@ -35,6 +35,9 @@ df
 # So, that gave me the table, but I do not see any of the notes.
 
 # + pycharm={"name": "#%%\n"}
+set(str(x).rstrip('?') for x in df.Type)
+
+# + pycharm={"name": "#%%\n"}
 import openpyxl
 
 # + pycharm={"name": "#%%\n"}
@@ -75,7 +78,7 @@ pd.DataFrame(
 )
 
 # + pycharm={"name": "#%%\n"}
-
+# pd.read_excel??
 
 # + pycharm={"name": "#%%\n"}
 any(x.value for x in list(sheet.rows)[468])

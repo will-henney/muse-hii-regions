@@ -6,14 +6,18 @@
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** Return to bow project 2023 Summer
+** TODO [/] Return to bow project 2023 Summer
 - What remains to be done?
-  - [-] Rerun all the notebooks since I seem to have lost all the results cells
+  - [X] Rerun all the notebooks since I seem to have lost all the results cells
     - Looks like best way is with nbconvert
-    - 
+    - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
   - [ ] Maybe repeat for the Peter Zeigler cube
   - [ ] Think what are the essentials for the paper
-*** TODO Rerunning the notebooks [2023-06-01 Thu]
+*** DONE Rerunning the ~data/ngc346-orig/~ notebooks [2023-06-01 Thu]
+CLOSED: [2023-06-02 Fri 17:42]
+:PROPERTIES:
+:ID:       EB6FFF61-D26C-484F-8CDF-C680BAB9366F
+:END:
 - I have lost all the results cells in the notebooks, so I need to rerun them
   - Turns out that I had not actually lost the outputs in my working tree, they were just stripped out by the git filter
   - So there is no longer any need to re-run them all, but I will do it anyway, since it has revealed a problem with the relative paths now that I have moved them to a sub-folder
@@ -38,7 +42,7 @@
      #+begin_src python
        from whispy import moments
      #+end_src
-- [13/15] Files fully processed
+- [13/13] Files fully processed
   - [X] 00-01-extract-subregions
   - [X] 01-00-line-ratios
   - [X] 01-01-more-line-ratios
@@ -54,8 +58,8 @@
     - More than 2 min to execute
   - [X] 03-05-green-and-red-lines-extract
     - Nearly 8 min to execute!
-  - [ ] 
-  - [ ]
+- The remaining notebooks (04, 10, 11, 20) series are not strictly based on the MUSE cube, so I will leave them for now
+  - Although they do need dealing with eventually, if only to adjust the relative paths
 *** Steps to update the notebooks
 For example, for this notebook:
 #+begin_src sh
@@ -76,12 +80,35 @@ STEM=02-01-Raman-Wings-IR-Source-C
      jupytext -d --sync $STEM.ipynb
    #+end_src
 6. Now open the notebook in jupyter to check that it looks OK
-7. Finally, convert to html
+7. Finally, convert to html for ease of quick viewing
    #+begin_src sh
      jupyter nbconvert --to html $STEM.ipynb
    #+end_src
-
-  
+*** Do versions of notebooks but with Peter data swapped in
+- [ ] Decide exactly what needs to be done for the bow paper
+  - I think mainly the line ratios series of notebooks
+    - ~01-00-line-ratios.ipynb~ will be a good one to start with
+    - This first looks at the [S II] lines, which will be a good test of how well the Peter cube does for medium-strength lines
+- Naming convention
+  - I will just add ~PZ~ prefix to the notebook names from ~data/ngc346-orig/~
+- Do we want to be working with the median filtered cube?
+  - Advantage that we do not need to bother with the continuum subtraction
+  - Disadvantage is that this deviates from what I did with the ESO cube
+*** Some more ideas about things to add to paper
+**** Line ratios
+- We can look at correlations between relative line strength (wrt H beta)
+- We can do this per-pixel and colored by the Zones from the DRL paper
+- From what we have already in [[file:../notebooks/ngc346-new/eso-region-line-ratio-pairplot.pdf]] we can see the following
+  - For the highest ionizations, we see some negative correlations, such as
+    - [O III] vs [O II]
+    - [Ar IV] vs [O III]
+  - But at lower ionizations, all the correlations are positive
+    - [O II] vs [O I]
+    - [O I] vs [S II]
+    - [O I] vs O I
+    - O I vs [C I]
+    - etcetera
+  - But is this really worth doing?
 ** Lines to use for the bow shock
 + [X] He II 4685.71
   + 3-4 transition, so equivalent to Paschen \alpha
