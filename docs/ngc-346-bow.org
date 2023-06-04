@@ -6,12 +6,12 @@
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [/] Return to bow project 2023 Summer
+** TODO [0/0] Return to bow project 2023 Summer
 - What remains to be done?
   - [X] Rerun all the notebooks since I seem to have lost all the results cells
     - Looks like best way is with nbconvert
     - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
-  - [ ] Maybe repeat for the Peter Zeigler cube
+  - [-] Maybe repeat for the Peter Zeigler cube
   - [ ] Think what are the essentials for the paper
 *** DONE Rerunning the ~data/ngc346-orig/~ notebooks [2023-06-01 Thu]
 CLOSED: [2023-06-02 Fri 17:42]
@@ -92,7 +92,8 @@ STEM=02-01-Raman-Wings-IR-Source-C
     - Yes, that worked out excellently. See:
       - [[file:../notebooks/ngc346-new/PZ-01-00-line-ratios.html]]
   - Next we need to start working through the 03-XX series to do the line moments
-    - Start with H alpha
+    - [X] Start with H alpha
+    - [ ] 
 - Naming convention
   - I will just add ~PZ~ prefix to the notebook names from ~data/ngc346-orig/~
 - Do we want to be working with the median filtered cube?
