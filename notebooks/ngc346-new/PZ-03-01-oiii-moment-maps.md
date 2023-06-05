@@ -89,8 +89,8 @@ ax.set(yscale="log")
 sns.despine()
 ```
 
-So, this makes it look like all the lines are positive (and hopefully for the PZ cube this is the case).  
-* The other strong line we see is H beta 4861. 
+So, this makes it look like all the lines are positive (and hopefully for the PZ cube this is the case).
+* The other strong line we see is H beta 4861.
 * The other weak lines that we see are He I 4922 and 5016 Å (and marginally [Fe III] 4987)
 * If we compare with the original version, the continuum is not so flat, but instead shows lots of undulations
 
@@ -264,7 +264,7 @@ mom4959[2].plot(
 fig.tight_layout()
 ```
 
-These maps of sigma seem to show less artifacts than the equivalent ones from the ESO cube. 
+These maps of sigma seem to show less artifacts than the equivalent ones from the ESO cube.
 
 ```python
 fig, ax = plt.subplots()
@@ -280,7 +280,7 @@ for i0 in [80, 160, 240]:
 wav5007, wav4959
 ```
 
-This is the median N-S (vertical) profile of the map, which nicely shows the blue-red-blue pattern as one goes from south to north. The agreement between the two doublet components is excellent. The pattern is similar to what I got with the ESO cube, except the total variation is a bit smaller. 
+This is the median N-S (vertical) profile of the map, which nicely shows the blue-red-blue pattern as one goes from south to north. The agreement between the two doublet components is excellent. The pattern is similar to what I got with the ESO cube, except the total variation is a bit smaller.
 
 ```python
 fig, ax = plt.subplots()
@@ -293,7 +293,7 @@ ax.set(ylim=[-0.12, 0.12])
 #    ax.axvline(i0, lw=0.5, color="k", alpha=0.2)
 ```
 
-And this is the same in the E-W (horizontal) direction. There is less horizontal variation than vertical variation, as is obvious from just looking at the maps. 
+And this is the same in the E-W (horizontal) direction. There is less horizontal variation than vertical variation, as is obvious from just looking at the maps.
 
 ```python
 import pandas as pd
@@ -302,7 +302,7 @@ import pandas as pd
 ```python
 save_pars_5007 = dict(
     label="5007",
-    flabel="ngc346-oiii",
+    flabel="ngc346-PZ-oiii",
     restwav=5006.84,
     irange=[5.0e4, 3.0e5],
     vrange=[150, 175],
@@ -405,9 +405,9 @@ g.tight_layout(pad=0)
 
 The distributions are very consistent between the two [O III] lines.  They are also quite similar to H alpha, especially in the mid-range of intensity.
 
-Unlike in the ESO cube, there is not really a bimodal distribution in the velocities of either line. The marginal histogram is single-peaked, with a maximum at about 162 km/s. 
+Unlike in the ESO cube, there is not really a bimodal distribution in the velocities of either line. The marginal histogram is single-peaked, with a maximum at about 162 km/s.
 
-However, on the joint I-v distribution, we can see evidence of a multi-peaked structure. The 162 km/s peak corresponds to the intermediate brightness values. Lower brightness values have a distinct peak at 159 km/s. And then the brightest pixels also seem to move twoards slightly bluer velocities (160 km/s). Finally, the intermediate brightnesses show a "spike" towards higher velocities: 165 km/s.  
+However, on the joint I-v distribution, we can see evidence of a multi-peaked structure. The 162 km/s peak corresponds to the intermediate brightness values. Lower brightness values have a distinct peak at 159 km/s. And then the brightest pixels also seem to move twoards slightly bluer velocities (160 km/s). Finally, the intermediate brightnesses show a "spike" towards higher velocities: 165 km/s.
 
 The line width does not vary with velocity, but there is some evidence for structure in the I-sigma plot.
 
@@ -463,7 +463,7 @@ g.fig.suptitle("Correlations between 5007 and 4959")
 g.tight_layout(pad=0)
 ```
 
-That all looks good, although the correlation coefficients for V-V and sig-sig are a bit lower than for the ESO cube, presumably due to the pattern noise. 
+That all looks good, although the correlation coefficients for V-V and sig-sig are a bit lower than for the ESO cube, presumably due to the pattern noise.
 
 ```python
 df3 = df2[["log10 I(5007)"]].copy()
@@ -499,8 +499,4 @@ g.fig.suptitle("[O III] 5007 vs 4959 ratios and differences")
 g.tight_layout(pad=0)
 ```
 
-No meaningful correlations or trends here, which is good. And better than the ESO cube, where there were several. There is a slight tendency for sigma ratio to increase with intensity ratio, which could be evidence that there is an additional line that blends with 5007. 
-
-```python
-
-```
+No meaningful correlations or trends here, which is good. And better than the ESO cube, where there were several. There is a slight tendency for sigma ratio to increase with intensity ratio, which could be evidence that there is an additional line that blends with 5007.

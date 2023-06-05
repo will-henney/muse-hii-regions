@@ -118,7 +118,7 @@ core6731, cont6731 = extract_core_and_cont(medium_band, wlim["6731"])
 
 core6716.sum(axis=0).data.min()
 
-# Note that the minimum pixel value is positive, as we want. 
+# Note that the minimum pixel value is positive, as we want.
 
 fig, axes = plt.subplots(
     2,
@@ -203,35 +203,35 @@ fig.tight_layout()
 mom_pars_6716 = dict(
     restwav=6716.44,
     irange=[300, 1e5],
-    vrange=[140, 190],
+    vrange=[150, 180],
     srange=[30, 70],
 )
 moments.save_moments_to_fits(
     mom6716,
     label="6716",
-    flabel="ngc346-sii",
+    flabel="ngc346-PZ-sii",
     restwav=6716.44,
 )
 moments.save_moments_to_fits(
     mom6731,
     label="6731",
-    flabel="ngc346-sii",
+    flabel="ngc346-PZ-sii",
     restwav=6730.816,
 )
 
 plot_pars_6716 = dict(
     ilabel="[S II]",
     label="6716",
-    flabel="ngc346-sii",
+    flabel="ngc346-PZ-sii",
     **mom_pars_6716,
 )
 g = moments.moments_corner_plot(mom6716, rebin=1, **plot_pars_6716)
 
-# This shows some interesting structure in the I-V distribution. We see similar velocity components to [O III] (which were 159 and 162), but the separation is bigger here. 
+# This shows some interesting structure in the I-V distribution. We see similar velocity components to [O III] (which were 159 and 162), but the separation is bigger here.
 #
-# In [S II], the principal peaks are at 165 and 155 km/s. 
+# In [S II], the principal peaks are at 165 and 155 km/s.
 #
-# With the brightest zones, there seems to be a linear trend toward bluer velocities with increasing log I. But this involves very few pixels, so it is hard to see. 
+# With the brightest zones, there seems to be a linear trend toward bluer velocities with increasing log I. But this involves very few pixels, so it is hard to see.
 
 g = moments.moments_corner_plot(mom6716, rebin=2, **plot_pars_6716)
 
@@ -243,7 +243,7 @@ g = moments.moments_corner_plot(mom6716, rebin=8, **plot_pars_6716)
 
 # As we increase the binning, the sig distribution becomes narrower, but the V and I remain almost unchanged.  This is a sign that th scale of significant variations is large (steep spatial power law).
 #
-# We also see that there is a weak but significant trend towards lower sigma at more redshifted velocities. And also towards lower sigma with fainter pixels. 
+# We also see that there is a weak but significant trend towards lower sigma at more redshifted velocities. And also towards lower sigma with fainter pixels.
 #
 # And we start to see a persistent high sigma tail, which is not due to noise.
 
@@ -423,7 +423,7 @@ g.tight_layout(pad=0)
 
 # We see that for the faint pixels, there is a large spread in R, dV and sig ratio, which is entirely due to noise.
 #
-# Note, however, htat there is a significant correlation between the line intensity ratio and the sigma ratio. 
+# Note, however, htat there is a significant correlation between the line intensity ratio and the sigma ratio.
 
 # +
 N = 4

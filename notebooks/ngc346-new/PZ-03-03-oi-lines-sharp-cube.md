@@ -173,7 +173,7 @@ wavmin, wavmax
 ```
 
 ```python
-prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-PZ-{wavmin:d}-{wavmax:d}-cube"
 csubcube = oi6300cube - contcube
 cdivcube = oi6300cube / contcube
 csubcube.write(
@@ -211,7 +211,7 @@ mom_pars_6300 = dict(
 plot_pars_6300 = dict(
     ilabel="O I",
     label="6300",
-    flabel="ngc346-oi",
+    flabel="ngc346-PZ-oi",
     **mom_pars_6300,
 )
 g = moments.moments_corner_plot(mom6300, rebin=1, **plot_pars_6300)
@@ -221,7 +221,7 @@ g = moments.moments_corner_plot(mom6300, rebin=1, **plot_pars_6300)
 plot_pars_6300 = dict(
     ilabel="O I",
     label="6300",
-    flabel="ngc346-oi",
+    flabel="ngc346-PZ-oi",
     **mom_pars_6300,
 )
 g = moments.moments_corner_plot(mom6300, rebin=4, **plot_pars_6300)
@@ -290,7 +290,7 @@ imap.rebin(1).plot(
 bg_6300 = contcube.select_lambda(w1, w2).mean(axis=0)
 axes[1, 1].contour(
     bg_6300.data,
-    levels=[300],e
+    levels=[300],
     colors="r",
 )
 
@@ -317,6 +317,10 @@ sky_6300.mask = sky_6300.mask | ~msky[None, ::]
 
 ```python
 sky_6300.mean(axis=(1, 2)).plot()
+```
+
+```python
+corr_6300 = core_6300 - sky_6300.mean(axis=(1, 2))
 ```
 
 ```python
@@ -434,7 +438,7 @@ mom_pars_6300 = dict(
 moments.save_moments_to_fits(
     mom6300c,
     label="6300",
-    flabel="ngc346-sharp-oi",
+    flabel="ngc346-PZ-oi",
     **mom_pars_6300,
 )
 ```
@@ -461,7 +465,7 @@ mom_pars_6363 = dict(
 plot_pars_6363 = dict(
     ilabel="O I",
     label="6363",
-    flabel="ngc346-oi",
+    flabel="ngc346-PZ-oi",
     **mom_pars_6363,
 )
 g = moments.moments_corner_plot(
@@ -663,7 +667,7 @@ mom_pars_6363 = dict(
 moments.save_moments_to_fits(
     mom6363c,
     label="6363",
-    flabel="ngc346-oi",
+    flabel="ngc346-PZ-oi",
     **mom_pars_6363,
 )
 ```
@@ -689,7 +693,7 @@ mom_pars_6312 = dict(
 plot_pars_6312 = dict(
     ilabel="S III",
     label="6312",
-    flabel="ngc346-siii",
+    flabel="ngc346-PZ-siii",
     **mom_pars_6312,
 )
 g = moments.moments_corner_plot(
@@ -720,7 +724,7 @@ g = moments.moments_corner_plot(
 moments.save_moments_to_fits(
     mom6312,
     label="6312",
-    flabel="ngc346-siii",
+    flabel="ngc346-PZ-siii",
     **mom_pars_6312,
 )
 ```
@@ -730,6 +734,6 @@ cont_6312 = contcube.select_lambda(6311, 6321).mean(axis=0)
 ```
 
 ```python
-cont_6312.write("../../data/ngc346-cont-6312-mean.fits")
+cont_6312.write("../../data/ngc346-PZ-cont-6312-mean.fits")
 ```
 

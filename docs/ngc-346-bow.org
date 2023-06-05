@@ -97,11 +97,16 @@ STEM=02-01-Raman-Wings-IR-Source-C
       - This works just fine for the PZ cube. The mean velocities show a higher amplitude of pattern noise than with the ESO cube, but in all other respects the PZ cube comes out ahead
     - [X] [S II] OK
     - [X] [O I] Badly affected by sky
+    - [X] Blue lines
+    - [X] Green and red lines
+  - Now we can carry on with the other line ratio notebooks
+    - [ ] ~01-01-more-line-ratios~
 - Naming convention
   - I will just add ~PZ~ prefix to the notebook names from ~data/ngc346-orig/~
 - Do we want to be working with the median filtered cube?
   - Advantage that we do not need to bother with the continuum subtraction
   - Disadvantage is that this deviates from what I did with the ESO cube
+*** 
 *** Some more ideas about things to add to paper
 **** Line ratios
 - We can look at correlations between relative line strength (wrt H beta)

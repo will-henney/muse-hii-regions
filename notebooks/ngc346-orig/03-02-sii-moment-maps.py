@@ -54,7 +54,7 @@ jstrips = [
 ]
 wide_band = cube.select_lambda(6700, 6760)
 fig, ax = plt.subplots(figsize=(10, 8))
-for (j1, j2) in jstrips:
+for j1, j2 in jstrips:
     (wide_band[:, j1:j2, :].mean(axis=(1, 2)).plot(label=f"j = {j1}:{j2}"))
 ax.legend(ncol=2)
 ax.set(yscale="log")
@@ -77,7 +77,7 @@ rangecolors = {"core": "g", "blue": "b", "red": "r"}
 # +
 medium_band = cube.select_lambda(6700, 6750)
 fig, ax = plt.subplots(figsize=(10, 8))
-for (j1, j2) in jstrips:
+for j1, j2 in jstrips:
     (
         medium_band[:, j1:j2, :]
         .mean(axis=(1, 2))
@@ -171,7 +171,7 @@ sns.despine()
 fig, ax = plt.subplots(figsize=(10, 8))
 jslice, islice = skyoptions["taller"]
 skyspec_medium = medium_band[:, jslice, islice].mean(axis=(1, 2))
-for (j1, j2) in jstrips:
+for j1, j2 in jstrips:
     (
         (medium_band - skyspec_medium)[:, j1:j2, :]
         .mean(axis=(1, 2))
@@ -291,7 +291,7 @@ fig.tight_layout()
 mom_pars_6716 = dict(
     restwav=6716.44,
     irange=[10, 4.0e4],
-    vrange=[135, 195],
+    vrange=[150, 180],
     srange=[30, 70],
 )
 moments.save_moments_to_fits(
@@ -582,5 +582,3 @@ g.tight_layout(pad=0)
 # By binning at 4x4 we can see that we do still have a small problem at low brightnesses: dV starts bending negative and sig_ratio increases.  This is almost certainly due to residual sky errors, but it isn't very important.
 #
 # The same thing is probably causing the apparent correlation between sig ratio and R(6716/6731).
-
-
