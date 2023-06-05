@@ -1,24 +1,24 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py:light,md
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.11.1
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
+---
+jupyter:
+  jupytext:
+    encoding: '# -*- coding: utf-8 -*-'
+    formats: ipynb,py:light,md
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.11.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
 
-# # Line ratios from saved moment images with PZ cube
-#
-# In this notebook, I will work with only pre-calculated line maps, which have already been extracted from the cube.  The extraction process is carried out in the PZ-03 series of notebooks.
+# Line ratios from saved moment images with PZ cube
 
-# +
+In this notebook, I will work with only pre-calculated line maps, which have already been extracted from the cube.  The extraction process is carried out in the PZ-03 series of notebooks.
+
+```python
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -32,42 +32,56 @@ import pyneb as pn
 
 sns.set_context("talk")
 sns.set_color_codes()
-# -
+```
 
-# ## Path to the root of this repo
+## Path to the root of this repo
 
+```python
 ROOT = Path.cwd().parent.parent
+```
 
-# ## Calculate reddening from Balmer decrement
+## Calculate reddening from Balmer decrement
 
+```python
 # Load the Hα and Hβ maps
 imha = Image(str(ROOT / "data/ngc346-PZ-hi-6563-bin01-sum.fits"))
+```
 
+```python
 imhb = Image(str(ROOT / "data/ngc346-PZ-hi-4861-bin01-sum.fits"))
+```
 
-# ### Look at the raw Hα/Hβ ratio:
+### Look at the raw Hα/Hβ ratio:
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 (imha / imhb).plot(vmin=2.7, vmax=3.7, cmap="gray", colorbar="v")
+```
 
-# So we see very little structure there, compared with in the ESO pipeline cube case.  In priniciple, lighter means more extinction.  There might be a hint of this at the bottom of the image, where we see possible signs of the foreground filament.
-#
-# But in other parts, we just see the stars (which have a different ratio because of photospheric absorption)
+So we see very little structure there, compared with in the ESO pipeline cube case.  In priniciple, lighter means more extinction.  There might be a hint of this at the bottom of the image, where we see possible signs of the foreground filament.
 
-# ### PyNeb calculation of intrinsic Balmer decrement
+But in other parts, we just see the stars (which have a different ratio because of photospheric absorption)
 
+
+### PyNeb calculation of intrinsic Balmer decrement
+
+```python
 hi = pn.RecAtom("H", 1)
+```
 
-# Calculate the theoretical Balmer decrement from PyNeb. Density and temperature from Valerdi:2019a
+Calculate the theoretical Balmer decrement from PyNeb. Density and temperature from Valerdi:2019a
 
+```python
 tem, den = 12500, 100
 R0 = hi.getEmissivity(tem, den, wave=6563) / hi.getEmissivity(tem, den, wave=4861)
 R0
+```
 
-# ### Look at correlation between Hα and Hβ in the faint limit
-#
-# To make thinks easier, I multiply the Hb values by R0 so we have a square plot.  I zoom in on the faint parts:
+### Look at correlation between Hα and Hβ in the faint limit
 
+To make thinks easier, I multiply the Hb values by R0 so we have a square plot.  I zoom in on the faint parts:
+
+```python
 imax = 100000
 m = imha.data < imax
 m = m & (R0 * imhb.data < imax)
@@ -78,7 +92,9 @@ df = pd.DataFrame(
         "hb": R0 * imhb.data[m],
     }
 )
+```
 
+```python
 g = sns.pairplot(
     df,
     kind="hist",
@@ -91,11 +107,14 @@ g.axes[1, 0].plot([0, imax], [0, imax], "--", color="r")
 g.axes[1, 0].plot([0, imax], [0, 0.9 * imax], "--", color="r", linewidth=1.4)
 g.axes[1, 0].plot([0, imax], [0, 0.8 * imax], "--", color="r", linewidth=0.7)
 g.fig.suptitle("Correlation between Ha and Hb brightness")
+```
 
-# So, the slope is not unity, meaning the extinction is not zero.  But the intercept is zero, which is great. So nothing more to do,
+So, the slope is not unity, meaning the extinction is not zero.  But the intercept is zero, which is great. So nothing more to do,
 
-# Now define some regions to take averages
 
+Now define some regions to take averages
+
+```python
 boxes = {
     "sw filament": regions.BoundingBox(
         iymin=20,
@@ -122,10 +141,11 @@ boxes = {
         ixmax=195,
     ),
 }
+```
 
-# Plot on a better scale and show the regions:
+Plot on a better scale and show the regions:
 
-# +
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 (imha / (imhb)).plot(
     vmin=R0,
@@ -144,35 +164,40 @@ for box, c in zip(boxes.values(), "yrmgc"):
         #        facecolor=(1.0, 1.0, 1.0, 0.4),
         fill=False,
     )
-# -
+```
 
-# We can see some very high extinction at in the S filaments.  And some small increase in extinction in the main diagonal filament.  This is probably limited having foreground emission to some extent.
-#
-# Look at average values in the sample boxes
+We can see some very high extinction at in the S filaments.  And some small increase in extinction in the main diagonal filament.  This is probably limited having foreground emission to some extent.
 
+Look at average values in the sample boxes
+
+```python
 for label, box in boxes.items():
     yslice, xslice = box.slices
     ha = np.median(imha[yslice, xslice].data.data)
     hb = np.median(imhb[yslice, xslice].data.data)
     print(f"{label}: {ha/hb:.3f}")
+```
 
-# I tried mean and median, and it made very little difference.  Lowest in the bow shock region; slightly higher in the west and central filaments.  Even higher in the southwest filament.
+I tried mean and median, and it made very little difference.  Lowest in the bow shock region; slightly higher in the west and central filaments.  Even higher in the southwest filament.
 
-# ### The reddening law
 
+### The reddening law
+
+```python
 pn.RedCorr().getLaws()
+```
 
 
-# PyNeb does not seem to have anything specifically tailored to the SMC.  The average SMC extinction law is supposedly simply $1/\lambda$.
-#
-# But, it is possible to get a SMC curve by using the "F99-like" option, which uses the curve of Fitzpatrick & Massa 1990, ApJS, 72, 163. This depends on $R_V$ and 6 other parameters (!!!).  Most of the parameters only affect the UV part of the curve, which does not concern us.
-#
-# Then, we can use the average values of $R_V$ and the other parameters, which were fit by Gordon:2003l to SMC stars. This is $R_V = 2.74 \pm 0.13$.
-#
-# So here I compare that SMC curve with $1/\lambda$ and with the Clayton curve for Milky Way (but also adjusted to $R_V = 2.74$):
+PyNeb does not seem to have anything specifically tailored to the SMC.  The average SMC extinction law is supposedly simply $1/\lambda$.
+
+But, it is possible to get a SMC curve by using the "F99-like" option, which uses the curve of Fitzpatrick & Massa 1990, ApJS, 72, 163. This depends on $R_V$ and 6 other parameters (!!!).  Most of the parameters only affect the UV part of the curve, which does not concern us.
+
+Then, we can use the average values of $R_V$ and the other parameters, which were fit by Gordon:2003l to SMC stars. This is $R_V = 2.74 \pm 0.13$.
+
+So here I compare that SMC curve with $1/\lambda$ and with the Clayton curve for Milky Way (but also adjusted to $R_V = 2.74$):
 
 
-# +
+```python
 def A_lam(wave):
     return 4861.32 / wave
 
@@ -195,37 +220,47 @@ ax.set(
     #    xlim=[4000, 7000],
     #    ylim=[-1, 1],
 )
-# -
+```
 
-# So the Gordon curve is flatter in the blue, steeper in green, and flatter in red, as compared to $1/\lambda$.
+So the Gordon curve is flatter in the blue, steeper in green, and flatter in red, as compared to $1/\lambda$.
 
+```python
 rc = pn.RedCorr()
 rc.R_V = 2.74
 rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
 rc.law = "F99"
+```
 
-# Test it out for the bow shock region:
+Test it out for the bow shock region:
 
+```python
 rc.setCorr(obs_over_theo=3.123 / R0, wave1=6563.0, wave2=4861.0)
 rc.E_BV, rc.cHbeta
+```
 
-# And for the highest extinction region
+And for the highest extinction region
 
+```python
 rc.setCorr(obs_over_theo=4.165 / R0, wave1=6563.0, wave2=4861.0)
 rc.E_BV, rc.cHbeta
+```
 
-# So $E(B - V)$ varies from about 0.1 to about 0.35. This is similar to what is found for the stars.
+So $E(B - V)$ varies from about 0.1 to about 0.35. This is similar to what is found for the stars.
 
-# ### The reddening map
-#
-# We can now make a map of $E(B - V)$
 
+### The reddening map
+
+We can now make a map of $E(B - V)$
+
+```python
 R = imha / (imhb)
 rc.setCorr(obs_over_theo=R.data / R0, wave1=6563.0, wave2=4861.0)
 imEBV = R.copy()
 imEBV.data = rc.E_BV
 imEBV.mask = imha.mask | imhb.mask
+```
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 imEBV.rebin(4).plot(
     vmin=0.0,
@@ -234,28 +269,35 @@ imEBV.rebin(4).plot(
     cmap="magma_r",
     colorbar="v",
 )
+```
 
-# Looks like I would expect. Check values in the boxes:
+Looks like I would expect. Check values in the boxes:
 
+```python
 for label, box in boxes.items():
     yslice, xslice = box.slices
     ebv = np.median(imEBV[yslice, xslice].data.data)
     print(f"{label}: {ebv:.3f}")
+```
 
-# These seem the same as before.  But we want to eliminate extreme values.
+These seem the same as before.  But we want to eliminate extreme values.
 
+```python
 badpix = (imEBV.data > 1.0) | (imEBV.data < 0.0)
 imEBV.mask = imEBV.mask | badpix
+```
 
-# Save it to a file:
+Save it to a file:
 
+```python
 imEBV.write(str(ROOT / "data/ngc346-PZ-reddening-E_BV.fits"), savemask="nan")
+```
 
-# Lots of regions are affected by the stellar absorption.  There are apparent increases in reddening at the position of each star.  This is not real, but is due to the photospheric absorption having more of an effect on Hb (mainly because the emission line is weaker).
-#
-# At some point, I am going to have to deal with that. But it is not an issue for the bow shock emission, since this is in an area free of stars.  We should just use the median bow shock reddening of $E(B-V) = 0.097$ so that we don't introduce any extra noise.
+Lots of regions are affected by the stellar absorption.  There are apparent increases in reddening at the position of each star.  This is not real, but is due to the photospheric absorption having more of an effect on Hb (mainly because the emission line is weaker).
 
-# +
+At some point, I am going to have to deal with that. But it is not an issue for the bow shock emission, since this is in an area free of stars.  We should just use the median bow shock reddening of $E(B-V) = 0.097$ so that we don't introduce any extra noise.
+
+```python
 rc.E_BV = 0.097
 wavs = np.arange(4600, 9300)
 Alam = rc.E_BV * rc.X(wavs)
@@ -268,21 +310,26 @@ ax.set(
     title=f"Extinction curve for $E(B - V) = {rc.E_BV:.3f}$",
 )
 sns.despine()
-# -
+```
 
-# ## Calculate the [S III] temperature
+## Calculate the [S III] temperature
 
+```python
 im6312 = Image(str(ROOT / "data/ngc346-PZ-siii-6312-bin01-sum.fits"))
 im9069 = Image(str(ROOT / "data/ngc346-PZ-siii-9069-bin01-sum.fits"))
 cont6312 = Image(str(ROOT / "data/ngc346-PZ-cont-6312-mean.fits"))
+```
 
-# The raw ratio:
+The raw ratio:
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 (im6312 / im9069).plot(vmin=0.08, vmax=0.15, cmap="gray", colorbar="v")
+```
 
-# That does not look too bad. But we will look at the joint distro anyway.
+That does not look too bad. But we will look at the joint distro anyway.
 
+```python
 imax = 15000
 slope = 0.1
 m = im9069.data < imax
@@ -295,8 +342,9 @@ df = pd.DataFrame(
         "6312": im6312.data[m],
     }
 )
+```
 
-# +
+```python
 g = sns.pairplot(
     df,
     kind="hist",
@@ -308,10 +356,11 @@ g.axes[1, 0].axvline(0.0, color="r")
 g.axes[1, 0].axhline(0.0, color="r")
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.fig.suptitle("Correlation between [S III] 9069 and 6312 brightness")
-# -
+```
 
-# Nothing needs to get added to anything. 
+Nothing needs to get added to anything. 
 
+```python
 imax = 5000
 slope = 0.1
 x = im9069.data
@@ -326,8 +375,9 @@ df = pd.DataFrame(
         "6312": y[m],
     }
 )
+```
 
-# +
+```python
 g = sns.pairplot(
     df,
     kind="hist",
@@ -340,24 +390,31 @@ g.axes[1, 0].axhline(0.0, color="r")
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.axes[1, 0].plot([0, imax], [0, 1.2 * slope * imax], "--", color="r")
 g.fig.suptitle("ZOOMED Correlation between [S III] 9069 and 6312 brightness")
-# -
+```
 
-# Now we need to correct for reddening.
+Now we need to correct for reddening.
 
+```python
 A9069 = rc.X(9069) * imEBV
 im9069c = im9069.copy()
 im9069c.data = im9069.data * 10 ** (0.4 * A9069.data)
+```
 
+```python
 A6312 = rc.X(6312) * imEBV
 im6312c = im6312.copy()
 im6312c.data = (im6312.data) * 10 ** (0.4 * A6312.data)
+```
 
+```python
 n = 1
 fig, ax = plt.subplots(figsize=(12, 12))
 (im6312c.rebin(n) / im9069c.rebin(n)).plot(
     vmin=0.1, vmax=0.15, cmap="magma", colorbar="v"
 )
+```
 
+```python
 n = 4
 x = np.log10(im9069c.rebin(n).data)
 y = np.log10(im6312c.rebin(n).data / im9069c.rebin(n).data)
@@ -376,12 +433,14 @@ g = sns.pairplot(
     height=4,
     corner=True,
 )
+```
 
-# This is totally different from what we got from the ESO cube.  This version is much more reliable, since with the other one we had no idea where the zeropoint was
+This is totally different from what we got from the ESO cube.  This version is much more reliable, since with the other one we had no idea where the zeropoint was
 
-# Now, make a mask of EW(6312).  But first, we need to correct the zero point of the continuum.
 
-# +
+Now, make a mask of EW(6312).  But first, we need to correct the zero point of the continuum.
+
+```python
 im6312_zero = 0.0
 cont6312_zero = 0.0
 imax = 600
@@ -406,14 +465,17 @@ g = sns.pairplot(
 
 g.axes[1, 0].axvline(0.0, color="r")
 g.axes[1, 0].axhline(0.0, color="r")
-# -
+```
 
+```python
 fig, ax = plt.subplots(figsize=(10, 10))
 ew6312 = 1.25 * (im6312 - im6312_zero) / (cont6312 - cont6312_zero)
 ew6312.plot(vmin=1.0, vmax=5.0, scale="sqrt")
 ax.contour(ew6312.data, levels=[0.5], colors="r", linewidths=3)
 ax.contour(im9069.data, levels=[6000.0], colors="k", linewidths=1)
+```
 
+```python
 fixmask = (ew6312.data < 1.0) | (im9069.data < 3000.0)
 fixmask = fixmask & (im6312c.data < 0.1 * im9069c.data)
 fixmask = fixmask & (im6312c.data > 0.2 * im9069c.data)
@@ -422,17 +484,23 @@ fixmask[:iborder, :] = True
 fixmask[-iborder:, :] = True
 fixmask[:, :iborder] = True
 fixmask[:, -iborder:] = True
+```
 
+```python
 im6312c.mask = im6312c.mask | fixmask
+```
 
+```python
 n = 1
 fig, ax = plt.subplots(figsize=(12, 12))
 (im6312c.rebin(n) / im9069c.rebin(n)).plot(
     vmin=0.1, vmax=0.15, cmap="magma", colorbar="v"
 )
+```
 
-# Honestly, this looks identical to the last one. So I do not know what I am even doing here. 
+Honestly, this looks identical to the last one. So I do not know what I am even doing here. 
 
+```python
 n = 4
 x = np.log10(im9069c.rebin(n).data)
 y = np.log10(im6312c.rebin(n).data / im9069c.rebin(n).data)
@@ -455,16 +523,24 @@ g = sns.pairplot(
     plot_kws=kws,
     diag_kws=kws,
 )
+```
 
-# ### Convert to actual temperatures with pyneb
+### Convert to actual temperatures with pyneb
 
+```python
 s3 = pn.Atom("S", 3)
+```
 
+```python
 s3.getTemDen([0.1, 0.2], den=100.0, wave1=6300, wave2=9069)
+```
 
+```python
 r_s3_grid = np.linspace(0.05, 0.25, 201)
 T_s3_grid = s3.getTemDen(r_s3_grid, den=100.0, wave1=6300, wave2=9069)
+```
 
+```python
 imT_siii = im6312c.clone(data_init=np.empty)
 imT_siii.data[~fixmask] = np.interp(
     im6312c.data[~fixmask] / im9069c.data[~fixmask],
@@ -475,41 +551,58 @@ imT_siii.data[~fixmask] = np.interp(
 )
 # imT_siii.mask = imT_siii.mask | fixmask
 # imT_siii.data[imT_siii.mask] = np.nan
+```
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 imT_siii.rebin(2).plot(colorbar="v", cmap="hot", vmin=12000, vmax=16000)
+```
 
+```python
 badpix = ~np.isfinite(imT_siii.data)
 imT_siii.mask = imT_siii.mask | badpix
+```
 
+```python
 imT_siii.write(str(ROOT / "data/ngc346-PZ-T-siii.fits"), savemask="nan")
+```
 
-# The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there.
-#
-# If anything, the T is lower in the bow shock.
-#
-# Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise contribution.  This implies $t^2 = 0.003$ in plane of sky, which is small.
+The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there.
 
-# ## Calculate [O III]/[S III]
+If anything, the T is lower in the bow shock.
 
+Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise contribution.  This implies $t^2 = 0.003$ in plane of sky, which is small.
+
+
+## Calculate [O III]/[S III]
+
+```python
 im5007 = Image(str(ROOT / "data/ngc346-PZ-oiii-5007-bin01-sum.fits"))
+```
 
-# Correct for extinction:
+Correct for extinction:
 
+```python
 A5007 = rc.X(5007) * imEBV
 im5007c = im5007.copy()
 im5007c.data = im5007.data * 10 ** (0.4 * A5007.data)
+```
 
+```python
 median_EBV = np.median(imEBV[150:250, 200:300].data)
 median_EBV
+```
 
+```python
 im5007cc = im5007.copy()
 im5007cc.data = im5007.data * 10 ** (0.4 * rc.X(5007) * median_EBV)
 im9069cc = im9069.copy()
 im9069cc.data = im9069.data * 10 ** (0.4 * rc.X(9069) * median_EBV)
+```
 
-# Quick look:
+Quick look:
 
+```python
 fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
 ((im5007cc) / im9069cc).plot(
     vmin=10,
@@ -527,11 +620,14 @@ fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
     cmap="Purples",
     ax=axes[1],
 )
+```
 
-# The left panel is with a median reddening. The right panel is with a pixel-by-pixel reddening but that fails at the position of stars. 
+The left panel is with a median reddening. The right panel is with a pixel-by-pixel reddening but that fails at the position of stars. 
 
-# Check zero points:
 
+Check zero points:
+
+```python
 imax = 15000
 imin = 2000
 slope = 45
@@ -560,7 +656,9 @@ g = sns.pairplot(
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.axes[1, 0].plot([0, imax], [0, slope2 * imax], "--", color="r")
 g.fig.suptitle("Correlation between [S III] 9069 and [O III] 5007 brightness")
+```
 
+```python
 slope = 45
 slope2 = 35
 x = im9069cc.data
@@ -581,16 +679,20 @@ g = sns.pairplot(
     corner=True,
 )
 g.fig.suptitle("Correlation between [S III] 9069 and [O III] / [S III] ratio")
+```
 
+```python
 imR_oiii_siii = (im5007cc) / im9069cc
 imR_oiii_siii.write(
     str(ROOT / "data/ngc346-PZ-R-oiii-5007-siii-9069.fits"), savemask="nan"
 )
+```
 
-# ## Calculate [O III] / Hβ
-#
-# This might be better since at least it is not affected by reddening.
+## Calculate [O III] / Hβ
 
+This might be better since at least it is not affected by reddening.
+
+```python
 imax = 60000
 imin = 2000
 slope = 5.0
@@ -617,7 +719,9 @@ g = sns.pairplot(
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.axes[1, 0].plot([0, imax], [0, slope2 * imax], "--", color="r")
 g.fig.suptitle("Correlation between Hβ 4861 and [O III] 5007 brightness")
+```
 
+```python
 n = 1
 x = imhb.rebin(n).data
 y = im5007.rebin(n).data
@@ -636,17 +740,27 @@ g = sns.pairplot(
     corner=True,
 )
 g.fig.suptitle("Correlation between Hβ 4861 and [O III] / Hβ ratio")
+```
 
+```python
 imR_oiii_hb = (im5007) / (imhb)
 imR_oiii_hb.write(str(ROOT / "data/ngc346-PZ-R-oiii-5007-hi-4861.fits"), savemask="nan")
+```
 
+```python
 im4740 = Image(str(ROOT / "data/ngc346-PZ-ariv-4740-bin01-sum.fits"))
+```
 
+```python
 from astropy.convolution import convolve_fft
 from astropy.convolution import Gaussian2DKernel
+```
 
+```python
 im = convolve_fft(im4740.data, Gaussian2DKernel(5.0))
+```
 
+```python
 fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
 imR_oiii_siii.plot(
     vmin=10,
@@ -668,19 +782,25 @@ for ax in axes:
     ax.contour(im, levels=[200, 250, 300], linewidths=1, colors="y")
 axes[0].set_title("[O III] / [S III]")
 axes[1].set_title("[O III] / Hβ")
+```
 
-# So, the bow shock shows up much better in [O III]/[S III] than it does in [O III]/Hb.  This implies that it must be a lack of [S III], rather than an excess of [O III] that characterises the bow shock.
+So, the bow shock shows up much better in [O III]/[S III] than it does in [O III]/Hb.  This implies that it must be a lack of [S III], rather than an excess of [O III] that characterises the bow shock.
 
+```python
 
+```
 
-# ## Calculate He I / Hβ
-#
-# Let us see if this has a hole in it where the He II is coming from.
+## Calculate He I / Hβ
 
+Let us see if this has a hole in it where the He II is coming from.
+
+```python
 im5875 = Image(str(ROOT / "data/ngc346-hei-5875-bin01-sum.fits"))
 im4922 = Image(str(ROOT / "data/ngc346-hei-4922-bin01-sum.fits"))
 im5048 = Image(str(ROOT / "data/ngc346-hei-5048-bin01-sum.fits"))
+```
 
+```python
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
 im5875.plot(ax=axes[0, 0], vmin=0, vmax=5000)
 im4922.plot(ax=axes[0, 1], vmin=0, vmax=300)
@@ -690,9 +810,11 @@ axes[0, 0].set_title("He I 5875")
 axes[0, 1].set_title("He I 4922")
 axes[1, 0].set_title("H I 4861")
 axes[1, 1].set_title("He I 5048")
+```
 
-# So 5875 is 10 to 100 times brighter than the other two. And it is almost identical to Hβ!
+So 5875 is 10 to 100 times brighter than the other two. And it is almost identical to Hβ!
 
+```python
 imax = 10000
 slope = 0.12
 x = imhb.data - hbfix
@@ -720,7 +842,9 @@ g.axes[1, 0].axvline(0.0, color="r")
 g.axes[1, 0].axhline(0.0, color="r")
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness")
+```
 
+```python
 imax = 100000
 slope = 0.12
 x = imhb.data - hbfix
@@ -748,36 +872,51 @@ g.axes[1, 0].axvline(0.0, color="r")
 g.axes[1, 0].axhline(0.0, color="r")
 g.axes[1, 0].plot([0, imax], [0, slope * imax], "--", color="r")
 g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness")
+```
 
+```python
 imR_hei_hb = im5875 / (imhb - hbfix)
+```
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 imR_hei_hb.plot(colorbar="v", cmap="gray", vmin=0.11, vmax=0.14)
+```
 
+```python
 red_R_hei_hb = imR_hei_hb.copy()
 red_R_hei_hb.data = 10 ** (0.4 * imEBV.data * (rc.X(4861) - rc.X(5875)))
+```
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 (imR_hei_hb / red_R_hei_hb).plot(colorbar="v", cmap="gray", vmin=0.1, vmax=0.115)
+```
 
-# So if we correct it for reddening, then lots of spurious structure disappears.  But we are left with very little variation at all, except for at the mYSO and the top right corner, which both show low He I.
+So if we correct it for reddening, then lots of spurious structure disappears.  But we are left with very little variation at all, except for at the mYSO and the top right corner, which both show low He I.
 
-# ## Calculate He II / Hβ
-#
-#
 
+## Calculate He II / Hβ
+
+
+
+```python
 im4686 = Image(str(ROOT / "data/ngc346-heii-4686-bin01-sum.fits"))
+```
 
+```python
 fig, ax = plt.subplots(figsize=(12, 12))
 im4686.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=300)
+```
 
-# +
+```python
 imR_heii_hb = im4686 / (imhb - hbfix)
 
 fig, ax = plt.subplots(figsize=(12, 12))
 imR_heii_hb.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=0.02)
-# -
+```
 
+```python
 n = 2
 xslice, yslice = slice(200, 300), slice(100, 250)
 x = imR_heii_hb[yslice, xslice].rebin(n).data
@@ -810,12 +949,16 @@ g = sns.pairplot(
     diag_kws=dict(weights=z[m], bins=30),
 )
 g.fig.suptitle("Correlation between He II / Hβ and He I / Hβ ratios")
+```
 
-# So there is a *tiny* change in 5875/4861 from 0.109 to 0.107 as 4686/4861 increases.
+So there is a *tiny* change in 5875/4861 from 0.109 to 0.107 as 4686/4861 increases.
 
+```python
 df["high"] = df["4686 / 4861"] > 0.003
 df
+```
 
+```python
 sns.histplot(
     data=df,
     x="5875 / 4861",
@@ -826,16 +969,20 @@ sns.histplot(
     common_norm=False,
     bins=10,
 )
+```
 
-# ## Ratio of [Ar IV] / [Ar III]
+## Ratio of [Ar IV] / [Ar III]
 
+```python
 im4711 = Image(str(ROOT / "data/ngc346-ariv-4711-bin01-sum.fits"))
 im4740 = Image(str(ROOT / "data/ngc346-ariv-4740-bin01-sum.fits"))
 im7171 = Image(str(ROOT / "data/ngc346-ariv-7171-bin01-sum.fits"))
 im7237 = Image(str(ROOT / "data/ngc346-ariv-7237-bin01-sum.fits"))
 im7263 = Image(str(ROOT / "data/ngc346-ariv-7263-bin01-sum.fits"))
 im7136 = Image(str(ROOT / "data/ngc346-ariii-7136-bin01-sum.fits"))
+```
 
+```python
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
 im4711.plot(ax=axes[0, 0], vmin=0, vmax=400)
 im4740.plot(ax=axes[0, 1], vmin=0, vmax=250)
@@ -845,7 +992,9 @@ axes[0, 0].set_title("[Ar IV] 4711 + He I 4713")
 axes[0, 1].set_title("[Ar IV] 4740")
 axes[1, 0].set_title("[Ar IV] 7171 + 7263")
 axes[1, 1].set_title("[Ar III] 7136")
+```
 
+```python
 n = 8
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
 (im4711.rebin(n) / im4740.rebin(n)).plot(ax=axes[0, 0], vmin=0, vmax=4)
@@ -858,36 +1007,45 @@ axes[0, 0].set_title("([Ar IV] 4711 + He I 4713) / [Ar IV] 4740")
 axes[0, 1].set_title("[Ar IV] 4740 / [Ar III] 7136")
 axes[1, 0].set_title("[Ar IV] (7171 + 7263) / (4711 + 4740)")
 axes[1, 1].set_title("[Ar III] 7136")
+```
 
-# Now we must subtract the He I line!
+Now we must subtract the He I line!
 
+```python
 hei = pn.RecAtom("He", 1)
+```
 
+```python
 dens = [50, 100, 200]
 tems = [13000, 18000]
 e4713 = hei.getEmissivity(tems, dens, wave=4713)
 e5876 = hei.getEmissivity(tems, dens, wave=5876)
 e4713 / e5876
+```
 
-# There is a slight temperature dependence, but almost no density dependence if we use the 5876 line.  This is probably the best because it has good signal to noise.
-#
-# We can assume that the He I temperature is the same as the [S III] temperature.
-#
-# But we will check the other lines as well.
+There is a slight temperature dependence, but almost no density dependence if we use the 5876 line.  This is probably the best because it has good signal to noise.
 
+We can assume that the He I temperature is the same as the [S III] temperature.
+
+But we will check the other lines as well.
+
+```python
 e4922 = hei.getEmissivity(tems, dens, wave=4922)
 e5048 = hei.getEmissivity(tems, dens, wave=5048)
 e4713 / e4922, e4713 / e5048
+```
 
 
-# The 4922 has the same T-dependence as 5876, just 10 times weaker. The 5048 has a constant ratio, but it is so weak that we cannot use it.  So 5876 it is ...
-
-# ### Average values of T and reddening to use in the corrections
-#
-# We would introduce too much noise by using the pixel-by-pixel values of $T$ and $E(B - V)$, so we will construct an average value by using the He I brightenss as a weight, but masking out the mYSO
-#
+The 4922 has the same T-dependence as 5876, just 10 times weaker. The 5048 has a constant ratio, but it is so weak that we cannot use it.  So 5876 it is ...
 
 
+### Average values of T and reddening to use in the corrections
+
+We would introduce too much noise by using the pixel-by-pixel values of $T$ and $E(B - V)$, so we will construct an average value by using the He I brightenss as a weight, but masking out the mYSO
+
+
+
+```python
 def trim_edges(im, m):
     """Trim m pixels of each edge of image in place by setting mask"""
     im.mask[:m, :] = True
@@ -895,8 +1053,9 @@ def trim_edges(im, m):
     im.mask[:, :m] = True
     im.mask[:, -m:] = True
     return None
+```
 
-
+```python
 im_hei_weight = im5875.copy()
 im_hei_weight.mask[140:157, 110:141] = True
 im_hei_weight.mask[94:104, 55:65] = True
@@ -905,9 +1064,11 @@ im_hei_weight.data.mask = im_hei_weight.mask
 fig, ax = plt.subplots(figsize=(10, 10))
 im_hei_weight.plot(cmap="gray_r")
 ax.set_title("Weight mask for He I emission")
+```
 
-# That looks OK. Now calculate some averages:
+That looks OK. Now calculate some averages:
 
+```python
 fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
 im1 = im_hei_weight.copy()
 im1.data = im_hei_weight.data * imEBV.data
@@ -917,34 +1078,48 @@ im2 = im_hei_weight.copy()
 im2.data = im_hei_weight.data * imT_siii.data
 im2.mask = im_hei_weight.mask | imT_siii.mask
 im2.plot(ax=axes[1])
+```
 
+```python
 avHe_EBV = np.average(imEBV.data, weights=im_hei_weight.data)
 avHe_Tsiii = np.average(imT_siii.data, weights=im_hei_weight.data)
 f"He I brightness-weighted averages: E(B-V) = {avHe_EBV:.2f}, T = {avHe_Tsiii/1000:.2f} kK"
+```
 
+```python
 median_EBV
+```
 
-# The `avHe_Tsiii` looks good. But to be honest, I am a bit suspicious of the `avHe_EBV` reddening, since there are lots of anomalous spots of high $E(B-V)$ that correspond to stars (presumably underlying stellar absorption affecting the Balmer decrement).
-#
-# I could use the median instead, but I have ended up using the weighted one after all, since we seem to be oversubtracting if anything.
+The `avHe_Tsiii` looks good. But to be honest, I am a bit suspicious of the `avHe_EBV` reddening, since there are lots of anomalous spots of high $E(B-V)$ that correspond to stars (presumably underlying stellar absorption affecting the Balmer decrement).
 
+I could use the median instead, but I have ended up using the weighted one after all, since we seem to be oversubtracting if anything.
+
+```python
 avHe_reddening_4713_5876 = 10 ** (0.4 * avHe_EBV * (rc.X(4713) - rc.X(5876)))
 median_reddening_4713_5876 = 10 ** (0.4 * median_EBV * (rc.X(4713) - rc.X(5876)))
 avHe_reddening_4713_5876, median_reddening_4713_5876
+```
 
+```python
 dens = 100.0
 avHe_e4713_5876 = hei.getEmissivity(avHe_Tsiii, dens, wave=4713) / hei.getEmissivity(
     avHe_Tsiii, dens, wave=5876
 )
 avHe_e4713_5876
+```
 
-# Take advantage to save extinction-corrected maps of the high-ionization lines.  These are using the avHe reddening, not the pixel-by-pixel values
+Take advantage to save extinction-corrected maps of the high-ionization lines.  These are using the avHe reddening, not the pixel-by-pixel values
 
+```python
 avHe_corr_4686 = 10 ** (0.4 * avHe_EBV * rc.X(4686))
 avHe_corr_4686
+```
 
+```python
 (im4686 * avHe_corr_4686).write(str(ROOT / "data/ngc346-heii-4686-correct.fits"))
+```
 
+```python
 ((imhb - hbfix) * 10 ** (0.4 * avHe_EBV * rc.X(4861))).write(
     str(ROOT / "data/ngc346-hi-4861-correct.fits"),
 )
@@ -954,23 +1129,31 @@ avHe_corr_4686
 (im7136 * 10 ** (0.4 * avHe_EBV * rc.X(7136))).write(
     str(ROOT / "data/ngc346-ariii-7136-correct.fits"),
 )
+```
 
-# Now do the correction by faking the 4713 line and subtracting it:
+Now do the correction by faking the 4713 line and subtracting it:
 
+```python
 # im_fake_4713 = (avHe_e4713_5876 / avHe_reddening_4713_5876) * im5875
 im_fake_4713 = 0.025 * im5875
 im4711c = im4711 - im_fake_4713
+```
 
-# Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
+Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
 
+```python
 cont4686 = Image(str(ROOT / "data/ngc346-cont-4686-mean.fits"))
+```
 
-# I need to decide how bright a star needs to be before I mask out that bit of the image. 5000 in the `cont4686` image seems a reasonable value.
+I need to decide how bright a star needs to be before I mask out that bit of the image. 5000 in the `cont4686` image seems a reasonable value.
 
+```python
 fig, ax = plt.subplots(figsize=(10, 10))
 cont4686.plot(colorbar="v", vmin=0, vmax=1e5, scale="sqrt")
 ax.contour(cont4686.data, levels=[5e3], colors="r")
+```
 
+```python
 im_ariv_sum = im4711c + im4740
 trim_edges(im_ariv_sum, 12)
 im_ariv_sum.mask[78:88, 190:199] = True
@@ -981,29 +1164,38 @@ im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data > 650)
 im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data < -250)
 fig, ax = plt.subplots(figsize=(10, 10))
 im_ariv_sum.rebin(1).plot(colorbar="v", vmin=-10, vmax=600, cmap="gray_r", scale="sqrt")
+```
 
-# That is looking good.  Apply the mask to all the other images
+That is looking good.  Apply the mask to all the other images
 
+```python
 for im in im4711c, im4740, im7171, im7263, im7237:
     im.mask = im.mask | im_ariv_sum.mask
+```
 
-# Now find average reddening for [Ar IV] lines.  Try two methods: (1) brightness-weighted mean; (2) make a mask based on the Ar IV brightness and then take median in that area.
+Now find average reddening for [Ar IV] lines.  Try two methods: (1) brightness-weighted mean; (2) make a mask based on the Ar IV brightness and then take median in that area.
 
+```python
 fig, ax = plt.subplots(figsize=(10, 10))
 im = im_ariv_sum.copy()
 im.data = imEBV.data
 im.mask = im.mask | (im_ariv_sum.data < 120)
 trim_edges(im, 20)
 im.plot(vmin=0, vmax=0.2, cmap="magma_r", colorbar="v")
+```
 
+```python
 avArIV_EBV = np.average(imEBV.data, weights=im_ariv_sum.data)
 medianArIV_EBV = np.median(im.data.data[~im.mask])
 avArIV_EBV, medianArIV_EBV
+```
 
-# So there isn't much difference. But we take the median since it should be less sensitive to those spots of higher $E(B-V)$ due to stars.
+So there isn't much difference. But we take the median since it should be less sensitive to those spots of higher $E(B-V)$ due to stars.
 
-# Apply extinction correction to all lines:
 
+Apply extinction correction to all lines:
+
+```python
 im4740r = im4740 * 10 ** (0.4 * medianArIV_EBV * rc.X(4740))
 im4711r = im4711c * 10 ** (0.4 * medianArIV_EBV * rc.X(4711))
 im7171r = im7171 * 10 ** (0.4 * medianArIV_EBV * rc.X(7171))
@@ -1012,18 +1204,24 @@ im7263r = im7263 * 10 ** (0.4 * medianArIV_EBV * rc.X(7263))
 im7237r = im7237 * 10 ** (0.4 * medianArIV_EBV * rc.X(7237))
 for im in im4711r, im4740r, im7171r, im7136r, im7263r, im7237r:
     im.mask = im.mask | im_ariv_sum.mask
+```
 
-# And replace the summed image:
+And replace the summed image:
 
+```python
 im_ariv_sum = im4711r + im4740r
+```
 
+```python
 ariv_R1 = im4711r / im4740r
 ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 300)
 ariv_R3_plus_R4 = (im7171r + im7263r) / (im4740r + im4711r)
 ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 400)
 trim_edges(ariv_R1, 20)
 trim_edges(ariv_R3_plus_R4, 20)
+```
 
+```python
 fig, axes = plt.subplots(2, 2, figsize=(12, 12), sharex="row", sharey="row")
 im4711r.plot(ax=axes[0, 0], vmin=-20, vmax=400, colorbar="v", cmap=cmr.bubblegum)
 im4740r.plot(ax=axes[0, 1], vmin=-20, vmax=350 / 1.3, colorbar="v", cmap=cmr.bubblegum)
@@ -1037,9 +1235,11 @@ ariv_R1.rebin(n).plot(ax=axes[1, 0], vmin=0, vmax=2, cmap="mako_r", colorbar="v"
 ariv_R3_plus_R4.rebin(n).plot(
     ax=axes[1, 1], vmin=0, vmax=0.08, cmap="inferno", colorbar="v"
 )
+```
 
-# Save the combined image, corrected for extinction:
+Save the combined image, corrected for extinction:
 
+```python
 im_ariv_sum.write(
     str(ROOT / "data/ngc346-ariv-4711-plus-4740-correct.fits"), savemask="nan"
 )
@@ -1047,7 +1247,9 @@ im4740r.write(str(ROOT / "data/ngc346-ariv-4740-correct.fits"), savemask="nan")
 im4711r.write(str(ROOT / "data/ngc346-ariv-4711-correct.fits"), savemask="nan")
 im7171r.write(str(ROOT / "data/ngc346-ariv-7171-correct.fits"), savemask="nan")
 im7263r.write(str(ROOT / "data/ngc346-ariv-7263-correct.fits"), savemask="nan")
+```
 
+```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 1.35
@@ -1085,7 +1287,9 @@ g = sns.pairplot(
 )
 g.axes[1, 0].plot([0, xmax], [0, ymax])
 g.fig.suptitle("Correlation between [Ar IV] 4711 and 4740")
+```
 
+```python
 n = 2
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 1.35
@@ -1118,21 +1322,29 @@ g = sns.pairplot(
 g.axes[1, 0].axhline(ratio, linestyle="dashed", color="k", linewidth=2)
 g.axes[1, 1].axvline(ratio, linestyle="dashed", color="k", linewidth=2)
 g.fig.suptitle("Correlation between [Ar IV] 4740 and 4711 / 4740")
+```
 
-# + active=""
-# So the density-sensitive ratio is $R_1 = 1.35 \pm 0.1$
-# -
+<!-- #raw -->
+So the density-sensitive ratio is $R_1 = 1.35 \pm 0.1$
+<!-- #endraw -->
 
+```python
 ariv = pn.Atom("Ar", 4)
+```
 
+```python
 ariv.getTemDen([1.30, 1.35, 1.40], tem=17500, wave1=4711, wave2=4740)
+```
 
-# So we are close to the low density limit, with a nominal value of 160.  We need to get a very precise estimate of the uncertainty in order to get the error bars.
+So we are close to the low density limit, with a nominal value of 160.  We need to get a very precise estimate of the uncertainty in order to get the error bars.
 
+```python
 ariv.getSources()
+```
 
-# Now for the T diagnostics:
+Now for the T diagnostics:
 
+```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 0.024
@@ -1166,8 +1378,10 @@ g = sns.pairplot(
 )
 g.axes[1, 0].plot([0, xmax], [0, ymax])
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171")
+```
 
 
+```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 0.024
@@ -1201,7 +1415,9 @@ g = sns.pairplot(
 )
 g.axes[1, 0].plot([0, xmax], [0, ymax])
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263")
+```
 
+```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 0.024
@@ -1236,7 +1452,9 @@ g = sns.pairplot(
     diag_kws=dict(weights=200 + z[m], bins=128 // n),
 )
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7171 / (4711 + 4740)")
+```
 
+```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 0.024
@@ -1271,9 +1489,11 @@ g = sns.pairplot(
     diag_kws=dict(weights=200 + z[m], bins=128 // n),
 )
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7263 / (4711 + 4740)")
+```
 
-# And do the one that is contaminated by C II
+And do the one that is contaminated by C II
 
+```python
 n = 8
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 0.024
@@ -1308,10 +1528,11 @@ g = sns.pairplot(
     diag_kws=dict(weights=200 + z[m], bins=128 // n),
 )
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and 7237 / (4711 + 4740)")
+```
 
-# As expected, this last one is no good.  But the others are fine.  Now include density and temperature indiocators together:
+As expected, this last one is no good.  But the others are fine.  Now include density and temperature indiocators together:
 
-# +
+```python
 Ts = [1e4, 1.5e4, 2.0e4, 2.5e4, 3.0e4]
 # dens = [10.0, 100.0, 1000.0]
 dens = [1.0, 200.0, 400.0, 600.0, 800.0, 1000.0]
@@ -1341,8 +1562,9 @@ _rr4 = e7171 / (e4711 + e4740)
 _rr1 = _rr1.T
 _rr3 = _rr3.T
 _rr4 = _rr4.T
+```
 
-# +
+```python
 n = 8
 xslice, yslice = slice(200, 300), slice(100, 250)
 # xslice, yslice = slice(None, None), slice(None, None)
@@ -1405,13 +1627,13 @@ g.axes[2, 1].plot(_rr4, _rr1, color="k")
 #        bins=128//n),
 # )
 g.fig.suptitle("Correlation between [Ar IV] R1, R3, and R4")
-# -
+```
 
-# Following function is copied from the matplotlib docs.  Ideas originally from https://carstenschelp.github.io/2018/09/14/Plot_Confidence_Ellipse_001.html
-#
-# I have modified it to include a weight array.
+Following function is copied from the matplotlib docs.  Ideas originally from https://carstenschelp.github.io/2018/09/14/Plot_Confidence_Ellipse_001.html
 
-# +
+I have modified it to include a weight array.
+
+```python
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
@@ -1479,9 +1701,9 @@ def confidence_ellipse(x, y, w, ax, n_std=3.0, facecolor="none", **kwargs):
 
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
+```
 
-
-# +
+```python
 n = 8
 xslice, yslice = slice(230, 300), slice(144, 245)
 w_low_cutoff = 250
@@ -1567,8 +1789,9 @@ g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics.pdf")
 # g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
+```
 
-# +
+```python
 n = 8
 xslice, yslice = slice(230, 300), slice(144, 245)
 w_low_cutoff = 250
@@ -1654,11 +1877,13 @@ g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-R1-R3.pdf")
 # g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
-# -
+```
 
+```python
 df.columns[:2]
+```
 
-# +
+```python
 n = 8
 xslice, yslice = slice(230, 300), slice(144, 245)
 w_low_cutoff = 250
@@ -1683,12 +1908,15 @@ zz.plot(ax=axes[1], colorbar="v", vmin=zzmin, vmax=zzmax, cmap=cmr.amber)
 xy.plot(ax=axes[2], colorbar="v", vmin=xymin, vmax=xymax, cmap=cmr.ember)
 fig.tight_layout()
 fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-maps.pdf")
-# -
+```
 
+```python
 cov = np.cov(x[m] + y[m], z[m], aweights=w[m])
 pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
 cov, pearson, np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+```
 
+```python
 n = 8
 xslice, yslice = slice(200, 300), slice(100, 250)
 # xslice, yslice = slice(None, None), slice(None, None)
@@ -1748,12 +1976,19 @@ g.axes[2, 1].plot(rr4, rr1)
 #        bins=128//n),
 # )
 g.fig.suptitle("Correlation between [Ar IV] R1, R3, and R4")
+```
 
+```python
 ariv.getTemDen(
     [0.01, 0.02, 0.03, 0.04], den=10000, to_eval="L(7171) / (L(4711) + L(4740))"
 )
+```
 
+```python
 ariv.getTemDen([0.01, 0.02, 0.03], den=100, to_eval="L(7263) / (L(4711) + L(4740))")
+```
 
+```python
 fig, ax = plt.subplots()
 ax.plot(rr4, rr1)
+```
