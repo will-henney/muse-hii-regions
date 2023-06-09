@@ -772,7 +772,7 @@ imR_oiii_siii.plot(
 )
 imR_oiii_hb.plot(
     vmin=2,
-    vmax=6,
+    vmax=6.5,
     colorbar="v",
     scale="linear",
     ax=axes[1],
@@ -795,17 +795,17 @@ So, the bow shock shows up much better in [O III]/[S III] than it does in [O III
 Let us see if this has a hole in it where the He II is coming from.
 
 ```python
-im5875 = Image(str(ROOT / "data/ngc346-hei-5875-bin01-sum.fits"))
-im4922 = Image(str(ROOT / "data/ngc346-hei-4922-bin01-sum.fits"))
-im5048 = Image(str(ROOT / "data/ngc346-hei-5048-bin01-sum.fits"))
+im5875 = Image(str(ROOT / "data/ngc346-PZ-hei-5875-bin01-sum.fits"))
+im4922 = Image(str(ROOT / "data/ngc346-PZ-hei-4922-bin01-sum.fits"))
+im5048 = Image(str(ROOT / "data/ngc346-PZ-hei-5048-bin01-sum.fits"))
 ```
 
 ```python
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
-im5875.plot(ax=axes[0, 0], vmin=0, vmax=5000)
-im4922.plot(ax=axes[0, 1], vmin=0, vmax=300)
-(imhb - hbfix).plot(ax=axes[1, 0], vmin=0, vmax=40000)
-im5048.plot(ax=axes[1, 1], vmin=0, vmax=50)
+im5875.plot(ax=axes[0, 0], vmin=0, vmax=7500)
+im4922.plot(ax=axes[0, 1], vmin=0, vmax=400)
+(imhb).plot(ax=axes[1, 0], vmin=0, vmax=60000)
+im5048.plot(ax=axes[1, 1], vmin=0, vmax=200)
 axes[0, 0].set_title("He I 5875")
 axes[0, 1].set_title("He I 4922")
 axes[1, 0].set_title("H I 4861")
@@ -815,14 +815,15 @@ axes[1, 1].set_title("He I 5048")
 So 5875 is 10 to 100 times brighter than the other two. And it is almost identical to Hβ!
 
 ```python
-imax = 10000
+imax = 30000
+imin = 1000
 slope = 0.12
-x = imhb.data - hbfix
+x = imhb.data
 y = im5875.data
 m = x < imax
-m = m & (x > -100)
+m = m & (x > imin)
 m = m & (y < slope * imax)
-m = m & (y > -100 * slope)
+m = m & (y > imin * slope)
 m = m & ~imhb.mask & ~im5875.mask
 df = pd.DataFrame(
     {
@@ -846,13 +847,14 @@ g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness")
 
 ```python
 imax = 100000
+imin = 1000
 slope = 0.12
-x = imhb.data - hbfix
+x = imhb.data
 y = im5875.data
 m = x < imax
-m = m & (x > -100)
+m = m & (x > imin)
 m = m & (y < slope * imax)
-m = m & (y > -100 * slope)
+m = m & (y > imin * slope)
 m = m & ~imhb.mask & ~im5875.mask
 df = pd.DataFrame(
     {
@@ -875,7 +877,7 @@ g.fig.suptitle("Correlation between Hβ 4861 and He I 5875 brightness")
 ```
 
 ```python
-imR_hei_hb = im5875 / (imhb - hbfix)
+imR_hei_hb = im5875 / (imhb)
 ```
 
 ```python
@@ -901,7 +903,7 @@ So if we correct it for reddening, then lots of spurious structure disappears.  
 
 
 ```python
-im4686 = Image(str(ROOT / "data/ngc346-heii-4686-bin01-sum.fits"))
+im4686 = Image(str(ROOT / "data/ngc346-PZ-heii-4686-bin01-sum.fits"))
 ```
 
 ```python
@@ -910,10 +912,10 @@ im4686.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=300)
 ```
 
 ```python
-imR_heii_hb = im4686 / (imhb - hbfix)
+imR_heii_hb = im4686 / imhb
 
 fig, ax = plt.subplots(figsize=(12, 12))
-imR_heii_hb.plot(colorbar="v", cmap="gray", vmin=0.0, vmax=0.02)
+imR_heii_hb.plot(colorbar="v", cmap="gray", vmin=-0.01, vmax=0.01)
 ```
 
 ```python
@@ -954,7 +956,7 @@ g.fig.suptitle("Correlation between He II / Hβ and He I / Hβ ratios")
 So there is a *tiny* change in 5875/4861 from 0.109 to 0.107 as 4686/4861 increases.
 
 ```python
-df["high"] = df["4686 / 4861"] > 0.003
+df["high"] = df["4686 / 4861"] > 0.005
 df
 ```
 
@@ -963,31 +965,129 @@ sns.histplot(
     data=df,
     x="5875 / 4861",
     hue="high",
-    multiple="stack",
+    multiple="dodge",
     shrink=1.0,
     stat="probability",
     common_norm=False,
+    alpha=0.8,
     bins=10,
 )
 ```
 
+Try to remove the pattern noise
+
+```python
+imR_heii_hb_fake = imR_heii_hb.copy()
+m = imR_heii_hb_fake.data > 0.01
+imR_heii_hb_fake.data[m] = np.nan
+vv = np.nanmedian(imR_heii_hb_fake.data, axis=0, keepdims=True)
+hh = np.nanmedian(imR_heii_hb_fake.data, axis=1, keepdims=True)
+imR_heii_hb_fake.data = vv + hh
+imR_heii_hb_fake.data -= np.nanmedian(vv + hh)
+imR_heii_hb_c = imR_heii_hb.copy()
+imR_heii_hb_c.data -= imR_heii_hb_fake.data
+```
+
+```python
+fig, axes = plt.subplots(2, 2, figsize=(12, 12))
+imR_heii_hb_fake.plot(ax=axes[0, 0], colorbar="v", cmap="gray", vmin=-0.01, vmax=0.01)
+(imR_hei_hb / red_R_hei_hb).plot(ax=axes[0, 1], 
+                colorbar="v", cmap="gray", 
+                vmin=0.1, vmax=0.115)
+imR_heii_hb.plot(ax=axes[1, 0], colorbar="v", cmap="gray", vmin=-0.01, vmax=0.01)
+imR_heii_hb_c.plot(ax=axes[1, 1], colorbar="v", cmap="gray", vmin=-0.01, vmax=0.01)
+```
+
+```python
+n = 2
+xslice, yslice = slice(200, 300), slice(100, 250)
+#xslice, yslice = slice(230, 300), slice(130, 220)
+x = imR_heii_hb_c[yslice, xslice].rebin(n).data
+y = (
+    imR_hei_hb[yslice, xslice].rebin(n).data
+    / red_R_hei_hb[yslice, xslice].rebin(n).data
+)
+z = im4686[yslice, xslice].rebin(n).data
+m = x < 0.03
+m = m & (x > 0)
+m = m & (y < 0.113)
+m = m & (y > 0.103)
+m = (
+    m
+    & ~imR_heii_hb[yslice, xslice].rebin(n).mask
+    & ~imR_hei_hb[yslice, xslice].rebin(n).mask
+)
+df = pd.DataFrame(
+    {
+        "4686 / 4861": x[m],
+        "5875 / 4861": y[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=dict(weights=z[m], bins=10),
+    diag_kws=dict(weights=z[m], bins=10),
+)
+g.fig.suptitle("Correlation between He II / Hβ and He I / Hβ ratios")
+```
+
+```python
+df["high"] = df["4686 / 4861"] > 0.003
+sns.histplot(
+    data=df,
+    x="5875 / 4861",
+    hue="high",
+    multiple="dodge",
+    shrink=1.0,
+    stat="probability",
+    common_norm=False,
+    alpha=0.8,
+    bins=10,
+)
+```
+
+```python
+df["high"] = df["4686 / 4861"] > 0.003
+sns.histplot(
+    data=df,
+    x="5875 / 4861",
+    hue="high",
+    #multiple="dodge",
+    shrink=1.0,
+    stat="probability",
+    cumulative=True,
+    common_norm=False,
+    alpha=0.8,
+    bins=1000,
+    element="step",
+).axhline(0.5, linestyle="dotted", color="k")
+```
+
+So, the depatterning improved the map but did not help with the statistics. 
+
+
+
+
 ## Ratio of [Ar IV] / [Ar III]
 
 ```python
-im4711 = Image(str(ROOT / "data/ngc346-ariv-4711-bin01-sum.fits"))
-im4740 = Image(str(ROOT / "data/ngc346-ariv-4740-bin01-sum.fits"))
-im7171 = Image(str(ROOT / "data/ngc346-ariv-7171-bin01-sum.fits"))
-im7237 = Image(str(ROOT / "data/ngc346-ariv-7237-bin01-sum.fits"))
-im7263 = Image(str(ROOT / "data/ngc346-ariv-7263-bin01-sum.fits"))
-im7136 = Image(str(ROOT / "data/ngc346-ariii-7136-bin01-sum.fits"))
+im4711 = Image(str(ROOT / "data/ngc346-PZ-ariv-4711-bin01-sum.fits"))
+im4740 = Image(str(ROOT / "data/ngc346-PZ-ariv-4740-bin01-sum.fits"))
+im7171 = Image(str(ROOT / "data/ngc346-PZ-ariv-7171-bin01-sum.fits"))
+im7237 = Image(str(ROOT / "data/ngc346-PZ-ariv-7237-bin01-sum.fits"))
+im7263 = Image(str(ROOT / "data/ngc346-PZ-ariv-7263-bin01-sum.fits"))
+im7136 = Image(str(ROOT / "data/ngc346-PZ-ariii-7136-bin01-sum.fits"))
 ```
 
 ```python
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
-im4711.plot(ax=axes[0, 0], vmin=0, vmax=400)
-im4740.plot(ax=axes[0, 1], vmin=0, vmax=250)
+im4711.plot(ax=axes[0, 0], vmin=0, vmax=600)
+im4740.plot(ax=axes[0, 1], vmin=0, vmax=450)
 (im7171 + im7263).plot(ax=axes[1, 0], vmin=0, vmax=30)
-im7136.plot(ax=axes[1, 1], vmin=0, vmax=3500)
+im7136.plot(ax=axes[1, 1], vmin=0, vmax=4500)
 axes[0, 0].set_title("[Ar IV] 4711 + He I 4713")
 axes[0, 1].set_title("[Ar IV] 4740")
 axes[1, 0].set_title("[Ar IV] 7171 + 7263")
@@ -997,12 +1097,12 @@ axes[1, 1].set_title("[Ar III] 7136")
 ```python
 n = 8
 fig, axes = plt.subplots(2, 2, sharey=True, figsize=(12, 12))
-(im4711.rebin(n) / im4740.rebin(n)).plot(ax=axes[0, 0], vmin=0, vmax=4)
-(im4740.rebin(n) / im7136.rebin(n)).plot(ax=axes[0, 1], vmin=0, vmax=0.15)
+(im4711.rebin(n) / im4740.rebin(n)).plot(ax=axes[0, 0], vmin=0, vmax=2)
+(im4740.rebin(n) / im7136.rebin(n)).plot(ax=axes[0, 1], vmin=0, vmax=0.1)
 ((im7171.rebin(n) + im7263.rebin(n)) / (im4740.rebin(n) + im4711.rebin(n))).plot(
-    ax=axes[1, 0], vmin=0, vmax=0.08
+    ax=axes[1, 0], vmin=0, vmax=0.04
 )
-im7136.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=3500)
+im7136.rebin(n).plot(ax=axes[1, 1], vmin=0, vmax=5500)
 axes[0, 0].set_title("([Ar IV] 4711 + He I 4713) / [Ar IV] 4740")
 axes[0, 1].set_title("[Ar IV] 4740 / [Ar III] 7136")
 axes[1, 0].set_title("[Ar IV] (7171 + 7263) / (4711 + 4740)")
@@ -1116,7 +1216,7 @@ avHe_corr_4686
 ```
 
 ```python
-(im4686 * avHe_corr_4686).write(str(ROOT / "data/ngc346-heii-4686-correct.fits"))
+(im4686 * avHe_corr_4686).write(str(ROOT / "data/ngc346-PZ-heii-4686-correct.fits"))
 ```
 
 ```python
