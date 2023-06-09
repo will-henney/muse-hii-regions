@@ -34,6 +34,38 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
 ## Path to the root of this repo
 
 ```python
@@ -1220,14 +1252,14 @@ avHe_corr_4686
 ```
 
 ```python
-((imhb - hbfix) * 10 ** (0.4 * avHe_EBV * rc.X(4861))).write(
-    str(ROOT / "data/ngc346-hi-4861-correct.fits"),
+((imhb) * 10 ** (0.4 * avHe_EBV * rc.X(4861))).write(
+    str(ROOT / "data/ngc346-PZ-hi-4861-correct.fits"),
 )
 (im5875 * 10 ** (0.4 * avHe_EBV * rc.X(5875))).write(
-    str(ROOT / "data/ngc346-hei-5875-correct.fits"),
+    str(ROOT / "data/ngc346-PZ-hei-5875-correct.fits"),
 )
 (im7136 * 10 ** (0.4 * avHe_EBV * rc.X(7136))).write(
-    str(ROOT / "data/ngc346-ariii-7136-correct.fits"),
+    str(ROOT / "data/ngc346-PZ-ariii-7136-correct.fits"),
 )
 ```
 
@@ -1242,8 +1274,11 @@ im4711c = im4711 - im_fake_4713
 Make a common minimal mask to use for all the [Ar IV] lines, which we will then combine with a brightness-based mask for the weaker lines and ratios:
 
 ```python
-cont4686 = Image(str(ROOT / "data/ngc346-cont-4686-mean.fits"))
+cont4686 = Image(str(ROOT / "data/ngc346-BZ-cont-4686-mean.fits"))
 ```
+
+Strangely, I was using BZ instead of PZ as an identifier in the PZ-03-04 notebook. Why on earth did I do that?
+
 
 I need to decide how bright a star needs to be before I mask out that bit of the image. 5000 in the `cont4686` image seems a reasonable value.
 
@@ -1260,10 +1295,10 @@ im_ariv_sum.mask[78:88, 190:199] = True
 im_ariv_sum.mask[234:236, 266:271] = True
 im_ariv_sum.mask[81:84, 52:55] = True
 im_ariv_sum.mask = im_ariv_sum.mask | (cont4686.data > 1.5e3)
-im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data > 650)
-im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data < -250)
+im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data > 1000)
+im_ariv_sum.mask = im_ariv_sum.mask | (im_ariv_sum.data < 100)
 fig, ax = plt.subplots(figsize=(10, 10))
-im_ariv_sum.rebin(1).plot(colorbar="v", vmin=-10, vmax=600, cmap="gray_r", scale="sqrt")
+im_ariv_sum.rebin(1).plot(colorbar="v", vmin=100, vmax=1000, cmap="gray_r", scale="sqrt")
 ```
 
 That is looking good.  Apply the mask to all the other images
@@ -1279,7 +1314,7 @@ Now find average reddening for [Ar IV] lines.  Try two methods: (1) brightness-w
 fig, ax = plt.subplots(figsize=(10, 10))
 im = im_ariv_sum.copy()
 im.data = imEBV.data
-im.mask = im.mask | (im_ariv_sum.data < 120)
+im.mask = im.mask | (im_ariv_sum.data < 300)
 trim_edges(im, 20)
 im.plot(vmin=0, vmax=0.2, cmap="magma_r", colorbar="v")
 ```
@@ -1306,6 +1341,10 @@ for im in im4711r, im4740r, im7171r, im7136r, im7263r, im7237r:
     im.mask = im.mask | im_ariv_sum.mask
 ```
 
+```python
+im4740r -= 100
+```
+
 And replace the summed image:
 
 ```python
@@ -1314,17 +1353,17 @@ im_ariv_sum = im4711r + im4740r
 
 ```python
 ariv_R1 = im4711r / im4740r
-ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 300)
+ariv_R1.mask = ariv_R1.mask | (im_ariv_sum.data < 700)
 ariv_R3_plus_R4 = (im7171r + im7263r) / (im4740r + im4711r)
-ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 400)
+ariv_R3_plus_R4.mask = ariv_R3_plus_R4.mask | (im_ariv_sum.data < 700)
 trim_edges(ariv_R1, 20)
 trim_edges(ariv_R3_plus_R4, 20)
 ```
 
 ```python
 fig, axes = plt.subplots(2, 2, figsize=(12, 12), sharex="row", sharey="row")
-im4711r.plot(ax=axes[0, 0], vmin=-20, vmax=400, colorbar="v", cmap=cmr.bubblegum)
-im4740r.plot(ax=axes[0, 1], vmin=-20, vmax=350 / 1.3, colorbar="v", cmap=cmr.bubblegum)
+im4711r.plot(ax=axes[0, 0], vmin=0, vmax=600, colorbar="v", cmap=cmr.bubblegum)
+im4740r.plot(ax=axes[0, 1], vmin=0, vmax=600 / 1.3, colorbar="v", cmap=cmr.bubblegum)
 n = 8
 # (im4711c.rebin(n) / im4740.rebin(n)).plot(ax=axes[1, 0], vmin=0, vmax=2, colorbar="v")
 # (
@@ -1341,19 +1380,19 @@ Save the combined image, corrected for extinction:
 
 ```python
 im_ariv_sum.write(
-    str(ROOT / "data/ngc346-ariv-4711-plus-4740-correct.fits"), savemask="nan"
+    str(ROOT / "data/ngc346-PZ-ariv-4711-plus-4740-correct.fits"), savemask="nan"
 )
-im4740r.write(str(ROOT / "data/ngc346-ariv-4740-correct.fits"), savemask="nan")
-im4711r.write(str(ROOT / "data/ngc346-ariv-4711-correct.fits"), savemask="nan")
-im7171r.write(str(ROOT / "data/ngc346-ariv-7171-correct.fits"), savemask="nan")
-im7263r.write(str(ROOT / "data/ngc346-ariv-7263-correct.fits"), savemask="nan")
+im4740r.write(str(ROOT / "data/ngc346-PZ-ariv-4740-correct.fits"), savemask="nan")
+im4711r.write(str(ROOT / "data/ngc346-PZ-ariv-4711-correct.fits"), savemask="nan")
+im7171r.write(str(ROOT / "data/ngc346-PZ-ariv-7171-correct.fits"), savemask="nan")
+im7263r.write(str(ROOT / "data/ngc346-PZ-ariv-7263-correct.fits"), savemask="nan")
 ```
 
 ```python
 n = 4
 xslice, yslice = slice(200, 300), slice(100, 250)
 ratio = 1.35
-xmax = 300
+xmax = 600
 ymax = ratio * xmax
 x = im4740r[yslice, xslice].rebin(n).data
 y = im4711r[yslice, xslice].rebin(n).data
@@ -1886,7 +1925,7 @@ g.axes[1, 0].set_ylim(zzmin, zzmax)
 g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
 g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 
-g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics.pdf")
+g.fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics.pdf")
 # g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
 ```
@@ -1974,7 +2013,7 @@ g.axes[1, 0].set_ylim(zzmin, zzmax)
 g.axes[1, 1].set_xlim(*g.axes[1, 0].get_ylim())
 g.axes[0, 0].set_xlim(*g.axes[1, 0].get_xlim())
 
-g.fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-R1-R3.pdf")
+g.fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics-R1-R3.pdf")
 # g.fig.suptitle("Correlation between [Ar IV] ratios");
 text
 ```
@@ -2007,7 +2046,7 @@ ww.plot(ax=axes[0], colorbar="v", vmin=w_low_cutoff, vmax=None, cmap="Blues")
 zz.plot(ax=axes[1], colorbar="v", vmin=zzmin, vmax=zzmax, cmap=cmr.amber)
 xy.plot(ax=axes[2], colorbar="v", vmin=xymin, vmax=xymax, cmap=cmr.ember)
 fig.tight_layout()
-fig.savefig(ROOT / "figs/ngc346-bow-shock-ariv-diagnostics-maps.pdf")
+fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics-maps.pdf")
 ```
 
 ```python
@@ -2091,4 +2130,8 @@ ariv.getTemDen([0.01, 0.02, 0.03], den=100, to_eval="L(7263) / (L(4711) + L(4740
 ```python
 fig, ax = plt.subplots()
 ax.plot(rr4, rr1)
+```
+
+```python
+
 ```
