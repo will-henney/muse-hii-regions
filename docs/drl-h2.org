@@ -1,0 +1,33 @@
+* Molecular hydrogen lines at optical wavelengths
+- Now that we have established that the DRLs are actually H2, we can see what physics we can do with them
+
+
+** Previous work on excitation of ro-vibrational levels in PDRs
+
+*** Kaplan:2021a
+- This seems the most recent relevant paper on the near-infrared lines
+- They observe 5 regions, which include the Horse head nebula and the Orion Bar
+- They detect lines up to v=14, which is the same as us
+- And with v=4 they get up to J=19, which is higher than us (we maybe see up to J=13)
+- They compare with a pure fluorescent spectrum, which has well separated ladders for the different v levels
+  - Fluorescent spectrum has high vibrational temperature and a low rotational temperature
+- The Orion Bar shows the largest deviation from this
+  - Which they ascribe to collisional effects
+  - They are assuming a density of 1e6 in Orion,
+  - Which is way higher than what they gave in an earlier paper
+    - Kaplan:2017a
+    - although they never comment on this
+- They look at the ortho-para ratio
+  - The ortho lines have odd J
+  - The para lines have even J
+  - For the ground state, we expect O/P = 3 in LTE
+    - But, for fluorescently excited lines, the additional optical depth increases the self-shielding for the ortho lines, which reduces the pumping efficiency and brings it down to O/P = 1.7
+    - Then collisional transitions (if they are important) can take it back up to 3 again
+- They determine the K-band extinction from comparing lines with shared upper levels
+  - And assuming an extinction law of the form lambda^-1.8
+    - Although they say that varying the index makes little difference
+  - The get values around A_K = 0.7
+    - Which would imply A_V = 10 if it was that steep up to the optical!
+- They do show spatially resolved results
+  - But hardly comment on these
+  - And they are hard to interpret, since I am not sure which way their slit is going

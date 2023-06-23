@@ -1,0 +1,110 @@
+title PDR filament in NGC 346, constant P, n0 = 100 pcc
+# Density of 100 pcc at illuminated face
+hden 2.00
+constant pressure
+magnetic field -5.3 gauss
+stop temperature off 
+stop column density 21.5
+# POWR SMC 50000 K model with standard wind 
+table SED "smc-ob-i_50-42.sed"
+# Bolometric luminosity of 1.1e6 Lsun
+luminosity total 39.62
+# Add 10 L_sun of 1e6 K x-rays
+brems 6
+luminosity total 34.6
+# And general Milky Way backgrounds
+cmb
+table ism
+cosmic rays, background
+# 6 pc
+radius 19.27
+turbulence 5 km/s
+iterate 2
+init file="ism.ini"
+# Big H2 molecule
+database h2
+# Approximation to SMC abundances
+abundances HII no grains
+# 0.3x ISM grain abundance
+grains ISM 0.3
+# Particular elements from Valerdi+ 2019
+# Note that scale is log10 wrt H (12 less than conventional value)
+element abundance helium -1.084
+element abundance nitrogen -5.39
+element abundance oxygen -3.81
+element abundance neon -4.52
+element abundance sulphur -5.56
+element abundance argon -6.18
+element abundance chlorine -6.53
+# All other elements get scaled to ISM x 0.3
+element scale factor carbon 0.3
+element scale factor magnesium 0.3
+element scale factor silicon 0.3
+element scale factor phosphorus 0.3
+element scale factor iron 0.3
+element scale factor nickel 0.3
+save overview last ".ovr"
+save continuum last ".cont"
+save pressure last ".pre"
+save cooling last ".cool"
+save heating last ".heat"
+save physical conditions last ".phys"
+save pdr last ".pdr"
+save H2 lines, faintest -6 last ".h2lines"
+save H2 PDR last ".h2pdr"
+save H2 temperatures last ".h2temp"
+save chemistry rates last ".h2d" species "H2" destruction
+save chemistry rates last ".h2c" species "H2" creation
+save chemistry rates last ".cod" species "CO" destruction
+save chemistry rates last ".coc" species "CO" creation
+save hydrogen lya last ".lya" 
+save lines, emissivity last ".emis"
+He 2 4685.70
+O  1 6300.30
+O  2 7319.99
+O  2 7318.92
+O  3 4363.21
+O  3 5006.84
+Ar 3 7135.79
+Ar 4 4711.26
+Ar 4 4740.12
+Ar 4 7332.15
+Ar 3 7751.11
+Ne 3 3868.76
+Ne 4 4724.17
+S  3 6312.06
+S  3 9068.62
+H  1 4861.33
+H  1 6562.82
+Ca B 6562.82
+Blnd 5875.66A
+IRAC 3.60000m
+IRAC 4.50000m
+IRAC 5.80000m
+IRAC 8.00000m
+F12  12m 
+F25  25m
+MIPS  24m 
+PAC1  70m
+PAC2 100m
+PAC3 160m
+H2   2.12125m
+end of lines
+save lines, array ".lina" last, units microns
+save radius last ".rad"
+# Everything about grains
+save grain abundance last ".gabun"
+save grain charge last ".gcharge"
+save grain continuum last ".gcont"
+save grain drift velocity last ".gdrift"
+save grain potential last ".gpot"
+save grain temperature last ".gtemp"
+# Ionization structure per element
+save element carbon last ".C"
+save element nitrogen last ".N"
+save element oxygen last ".O"
+save element sulphur last ".S"
+save element argon last ".Ar"
+save element neon last ".Ne"
+save element silicon last ".Si"
+save element chlorine last ".Cl"
