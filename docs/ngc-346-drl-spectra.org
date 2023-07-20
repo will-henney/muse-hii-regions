@@ -4089,6 +4089,9 @@ Index
 #+end_example
 *** DONE Make a plot of the velocities
 CLOSED: [2022-11-08 Tue 13:50]
+:PROPERTIES:
+:ID:       0862B4E2-B2DA-4F1E-9479-6FBAE9936226
+:END:
 - Vision of how this should look
   - Each row of plots is for a single zone
   - Each column of plots is for a particular line type
@@ -4583,6 +4586,9 @@ Copy histogram figure file to paper project
 
 *** DONE Make a table of rest wavelengths plus uncertainties of all the UILs
 CLOSED: [2022-11-12 Sat 19:08]
+:PROPERTIES:
+:ID:       8CCFF185-E205-42F0-9278-4E46DE184262
+:END:
 - Where the wavelength accuracy estimates come from
   - We will assume a velocity of 171 km/s +/- 5 km/s
     - Which is a systematic uncertainty for all lines
@@ -4673,6 +4679,9 @@ Index
 
 *** DONE Write a latex version of the table
 CLOSED: [2023-05-27 Sat 20:37]
+:PROPERTIES:
+:ID:       028D1B5F-C4A1-4689-83FB-4B1FA7FB6F60
+:END:
 - I am going to try and do this using the pandas facility for writing latex
 - This works OK, but there are a few issues that need sorting
   - [ ] alignment of the columns is not great, especially when we have a colon
@@ -7979,9 +7988,111 @@ Sample:
 : N  0.11E-03
 : O  0.85E-03
 : F  0.36E-07
+** TODO [0/2] Step 15: addition requested by referee
+*** TODO Make a table of all the known lines
+- Similar to [[id:8CCFF185-E205-42F0-9278-4E46DE184262][Make a table of rest wavelengths plus uncertainties of all the UILs]] in Step 9
+  - But it might be better to get the data from ~zone-*-velocities.csv~ files
+  - As in [[id:0862B4E2-B2DA-4F1E-9479-6FBAE9936226][Make a plot of the velocities]]
+- [ ] And what should we do about the reddening?
+  - In the bow shock project we determined the average foreground extinction
+- The simplest approach would be to give the following columns:
+  1. Observed wavelength
+  2. Lab wavelength
+  3. ID
+  4. Flux relative to H beta for each zone 0, I, II, III, IV
+     - Only including cases where s/n > 3
+     - Although this will make a very wide table
 
 
+#+begin_src python :eval no :tangle ../scripts/make-table-known-lines.py
+  from pathlib import Path
+  import yaml
+  import pandas as pd
+  import numpy as np
+  import typer
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
+  UNWANTED_ZONES = ["zone-S"]
+  UNWANTED_TYPES = ["Unidentified"]
+
+  REPLACEMENTS = {
+      "Deep": "Deep Neutral",
+      "Fe": "Fe-Ni-Ca-Si",
+  }
+  BEST_TYPES = {
+      "zone-0": ["Deep", "Neutral", "Low", "Medium"],
+      "zone-I": ["Neutral", "Low", "Medium"],
+      "zone-II": ["Low", "Medium"],
+      "zone-III": ["Medium"],
+      "zone-IV": ["Medium", "High"],
+      "zone-MYSO": ["Deep", "Neutral", "Low", "Medium", "Fe"],
+      "zone-S": ["Medium"],
+  }
+
+  def main(
+          id_label: str,
+          debug: bool=False,
+          minimum_signal_noise: float=3.0,
+          species_file: str="species.yaml",
+          zone_file: str="zones.yaml",
+          vsys: float=171.1,
+          d_vsys: float=5.0,
+  ):
+      """Table of all identified lines"""
+
+      # Load the zone database
+      with open(zone_file) as f:
+          # But drop zones we do not want
+          zones = [_ for _ in yaml.safe_load(f) if _["label"] not in UNWANTED_ZONES]
+
+      # Iterate over the zones
+      for jzone, zone in enumerate(zones):
+          # Read in the velocity table
+          df = pd.read_csv(f"all-lines-{id_label}/{zone['label']}-velocities.csv").set_index("Index")
+          if zone == zones[0]:
+              # Initialize the output table
+              df0 = df[["Type", "ID", "blend", "wave", "e_wave"]]
+          eflux = df.flux / df.s_n
+          flabel = f"F({zone['label'].split('-')[1]})"
+          elabel = f"E({zone['label'].split('-')[1]})"
+          df0 = df0.assign(**{flabel: df.flux, elabel: eflux})
+          # Ignore values with s/n that is too low
+          mask = df.s_n < minimum_signal_noise
+          df0.loc[mask, flabel] = np.nan
+          df0.loc[mask, elabel] = np.nan
+      print(df0)
+      df0.to_csv(f"all-lines-{id_label}/known-lines-final-table.csv")
 
 
+  if __name__ == "__main__":
+      typer.run(main)
 
+#+end_src
+#+begin_src sh :dir ../data/n346-lines :results output verbatim
+  COLUMNS=1000 python ../../scripts/make-table-known-lines.py c007-chop-mean --minimum-signal-noise 1.0
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                 Type                 ID  blend       wave    e_wave      F(0)      E(0)      F(I)      E(I)     F(II)     E(II)    F(III)    E(III)     F(IV)     E(IV)   F(MYSO)   E(MYSO)
+Index                                                                                                                                                                                       
+7              Fe, Ni  [Fe III] 4607.12+   True  4608.9970  0.117208  0.029204  0.002738  0.047758  0.012580       NaN       NaN  0.007463  0.004847  0.110371  0.006241  0.068729  0.007189
+35          High Perm      O II 4641.81+   True  4643.3533  0.367704  0.069084  0.020322  0.216787  0.045928       NaN       NaN  0.017965  0.010445  0.061813  0.025934  0.044443  0.019272
+42          High Perm      O II 4649.13+   True  4652.4410  0.129193  0.067199  0.006945  0.214249  0.046557  0.065181  0.022646  0.098565  0.012855  0.157484  0.012576       NaN       NaN
+49             Fe, Ni   [Fe III] 4658.10  False  4660.5449  0.159457  0.104694  0.013355  0.133842  0.076587  0.155563  0.005900  0.070989  0.013281       NaN       NaN  0.766300  0.090687
+71           High Neb     He II  4685.68  False        NaN -0.195508       NaN       NaN  0.076721  0.050949       NaN       NaN       NaN       NaN  0.231436  0.010316       NaN       NaN
+...               ...                ...    ...        ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...
+3707          Med Neb        H I 9229.01  False  9234.1019  0.054189  3.136035  0.135950  2.595186  0.109831  2.972065  0.122050  2.734892  0.127351  2.258372  0.130134  3.452899  0.162940
+3711     Deep Neutral               UIL+   True        NaN -0.390471       NaN       NaN  0.333040  0.129621       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN
+3720          Neutral      Ca I] 9244.31  False  9248.8169  0.461288  0.026246  0.009686  0.063626  0.017975       NaN       NaN       NaN       NaN       NaN       NaN  0.204935  0.030602
+3736   Deep Neutral??                UIL  False  9269.6641  0.210080  0.040371  0.006785  0.030637  0.017577  0.009451  0.001967       NaN       NaN  0.011022  0.005036  0.025210  0.011150
+3762    Deep Neutral?                UIL  False  9302.6743  0.038180  0.249847  0.007631       NaN       NaN       NaN       NaN  0.120681  0.058183       NaN       NaN  0.196532  0.016321
+
+[262 rows x 17 columns]
+#+end_example
+
+*** TODO Write latex version of the known lines table
+- Similar to [[id:028D1B5F-C4A1-4689-83FB-4B1FA7FB6F60][Write a latex version of the table]] in Step 9
 
