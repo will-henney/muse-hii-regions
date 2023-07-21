@@ -15,13 +15,13 @@ REPLACEMENTS = {
     "Fe": "Fe-Ni-Ca-Si",
 }
 BEST_TYPES = {
-    "zone-0": ["Deep", "Neutral", "Low", "Medium"],
-    "zone-I": ["Neutral", "Low", "Medium"],
-    "zone-II": ["Low", "Medium"],
-    "zone-III": ["Medium"],
-    "zone-IV": ["Medium", "High"],
-    "zone-MYSO": ["Deep", "Neutral", "Low", "Medium", "Fe"],
-    "zone-S": ["Medium"],
+    "zone-0": ["Deep", "Neutral", "Low", "Med"],
+    "zone-I": ["Neutral", "Low", "Med", "Fe"],
+    "zone-II": ["Low", "Med", "Fe"],
+    "zone-III": ["Med", "Fe"],
+    "zone-IV": ["Med", "High"],
+    "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
+    "zone-S": ["Med"],
 }
 
 def main(
@@ -41,20 +41,39 @@ def main(
         zones = [_ for _ in yaml.safe_load(f) if _["label"] not in UNWANTED_ZONES]
 
     # Iterate over the zones
+    wstrings = []
     for jzone, zone in enumerate(zones):
         # Read in the velocity table
         df = pd.read_csv(f"all-lines-{id_label}/{zone['label']}-velocities.csv").set_index("Index")
         if zone == zones[0]:
             # Initialize the output table
-            df0 = df[["Type", "ID", "blend", "wave", "e_wave"]]
+            df0 = df[["Type", "ID", "blend"]]
+        # Columns of wavelength and flux for each zone, with their respective errors
         eflux = df.flux / df.s_n
-        flabel = f"F({zone['label'].split('-')[1]})"
-        elabel = f"E({zone['label'].split('-')[1]})"
-        df0 = df0.assign(**{flabel: df.flux, elabel: eflux})
-        # Ignore values with s/n that is too low
-        mask = df.s_n < minimum_signal_noise
-        df0.loc[mask, flabel] = np.nan
-        df0.loc[mask, elabel] = np.nan
+        zstring = zone['label'].split('-')[1]
+        flabel = f"F({zstring})"
+        elabel = f"E({zstring})"
+        wlabel = f"W({zstring})"
+        dwlabel = f"dW({zstring})"
+        # Save a list of the wavelength columns
+        wstrings.append(wlabel)
+        # Add the 4 columns to the output table
+        df0 = df0.assign(**{wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS), dwlabel: df.e_wave, flabel: df.flux, elabel: eflux})
+        # Ignore values with s/n that is too low or that are not of the best type for this zone
+        mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(tuple(BEST_TYPES[zone['label']]))
+        for label in [wlabel, dwlabel, flabel, elabel]:
+            df0.loc[mask, label] = np.nan
+    # Second pass: consolidate to a single wavelength column
+    dwstrings = ["d" + _ for _ in wstrings]
+    # Average over valid zones
+    df0.insert(4, "wave", np.nanmean(df0[wstrings], axis=1))
+    # And use the smallest for wave error
+    df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
+    # Drop the individual wavelength columns
+    df0 = df0.drop(columns=wstrings + dwstrings)
+    # And drop all the unidentified lines and lines with no wavelength
+    df0 = df0[~df0.ID.str.startswith('UIL') & np.isfinite(df0.wave)]
+
     print(df0)
     df0.to_csv(f"all-lines-{id_label}/known-lines-final-table.csv")
 

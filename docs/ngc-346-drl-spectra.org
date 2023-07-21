@@ -8022,13 +8022,13 @@ Sample:
       "Fe": "Fe-Ni-Ca-Si",
   }
   BEST_TYPES = {
-      "zone-0": ["Deep", "Neutral", "Low", "Medium"],
-      "zone-I": ["Neutral", "Low", "Medium"],
-      "zone-II": ["Low", "Medium"],
-      "zone-III": ["Medium"],
-      "zone-IV": ["Medium", "High"],
-      "zone-MYSO": ["Deep", "Neutral", "Low", "Medium", "Fe"],
-      "zone-S": ["Medium"],
+      "zone-0": ["Deep", "Neutral", "Low", "Med"],
+      "zone-I": ["Neutral", "Low", "Med", "Fe"],
+      "zone-II": ["Low", "Med", "Fe"],
+      "zone-III": ["Med", "Fe"],
+      "zone-IV": ["Med", "High"],
+      "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
+      "zone-S": ["Med"],
   }
 
   def main(
@@ -8048,20 +8048,39 @@ Sample:
           zones = [_ for _ in yaml.safe_load(f) if _["label"] not in UNWANTED_ZONES]
 
       # Iterate over the zones
+      wstrings = []
       for jzone, zone in enumerate(zones):
           # Read in the velocity table
           df = pd.read_csv(f"all-lines-{id_label}/{zone['label']}-velocities.csv").set_index("Index")
           if zone == zones[0]:
               # Initialize the output table
-              df0 = df[["Type", "ID", "blend", "wave", "e_wave"]]
+              df0 = df[["Type", "ID", "blend"]]
+          # Columns of wavelength and flux for each zone, with their respective errors
           eflux = df.flux / df.s_n
-          flabel = f"F({zone['label'].split('-')[1]})"
-          elabel = f"E({zone['label'].split('-')[1]})"
-          df0 = df0.assign(**{flabel: df.flux, elabel: eflux})
-          # Ignore values with s/n that is too low
-          mask = df.s_n < minimum_signal_noise
-          df0.loc[mask, flabel] = np.nan
-          df0.loc[mask, elabel] = np.nan
+          zstring = zone['label'].split('-')[1]
+          flabel = f"F({zstring})"
+          elabel = f"E({zstring})"
+          wlabel = f"W({zstring})"
+          dwlabel = f"dW({zstring})"
+          # Save a list of the wavelength columns
+          wstrings.append(wlabel)
+          # Add the 4 columns to the output table
+          df0 = df0.assign(**{wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS), dwlabel: df.e_wave, flabel: df.flux, elabel: eflux})
+          # Ignore values with s/n that is too low or that are not of the best type for this zone
+          mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(tuple(BEST_TYPES[zone['label']]))
+          for label in [wlabel, dwlabel, flabel, elabel]:
+              df0.loc[mask, label] = np.nan
+      # Second pass: consolidate to a single wavelength column
+      dwstrings = ["d" + _ for _ in wstrings]
+      # Average over valid zones
+      df0.insert(4, "wave", np.nanmean(df0[wstrings], axis=1))
+      # And use the smallest for wave error
+      df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
+      # Drop the individual wavelength columns
+      df0 = df0.drop(columns=wstrings + dwstrings)
+      # And drop all the unidentified lines and lines with no wavelength
+      df0 = df0[~df0.ID.str.startswith('UIL') & np.isfinite(df0.wave)]
+
       print(df0)
       df0.to_csv(f"all-lines-{id_label}/known-lines-final-table.csv")
 
@@ -8076,21 +8095,21 @@ Sample:
 
 #+RESULTS:
 #+begin_example
-                 Type                 ID  blend       wave    e_wave      F(0)      E(0)      F(I)      E(I)     F(II)     E(II)    F(III)    E(III)     F(IV)     E(IV)   F(MYSO)   E(MYSO)
-Index                                                                                                                                                                                       
-7              Fe, Ni  [Fe III] 4607.12+   True  4608.9970  0.117208  0.029204  0.002738  0.047758  0.012580       NaN       NaN  0.007463  0.004847  0.110371  0.006241  0.068729  0.007189
-35          High Perm      O II 4641.81+   True  4643.3533  0.367704  0.069084  0.020322  0.216787  0.045928       NaN       NaN  0.017965  0.010445  0.061813  0.025934  0.044443  0.019272
-42          High Perm      O II 4649.13+   True  4652.4410  0.129193  0.067199  0.006945  0.214249  0.046557  0.065181  0.022646  0.098565  0.012855  0.157484  0.012576       NaN       NaN
-49             Fe, Ni   [Fe III] 4658.10  False  4660.5449  0.159457  0.104694  0.013355  0.133842  0.076587  0.155563  0.005900  0.070989  0.013281       NaN       NaN  0.766300  0.090687
-71           High Neb     He II  4685.68  False        NaN -0.195508       NaN       NaN  0.076721  0.050949       NaN       NaN       NaN       NaN  0.231436  0.010316       NaN       NaN
-...               ...                ...    ...        ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...
-3707          Med Neb        H I 9229.01  False  9234.1019  0.054189  3.136035  0.135950  2.595186  0.109831  2.972065  0.122050  2.734892  0.127351  2.258372  0.130134  3.452899  0.162940
-3711     Deep Neutral               UIL+   True        NaN -0.390471       NaN       NaN  0.333040  0.129621       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN
-3720          Neutral      Ca I] 9244.31  False  9248.8169  0.461288  0.026246  0.009686  0.063626  0.017975       NaN       NaN       NaN       NaN       NaN       NaN  0.204935  0.030602
-3736   Deep Neutral??                UIL  False  9269.6641  0.210080  0.040371  0.006785  0.030637  0.017577  0.009451  0.001967       NaN       NaN  0.011022  0.005036  0.025210  0.011150
-3762    Deep Neutral?                UIL  False  9302.6743  0.038180  0.249847  0.007631       NaN       NaN       NaN       NaN  0.120681  0.058183       NaN       NaN  0.196532  0.016321
+            Type                 ID  blend         wave    e_wave      F(0)      E(0)      F(I)      E(I)     F(II)     E(II)    F(III)    E(III)     F(IV)     E(IV)   F(MYSO)   E(MYSO)
+Index                                                                                                                                                                                    
+7         Fe, Ni  [Fe III] 4607.12+   True  4606.602982  0.130744       NaN       NaN  0.047758  0.012580       NaN       NaN  0.007463  0.004847       NaN       NaN  0.068729  0.007189
+35     High Perm      O II 4641.81+   True  4639.115926  0.524448       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.061813  0.025934       NaN       NaN
+42     High Perm      O II 4649.13+   True  4649.693289  0.099823       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.157484  0.012576       NaN       NaN
+49        Fe, Ni   [Fe III] 4658.10  False  4658.827801  0.047408       NaN       NaN  0.133842  0.076587  0.155563  0.005900  0.070989  0.013281       NaN       NaN  0.766300  0.090687
+71      High Neb     He II  4685.68  False  4685.422797  0.055718       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.231436  0.010316       NaN       NaN
+...          ...                ...    ...          ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...
+3687     Neutral      Ca I] 9204.09  False  9204.101327  0.072918  0.034949  0.006597  0.021493  0.007925       NaN       NaN       NaN       NaN       NaN       NaN  0.328825  0.019182
+3692     Med Neb       He I 9210.28  False  9210.446559  0.135534  0.063930  0.006932  0.057238  0.008148  0.075931  0.012812  0.064616  0.011519  0.054495  0.025536       NaN       NaN
+3699     Fe, Ni?      Fe I] 9218.47  False  9219.031972  0.085168       NaN       NaN  0.035154  0.009684  0.033671  0.002294       NaN       NaN       NaN       NaN  0.335043  0.036612
+3707     Med Neb        H I 9229.01  False  9228.777493  0.051332  3.136035  0.135950  2.595186  0.109831  2.972065  0.122050  2.734892  0.127351  2.258372  0.130134  3.452899  0.162940
+3720     Neutral      Ca I] 9244.31  False  9243.782946  0.186657  0.026246  0.009686  0.063626  0.017975       NaN       NaN       NaN       NaN       NaN       NaN  0.204935  0.030602
 
-[262 rows x 17 columns]
+[135 rows x 17 columns]
 #+end_example
 
 *** TODO Write latex version of the known lines table
