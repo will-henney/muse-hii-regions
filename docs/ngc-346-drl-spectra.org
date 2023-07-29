@@ -7988,7 +7988,7 @@ Sample:
 : N  0.11E-03
 : O  0.85E-03
 : F  0.36E-07
-** TODO [0/0] Step 15: addition requested by referee
+** TODO [0/3] Step 15: addition requested by referee
 - [2023-07-26 Wed] We have the first draft of this table, but there are a couple of remaining issues
   1. Deal with the reddening
   2. [X] Better treatment of the blends
@@ -7996,19 +7996,82 @@ Sample:
        - Always give the main wav(lab) as one of the components, not a mean wavelength. This only affects [N I] as far as I can see
        - Remove "blends" that are too widely separated, such as [Cl II] 8578.69 with He I 8776.93
      - Actually, I fixed all this by modifying the python code instead
+*** TODO Self-consistent determination of the reddening
+- We will use the reddening approach that we used in the bowshock project
+  - See [[file:../notebooks/ngc346-new/PZ-01-01-more-line-ratios.py]]
+  - Intrinsic Balmer decrement from Case B, assuming n=100 and T=12500
+  - Reddening law from Gordon:2003l
+    - Implemented in pyneb, as a particular set of parameters for Fitzpatrick:1990a curve
+  - 
+#+begin_src python :eval no :tangle ../scripts/check-extinction.py
+  import numpy as np
+  import pyneb as pn
+
+  hi = pn.RecAtom("H", 1)
+  tem, den = 12500, 100
+  R0 = (hi.getEmissivity(tem, den, wave=6563)
+        / hi.getEmissivity(tem, den, wave=4861))
+  print(f"Intrinsic Balmer decrement: R0 = {R0:.3f}")
+
+  # Set up reddening law
+  rc = pn.RedCorr()
+  rc.R_V = 2.74
+  rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
+  rc.law = "F99"
+
+  decrements = np.array(
+      [3.44, 3.23, 3.63, 3.62, 3.01, 3.43]
+  )
+
+  rc.setCorr(obs_over_theo=decrements / R0, wave1=6563.0, wave2=4861.0)
+  print(f"E(B-V) = {np.round(rc.E_BV, 2)}")
+  print(f"c(H beta) = {np.round(rc.cHbeta, 2)}")
+  for wav in 4000, 5000, 6000, 7000, 8000, 9000:
+      # Two ways of calculating the correction factor
+      factor = 10**(0.4 * rc.E_BV * (rc.X(wav) - rc.X(4861)))
+      factor2 = rc.getCorr(wav) / rc.getCorr(4861)
+      print(wav, np.round(factor, 2))
+      print(wav, np.round(factor2, 2))
+
+#+end_src
+
+#+begin_src sh :results output verbatim
+python ../scripts/check-extinction.py
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Intrinsic Balmer decrement: R0 = 2.821
+E(B-V) = [0.17 0.12 0.22 0.22 0.06 0.17]
+c(H beta) = [0.23 0.15 0.29 0.28 0.07 0.22]
+4000 [1.14 1.09 1.18 1.17 1.04 1.13]
+4000 [1.14 1.09 1.18 1.17 1.04 1.13]
+5000 [0.98 0.99 0.97 0.97 0.99 0.98]
+5000 [0.98 0.99 0.97 0.97 0.99 0.98]
+6000 [0.86 0.9  0.83 0.83 0.95 0.86]
+6000 [0.86 0.9  0.83 0.83 0.95 0.86]
+7000 [0.79 0.85 0.75 0.75 0.93 0.8 ]
+7000 [0.79 0.85 0.75 0.75 0.93 0.8 ]
+8000 [0.75 0.82 0.69 0.7  0.91 0.75]
+8000 [0.75 0.82 0.69 0.7  0.91 0.75]
+9000 [0.72 0.8  0.66 0.66 0.9  0.72]
+9000 [0.72 0.8  0.66 0.66 0.9  0.72]
+#+end_example
+
 *** TODO Make a table of all the known lines
 - Similar to [[id:8CCFF185-E205-42F0-9278-4E46DE184262][Make a table of rest wavelengths plus uncertainties of all the UILs]] in Step 9
   - But it might be better to get the data from ~zone-*-velocities.csv~ files
   - As in [[id:0862B4E2-B2DA-4F1E-9479-6FBAE9936226][Make a plot of the velocities]]
 - [ ] And what should we do about the reddening?
   - In the bow shock project we determined the average foreground extinction
+  - 
 - The simplest approach would be to give the following columns:
   1. Observed wavelength
   2. Lab wavelength
   3. ID
   4. Flux relative to H beta for each zone 0, I, II, III, IV
-     - Only including cases where s/n > 3
-     - Although this will make a very wide table
+     - Only including cases where s/n  3
+     - Although this will make a> very wide table
 
 
 #+begin_src python :eval no :tangle ../scripts/make-table-known-lines.py

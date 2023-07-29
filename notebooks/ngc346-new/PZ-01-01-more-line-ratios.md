@@ -33,7 +33,6 @@ import pyneb as pn
 sns.set_context("talk")
 sns.set_color_codes()
 ```
-
 ```python
 
 ```
@@ -65,6 +64,7 @@ sns.set_color_codes()
 ```python
 
 ```
+
 
 ## Path to the root of this repo
 
