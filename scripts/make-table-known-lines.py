@@ -2,6 +2,7 @@ from pathlib import Path
 import yaml
 import pandas as pd
 import numpy as np
+import pyneb as pn
 import typer
 import astropy.constants as const  # type: ignore
 import astropy.units as u  # type: ignore
@@ -23,6 +24,17 @@ BEST_TYPES = {
     "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
     "zone-S": ["Med"],
 }
+
+# Find intrinsic Balmer decrement
+hi = pn.RecAtom("H", 1)
+tem, den = 12500, 100
+R0 = (hi.getEmissivity(tem, den, wave=6563)
+      / hi.getEmissivity(tem, den, wave=4861))
+# Set up reddening law for SMC
+rc = pn.RedCorr()
+rc.R_V = 2.74
+rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
+rc.law = "F99"
 
 def main(
         id_label: str,
@@ -57,8 +69,17 @@ def main(
         dwlabel = f"dW({zstring})"
         # Save a list of the wavelength columns
         wstrings.append(wlabel)
+        # Calculate the reddening correction from H alpha, which is channel 1573
+        obs_decrement = df.loc[1573].flux / 100.0
+        rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
+        correction = rc.getCorr(df.wave) / rc.getCorr(df.loc[211].wave)
         # Add the 4 columns to the output table
-        df0 = df0.assign(**{wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS), dwlabel: df.e_wave, flabel: df.flux, elabel: eflux})
+        df0 = df0.assign(**{
+            wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS),
+            dwlabel: df.e_wave,
+            flabel: correction * df.flux,
+            elabel: correction * eflux,
+        })
         # Ignore values with s/n that is too low or that are not of the best type for this zone
         mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(tuple(BEST_TYPES[zone['label']]))
         for label in [wlabel, dwlabel, flabel, elabel]:

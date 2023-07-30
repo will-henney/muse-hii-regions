@@ -8079,6 +8079,7 @@ c(H beta) = [0.23 0.15 0.29 0.28 0.07 0.22]
   import yaml
   import pandas as pd
   import numpy as np
+  import pyneb as pn
   import typer
   import astropy.constants as const  # type: ignore
   import astropy.units as u  # type: ignore
@@ -8100,6 +8101,17 @@ c(H beta) = [0.23 0.15 0.29 0.28 0.07 0.22]
       "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
       "zone-S": ["Med"],
   }
+
+  # Find intrinsic Balmer decrement
+  hi = pn.RecAtom("H", 1)
+  tem, den = 12500, 100
+  R0 = (hi.getEmissivity(tem, den, wave=6563)
+        / hi.getEmissivity(tem, den, wave=4861))
+  # Set up reddening law for SMC
+  rc = pn.RedCorr()
+  rc.R_V = 2.74
+  rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
+  rc.law = "F99"
 
   def main(
           id_label: str,
@@ -8134,8 +8146,17 @@ c(H beta) = [0.23 0.15 0.29 0.28 0.07 0.22]
           dwlabel = f"dW({zstring})"
           # Save a list of the wavelength columns
           wstrings.append(wlabel)
+          # Calculate the reddening correction from H alpha, which is channel 1573
+          obs_decrement = df.loc[1573].flux / 100.0
+          rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
+          correction = rc.getCorr(df.wave) / rc.getCorr(df.loc[211].wave)
           # Add the 4 columns to the output table
-          df0 = df0.assign(**{wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS), dwlabel: df.e_wave, flabel: df.flux, elabel: eflux})
+          df0 = df0.assign(**{
+              wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS),
+              dwlabel: df.e_wave,
+              flabel: correction * df.flux,
+              elabel: correction * eflux,
+          })
           # Ignore values with s/n that is too low or that are not of the best type for this zone
           mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(tuple(BEST_TYPES[zone['label']]))
           for label in [wlabel, dwlabel, flabel, elabel]:
@@ -8167,17 +8188,17 @@ c(H beta) = [0.23 0.15 0.29 0.28 0.07 0.22]
 #+begin_example
             Type                 ID  blend         wave    e_wave      F(0)      E(0)      F(I)      E(I)     F(II)     E(II)    F(III)    E(III)     F(IV)     E(IV)   F(MYSO)   E(MYSO)
 Index                                                                                                                                                                                    
-7         Fe, Ni  [Fe III] 4607.12+   True  4606.602982  0.130744       NaN       NaN  0.047758  0.012580       NaN       NaN  0.007463  0.004847       NaN       NaN  0.068729  0.007189
-35     High Perm      O II 4641.81+   True  4639.115926  0.524448       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.061813  0.025934       NaN       NaN
-42     High Perm      O II 4649.13+   True  4649.693289  0.099823       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.157484  0.012576       NaN       NaN
-49        Fe, Ni   [Fe III] 4658.10  False  4658.827801  0.047408       NaN       NaN  0.133842  0.076587  0.155563  0.005900  0.070989  0.013281       NaN       NaN  0.766300  0.090687
-71      High Neb     He II  4685.68  False  4685.422797  0.055718       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.231436  0.010316       NaN       NaN
+7         Fe, Ni  [Fe III] 4607.12+   True  4606.602982  0.130744       NaN       NaN  0.049103  0.012934       NaN       NaN  0.007850  0.005098       NaN       NaN  0.071503  0.007479
+35     High Perm      O II 4641.81+   True  4639.115926  0.524448       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.062516  0.026229       NaN       NaN
+42     High Perm      O II 4649.13+   True  4649.693289  0.099823       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.159191  0.012713       NaN       NaN
+49        Fe, Ni   [Fe III] 4658.10  False  4658.827801  0.047408       NaN       NaN  0.136801  0.078280  0.162084  0.006147  0.073935  0.013832       NaN       NaN  0.791049  0.093616
+71      High Neb     He II  4685.68  False  4685.422797  0.055718       NaN       NaN       NaN       NaN       NaN       NaN       NaN       NaN  0.233526  0.010409       NaN       NaN
 ...          ...                ...    ...          ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...       ...
-3687     Neutral      Ca I] 9204.09  False  9204.101327  0.072918  0.034949  0.006597  0.021493  0.007925       NaN       NaN       NaN       NaN       NaN       NaN  0.328825  0.019182
-3692     Med Neb       He I 9210.28  False  9210.446559  0.135534  0.063930  0.006932  0.057238  0.008148  0.075931  0.012812  0.064616  0.011519  0.054495  0.025536       NaN       NaN
-3699     Fe, Ni?      Fe I] 9218.47  False  9219.031972  0.085168       NaN       NaN  0.035154  0.009684  0.033671  0.002294       NaN       NaN       NaN       NaN  0.335043  0.036612
-3707     Med Neb        H I 9229.01  False  9228.777493  0.051332  3.136035  0.135950  2.595186  0.109831  2.972065  0.122050  2.734892  0.127351  2.258372  0.130134  3.452899  0.162940
-3720     Neutral      Ca I] 9244.31  False  9243.782946  0.186657  0.026246  0.009686  0.063626  0.017975       NaN       NaN       NaN       NaN       NaN       NaN  0.204935  0.030602
+3687     Neutral      Ca I] 9204.09  False  9204.101327  0.072918  0.024983  0.004716  0.017055  0.006289       NaN       NaN       NaN       NaN       NaN       NaN  0.236302  0.013785
+3692     Med Neb       He I 9210.28  False  9210.446559  0.135534  0.045691  0.004954  0.045413  0.006465  0.049524  0.008356  0.042312  0.007543  0.048924  0.022925       NaN       NaN
+3699     Fe, Ni?      Fe I] 9218.47  False  9219.031972  0.085168       NaN       NaN  0.027886  0.007681  0.021953  0.001496       NaN       NaN       NaN       NaN  0.240661  0.026299
+3707     Med Neb        H I 9229.01  False  9228.777493  0.051332  2.239928  0.097103  2.058199  0.087106  1.936929  0.079542  1.789495  0.083329  2.027106  0.116808  2.479345  0.116999
+3720     Neutral      Ca I] 9244.31  False  9243.782946  0.186657  0.018737  0.006915  0.050443  0.014251       NaN       NaN       NaN       NaN       NaN       NaN  0.147081  0.021963
 
 [135 rows x 17 columns]
 #+end_example
