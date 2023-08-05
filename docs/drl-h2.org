@@ -80,6 +80,89 @@
 
 #+RESULTS:
 
+*** Merge the H2 ids with the unidentified list
+
+**** First, we switch the yaml files to a pandas data frame
+#+begin_src python :eval no :tangle ../scripts/h2-collate-lines.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+
+  def main(data_dir: str="n346-h2-lines"):
+        # Next, get all the lines into a big list of dicts
+        line_files = sorted(Path(data_dir).glob("*.yaml"))
+        data = [
+              yaml.safe_load(path.open()) for path in line_files
+        ]
+        df0 = pd.DataFrame(data)
+        df0.to_csv(Path(data_dir) / "h2-line-ids.csv")
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data :results none
+  python ../scripts/h2-collate-lines.py
+#+end_src
+
+This writes the results to [[file:../data/n346-h2-lines/h2-line-ids.csv]]
+
+**** Combine the H2 ids with the previous table of UILs
+- This uses the uil-final-table.csv that we generated in [[id:8CCFF185-E205-42F0-9278-4E46DE184262][Make a table of rest wavelengths plus uncertainties of all the UILs]] of [[file:ngc-346-drl-spectra.org][file:~/Dropbox/muse-hii-regions/docs/ngc-346-drl-spectra.org]]
+- We use ~pd.merge_asof()~ to do a fuzzy join on the wavelength column
+  - This is necessary since an exact join had corner cases with rounding problems (e.g., 0.99 vs 1.00)
+
+#+begin_src python :eval no :tangle ../scripts/h2-combine-tables.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+  COLS = ["H2_line", "wl_lab", "wl_obs", "Notes"]
+  def main(
+              data_dir: str="n346-h2-lines",
+              orig_data_dir: str="n346-lines/all-lines-c007-chop-mean",
+  ):
+        df1 = pd.read_csv(Path(orig_data_dir) / "uil-final-table.csv")
+        df2 = pd.read_csv(Path(data_dir) / "h2-line-ids.csv")
+        df2 = df2[COLS].sort_values("wl_obs")
+        df0 = pd.merge_asof(df1, df2, left_on="wave0", right_on="wl_obs", direction="nearest", tolerance=1.0)
+        df0.to_csv(Path(data_dir) / "h2-final-table.csv")
+        print(df0)
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data :results output verbatim
+  COLUMNS=1000 python ../scripts/h2-combine-tables.py
+#+end_src
+
+#+RESULTS:
+#+begin_example
+     Index        wave0  sig_wave0      flux  sig_flux            Type  blend     I / 0             E(I / 0)     II / 0            E(II / 0)  MYSO / 0          E(MYSO / 0)    H2_line    wl_lab   wl_obs           Notes
+0     1146  6029.569455   0.514152  0.030460  0.004393   Deep Neutral?  False  0.806796   0.2783544695494928   0.662888                    <  0.566409  0.10944291146839161   7-2 S(7)  6029.57A  6029.57             NaN
+1     1153  6037.396888   0.514820  0.041788  0.003967   Deep Neutral?  False  0.477559                    <   0.453518                    <  0.621762  0.14597441811223902   7-2 S(1)  6037.46A  6037.40             NaN
+2     1190  6083.195649   0.518725  0.010027  0.004825        Neutral?  False  1.655362                    <   1.854600                    <  1.587017   0.7719142568089383   7-2 S(0)  6083.08A  6083.20             NaN
+3     1300  6221.819532   0.530546  0.044434  0.002802    Deep Neutral  False  0.253526                    <   0.543340                    <  0.646933  0.08354545607085527   4-0 S(5)  6221.63A  6221.82             NaN
+4     1332  6261.684680   0.533945  0.027879  0.002361   Deep Neutral?  False  2.198663  0.29708825322477167   0.453927  0.10180843302574635  0.528582   0.3176379358431232  12-5 S(1)  6261.73A  6261.68   High T(excit)
+..     ...          ...        ...       ...       ...             ...    ...       ...                  ...        ...                  ...       ...                  ...        ...       ...      ...             ...
+109   3640  9145.250748   0.470866  0.173619  0.022533    Deep Neutral  False  0.250861                    <   0.245631  0.10120057582603312  0.499748  0.25571329399302484   9-5 S(1)  9145.66A  9145.25             NaN
+110   3649  9155.283022   0.780688  0.091543  0.017510   Deep Neutral?  False  0.343321  0.12688119030418255   0.285899  0.08124287479567108  0.145526                    <   4-1 Q(4)  9155.56A  9155.28             NaN
+111   3654  9162.896677   0.781337  0.033448  0.008285   Deep Neutral?  False  0.508610                    <  19.891807                    <  0.364105                    <   9-5 S(7)  9162.58A  9162.90             NaN
+112   3736  9264.376659   0.789990  0.040371  0.006785  Deep Neutral??  False  0.758882  0.45368481338933114   0.234097  0.06263303203717613  0.624451  0.29546207986604506   9-5 S(8)  9264.11A  9264.38             NaN
+113   3762  9297.368030   0.274485  0.249847  0.007631   Deep Neutral?  False  0.515155                    <   0.215652                    <  0.798834  0.07081402869730503   4-1 O(2)  9297.59A  9297.37  blend 8-4 Q(8)
+
+[114 rows x 17 columns]
+#+end_example
+
+
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
 *** Kaplan:2021a
