@@ -268,6 +268,179 @@ This writes the results to [[file:../data/n346-h2-lines/h2-line-ids.csv]]
 
 #+RESULTS:
 
+*** Merge the H2 lines with the full line list
+- I am thinking that instead of giving two tables (H2 lines, then atomic/ionic lines) it would be better to put everything in a single table
+
+
+**** DONE Make a table of known lines plus H2 lines
+CLOSED: [2023-08-05 Sat 21:39]
+- So this is a variation on [[id:58DE61EF-5582-4FC5-AE48-BB29BFA9953C][Make a table of all the known lines]] in [[file:ngc-346-drl-spectra.org]]
+- The first change is to stop dropping the UIL entries
+  - Instead, we will look for H2 identifications for them
+- Also, we merge with the theoretical H2 lines table
+- And construct the spectroscopic IDs for the lines
+- We are now well-placed for dealing with the blends, which we will do when we export the latex table below
+
+
+#+begin_src python :eval no :tangle ../scripts/make-table-known-lines-with-h2.py
+  from pathlib import Path
+  import yaml
+  import pandas as pd
+  import numpy as np
+  import pyneb as pn
+  import typer
+  import astropy.constants as const  # type: ignore
+  import astropy.units as u  # type: ignore
+
+  LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
+  UNWANTED_ZONES = ["zone-S"]
+  UNWANTED_TYPES = ["Unidentified"]
+
+  REPLACEMENTS = {
+      "Deep": "Deep Neutral",
+      "Fe": "Fe-Ni-Ca-Si",
+  }
+  BEST_TYPES = {
+      "zone-0": ["Deep", "Neutral", "Low", "Med"],
+      "zone-I": ["Neutral", "Low", "Med", "Fe"],
+      "zone-II": ["Low", "Med", "Fe"],
+      "zone-III": ["Med", "Fe"],
+      "zone-IV": ["Med", "High"],
+      "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
+      "zone-S": ["Med"],
+  }
+  H2_COLS = ["H2_line", "wl_lab", "wl_obs", "Notes", "H2_index"]
+
+  # Find intrinsic Balmer decrement
+  hi = pn.RecAtom("H", 1)
+  tem, den = 12500, 100
+  R0 = hi.getEmissivity(tem, den, wave=6563) / hi.getEmissivity(tem, den, wave=4861)
+  # Set up reddening law for SMC
+  rc = pn.RedCorr()
+  rc.R_V = 2.74
+  rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
+  rc.law = "F99"
+
+
+  def main(
+      id_label: str,
+      debug: bool = False,
+      minimum_signal_noise: float = 3.0,
+      zone_file: str = "zones.yaml",
+      h2_data_dir: str = "n346-h2-lines",
+      orig_data_dir: str = "n346-lines",
+      vsys: float = 171.1,
+      d_vsys: float = 5.0,
+  ):
+      """Table of all identified lines"""
+
+      # Load the zone database
+      with open(Path(orig_data_dir) / zone_file) as f:
+          # But drop zones we do not want
+          zones = [_ for _ in yaml.safe_load(f) if _["label"] not in UNWANTED_ZONES]
+
+      # Iterate over the zones
+      wstrings = []
+      for jzone, zone in enumerate(zones):
+          # Read in the velocity table
+          df = pd.read_csv(
+              Path(orig_data_dir) / f"all-lines-{id_label}/{zone['label']}-velocities.csv"
+          ).set_index("Index")
+          if zone == zones[0]:
+              # Initialize the output table
+              df0 = df[["Type", "ID", "blend"]]
+          # Columns of wavelength and flux for each zone, with their respective errors
+          eflux = df.flux / df.s_n
+          zstring = zone["label"].split("-")[1]
+          flabel = f"F({zstring})"
+          elabel = f"E({zstring})"
+          wlabel = f"W({zstring})"
+          dwlabel = f"dW({zstring})"
+          # Save a list of the wavelength columns
+          wstrings.append(wlabel)
+          # Calculate the reddening correction from H alpha, which is channel 1573
+          obs_decrement = df.loc[1573].flux / 100.0
+          rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
+          correction = rc.getCorr(df.wave) / rc.getCorr(df.loc[211].wave)
+          # Add the 4 columns to the output table
+          df0 = df0.assign(
+              ,**{
+                  wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS),
+                  dwlabel: df.e_wave,
+                  flabel: correction * df.flux,
+                  elabel: correction * eflux,
+              }
+          )
+          # Ignore values with s/n that is too low or that are not of the best type for this zone
+          mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(
+              tuple(BEST_TYPES[zone["label"]])
+          )
+          for label in [wlabel, dwlabel, flabel, elabel]:
+              df0.loc[mask, label] = np.nan
+      # Second pass: consolidate to a single wavelength column
+      dwstrings = ["d" + _ for _ in wstrings]
+      # Average over valid zones
+      df0.insert(4, "wave", np.nanmean(df0[wstrings], axis=1))
+      # And use the smallest for wave error
+      df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
+      # Drop the individual wavelength columns
+      df0 = df0.drop(columns=wstrings + dwstrings)
+      # And drop lines with no wavelength
+      df0 = df0[np.isfinite(df0.wave)]
+
+      #
+      # Add in the H2 lines
+      #
+
+      df2 = pd.read_csv(Path(h2_data_dir) / "h2-line-ids.csv")
+      df2 = df2[H2_COLS].sort_values("wl_obs").dropna(subset=["wl_obs"])
+      df0 = pd.merge_asof(
+          df0, df2, left_on="wave", right_on="wl_obs", direction="nearest", tolerance=1.0
+      )
+      # Select the lines formerly unidentified
+      h2mask = df0.ID.str.startswith("UIL")
+
+      # Construct the ID description for the H2 lines
+      df0.loc[h2mask, "ID"] = (
+          "H_2 " + df0.loc[h2mask, "H2_line"] + " " + df0.loc[h2mask, "wl_lab"]
+      )
+      # And remove the extraneous columns
+      df0 = df0.drop(columns=["H2_line", "wl_lab"])
+
+      print(df0.loc[h2mask])
+      df0.to_csv(Path(h2_data_dir) / "known-lines-with-h2-final-table.csv")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+
+#+begin_src sh :dir ../data :results output verbatim
+  COLUMNS=1000 python ../scripts/make-table-known-lines-with-h2.py c007-chop-mean --minimum-signal-noise 1.0
+#+end_src
+
+#+RESULTS:
+#+begin_example
+               Type                      ID  blend         wave    e_wave      F(0)      E(0)  F(I)  E(I)  F(II)  E(II)  F(III)  E(III)  F(IV)  E(IV)   F(MYSO)   E(MYSO)   wl_obs           Notes  H2_index
+41    Deep Neutral?   H_2 7-2 S(7) 6029.57A  False  6029.501644  0.160755  0.026172  0.003774   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.014860  0.001911  6029.57             NaN     173.0
+42    Deep Neutral?   H_2 7-2 S(1) 6037.46A  False  6037.212893  0.118675  0.035879  0.003406   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.022362  0.004802  6037.40             NaN     175.0
+44         Neutral?   H_2 7-2 S(0) 6083.08A  False  6083.532257  0.087536  0.008571  0.004125   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.013754  0.000963  6083.20             NaN     180.0
+46     Deep Neutral   H_2 4-0 S(5) 6221.63A  False  6221.804241  0.078828  0.037499  0.002365   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.023332  0.002593  6221.82             NaN     199.0
+48    Deep Neutral?  H_2 12-5 S(1) 6261.73A  False  6262.122680  0.105880  0.023445  0.001986   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.012425  0.007392  6261.68   High T(excit)     205.0
+..              ...                     ...    ...          ...       ...       ...       ...   ...   ...    ...    ...     ...     ...    ...    ...       ...       ...      ...             ...       ...
+240    Deep Neutral                     NaN  False  9144.056929  0.162228  0.124354  0.016139   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.062477  0.030923      NaN             NaN       NaN
+241   Deep Neutral?   H_2 4-1 Q(4) 9155.56A  False  9155.283022  0.239097  0.065545  0.012537   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN       NaN       NaN  9155.28             NaN     688.0
+242   Deep Neutral?   H_2 9-5 S(7) 9162.58A  False  9162.896677  0.309601  0.023943  0.005930   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN       NaN       NaN  9162.90             NaN     691.0
+248  Deep Neutral??   H_2 9-5 S(8) 9264.11A  False  9263.615044  0.210080  0.028802  0.004841   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.018082  0.007998  9264.38             NaN     708.0
+249   Deep Neutral?   H_2 4-1 O(2) 9297.59A  False  9297.275883  0.038180  0.178056  0.005439   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.140809  0.011693  9297.37  blend 8-4 Q(8)     711.0
+
+[115 rows x 20 columns]
+#+end_example
+
+
+
+**** TODO Write big LaTeX table of all the lines including H2
+
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
 *** Kaplan:2021a
