@@ -16,10 +16,10 @@ REPLACEMENTS = {
     "Fe": "Fe-Ni-Ca-Si",
 }
 BEST_TYPES = {
-    "zone-0": ["Deep", "Neutral", "Low", "Med"],
-    "zone-I": ["Neutral", "Low", "Med", "Fe"],
-    "zone-II": ["Low", "Med", "Fe"],
-    "zone-III": ["Med", "Fe"],
+    "zone-0": ["Deep", "Neutral", "Low", "Med", "Fe"],
+    "zone-I": ["Deep", "Neutral", "Low", "Med", "Fe"],
+    "zone-II": ["Deep", "Neutral", "Low", "Med", "Fe"],
+    "zone-III": ["Low", "Med", "Fe", "High"],
     "zone-IV": ["Med", "High"],
     "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
     "zone-S": ["Med"],
@@ -56,6 +56,7 @@ def main(
 
     # Iterate over the zones
     wstrings = []
+    fstrings = []
     for jzone, zone in enumerate(zones):
         # Read in the velocity table
         df = pd.read_csv(
@@ -73,6 +74,7 @@ def main(
         dwlabel = f"dW({zstring})"
         # Save a list of the wavelength columns
         wstrings.append(wlabel)
+        fstrings.append(flabel)
         # Calculate the reddening correction from H alpha, which is channel 1573
         obs_decrement = df.loc[1573].flux / 100.0
         rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
@@ -94,8 +96,13 @@ def main(
             df0.loc[mask, label] = np.nan
     # Second pass: consolidate to a single wavelength column
     dwstrings = ["d" + _ for _ in wstrings]
-    # Average over valid zones
-    df0.insert(4, "wave", np.nanmean(df0[wstrings], axis=1))
+    # Weighted average over valid zones
+    df0.insert(
+        4,
+        "wave",
+        np.nansum(df0[wstrings].to_numpy() * df0[fstrings].to_numpy(), axis=1)
+        / np.nansum(df0[fstrings].to_numpy(), axis=1),
+    )
     # And use the smallest for wave error
     df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
     # Drop the individual wavelength columns
@@ -110,8 +117,8 @@ def main(
     df2 = pd.read_csv(Path(h2_data_dir) / "h2-line-ids.csv")
     df2 = df2[H2_COLS].sort_values("wl_obs").dropna(subset=["wl_obs"])
     df0 = pd.merge_asof(
-        df0, df2, left_on="wave", right_on="wl_obs", direction="nearest", tolerance=1.0
-    )
+        df0, df2, left_on="wave", right_on="wl_obs", direction="nearest", tolerance=2.0
+    ).set_index(df0.index)
     # Select the lines formerly unidentified
     h2mask = df0.ID.str.startswith("UIL")
 
@@ -121,6 +128,9 @@ def main(
     )
     # And remove the extraneous columns
     df0 = df0.drop(columns=["H2_line", "wl_lab"])
+
+    # And the entries with empty ID fields
+    #df0 = df0.dropna(subset="ID")
 
     print(df0.loc[h2mask])
     df0.to_csv(Path(h2_data_dir) / "known-lines-with-h2-final-table.csv")

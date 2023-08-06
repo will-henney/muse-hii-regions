@@ -280,6 +280,16 @@ CLOSED: [2023-08-05 Sat 21:39]
 - Also, we merge with the theoretical H2 lines table
 - And construct the spectroscopic IDs for the lines
 - We are now well-placed for dealing with the blends, which we will do when we export the latex table below
+- Note that some of the lines do not get picked up
+  - 8858 is severely blended with an H I line and had previously been dropped from paper
+    - probably 5-2 S(8) 8859.59A
+  - 9234 likewise
+    - probably 9-5 S(0) 9232.94A
+  - 8695 was always dubious (marked as Neutral instead of Deep Neutral)
+    - from comparison with Orion, I suspected it might be [Co II] 8695.33 (or may be [Fe II])
+    - See [[id:18154C16-4EAF-4D0E-AE12-0AE529FAA064][Comparison of brightnesses]] in [[file:ngc-346-drl-discuss.org]]
+    - Although [Co II] fails the multiplet test, since 9146 is not observed
+    - Best to drop it
 
 
 #+begin_src python :eval no :tangle ../scripts/make-table-known-lines-with-h2.py
@@ -301,10 +311,10 @@ CLOSED: [2023-08-05 Sat 21:39]
       "Fe": "Fe-Ni-Ca-Si",
   }
   BEST_TYPES = {
-      "zone-0": ["Deep", "Neutral", "Low", "Med"],
-      "zone-I": ["Neutral", "Low", "Med", "Fe"],
-      "zone-II": ["Low", "Med", "Fe"],
-      "zone-III": ["Med", "Fe"],
+      "zone-0": ["Deep", "Neutral", "Low", "Med", "Fe"],
+      "zone-I": ["Deep", "Neutral", "Low", "Med", "Fe"],
+      "zone-II": ["Deep", "Neutral", "Low", "Med", "Fe"],
+      "zone-III": ["Low", "Med", "Fe", "High"],
       "zone-IV": ["Med", "High"],
       "zone-MYSO": ["Deep", "Neutral", "Low", "Med", "Fe"],
       "zone-S": ["Med"],
@@ -341,6 +351,7 @@ CLOSED: [2023-08-05 Sat 21:39]
 
       # Iterate over the zones
       wstrings = []
+      fstrings = []
       for jzone, zone in enumerate(zones):
           # Read in the velocity table
           df = pd.read_csv(
@@ -358,6 +369,7 @@ CLOSED: [2023-08-05 Sat 21:39]
           dwlabel = f"dW({zstring})"
           # Save a list of the wavelength columns
           wstrings.append(wlabel)
+          fstrings.append(flabel)
           # Calculate the reddening correction from H alpha, which is channel 1573
           obs_decrement = df.loc[1573].flux / 100.0
           rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
@@ -379,8 +391,13 @@ CLOSED: [2023-08-05 Sat 21:39]
               df0.loc[mask, label] = np.nan
       # Second pass: consolidate to a single wavelength column
       dwstrings = ["d" + _ for _ in wstrings]
-      # Average over valid zones
-      df0.insert(4, "wave", np.nanmean(df0[wstrings], axis=1))
+      # Weighted average over valid zones
+      df0.insert(
+          4,
+          "wave",
+          np.nansum(df0[wstrings].to_numpy() * df0[fstrings].to_numpy(), axis=1)
+          / np.nansum(df0[fstrings].to_numpy(), axis=1),
+      )
       # And use the smallest for wave error
       df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
       # Drop the individual wavelength columns
@@ -395,8 +412,8 @@ CLOSED: [2023-08-05 Sat 21:39]
       df2 = pd.read_csv(Path(h2_data_dir) / "h2-line-ids.csv")
       df2 = df2[H2_COLS].sort_values("wl_obs").dropna(subset=["wl_obs"])
       df0 = pd.merge_asof(
-          df0, df2, left_on="wave", right_on="wl_obs", direction="nearest", tolerance=1.0
-      )
+          df0, df2, left_on="wave", right_on="wl_obs", direction="nearest", tolerance=2.0
+      ).set_index(df0.index)
       # Select the lines formerly unidentified
       h2mask = df0.ID.str.startswith("UIL")
 
@@ -406,6 +423,9 @@ CLOSED: [2023-08-05 Sat 21:39]
       )
       # And remove the extraneous columns
       df0 = df0.drop(columns=["H2_line", "wl_lab"])
+
+      # And the entries with empty ID fields
+      #df0 = df0.dropna(subset="ID")
 
       print(df0.loc[h2mask])
       df0.to_csv(Path(h2_data_dir) / "known-lines-with-h2-final-table.csv")
@@ -421,25 +441,219 @@ CLOSED: [2023-08-05 Sat 21:39]
 
 #+RESULTS:
 #+begin_example
-               Type                      ID  blend         wave    e_wave      F(0)      E(0)  F(I)  E(I)  F(II)  E(II)  F(III)  E(III)  F(IV)  E(IV)   F(MYSO)   E(MYSO)   wl_obs           Notes  H2_index
-41    Deep Neutral?   H_2 7-2 S(7) 6029.57A  False  6029.501644  0.160755  0.026172  0.003774   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.014860  0.001911  6029.57             NaN     173.0
-42    Deep Neutral?   H_2 7-2 S(1) 6037.46A  False  6037.212893  0.118675  0.035879  0.003406   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.022362  0.004802  6037.40             NaN     175.0
-44         Neutral?   H_2 7-2 S(0) 6083.08A  False  6083.532257  0.087536  0.008571  0.004125   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.013754  0.000963  6083.20             NaN     180.0
-46     Deep Neutral   H_2 4-0 S(5) 6221.63A  False  6221.804241  0.078828  0.037499  0.002365   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.023332  0.002593  6221.82             NaN     199.0
-48    Deep Neutral?  H_2 12-5 S(1) 6261.73A  False  6262.122680  0.105880  0.023445  0.001986   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.012425  0.007392  6261.68   High T(excit)     205.0
-..              ...                     ...    ...          ...       ...       ...       ...   ...   ...    ...    ...     ...     ...    ...    ...       ...       ...      ...             ...       ...
-240    Deep Neutral                     NaN  False  9144.056929  0.162228  0.124354  0.016139   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.062477  0.030923      NaN             NaN       NaN
-241   Deep Neutral?   H_2 4-1 Q(4) 9155.56A  False  9155.283022  0.239097  0.065545  0.012537   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN       NaN       NaN  9155.28             NaN     688.0
-242   Deep Neutral?   H_2 9-5 S(7) 9162.58A  False  9162.896677  0.309601  0.023943  0.005930   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN       NaN       NaN  9162.90             NaN     691.0
-248  Deep Neutral??   H_2 9-5 S(8) 9264.11A  False  9263.615044  0.210080  0.028802  0.004841   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.018082  0.007998  9264.38             NaN     708.0
-249   Deep Neutral?   H_2 4-1 O(2) 9297.59A  False  9297.275883  0.038180  0.178056  0.005439   NaN   NaN    NaN    NaN     NaN     NaN    NaN    NaN  0.140809  0.011693  9297.37  blend 8-4 Q(8)     711.0
+                 Type                      ID  blend         wave    e_wave      F(0)      E(0)      F(I)      E(I)     F(II)     E(II)  F(III)  E(III)  F(IV)  E(IV)   F(MYSO)   E(MYSO)   wl_obs           Notes  H2_index
+Index                                                                                                                                                                                                                       
+1146    Deep Neutral?   H_2 7-2 S(7) 6029.57A  False  6029.510303  0.160755  0.026172  0.003774  0.022136  0.006938       NaN       NaN     NaN     NaN    NaN    NaN  0.014860  0.001911  6029.57             NaN     173.0
+1153    Deep Neutral?   H_2 7-2 S(1) 6037.46A  False  6037.255594  0.118675  0.035879  0.003406       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.022362  0.004802  6037.40             NaN     175.0
+1190         Neutral?   H_2 7-2 S(0) 6083.08A  False  6083.610394  0.087536  0.008571  0.004125       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.013754  0.000963  6083.20             NaN     180.0
+1300     Deep Neutral   H_2 4-0 S(5) 6221.63A  False  6221.807802  0.078828  0.037499  0.002365       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.023332  0.002593  6221.82             NaN     199.0
+1332    Deep Neutral?  H_2 12-5 S(1) 6261.73A  False  6261.836986  0.105880  0.023445  0.001986  0.054400  0.005727  0.010512  0.002108     NaN     NaN    NaN    NaN  0.012425  0.007392  6261.68   High T(excit)     205.0
+...               ...                     ...    ...          ...       ...       ...       ...       ...       ...       ...       ...     ...     ...    ...    ...       ...       ...      ...             ...       ...
+3649    Deep Neutral?   H_2 4-1 Q(4) 9155.56A  False  9155.354137  0.239097  0.065545  0.012537  0.024967  0.007895  0.017110  0.003596     NaN     NaN    NaN    NaN       NaN       NaN  9155.28             NaN     688.0
+3654    Deep Neutral?   H_2 9-5 S(7) 9162.58A  False  9162.896677  0.309601  0.023943  0.005930       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN       NaN       NaN  9162.90             NaN     691.0
+3711     Deep Neutral                     NaN   True  9234.752866  0.486505       NaN       NaN  0.264091  0.102785       NaN       NaN     NaN     NaN    NaN    NaN       NaN       NaN      NaN             NaN       NaN
+3736   Deep Neutral??   H_2 9-5 S(8) 9264.11A  False  9263.516997  0.210080  0.028802  0.004841  0.024279  0.013929  0.006150  0.001280     NaN     NaN    NaN    NaN  0.018082  0.007998  9264.38             NaN     708.0
+3762    Deep Neutral?   H_2 4-1 O(2) 9297.59A  False  9297.286646  0.038180  0.178056  0.005439       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.140809  0.011693  9297.37  blend 8-4 Q(8)     711.0
 
-[115 rows x 20 columns]
+[116 rows x 20 columns]
 #+end_example
 
 
 
 **** TODO Write big LaTeX table of all the lines including H2
+- This is similar to [[id:F515520D-7BDD-475A-A1F7-283B5C387F29][Write latex version of the known lines table]] in [[file:ngc-346-drl-spectra.org]]
+- But based on the table generated above, which includes the H_2 lines
+- But the difference is that we now have another source of data for the blends
+  - As well as the blend info that comes from the original big line list, we have the additional H_2 blends that come from the Cloudy output
+
+#+begin_src python :eval no :tangle ../scripts/convert-table-known-lines-with-h2-latex.py
+  import pandas as pd
+  import numpy as np
+  from pathlib import Path
+  import yaml
+  import re
+  import string
+
+  LETTERS = list(string.ascii_lowercase) + [f"{a}{b}" for a in string.ascii_lowercase for b in string.ascii_lowercase]
+
+  ORIG_DATA_PATH = Path.cwd().parent / "n346-lines/all-lines-c007-chop-mean"
+
+  def format_blend(value, dp=2):
+      if not value or not np.isfinite(value):
+          return "0.0:"
+      try:
+          return str(round(float(value), dp)) + ":"
+      except TypeError:
+          return "0.0:"
+
+
+  def format_float(value, dp):
+      return f"{round(float(value), dp):.{dp}f}"
+
+
+  def format_pair(value, uncertainty, dp=2):
+      if not value or not np.isfinite(value):
+          return ""
+      try:
+          svalue = format_float(value, dp)
+      except TypeError:
+          svalue = ""
+
+      if uncertainty in  ["<", ">"]:
+          return f"{uncertainty} {svalue}"
+
+      # Special case of H beta has no uncertainty
+      if svalue == "100.00":
+          return f"{svalue}"
+
+      try:
+          suncertainty = format_float(uncertainty, dp)
+      except TypeError:
+          suncertainty = ""
+
+      return fr"{svalue} \pm {suncertainty}"
+
+
+  def format_ion(ion):
+      """Convert naive representation to latex version"""
+      # Short circuit for sky lines
+      if "OH" in ion:
+          return r"Sky OH"
+
+      if ion.startswith("H_2"):
+          molecule, transition = ion.split(maxsplit=1)
+          return fr"\chem{{{molecule}}} {transition}"
+
+      # Strip off any surrounding brackets
+      prefix, suffix = "", ""
+      if ion.startswith("["):
+          ion = ion[1:]
+          prefix = "["
+      if ion.endswith("]"):
+          ion = ion[:-1]
+          suffix = "]"
+      # And just in case of extra brackets
+      ion = ion.strip("[]")
+      # Split into element, stage
+      element, stage = ion.rsplit(maxsplit=1)
+      if " " in element.strip():
+          # Something has gone wrong if there are still internal spaces
+          raise ValueError(f"Cannot parse ion {ion}")
+      # Convert stage to arabic numerals
+      stage = stage.replace("IV", "4").replace("III", "3").replace("II", "2").replace("I", "1")
+      return fr"{prefix}\ion{{{element}}}{{{stage}}}{suffix}"
+
+
+  def extra_e_wave(row, zones):
+      """Extra uncertainty in wavelength, based on Fig A2 of paper"""
+      max_flux = np.nanmax([row[f"F({zone})"] for zone in zones])
+      if max_flux > 10.0:
+          return row["wave"] * 1.0 / 3e5
+      elif max_flux > 1.0:
+          return row["wave"] * 3.0 / 3e5
+      elif max_flux > 0.1:
+          return row["wave"] * 5.0 / 3e5
+      else:
+          return row["wave"] * 15.0 / 3e5
+
+  def extract_blends(text):
+      """Extract blend information from notes"""
+      if not text:
+          return []
+      if "plus" in text:
+          blends = re.split("plus|and maybe", text)
+      elif text.startswith("Blend with"):
+          blends = text.replace("Blend with", "").split(",")
+      elif text.startswith("Doublet with components"):
+          blends = [text.split(",")[-1]]
+      else:
+          blends = [text]
+      return blends
+
+  df = pd.read_csv("known-lines-with-h2-final-table.csv")
+  table = []
+  zones = ["0", "I", "II", "III", "IV", "MYSO"]
+  # Special case for [Cl II] and He I lines that are sort of blended, but both have flux measurements
+  # And also He I triplet
+  skip_these_blends = ("8578", "8582", "8776", "8045", "8216", "8230", "8306")
+  for _, row in df.iterrows():
+      ion, wavrest = row["ID"].rsplit(maxsplit=1)
+      # H_2 lines need the A stripping off
+      wavrest = wavrest.rstrip("A")
+      # Special case for [N I], where I unwisely put the mean doublet wavelength in the spreadsheet
+      wavrest = wavrest.replace("5199.00", "5197.98")
+      if row["blend"] and not wavrest.startswith(skip_these_blends):
+          blend_label = LETTERS.pop(0)
+      else:
+          blend_label = ""
+      table.append(
+          {
+              r"\lambda(\text{obs})": format_pair(row["wave"], np.hypot(row["e_wave"], extra_e_wave(row, zones))),
+              "Ion": format_ion(ion.strip()),
+              r"\lambda(\text{rest})": format_float(wavrest.strip("+?"), dp=2),
+              "Blend": blend_label,
+              ,**{
+                  fr"I(\text{{{zone}}})": format_pair(row[f"F({zone})"], row[f"E({zone})"] + 0.005, dp=2)
+                  for zone in zones
+              },
+          }
+      )
+      if blend_label:
+          datafile = list(ORIG_DATA_PATH.glob(f"{row['Index']:04d}*.yaml"))[0]
+          data = yaml.safe_load(datafile.read_text())
+          blends = []
+          try:
+              note = data["Notes"]["ID"][0]
+              blends = extract_blends(note)
+          except KeyError:
+              # Guard against missing Notes data
+              pass
+
+          for blend in blends:
+              try:
+                  _ion, _wavrest = blend.rsplit(maxsplit=1)
+              except ValueError:
+                  # A bare wavelength is assumed to be the same ion
+                  _ion = ion
+                  _wavrest = blend
+              if _wavrest.lower() == "sky":
+                  _ion, _wavrest = _ion.rsplit(maxsplit=1)
+              try:
+                  table.append(
+                      {
+                          r"\lambda(\text{obs})": "",
+                          "Ion": format_ion(_ion.strip()),
+                          r"\lambda(\text{rest})": format_float(_wavrest.strip("+?"), dp=2),
+                          "Blend": blend_label,
+                          ,**{fr"I(\text{{{zone}}})": "" for zone in zones},
+                      }
+                  )
+              except:
+                  pass
+
+      dff = pd.DataFrame(table).sort_values(by=r"\lambda(\text{rest})")
+
+  s = dff.style.hide()
+
+
+
+  with open("known-lines-with-h2-final-table.tex", "w") as f:
+      f.write(
+          s.to_latex(
+              hrules=True,
+              siunitx=False,
+              environment="longtable",
+              column_format="RrRr " + "R" * len(zones),
+          )
+      )
+#+end_src
+
+#+begin_src sh :dir ../data/n346-h2-lines :results output verbatim
+  python ../../scripts/convert-table-known-lines-with-h2-latex.py
+#+end_src
+
+#+RESULTS:
+
 
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
