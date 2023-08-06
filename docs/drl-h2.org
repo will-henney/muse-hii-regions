@@ -9,6 +9,7 @@
 - File is exported to
   - [[file:../data/spec1d/H2 DRL identifications from Cloudy.xlsx]]
 - We convert them into a bunch of YAML files
+- [2023-08-05 Sat] Now we get the blend rows as well
 #+begin_src python :tangle ../scripts/h2-spreadsheet-convert.py
   import pandas as pd
   import sys
@@ -49,22 +50,36 @@
       # sys.exit(str(kwds))
 
       # Loop over all the following rows
-      for values in values_array[1:]:
+      for index, values in enumerate(values_array[1:], start=2):
           if not any(values):
               # Skip any blank rows
               continue
           # Make a dict of the data from this row
           data = dict(zip(kwds, values))
+          # Save row number in the Google Sheet for cross-referencing of blends
+          data["H2_index"] = index
+          # For any lines that do not have an observed counterpart ...
           if not data["wl_obs"]:
-              # Skip any lines that are not detected
-              continue
+              # ... check if they are blends with next or previous
+              if data["Notes"] and data["Notes"].startswith("blend with"):
+                  # save pointers  to the line they are blended with
+                  if "blend with prev" in data["Notes"]:
+                      data["blend_index"] = index - 1
+                  elif "blend with next" in data["Notes"]:
+                      data["blend_index"] = index + 1
+                  else:
+                      continue
+              else:
+                  # ... othewise skip
+                  continue
+          # rovib quantum numbers of upper and lower states
           vhi, vlo = int(data["Vhi"]), int(data["Vlo"])
           jhi, jlo = int(data["Jhi"]), int(data["Jlo"])
           # Make a string for the transition
           transition = f"{vhi:02d}_{jhi:02d}-{vlo:02d}_{jlo:02d}"
           wavstring = slugify.slugify(data["wl_lab"], separator="")
           # Save the data to a YAML file
-          with open(out_path / f"{transition}-{wavstring}.yaml", "w") as f:
+          with open(out_path / f"{index:04d}-{transition}-{wavstring}.yaml", "w") as f:
               yaml.dump(data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
 
@@ -115,7 +130,7 @@ This writes the results to [[file:../data/n346-h2-lines/h2-line-ids.csv]]
 - This uses the uil-final-table.csv that we generated in [[id:8CCFF185-E205-42F0-9278-4E46DE184262][Make a table of rest wavelengths plus uncertainties of all the UILs]] of [[file:ngc-346-drl-spectra.org][file:~/Dropbox/muse-hii-regions/docs/ngc-346-drl-spectra.org]]
 - We use ~pd.merge_asof()~ to do a fuzzy join on the wavelength column
   - This is necessary since an exact join had corner cases with rounding problems (e.g., 0.99 vs 1.00)
-
+- We filter out the blend rows for this case, since we cannot easily deal with them
 #+begin_src python :eval no :tangle ../scripts/h2-combine-tables.py
   import numpy as np
   import yaml
@@ -130,7 +145,7 @@ This writes the results to [[file:../data/n346-h2-lines/h2-line-ids.csv]]
   ):
         df1 = pd.read_csv(Path(orig_data_dir) / "uil-final-table.csv")
         df2 = pd.read_csv(Path(data_dir) / "h2-line-ids.csv")
-        df2 = df2[COLS].sort_values("wl_obs")
+        df2 = df2[COLS].sort_values("wl_obs").dropna(subset=["wl_obs"])
         df0 = pd.merge_asof(df1, df2, left_on="wave0", right_on="wl_obs", direction="nearest", tolerance=1.0)
         df0.to_csv(Path(data_dir) / "h2-final-table.csv")
         print(df0)
@@ -211,22 +226,22 @@ This writes the results to [[file:../data/n346-h2-lines/h2-line-ids.csv]]
                   r"\lambda(\text{obs})": format_blend(row["wave0"]),
                   r"Transition": row["H2_line"],
                   r"\lambda(\text{rest})": format_float(str(row["wl_lab"]).rstrip("A"), dp=2),
-                  r"$I(\hb = 100)$": format_blend(row["flux"], 3),
-                  r"$\mathrm{I / 0}$": "",
-                  r"$\mathrm{II / 0}$": "",
-                  r"$\mathrm{MYSO / 0}$": "",
+                  r"I(\hb = 100)": format_blend(row["flux"], 3),
+                  r"\mathrm{I / 0}": "",
+                  r"\mathrm{II / 0}": "",
+                  r"\mathrm{MYSO / 0}": "",
               }
           )
       else:
           table.append(
               {
-                  r"\lambda(\text{obs})": format_blend(row["wave0"]),
+                  r"\lambda(\text{obs})": format_pair(row["wave0"], row["sig_wave0"]),
                   r"Transition": row["H2_line"],
                   r"\lambda(\text{rest})": format_float(str(row["wl_lab"]).rstrip("A"), dp=2),
-                  r"$I(\hb = 100)$": format_pair(row["flux"], row["sig_flux"], 3),
-                  r"$\mathrm{I / 0}$": format_pair(row["I / 0"], row["E(I / 0)"]),
-                  r"$\mathrm{II / 0}$": format_pair(row["II / 0"], row["E(II / 0)"]),
-                  r"$\mathrm{MYSO / 0}$": format_pair(
+                  r"I(\hb = 100)": format_pair(row["flux"], row["sig_flux"], 3),
+                  r"\mathrm{I / 0}": format_pair(row["I / 0"], row["E(I / 0)"]),
+                  r"\mathrm{II / 0}": format_pair(row["II / 0"], row["E(II / 0)"]),
+                  r"\mathrm{MYSO / 0}": format_pair(
                       row["MYSO / 0"], row["E(MYSO / 0)"]
                   ),
               }

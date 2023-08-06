@@ -41,22 +41,22 @@ for _, row in df.iterrows():
                 r"\lambda(\text{obs})": format_blend(row["wave0"]),
                 r"Transition": row["H2_line"],
                 r"\lambda(\text{rest})": format_float(str(row["wl_lab"]).rstrip("A"), dp=2),
-                r"$I(\hb = 100)$": format_blend(row["flux"], 3),
-                r"$\mathrm{I / 0}$": "",
-                r"$\mathrm{II / 0}$": "",
-                r"$\mathrm{MYSO / 0}$": "",
+                r"I(\hb = 100)": format_blend(row["flux"], 3),
+                r"\mathrm{I / 0}": "",
+                r"\mathrm{II / 0}": "",
+                r"\mathrm{MYSO / 0}": "",
             }
         )
     else:
         table.append(
             {
-                r"\lambda(\text{obs})": format_blend(row["wave0"]),
+                r"\lambda(\text{obs})": format_pair(row["wave0"], row["sig_wave0"]),
                 r"Transition": row["H2_line"],
                 r"\lambda(\text{rest})": format_float(str(row["wl_lab"]).rstrip("A"), dp=2),
-                r"$I(\hb = 100)$": format_pair(row["flux"], row["sig_flux"], 3),
-                r"$\mathrm{I / 0}$": format_pair(row["I / 0"], row["E(I / 0)"]),
-                r"$\mathrm{II / 0}$": format_pair(row["II / 0"], row["E(II / 0)"]),
-                r"$\mathrm{MYSO / 0}$": format_pair(
+                r"I(\hb = 100)": format_pair(row["flux"], row["sig_flux"], 3),
+                r"\mathrm{I / 0}": format_pair(row["I / 0"], row["E(I / 0)"]),
+                r"\mathrm{II / 0}": format_pair(row["II / 0"], row["E(II / 0)"]),
+                r"\mathrm{MYSO / 0}": format_pair(
                     row["MYSO / 0"], row["E(MYSO / 0)"]
                 ),
             }
