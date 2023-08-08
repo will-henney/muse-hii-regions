@@ -5,9 +5,12 @@ import yaml
 import re
 import string
 
-LETTERS = list(string.ascii_lowercase) + [f"{a}{b}" for a in string.ascii_lowercase for b in string.ascii_lowercase]
+LETTERS = list(string.ascii_lowercase) + [
+    f"{a}{b}" for a in string.ascii_lowercase for b in string.ascii_lowercase
+]
 
 ORIG_DATA_PATH = Path.cwd().parent / "n346-lines/all-lines-c007-chop-mean"
+
 
 def format_blend(value, dp=2):
     if not value or not np.isfinite(value):
@@ -30,7 +33,7 @@ def format_pair(value, uncertainty, dp=2):
     except TypeError:
         svalue = ""
 
-    if uncertainty in  ["<", ">"]:
+    if uncertainty in ["<", ">"]:
         return f"{uncertainty} {svalue}"
 
     # Special case of H beta has no uncertainty
@@ -42,7 +45,7 @@ def format_pair(value, uncertainty, dp=2):
     except TypeError:
         suncertainty = ""
 
-    return fr"{svalue} \pm {suncertainty}"
+    return rf"{svalue} \pm {suncertainty}"
 
 
 def format_ion(ion):
@@ -51,9 +54,12 @@ def format_ion(ion):
     if "OH" in ion:
         return r"Sky OH"
 
+    if "O_2" in ion:
+        return r"Sky \chem{O_2}"
+
     if ion.startswith("H_2"):
         molecule, transition = ion.split(maxsplit=1)
-        return fr"\chem{{{molecule}}} {transition}"
+        return rf"\chem{{{molecule}}} {transition}"
 
     # Strip off any surrounding brackets
     prefix, suffix = "", ""
@@ -71,8 +77,13 @@ def format_ion(ion):
         # Something has gone wrong if there are still internal spaces
         raise ValueError(f"Cannot parse ion {ion}")
     # Convert stage to arabic numerals
-    stage = stage.replace("IV", "4").replace("III", "3").replace("II", "2").replace("I", "1")
-    return fr"{prefix}\ion{{{element}}}{{{stage}}}{suffix}"
+    stage = (
+        stage.replace("IV", "4")
+        .replace("III", "3")
+        .replace("II", "2")
+        .replace("I", "1")
+    )
+    return rf"{prefix}\ion{{{element}}}{{{stage}}}{suffix}"
 
 
 def extra_e_wave(row, zones):
@@ -87,44 +98,75 @@ def extra_e_wave(row, zones):
     else:
         return row["wave"] * 15.0 / 3e5
 
-def extract_blends(text):
+
+def extract_blends(notes):
     """Extract blend information from notes"""
-    if not text:
-        return []
-    if "plus" in text:
-        blends = re.split("plus|and maybe", text)
-    elif text.startswith("Blend with"):
-        blends = text.replace("Blend with", "").split(",")
-    elif text.startswith("Doublet with components"):
-        blends = [text.split(",")[-1]]
-    else:
-        blends = [text]
+    blends = []
+    for text in notes:
+        if not text:
+            continue
+        if "plus" in text:
+            blends += re.split("plus|and maybe", text)
+        elif text.startswith("Blend with"):
+            blends += text.replace("Blend with", "").split(",")
+        elif text.startswith("Doublet with components"):
+            blends += [text.split(",")[-1]]
+        else:
+            blends += [text]
     return blends
+
 
 df = pd.read_csv("known-lines-with-h2-final-table.csv")
 table = []
 zones = ["0", "I", "II", "III", "IV", "MYSO"]
-# Special case for [Cl II] and He I lines that are sort of blended, but both have flux measurements
-# And also He I triplet
-skip_these_blends = ("8578", "8582", "8776", "8045", "8216", "8230", "8306")
+skip_these_blends = (
+    # New ones from the H2 lines
+    "6270",
+    "6529",
+    "7803",
+    "7837",
+    "8694",
+    # Original ones from the atomic list - Special case for [Cl II] and
+    # He I lines that are sort of blended, but both have flux
+    # measurements And also He I triplet
+    "8578",
+    "8582",
+    "8776",
+    "8045",
+    "8216",
+    "8230",
+    "8306",
+)
 for _, row in df.iterrows():
     ion, wavrest = row["ID"].rsplit(maxsplit=1)
     # H_2 lines need the A stripping off
     wavrest = wavrest.rstrip("A")
     # Special case for [N I], where I unwisely put the mean doublet wavelength in the spreadsheet
     wavrest = wavrest.replace("5199.00", "5197.98")
-    if row["blend"] and not wavrest.startswith(skip_these_blends):
+    # For H_2 lines we look for extra blend info
+    is_h2blend = False
+    if ion.startswith("H_2"):
+        h2_index = int(row["H2_index"])
+        h2datafile = list(Path.cwd().glob(f"{h2_index:04d}*.yaml"))[0]
+        h2data = yaml.safe_load(h2datafile.read_text())
+        is_h2blend = h2data["Notes"] and h2data["Notes"].lower().startswith("blend")
+
+    if (row["blend"] or is_h2blend) and not wavrest.startswith(skip_these_blends):
         blend_label = LETTERS.pop(0)
     else:
         blend_label = ""
     table.append(
         {
-            r"\lambda(\text{obs})": format_pair(row["wave"], np.hypot(row["e_wave"], extra_e_wave(row, zones))),
+            r"\lambda(\text{obs})": format_pair(
+                row["wave"], np.hypot(row["e_wave"], extra_e_wave(row, zones))
+            ),
             "Ion": format_ion(ion.strip()),
             r"\lambda(\text{rest})": format_float(wavrest.strip("+?"), dp=2),
             "Blend": blend_label,
             **{
-                fr"I(\text{{{zone}}})": format_pair(row[f"F({zone})"], row[f"E({zone})"] + 0.005, dp=2)
+                rf"I(\text{{{zone}}})": format_pair(
+                    row[f"F({zone})"], row[f"E({zone})"] + 0.005, dp=2
+                )
                 for zone in zones
             },
         }
@@ -132,13 +174,24 @@ for _, row in df.iterrows():
     if blend_label:
         datafile = list(ORIG_DATA_PATH.glob(f"{row['Index']:04d}*.yaml"))[0]
         data = yaml.safe_load(datafile.read_text())
-        blends = []
         try:
-            note = data["Notes"]["ID"][0]
-            blends = extract_blends(note)
+            notes = data["Notes"]["ID"]
+            blends = extract_blends(notes)
         except KeyError:
             # Guard against missing Notes data
-            pass
+            blends = []
+
+        # Also look for H_2 blends
+        if is_h2blend:
+            # Could be previous or next in sequence of lab wavelengths
+            for j in h2_index - 1, h2_index + 1:
+                bdatafiles = list(Path.cwd().glob(f"{j:04d}*.yaml")) 
+                if len(bdatafiles) == 1:
+                    bdata = yaml.safe_load(bdatafiles[0].read_text())
+                    if bdata.get("blend_index") == h2_index:
+                        blends.append(f"H_2 {bdata['H2_line']} {bdata['wl_lab'].strip('A')}")
+
+        print(blend_label, blends)
 
         for blend in blends:
             try:
@@ -154,18 +207,19 @@ for _, row in df.iterrows():
                     {
                         r"\lambda(\text{obs})": "",
                         "Ion": format_ion(_ion.strip()),
-                        r"\lambda(\text{rest})": format_float(_wavrest.strip("+?"), dp=2),
+                        r"\lambda(\text{rest})": format_float(
+                            _wavrest.strip("+?"), dp=2
+                        ),
                         "Blend": blend_label,
-                        **{fr"I(\text{{{zone}}})": "" for zone in zones},
+                        **{rf"I(\text{{{zone}}})": "" for zone in zones},
                     }
                 )
             except:
-                pass
+                print("Failed to format blend:", _ion, _wavrest)
 
     dff = pd.DataFrame(table).sort_values(by=r"\lambda(\text{rest})")
 
 s = dff.style.hide()
-
 
 
 with open("known-lines-with-h2-final-table.tex", "w") as f:

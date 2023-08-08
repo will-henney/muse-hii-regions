@@ -16,6 +16,15 @@ REPLACEMENTS = {
     "Fe": "Fe-Ni-Ca-Si",
 }
 BEST_TYPES = {
+    "zone-0": ["Deep"],
+    "zone-I": ["Neutral"],
+    "zone-II": ["Low"],
+    "zone-III": ["Med"],
+    "zone-IV": ["High"],
+    "zone-MYSO": ["Deep", "Fe"],
+    "zone-S": ["Med"],
+}
+ACCEPTABLE_TYPES = {
     "zone-0": ["Deep", "Neutral", "Low", "Med", "Fe"],
     "zone-I": ["Deep", "Neutral", "Low", "Med", "Fe"],
     "zone-II": ["Deep", "Neutral", "Low", "Med", "Fe"],
@@ -65,6 +74,8 @@ def main(
         if zone == zones[0]:
             # Initialize the output table
             df0 = df[["Type", "ID", "blend"]]
+            # And a parallel shadow table for using only the best zones for determing the waves
+            df00 = df[["Type", "ID", "blend"]]
         # Columns of wavelength and flux for each zone, with their respective errors
         eflux = df.flux / df.s_n
         zstring = zone["label"].split("-")[1]
@@ -79,8 +90,15 @@ def main(
         obs_decrement = df.loc[1573].flux / 100.0
         rc.setCorr(obs_decrement / R0, wave1=6563, wave2=4861)
         correction = rc.getCorr(df.wave) / rc.getCorr(df.loc[211].wave)
-        # Add the 4 columns to the output table
+        # Add the 2 flux columns to the output table
         df0 = df0.assign(
+            **{
+                flabel: correction * df.flux,
+                elabel: correction * eflux,
+            }
+        )
+        # And the fluxes and waves to thje shadow table
+        df00 = df00.assign(
             **{
                 wlabel: df.wave / (1 + vsys / LIGHT_SPEED_KMS),
                 dwlabel: df.e_wave,
@@ -88,25 +106,28 @@ def main(
                 elabel: correction * eflux,
             }
         )
-        # Ignore values with s/n that is too low or that are not of the best type for this zone
+        # Ignore values with s/n that is too low or that are not acceptable types for this zone
         mask = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(
+            tuple(ACCEPTABLE_TYPES[zone["label"]])
+        )
+        for label in [flabel, elabel]:
+            df0.loc[mask, label] = np.nan
+        # Repeat for the shadow table, but only allowing the BEST types
+        mask00 = (df.s_n < minimum_signal_noise) | ~df.Type.str.startswith(
             tuple(BEST_TYPES[zone["label"]])
         )
         for label in [wlabel, dwlabel, flabel, elabel]:
-            df0.loc[mask, label] = np.nan
+            df00.loc[mask00, label] = np.nan
     # Second pass: consolidate to a single wavelength column
     dwstrings = ["d" + _ for _ in wstrings]
     # Weighted average over valid zones
     df0.insert(
         4,
         "wave",
-        np.nansum(df0[wstrings].to_numpy() * df0[fstrings].to_numpy(), axis=1)
-        / np.nansum(df0[fstrings].to_numpy(), axis=1),
+        np.nanmean(df00[wstrings].to_numpy(), axis=1),
     )
     # And use the smallest for wave error
-    df0.insert(5, "e_wave", np.nanmin(df0[dwstrings], axis=1))
-    # Drop the individual wavelength columns
-    df0 = df0.drop(columns=wstrings + dwstrings)
+    df0.insert(5, "e_wave", np.nanmin(df00[dwstrings], axis=1))
     # And drop lines with no wavelength
     df0 = df0[np.isfinite(df0.wave)]
 
@@ -130,7 +151,7 @@ def main(
     df0 = df0.drop(columns=["H2_line", "wl_lab"])
 
     # And the entries with empty ID fields
-    #df0 = df0.dropna(subset="ID")
+    df0 = df0.dropna(subset="ID")
 
     print(df0.loc[h2mask])
     df0.to_csv(Path(h2_data_dir) / "known-lines-with-h2-final-table.csv")
