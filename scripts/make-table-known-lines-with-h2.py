@@ -16,12 +16,12 @@ REPLACEMENTS = {
     "Fe": "Fe-Ni-Ca-Si",
 }
 BEST_TYPES = {
-    "zone-0": ["Deep"],
+    "zone-0": ["Deep", "Neutral"],
     "zone-I": ["Neutral"],
     "zone-II": ["Low"],
     "zone-III": ["Med"],
     "zone-IV": ["High"],
-    "zone-MYSO": ["Deep", "Fe"],
+    "zone-MYSO": ["Deep", "Neutral", "Fe"],
     "zone-S": ["Med"],
 }
 ACCEPTABLE_TYPES = {

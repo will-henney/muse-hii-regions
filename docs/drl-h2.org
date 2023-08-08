@@ -313,12 +313,12 @@ CLOSED: [2023-08-05 Sat 21:39]
       "Fe": "Fe-Ni-Ca-Si",
   }
   BEST_TYPES = {
-      "zone-0": ["Deep"],
+      "zone-0": ["Deep", "Neutral"],
       "zone-I": ["Neutral"],
       "zone-II": ["Low"],
       "zone-III": ["Med"],
       "zone-IV": ["High"],
-      "zone-MYSO": ["Deep", "Fe"],
+      "zone-MYSO": ["Deep", "Neutral", "Fe"],
       "zone-S": ["Med"],
   }
   ACCEPTABLE_TYPES = {
@@ -464,32 +464,34 @@ CLOSED: [2023-08-05 Sat 21:39]
 
 #+RESULTS:
 #+begin_example
-                 Type                      ID  blend      F(0)         wave    e_wave      E(0)      F(I)      E(I)     F(II)     E(II)  F(III)  E(III)  F(IV)  E(IV)   F(MYSO)   E(MYSO)   wl_obs            Notes  H2_index
-Index                                                                                                                                                                                                                        
-1146    Deep Neutral?   H_2 7-2 S(7) 6029.57A  False  0.026172  6029.501644  0.160755  0.003774  0.022136  0.006938       NaN       NaN     NaN     NaN    NaN    NaN  0.014860  0.001911  6029.57              NaN     173.0
-1153    Deep Neutral?   H_2 7-2 S(1) 6037.46A  False  0.035879  6037.212893  0.118675  0.003406       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.022362  0.004802  6037.40              NaN     175.0
-1300     Deep Neutral   H_2 4-0 S(5) 6221.63A  False  0.037499  6221.804241  0.078828  0.002365       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.023332  0.002593  6221.82              NaN     199.0
-1332    Deep Neutral?  H_2 12-5 S(1) 6261.73A  False  0.023445  6262.122680  0.105880  0.001986  0.054400  0.005727  0.010512  0.002108     NaN     NaN    NaN    NaN  0.012425  0.007392  6261.68    High T(excit)     205.0
-1339     Deep Neutral   H_2 4-0 S(3) 6270.24A   True  0.079375  6270.853947  0.240218  0.015254  0.073459  0.037652  0.036408  0.016258     NaN     NaN    NaN    NaN  0.085248  0.028565  6270.67  blend 12-5 S(2)     207.0
-...               ...                     ...    ...       ...          ...       ...       ...       ...       ...       ...       ...     ...     ...    ...    ...       ...       ...      ...              ...       ...
-3640     Deep Neutral   H_2 9-5 S(1) 9145.66A  False  0.124354  9144.056929  0.162228  0.016139       NaN       NaN  0.027893  0.010907     NaN     NaN    NaN    NaN  0.062477  0.030923  9145.25              NaN     686.0
-3649    Deep Neutral?   H_2 4-1 Q(4) 9155.56A  False  0.065545  9155.283022  0.239097  0.012537  0.024967  0.007895  0.017110  0.003596     NaN     NaN    NaN    NaN       NaN       NaN  9155.28              NaN     688.0
-3654    Deep Neutral?   H_2 9-5 S(7) 9162.58A  False  0.023943  9162.896677  0.309601  0.005930       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN       NaN       NaN  9162.90              NaN     691.0
-3736   Deep Neutral??   H_2 9-5 S(8) 9264.11A  False  0.028802  9263.615044  0.210080  0.004841  0.024279  0.013929  0.006150  0.001280     NaN     NaN    NaN    NaN  0.018082  0.007998  9264.38              NaN     708.0
-3762    Deep Neutral?   H_2 4-1 O(2) 9297.59A  False  0.178056  9297.275883  0.038180  0.005439       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.140809  0.011693  9297.37   blend 8-4 Q(8)     711.0
+                 Type                      ID  blend      F(0)         wave    e_wave      E(0)      F(I)      E(I)     F(II)     E(II)  F(III)  E(III)  F(IV)  E(IV)   F(MYSO)   E(MYSO)   wl_obs           Notes  H2_index
+Index                                                                                                                                                                                                                       
+1146    Deep Neutral?   H_2 7-2 S(7) 6029.57A  False  0.026172  6029.501644  0.160755  0.003774  0.022136  0.006938       NaN       NaN     NaN     NaN    NaN    NaN  0.014860  0.001911  6029.57             NaN     173.0
+1153    Deep Neutral?   H_2 7-2 S(1) 6037.46A  False  0.035879  6037.212893  0.118675  0.003406       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.022362  0.004802  6037.40             NaN     175.0
+1190         Neutral?   H_2 7-2 S(0) 6083.08A  False  0.008571  6083.532257  0.087536  0.004125       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.013754  0.000963  6083.20             NaN     180.0
+1300     Deep Neutral   H_2 4-0 S(5) 6221.63A  False  0.037499  6221.804241  0.078828  0.002365       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.023332  0.002593  6221.82             NaN     199.0
+1332    Deep Neutral?  H_2 12-5 S(1) 6261.73A  False  0.023445  6262.122680  0.105880  0.001986  0.054400  0.005727  0.010512  0.002108     NaN     NaN    NaN    NaN  0.012425  0.007392  6261.68   High T(excit)     205.0
+...               ...                     ...    ...       ...          ...       ...       ...       ...       ...       ...       ...     ...     ...    ...    ...       ...       ...      ...             ...       ...
+3640     Deep Neutral   H_2 9-5 S(1) 9145.66A  False  0.124354  9144.056929  0.162228  0.016139       NaN       NaN  0.027893  0.010907     NaN     NaN    NaN    NaN  0.062477  0.030923  9145.25             NaN     686.0
+3649    Deep Neutral?   H_2 4-1 Q(4) 9155.56A  False  0.065545  9155.283022  0.239097  0.012537  0.024967  0.007895  0.017110  0.003596     NaN     NaN    NaN    NaN       NaN       NaN  9155.28             NaN     688.0
+3654    Deep Neutral?   H_2 9-5 S(7) 9162.58A  False  0.023943  9162.896677  0.309601  0.005930       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN       NaN       NaN  9162.90             NaN     691.0
+3736   Deep Neutral??   H_2 9-5 S(8) 9264.11A  False  0.028802  9263.615044  0.210080  0.004841  0.024279  0.013929  0.006150  0.001280     NaN     NaN    NaN    NaN  0.018082  0.007998  9264.38             NaN     708.0
+3762    Deep Neutral?   H_2 4-1 O(2) 9297.59A  False  0.178056  9297.275883  0.038180  0.005439       NaN       NaN       NaN       NaN     NaN     NaN    NaN    NaN  0.140809  0.011693  9297.37  blend 8-4 Q(8)     711.0
 
-[112 rows x 20 columns]
+[113 rows x 20 columns]
 #+end_example
 
 
 
-**** TODO Write big LaTeX table of all the lines including H2
+**** DONE Write big LaTeX table of all the lines including H2
+CLOSED: [2023-08-08 Tue 13:42]
 - This is similar to [[id:F515520D-7BDD-475A-A1F7-283B5C387F29][Write latex version of the known lines table]] in [[file:ngc-346-drl-spectra.org]]
 - But based on the table generated above, which includes the H_2 lines
 - But the difference is that we now have another source of data for the blends
   - As well as the blend info that comes from the original big line list, we have the additional H_2 blends that come from the Cloudy output
-- [ ] We want to skip any blends that are predicted to be very weak (say < 0.1 of target line)
-- [ ] We also want to add in for the sky lines the equivalent wavelength in the nebula frame, and then that is what we sort on
+- [X] We want to skip any blends that are predicted to be very weak (say < 0.1 of target line)
+- [X] We also want to add in for the sky lines the equivalent wavelength in the nebula frame, and then that is what we sort on
+- This program now has a lot of messy logic and special cases, but it does seem to work!
 
 #+begin_src python :eval no :tangle ../scripts/convert-table-known-lines-with-h2-latex.py
   import pandas as pd
@@ -499,11 +501,18 @@ Index
   import re
   import string
 
+  # List of labels for blends
   LETTERS = list(string.ascii_lowercase) + [
       f"{a}{b}" for a in string.ascii_lowercase for b in string.ascii_lowercase
   ]
+  # Reversed so we can use it as a stack
+  LETTERS.reverse()
 
   ORIG_DATA_PATH = Path.cwd().parent / "n346-lines/all-lines-c007-chop-mean"
+
+  VSYS = 171.1
+
+  MINIMUM_H2_BLEND_STRENGTH = 0.1
 
 
   def format_blend(value, dp=2):
@@ -600,7 +609,7 @@ Index
           if not text:
               continue
           if "plus" in text:
-              blends += re.split("plus|and maybe", text)
+              blends += re.split("plus|and maybe|,|and", text)
           elif text.startswith("Blend with"):
               blends += text.replace("Blend with", "").split(",")
           elif text.startswith("Doublet with components"):
@@ -620,6 +629,8 @@ Index
       "7803",
       "7837",
       "8694",
+      "8304",
+      "8680",
       # Original ones from the atomic list - Special case for [Cl II] and
       # He I lines that are sort of blended, but both have flux
       # measurements And also He I triplet
@@ -646,7 +657,7 @@ Index
           is_h2blend = h2data["Notes"] and h2data["Notes"].lower().startswith("blend")
 
       if (row["blend"] or is_h2blend) and not wavrest.startswith(skip_these_blends):
-          blend_label = LETTERS.pop(0)
+          blend_label = LETTERS.pop()
       else:
           blend_label = ""
       table.append(
@@ -654,17 +665,21 @@ Index
               r"\lambda(\text{obs})": format_pair(
                   row["wave"], np.hypot(row["e_wave"], extra_e_wave(row, zones))
               ),
-              "Ion": format_ion(ion.strip()),
+              "Species": format_ion(ion.strip()),
               r"\lambda(\text{rest})": format_float(wavrest.strip("+?"), dp=2),
+              r"Wav sort": format_float(wavrest.strip("+?"), dp=2),
               "Blend": blend_label,
               ,**{
-                  rf"I(\text{{{zone}}})": format_pair(
+                  rf"\text{{Zone {zone}}}": format_pair(
                       row[f"F({zone})"], row[f"E({zone})"] + 0.005, dp=2
                   )
                   for zone in zones
               },
           }
       )
+
+      # Add extra entries for all the blends with this line
+      #
       if blend_label:
           datafile = list(ORIG_DATA_PATH.glob(f"{row['Index']:04d}*.yaml"))[0]
           data = yaml.safe_load(datafile.read_text())
@@ -679,39 +694,82 @@ Index
           if is_h2blend:
               # Could be previous or next in sequence of lab wavelengths
               for j in h2_index - 1, h2_index + 1:
-                  bdatafiles = list(Path.cwd().glob(f"{j:04d}*.yaml")) 
+                  bdatafiles = list(Path.cwd().glob(f"{j:04d}*.yaml"))
                   if len(bdatafiles) == 1:
                       bdata = yaml.safe_load(bdatafiles[0].read_text())
-                      if bdata.get("blend_index") == h2_index:
-                          blends.append(f"H_2 {bdata['H2_line']} {bdata['wl_lab'].strip('A')}")
+                      # Check that this line has been tagged as a blend
+                      # of the main line that we are looking at, and
+                      # also that the predicted intensity is at least a
+                      # certain fraction of the main line
+                      if (
+                          bdata.get("blend_index") == h2_index
+                          and bdata["I_Inorm"]
+                          > MINIMUM_H2_BLEND_STRENGTH * h2data["I_Inorm"]
+                      ):
+                          blends.append(
+                              f"H_2 {bdata['H2_line']} {bdata['wl_lab'].strip('A')}"
+                          )
 
           print(blend_label, blends)
-
+          if len(blends) == 0:
+              # No blends found, so we must hand back the label we took
+              LETTERS.append(blend_label)
+              print("Returning label", blend_label, "to the pool")
+              # And also remove label from the main entry
+              table[-1]["Blend"] = ""
+              # And no point carrying on
+              continue
+          # What to assume when bare wavelength is given
+          implicit_ion = ion
           for blend in blends:
+              if not blend.strip():
+                  # Skip case of empty or blank string
+                  continue
               try:
-                  _ion, _wavrest = blend.rsplit(maxsplit=1)
+                  _ion, _wavrest = blend.strip().rsplit(maxsplit=1)
               except ValueError:
-                  # A bare wavelength is assumed to be the same ion
-                  _ion = ion
+                  # A bare wavelength is assumed to be the last ion that was mentioned
+                  _ion = implicit_ion
                   _wavrest = blend
               if _wavrest.lower() == "sky":
                   _ion, _wavrest = _ion.rsplit(maxsplit=1)
+              _wavrest = _wavrest.strip("+?,").strip()
+              if _wavrest.startswith(skip_these_blends):
+                  # Another chance to bail out
+                  print("Skipping", _ion, _wavrest)
+                  continue
               try:
-                  table.append(
-                      {
-                          r"\lambda(\text{obs})": "",
-                          "Ion": format_ion(_ion.strip()),
-                          r"\lambda(\text{rest})": format_float(
-                              _wavrest.strip("+?"), dp=2
-                          ),
-                          "Blend": blend_label,
-                          ,**{rf"I(\text{{{zone}}})": "" for zone in zones},
-                      }
-                  )
+                  ion_string = format_ion(_ion.strip())
+                  wavrest_string = format_float(_wavrest, dp=2)
+                  if ion_string.startswith("Sky"):
+                      # Make use of the lambda(obs) column to put rest
+                      # wavelength of sky line in frame of the nebula
+                      _wavobs = float(_wavrest) / (1.0 + VSYS / 3.0e5)
+                      # And use this wavelength for sorting
+                      wavsort = format_float(_wavobs, dp=2)
+                      wavobs_string = r"\mathit{" + wavsort + "}"
+                  else:
+                      # Other lines just use the lab rest wavelength
+                      wavsort = wavrest_string
+                      wavobs_string = ""
               except:
-                  print("Failed to format blend:", _ion, _wavrest)
-
-      dff = pd.DataFrame(table).sort_values(by=r"\lambda(\text{rest})")
+                  print("Failed to format blend: ion =", _ion, "wav =", _wavrest)
+                  continue
+              # Since this was a successfully identified blend, update
+              # the ion that we use in the case that following blends have
+              # bare wavelength
+              implicit_ion = _ion
+              table.append(
+                  {
+                      "Wav sort": wavsort,
+                      r"\lambda(\text{obs})": wavobs_string,
+                      "Species": ion_string,
+                      r"\lambda(\text{rest})": wavrest_string,
+                      "Blend": blend_label,
+                      ,**{rf"\text{{Zone {zone}}}": "" for zone in zones},
+                  }
+              )
+      dff = pd.DataFrame(table).sort_values(by="Wav sort").drop(columns=["Wav sort"])
 
   s = dff.style.hide()
 
@@ -734,98 +792,66 @@ Index
 #+RESULTS:
 #+begin_example
 a ['', ' N II 4607.16']
-Failed to format blend: [Fe III] 
 b ['', ' 4638.86 ', ' N II 4643.06 ', ' N III 4640.64']
-Failed to format blend: O II 
 c ['', ' 4650.84']
-Failed to format blend: O II 
 d [' He I 4713.14']
 e ['', ' 4985.90']
-Failed to format blend: [Fe III] 
 f [' 5200.26']
 g [' [Fe II] 5273.38']
 h ['', ' Fe II 6385.46']
-Failed to format blend: Fe II 
 i ['H_2 4-0 S(0) 6434.99']
 j ['', ' Fe II 6491.2544']
-Failed to format blend: Fe II 
 k ['', ' OH 6634 sky']
-Failed to format blend: H_2 5-1 S(5) 
 l ['H_2 9-4 S(3) 7011.24']
 m ['H_2 9-4 S(0) 7105.68']
 n ['H_2 5-1 O(2) 7143.90', 'H_2 6-2 S(8) 7144.85']
 o [' [Ar IV] 7237.4', 'Also, several OH sky lines but they are weak and probably do not interfere']
-Failed to format blend: Also, several OH sky lines but they are weak and probably do not interfere
+Failed to format blend: ion = Also, several OH sky lines but they are weak and probably do not wav = interfere
 p [' 7254.45', ' 7254.53', 'Wavelength followed by + indicates blend. Secondary components should be listed in attached note']
-Failed to format blend: Wavelength followed by + indicates blend. Secondary components should be listed in attached note
+Failed to format blend: ion = Wavelength followed by + indicates blend. Secondary components should be listed in attached wav = note
 q [' [Cl IV] 7261.4']
 r ['', ' 7318.39']
-Failed to format blend: [O II] 
-s ['', ' 7329.66 and ', ' [Ar IV] 7331.4']
-Failed to format blend: [O II] 
-Failed to format blend:  7329.66 and
+s ['', ' 7329.66 ', ' ', ' [Ar IV] 7331.4']
 t ['', ' OH 7473.7 sky']
-Failed to format blend: N I 
 u [' [Cl IV] 7530.8']
 v ['H_2 7-3 S(6) 7638.24']
-w ['H_2 9-4 Q(7) 7663.45']
-x ['', ' OH 7712 sky', 'H_2 10-5 S(3) 7707.12']
-Failed to format blend: H_2 7-3 S(2) 
-y ['', ' OH 7726 sky', 'H_2 6-2 Q(6) 7720.70']
-Failed to format blend: H_2 12-6 S(2) 
-z ['', ' OH 7794 sky', 'H_2 3-0 S(9) 7790.99']
-Failed to format blend: H_2 10-5 S(0) 
-aa []
-ab ['', ' OH 7822 sky']
-Failed to format blend: He I 
-ac ['', ' OH 7853 sky']
-Failed to format blend: H_2 7-3 S(0) 
-ad ['', ' OH 7868 sky']
-Failed to format blend: H_2 3-0 S(11) 
-ae ['', ' OH 7921 sky']
-Failed to format blend: H_2 11-5 Q(9) 
-af ['', ' OH 7964.65']
-Failed to format blend: H_2 3-0 S(3) 
-ag ['', ' [Fe II] 7999.47 ', ' [Cr II] 8000.08']
-Failed to format blend: [Fe II] 
-ah ['', ' OH 8014.1']
-Failed to format blend: H_2 7-3 Q(1) 
-ai []
-aj ['', ' O I 8221.824  ']
-Failed to format blend: N I 
-ak ['H_2 8-4 S(4) 8266.30']
-al ['', ' OH 8288.6 sky']
-Failed to format blend: H_2 4-1 S(7) 
-am ['', ' H I 8298.83']
-Failed to format blend: H_2 4-1 S(6) 
-an ['', ' H I 8306.11']
-Failed to format blend: H_2 4-1 S(9) 
-ao ['', ' H I 8333.782']
-Failed to format blend: H_2 4-1 S(5) 
-ap ['', ' He I 8361.73']
-Failed to format blend: H I 
-aq ['', ' OH 8415.2 sky']
-Failed to format blend: H I 
-ar ['', ' OH 8465.2, ', ' Ca I] 8459.50 perhaps']
-Failed to format blend: H_2 4-1 S(3) 
-Failed to format blend:  OH 8465.2,
-Failed to format blend:  Ca I] 8459.50 perhaps
-as ['', ' OH 8548.7 sky']
-Failed to format blend: H I 
-at ['H_2 3-0 Q(3) 8560.35']
-au ['', ' O_2 8651.28']
-Failed to format blend: H_2 8-4 Q(1) 
-av ['', ' O_2 8676.1']
-Failed to format blend: H_2 3-0 Q(5) 
-aw ['', ' N I 8683.40, 8686.15, 8680.28']
-Failed to format blend: H_2 8-4 Q(2) 
-Failed to format blend:  N I 8683.40, 8686.15, 8680.28
-ax ['', ' neutral UIL', 'H_2 7-3 Q(9) 8691.59']
-Failed to format blend: H_2 14-7 Q(2) 
-Failed to format blend:  neutral UIL
-ay ['H_2 11-6 Q(1) 8809.76']
-az ['H_2 11-6 Q(4) 9049.54']
-ba ['H_2 8-4 Q(8) 9297.40']
+w []
+Returning label w to the pool
+w ['', ' OH 7712 sky', 'H_2 10-5 S(3) 7707.12']
+x ['', ' OH 7726 sky', 'H_2 6-2 Q(6) 7720.70']
+y ['', ' OH 7794 sky', 'H_2 3-0 S(9) 7790.99']
+z []
+Returning label z to the pool
+z ['', ' OH 7822 sky']
+aa ['', ' OH 7853 sky']
+ab ['', ' OH 7868 sky']
+ac ['', ' OH 7921 sky']
+ad ['', ' OH 7964.65']
+ae ['', ' [Fe II] 7999.47 ', ' [Cr II] 8000.08']
+af ['', ' OH 8014.1']
+ag []
+Returning label ag to the pool
+ag ['', ' O I 8221.824  ']
+ah ['H_2 8-4 S(4) 8266.30']
+ai ['', ' OH 8288.6 sky']
+aj ['', ' H I 8298.83']
+ak ['', ' H I 8333.782']
+al ['', ' He I 8361.73']
+am ['', ' OH 8415.2 sky']
+an ['', ' OH 8465.2', ' ', ' Ca I] 8459.50 perhaps']
+Failed to format blend: ion = Ca I] 8459.50 wav = perhaps
+ao ['', ' OH 8548.7 sky']
+ap ['H_2 3-0 Q(3) 8560.35']
+aq ['', ' O_2 8651.28']
+ar ['', ' O_2 8676.1']
+as ['', ' N I 8683.40', ' 8686.15', ' 8680.28']
+Skipping N I 8680.28
+at ['', ' neutral UIL', 'H_2 7-3 Q(9) 8691.59']
+Failed to format blend: ion = neutral wav = UIL
+au ['H_2 11-6 Q(1) 8809.76']
+av ['H_2 11-6 Q(4) 9049.54']
+aw []
+Returning label aw to the pool
 #+end_example
 
 
