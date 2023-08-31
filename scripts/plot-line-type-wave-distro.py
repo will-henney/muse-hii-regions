@@ -27,6 +27,7 @@ REPLACEMENTS = {
     "Medium": "Medium Ionization",
     "High": "High Ionization",
     "Fe": "Fe-Ni-Si-Ca",
+    "Unidentified": "Molecular Hydrogen"
 }
 def main(
         id_label: str,
@@ -46,6 +47,9 @@ def main(
     df = df.join(df_wave,  rsuffix="_wave")
 
     n_type = {_t: 0 for _t in info["types"]}
+    # There should really be a check on s/n > 1, which eliminates one
+    # of the Unidentified lines. I am just giong to go ahead and fix
+    # it by hand
     n_type["Unidentified"] -= 1
 
     for species in reversed(info["species"]):
