@@ -148,6 +148,7 @@ skip_these_blends = (
 )
 for _, row in df.iterrows():
     ion, wavrest = row["ID"].rsplit(maxsplit=1)
+    print(ion, wavrest)
     # H_2 lines need the A stripping off
     wavrest = wavrest.rstrip("A")
     # Special case for [N I], where I unwisely put the mean doublet wavelength in the spreadsheet
@@ -273,7 +274,8 @@ for _, row in df.iterrows():
                     **{rf"\text{{Zone {zone}}}": "" for zone in zones},
                 }
             )
-    dff = pd.DataFrame(table).sort_values(by="Wav sort").drop(columns=["Wav sort"])
+
+dff = pd.DataFrame(table).sort_values(by="Wav sort").drop(columns=["Wav sort"])
 
 s = dff.style.hide()
 

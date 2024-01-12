@@ -644,6 +644,7 @@ CLOSED: [2023-08-08 Tue 13:42]
   )
   for _, row in df.iterrows():
       ion, wavrest = row["ID"].rsplit(maxsplit=1)
+      print(ion, wavrest)
       # H_2 lines need the A stripping off
       wavrest = wavrest.rstrip("A")
       # Special case for [N I], where I unwisely put the mean doublet wavelength in the spreadsheet
@@ -769,7 +770,8 @@ CLOSED: [2023-08-08 Tue 13:42]
                       ,**{rf"\text{{Zone {zone}}}": "" for zone in zones},
                   }
               )
-      dff = pd.DataFrame(table).sort_values(by="Wav sort").drop(columns=["Wav sort"])
+
+  dff = pd.DataFrame(table).sort_values(by="Wav sort").drop(columns=["Wav sort"])
 
   s = dff.style.hide()
 
@@ -791,65 +793,307 @@ CLOSED: [2023-08-08 Tue 13:42]
 
 #+RESULTS:
 #+begin_example
+[Fe III] 4607.12+
 a ['', ' N II 4607.16']
+O II 4641.81+
 b ['', ' 4638.86 ', ' N II 4643.06 ', ' N III 4640.64']
+O II 4649.13+
 c ['', ' 4650.84']
+[Fe III] 4658.10
+He II 4685.68
+[Fe III] 4701.62
+[Ar IV] 4711.37+
 d [' He I 4713.14']
+[Fe III] 4734.00
+[Ar IV] 4740.17
+[Fe III] 4754.81
+[Fe III] 4769.53
+[Fe II] 4814.534
+H I 4861.32
+[Fe III] 4881.073
+He I 4921.93
+[Fe III] 4930.64
+[O III] 4958.91
+[Fe III] 4987.20+
 e ['', ' 4985.90']
+[O III] 5006.84
+He I 5015.68
+Si II 5041.03
+He I 5047.74
+Si II 5055.98
+O I 5146.61
+[Fe II] 5158.81
+[Ar  III] 5191.82
+[N I] 5199.00+
 f [' 5200.26']
+[Fe II] 5261.61
+[Fe III] 5270.40+
 g [' [Fe II] 5273.38']
+[Fe II] 5333.646
+[Fe II] 5376.452
+[Cl III] 5517.71
+[Cl III]] 5537.88
+Si III 5739.73
+[N II] 5755.08
+Ni II 5867.99
+He I 5875.62
+Si II 5978.93
+H_2 7-2 S(7) 6029.57A
+H_2 7-2 S(1) 6037.46A
+O I 6046.23
+H_2 7-2 S(0) 6083.08A
+[K IV] 6101.79
+H_2 4-0 S(5) 6221.63A
+Fe II 6248.91
+H_2 12-5 S(1) 6261.73A
+H_2 4-0 S(3) 6270.24A
+[O I] 6300.30
+[S III] 6312.06
+Fe II 6317.99
+Si II 6347.11
+[O I] 6363.78
+Si II 6371.36
+Fe II 6383.73+
 h ['', ' Fe II 6385.46']
+H_2 4-0 S(12) 6434.04A
 i ['H_2 4-0 S(0) 6434.99']
+H_2 8-3 S(3) 6450.83A
+Fe II 6455.8427
+H_2 8-3 S(5) 6459.07A
+H_2 8-3 S(2) 6469.13A
+H_2 8-3 S(6) 6486.30A
+Fe II 6493.04+
 j ['', ' Fe II 6491.2544']
+H_2 8-3 S(1) 6502.09A
+Fe II 6517.03
+H_2 8-3 S(7) 6529.62A
+[N II] 6548.05
+H I 6562.79
+[N II] 6583.45
+H_2 4-0 Q(3) 6615.09A
+H_2 5-1 S(5) 6629.04A
 k ['', ' OH 6634 sky']
+H_2 5-1 S(7) 6636.69A
+H_2 5-1 S(4) 6645.58A
+H_2 8-3 Q(1) 6656.12A
+[Ni II] 6666.80
+He I 6678.15
+H_2 5-1 S(9) 6699.11A
+[S II] 6716.44
+[S II] 6730.816
+H_2 5-1 S(1) 6776.75A
+[K IV] 6795.1
+H_2 5-1 S(0) 6847.81A
+H_2 5-1 Q(1) 6987.18A
+O I 7001.92
+H_2 5-1 Q(2) 7009.46A
 l ['H_2 9-4 S(3) 7011.24']
+H_2 9-4 S(4) 7015.36A
+H_2 9-4 S(2) 7025.14A
+H_2 9-4 S(5) 7038.03A
+H_2 5-1 Q(3) 7042.98A
+H_2 9-4 S(1) 7056.69A
+He I 7065.28
+H_2 9-4 S(6) 7080.02A
+H_2 6-2 S(5) 7091.93A
+H_2 6-2 S(4) 7105.43A
 m ['H_2 9-4 S(0) 7105.68']
+H_2 6-2 S(7) 7111.45A
+[Ar III] 7135.78
+H_2 5-1 Q(5) 7144.42A
 n ['H_2 5-1 O(2) 7143.90', 'H_2 6-2 S(8) 7144.85']
+[Fe II] 7155.14
+He I 7160.13
+[Ar IV] 7170.5
+H_2 6-2 S(2) 7178.58A
+H_2 11-5 O(3) 7186.19A
+H_2 6-2 S(9) 7194.43A
+H_2 13-6 S(2) 7199.27A
+H_2 9-4 Q(1) 7221.48A
+H_2 6-2 S(1) 7238.21A
 o [' [Ar IV] 7237.4', 'Also, several OH sky lines but they are weak and probably do not interfere']
 Failed to format blend: ion = Also, several OH sky lines but they are weak and probably do not wav = interfere
+O I 7254.15+
 p [' 7254.45', ' 7254.53', 'Wavelength followed by + indicates blend. Secondary components should be listed in attached note']
 Failed to format blend: ion = Wavelength followed by + indicates blend. Secondary components should be listed in attached wav = note
+[Ar IV] 7262.7+
 q [' [Cl IV] 7261.4']
+He I 7281.35
+H_2 5-1 Q(7) 7293.34A
+H_2 13-6 Q(2) 7304.73A
+[O II] 7319.99+
 r ['', ' 7318.39']
+[O II] 7330.73+
 s ['', ' 7329.66 ', ' ', ' [Ar IV] 7331.4']
+[Ni II] 7377.83
+[Ni II] 7411.61
+H_2 4-0 O(7) 7426.27A
+N I 7442.30
+[Fe II] 7452.54?
+H_2 6-2 Q(1) 7462.84A
+N I 7468.31+
 t ['', ' OH 7473.7 sky']
+H_2 6-2 Q(2) 7488.21A
+He I 7499.85
+Fe II 7513.1762
+H_2 6-2 Q(3) 7526.43A
 u [' [Cl IV] 7530.8']
+[Cl IV] 7530.8
+H_2 7-3 S(5) 7628.56A
+H_2 7-3 S(4) 7636.91A
 v ['H_2 7-3 S(6) 7638.24']
+H_2 7-3 S(3) 7663.09A
 w []
 Returning label w to the pool
+H_2 7-3 S(2) 7706.96A
 w ['', ' OH 7712 sky', 'H_2 10-5 S(3) 7707.12']
+H_2 12-6 S(2) 7721.51A
 x ['', ' OH 7726 sky', 'H_2 6-2 Q(6) 7720.70']
+H_2 10-5 S(4) 7724.23A
+H_2 10-5 S(1) 7740.69A
+[Ar III] 7751.10
+H_2 7-3 S(1) 7768.49A
+H_2 3-0 S(7) 7782.22A
+H_2 10-5 S(0) 7790.25A
 y ['', ' OH 7794 sky', 'H_2 3-0 S(9) 7790.99']
+H_2 4-0 O(9) 7806.24A
 z []
 Returning label z to the pool
+He I 7816.13+
 z ['', ' OH 7822 sky']
+H_2 3-0 S(5) 7837.75A
+H_2 7-3 S(0) 7847.68A
 aa ['', ' OH 7853 sky']
+H_2 3-0 S(11) 7862.67A
 ab ['', ' OH 7868 sky']
+H_2 3-0 S(4) 7890.29A
+H_2 11-5 Q(9) 7917.04A
 ac ['', ' OH 7921 sky']
+H_2 3-0 S(3) 7959.75A
 ad ['', ' OH 7964.65']
+[Fe II] 7997.03+
 ae ['', ' [Fe II] 7999.47 ', ' [Cr II] 8000.08']
+H_2 7-3 Q(1) 8008.96A
 af ['', ' OH 8014.1']
+H_2 7-3 Q(2) 8038.44A
+[Cl IV] 8045.62+
+H_2 10-5 O(2) 8068.77A
 ag []
 Returning label ag to the pool
+H_2 7-3 Q(3) 8082.91A
+Ca I] 8125.31
+H_2 3-0 S(1) 8150.65A
+N I 8188.012
+H_2 7-3 O(2) 8192.31A
+N I 8200.357
+H_2 10-5 S(9) 8206.90A
+N I 8210.715
+N I 8216.34+
+N I 8223.14+
 ag ['', ' O I 8221.824  ']
+O I 8230.00+
+He II 8236.78
+N I 8242.39
+H_2 8-4 S(5) 8266.55A
 ah ['H_2 8-4 S(4) 8266.30']
+H_2 3-0 S(0) 8272.65A
+H_2 4-1 S(7) 8283.51A
 ai ['', ' OH 8288.6 sky']
+H_2 8-4 S(3) 8287.27A
+H_2 4-1 S(6) 8300.03A
 aj ['', ' H I 8298.83']
+H_2 4-1 S(9) 8304.07A
+H I 8306.11+
+H I 8314.26
+H I 8323.42
+H_2 8-4 S(2) 8329.17A
+H_2 4-1 S(5) 8334.66A
 ak ['', ' H I 8333.782']
+H I 8345.55
+H I 8359.00+
 al ['', ' He I 8361.73']
+H I 8374.48
+H_2 4-1 S(4) 8387.65A
+H_2 8-4 S(8) 8400.71A
+H I 8413.32+
 am ['', ' OH 8415.2 sky']
+H I 8437.96
+O I 8446.48
+H_2 4-1 S(3) 8459.29A
 an ['', ' OH 8465.2', ' ', ' Ca I] 8459.50 perhaps']
 Failed to format blend: ion = Ca I] 8459.50 wav = perhaps
+H I 8467.26
+H_2 8-4 S(0) 8475.17A
+H_2 3-0 Q(1) 8497.45A
+H I 8502.49
+He I 8518.04
+H_2 3-0 Q(2) 8522.57A
+He I 8528.95
+H I 8545.38+
 ao ['', ' OH 8548.7 sky']
+H_2 4-1 S(2) 8549.88A
+H_2 4-1 S(13) 8560.02A
 ap ['H_2 3-0 Q(3) 8560.35']
+[Cl II] 8578.69+
+He I 8582.61+
+H I 8598.39
+H_2 11-6 S(3) 8610.91A
+[Fe II] 8616.95
+H_2 11-6 S(1) 8620.81A
+N I 8629.24
+H_2 8-4 Q(1) 8650.16A
 aq ['', ' O_2 8651.28']
+H_2 4-1 S(1) 8659.72A
+H I 8665.02
+H_2 3-0 Q(5) 8674.35A
 ar ['', ' O_2 8676.1']
+N I 8680.282
+H_2 8-4 Q(2) 8685.29A
 as ['', ' N I 8683.40', ' 8686.15', ' 8680.28']
 Skipping N I 8680.28
+H_2 14-7 Q(2) 8692.04A
 at ['', ' neutral UIL', 'H_2 7-3 Q(9) 8691.59']
 Failed to format blend: ion = neutral wav = UIL
+N I 8703.247
+N I 8711.703
+N I 8718.837
+[C I] 8727.13
+He I 8733.43
+H_2 8-4 Q(3) 8738.38A
+H I 8750.47
+He I 8776.71+
+H_2 4-1 S(0) 8789.12A
+H_2 8-4 Q(4) 8809.90A
 au ['H_2 11-6 Q(1) 8809.76']
+H_2 3-0 Q(7) 8840.89A
+H_2 5-2 S(7) 8850.66A
+H I 8862.79
+H_2 5-2 S(9) 8888.85A
+H_2 5-2 S(5) 8893.81A
+H_2 5-2 S(4) 8946.15A
+H I 9014.91
+H_2 5-2 S(3) 9019.30A
+H_2 4-1 Q(1) 9029.26A
+H_2 9-5 S(4) 9034.88A
+H_2 9-5 S(5) 9049.69A
 av ['H_2 11-6 Q(4) 9049.54']
+H_2 4-1 Q(2) 9057.20A
+He I 9063.29
+[S III] 9068.90
+H_2 9-5 S(2) 9083.40A
+H_2 4-1 Q(3) 9099.25A
+H_2 5-2 S(2) 9113.54A
+[Cl II] 9123.60
+H_2 9-5 S(1) 9145.66A
+H_2 4-1 Q(4) 9155.56A
+H_2 9-5 S(7) 9162.58A
+Ca I] 9204.09
+He I 9210.28
+Fe I] 9218.47
+H I 9229.01
+Ca I] 9244.31
+H_2 9-5 S(8) 9264.11A
+H_2 4-1 O(2) 9297.59A
 aw []
 Returning label aw to the pool
 #+end_example
