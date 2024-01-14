@@ -1098,6 +1098,15 @@ aw []
 Returning label aw to the pool
 #+end_example
 
+*** Calculate the reddening from H2 lines that share an upper level
+- We want top select the best pairs for doing this, otherwise we will be swamped by noise and blends
+- So we want the following:
+  1. Large wavelength separation between the lines (e.g., 6600 to 9000)
+  2. Neither line is affected by an obvious blend
+  3. S/N of at least 3 for both lines. This will generally be determined by the weaker line, which is usually the shorter wavelength
+- We may want to relax #1 actually, so can demonstrate that the measurements are consistent with the theoretical A values when the wavelength difference is negligible.
+- Then what we can do is to assume that the extinction is proportional to 1 / lambda
+  - So we calculate the ratio of ratios: [I(long) / I(short)] divided by [g A h nu (long) / g A h nu (short)]
 
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
