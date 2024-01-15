@@ -342,7 +342,7 @@ CLOSED: [2023-08-05 Sat 21:39]
   rc.FitzParams = [-4.96, 2.26, 0.39, 0.6, 4.6, 1.0]
   rc.law = "F99"
 
-
+  
   def main(
       id_label: str,
       debug: bool = False,
@@ -1107,6 +1107,100 @@ Returning label aw to the pool
 - We may want to relax #1 actually, so can demonstrate that the measurements are consistent with the theoretical A values when the wavelength difference is negligible.
 - Then what we can do is to assume that the extinction is proportional to 1 / lambda
   - So we calculate the ratio of ratios: [I(long) / I(short)] divided by [g A h nu (long) / g A h nu (short)]
+- Question is: do we just put the lines in by hand, or do we automate it?
+
+**** Make a list of pairs of lines that share an upper level
+- We want to combine the two tables:
+  1. ~h2-line-ids.csv~ that has rovibrational levels and the transition probabilities
+  2. ~known-lines-with-h2-final-table.csv~ that has the reddening-corrected fluxes for the lines
+     
+#+begin_src python :eval no :tangle ../scripts/h2-find-reddening-pairs.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+  COLS = ["H2_line",  "Vhi",  "Jhi",  "Vlo",  "Jlo", "wl_mic", "I_Inorm",  "Excit_hi_K", "g_u_h_nu_Aul", "Notes_x",
+          "F(0)", "E(0)", "F(MYSO)", "E(MYSO)"]
+
+  def main(
+              data_dir: str="n346-h2-lines",
+              min_snr: float=2.0,
+  ):
+        df1 = pd.read_csv(Path(data_dir) / "known-lines-with-h2-final-table.csv")
+        df1 = (df1       
+               # removing low s/n lines
+               [df1["F(0)"] > min_snr * df1["E(0)"]]
+               # removing blends
+               [~df1["Notes"].str.contains("blend", na=False)]
+               [~df1["blend"]]
+               )
+        df2 = pd.read_csv(Path(data_dir) / "h2-line-ids.csv")
+        # Merge the two tables on the name of the H2 lines
+        df0 = (df2.merge(df1, how="inner", on="H2_index")[COLS]
+               # sorted by energy, then wavelength
+               .sort_values(by=["Excit_hi_K", "wl_mic"])
+               .groupby("Excit_hi_K")
+               # select groups of two or more lines with the same upper level
+               .filter(lambda x: len(x) > 1)
+               )
+        df0.to_csv(Path(data_dir) / "h2-reddening-pairs-table.csv")
+        print(df0)
+        # for name, group in grouped:
+        #       if len(group) > 1:
+        #             print(name)
+        #             print(group)
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data :results output verbatim
+  COLUMNS=1000 python ../scripts/h2-find-reddening-pairs.py --min-snr 2
+#+end_src
+
+#+RESULTS:
+#+begin_example
+     H2_line  Vhi   Jhi  Vlo  Jlo    wl_mic   I_Inorm  Excit_hi_K  g_u_h_nu_Aul        Notes_x      F(0)      E(0)   F(MYSO)   E(MYSO)
+46  3-0 S(0)  3.0   2.0  0.0  0.0  0.827265  0.000078   17387.183  2.591000e-19            NaN  0.166051  0.004725  0.032877  0.016393
+53  3-0 Q(2)  3.0   2.0  0.0  2.0  0.852257  0.000065   17387.183  2.177000e-19            NaN  0.109301  0.004602  0.044541  0.003113
+59  4-1 S(0)  4.0   2.0  1.0  0.0  0.878912  0.000140   22352.468  8.401000e-19            NaN  0.193339  0.008964  0.061324  0.003418
+67  4-1 Q(2)  4.0   2.0  1.0  2.0  0.905720  0.000122   22352.468  7.367000e-19  stronger deep  0.200774  0.006608       NaN       NaN
+10  4-0 Q(3)  4.0   3.0  0.0  3.0  0.661509  0.000007   22758.987  1.507000e-19            NaN  0.008415  0.002855  0.005485  0.000451
+57  4-1 S(1)  4.0   3.0  1.0  1.0  0.865972  0.000291   22758.987  5.904000e-18            NaN  0.380180  0.027189  0.042248  0.011814
+69  4-1 Q(3)  4.0   3.0  1.0  3.0  0.909925  0.000142   22758.987  2.890000e-18            NaN  0.207403  0.017341  0.195240  0.143527
+54  4-1 S(2)  4.0   4.0  1.0  2.0  0.854988  0.000237   23294.809  3.504000e-18            NaN  0.211016  0.014921  0.037104  0.002809
+72  4-1 Q(4)  4.0   4.0  1.0  4.0  0.915556  0.000082   23294.809  1.206000e-18            NaN  0.065545  0.012537       NaN       NaN
+15  5-1 S(1)  5.0   3.0  1.0  1.0  0.677675  0.000059   27374.175  1.848000e-18            NaN  0.055403  0.005957  0.025083  0.002450
+21  5-1 Q(3)  5.0   3.0  1.0  3.0  0.704298  0.000021   27374.175  6.493000e-19            NaN  0.036400  0.001804  0.020118  0.003293
+12  5-1 S(4)  5.0   6.0  1.0  4.0  0.664558  0.000040   29228.502  3.032000e-18            NaN  0.035754  0.002236  0.020364  0.000783
+63  5-2 S(4)  5.0   6.0  2.0  4.0  0.894615  0.000190   29228.502  1.427000e-17            NaN  0.152794  0.028027  0.068645  0.019524
+11  5-1 S(7)  5.0   9.0  1.0  7.0  0.663669  0.000048   32014.382  2.080000e-17            NaN  0.059644  0.007285  0.157934  0.062761
+60  5-2 S(7)  5.0   9.0  2.0  7.0  0.885066  0.000184   32014.382  7.926000e-17            NaN  0.229371  0.015721  0.089079  0.009766
+14  5-1 S(9)  5.0  11.0  1.0  9.0  0.669911  0.000051   34288.459  2.823000e-17            NaN  0.027720  0.002110  0.011564  0.002283
+61  5-2 S(9)  5.0  11.0  2.0  9.0  0.888885  0.000170   34288.459  9.436000e-17            NaN  0.089201  0.011274  0.021779  0.003140
+2   7-2 S(0)  7.0   2.0  2.0  0.0  0.608308  0.000011   35280.972  1.974000e-19            NaN  0.008571  0.004125  0.013754  0.000963
+41  7-3 Q(2)  7.0   2.0  3.0  2.0  0.803844  0.000045   35280.972  8.377000e-19            NaN  0.065477  0.007646  0.018273  0.007428
+1   7-2 S(1)  7.0   3.0  2.0  1.0  0.603746  0.000024   35613.272  1.657000e-18            NaN  0.035879  0.003406  0.022362  0.004802
+38  7-3 S(1)  7.0   3.0  3.0  1.0  0.776849  0.000112   35613.272  7.842000e-18            NaN  0.113539  0.007952  0.023261  0.007891
+42  7-3 Q(3)  7.0   3.0  3.0  3.0  0.808291  0.000047   35613.272  3.301000e-18            NaN  0.059422  0.002252  0.037058  0.003168
+9   8-3 S(1)  8.0   3.0  3.0  1.0  0.650209  0.000035   39219.492  3.389000e-18            NaN  0.045548  0.002180  0.013620  0.001162
+58  8-4 Q(3)  8.0   3.0  4.0  3.0  0.873838  0.000057   39219.492  5.561000e-18            NaN  0.064774  0.004399  0.025118  0.002079
+7   8-3 S(2)  8.0   4.0  3.0  2.0  0.646913  0.000032   39621.684  2.241000e-18   elam = 2 sig  0.053131  0.012392  0.062109  0.028399
+48  8-4 S(2)  8.0   4.0  4.0  2.0  0.832916  0.000104   39621.684  7.239000e-18            NaN  0.069117  0.006560       NaN       NaN
+5   8-3 S(3)  8.0   5.0  3.0  3.0  0.645083  0.000047   40115.502  1.139000e-17            NaN  0.016711  0.005739       NaN       NaN
+47  8-4 S(3)  8.0   5.0  4.0  3.0  0.828727  0.000141   40115.502  3.388000e-17            NaN  0.121723  0.021783  0.439171  0.026252
+22  9-4 S(1)  9.0   3.0  4.0  1.0  0.705669  0.000042   42462.426  5.784000e-18            NaN  0.079988  0.018529  0.059081  0.010433
+71  9-5 S(1)  9.0   3.0  5.0  1.0  0.914566  0.000120   42462.426  1.642000e-17            NaN  0.124354  0.016139  0.062477  0.030923
+19  9-4 S(2)  9.0   4.0  4.0  2.0  0.702514  0.000037   42827.236  3.704000e-18            NaN  0.030010  0.004199  0.054419  0.024145
+68  9-5 S(2)  9.0   4.0  5.0  2.0  0.908340  0.000096   42827.236  9.554000e-18            NaN  0.061664  0.010837  0.054953  0.052135
+18  9-4 S(4)  9.0   6.0  4.0  4.0  0.701536  0.000029   43798.108  9.057000e-18            NaN  0.019512  0.002142  0.027242  0.005749
+66  9-5 S(4)  9.0   6.0  5.0  4.0  0.903488  0.000064   43798.108  1.994000e-17            NaN  0.032524  0.005228  0.035862  0.019386
+#+end_example
+
 
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
