@@ -1121,7 +1121,7 @@ Returning label aw to the pool
   import pandas as pd
   import typer
   import sys
-  COLS = ["H2_line",  "Vhi",  "Jhi",  "Vlo",  "Jlo", "wl_mic", "I_Inorm",  "Excit_hi_K", "g_u_h_nu_Aul", "Notes_x",
+  COLS = ["Index", "H2_line",  "Vhi",  "Jhi",  "Vlo",  "Jlo", "wl_mic", "wl_lab", "I_Inorm",  "Excit_hi_K", "g_u_h_nu_Aul", 
           "F(0)", "E(0)", "F(MYSO)", "E(MYSO)"]
 
   def main(
@@ -1134,23 +1134,51 @@ Returning label aw to the pool
                [df1["F(0)"] > min_snr * df1["E(0)"]]
                # removing blends
                [~df1["Notes"].str.contains("blend", na=False)]
-               [~df1["blend"]]
+               # [~df1["blend"]]
+               # And other dubious lines
+               [~df1["Notes"].str.contains("elam = 2 sig", na=False)]
                )
         df2 = pd.read_csv(Path(data_dir) / "h2-line-ids.csv")
         # Merge the two tables on the name of the H2 lines
-        df0 = (df2.merge(df1, how="inner", on="H2_index")[COLS]
-               # sorted by energy, then wavelength
-               .sort_values(by=["Excit_hi_K", "wl_mic"])
-               .groupby("Excit_hi_K")
-               # select groups of two or more lines with the same upper level
-               .filter(lambda x: len(x) > 1)
-               )
+        grouped = (df2.merge(df1, how="inner", on="H2_index")[COLS]
+                   # sorted by energy, then wavelength
+                   .sort_values(by=["Excit_hi_K", "wl_mic"])
+                   .groupby("Excit_hi_K")
+                   )
+        # select groups of two or more lines with the same upper level and save to csv
+        grouped.filter(lambda x: len(x) > 1).to_csv(Path(data_dir) / "h2-reddening-lines-table.csv")
+
+        # now reorganise the date with one row per pair
+        red_pairs = []
+        for name, group in grouped:
+              if len(group) > 1:
+                    print(name)
+                    group["cloudy_theo"] = 1e-16 * 100 * group["I_Inorm"] / group["g_u_h_nu_Aul"]
+                    group["obs_theo"] = 1e-16 * group["F(0)"] / group["g_u_h_nu_Aul"]
+                    group["s_n"] = group["F(0)"] / group["E(0)"]
+                    group["wav_ratio"] = group.iloc[-1]["wl_mic"] / group["wl_mic"]
+
+                    group = group.drop(columns=["Excit_hi_K", "g_u_h_nu_Aul", "I_Inorm"])
+                    print(group)
+                    # take ratio of the shortest wave with each longer wave in turn
+                    short = group.iloc[0, :]
+                    for _, long in group.iloc[1:, :].iterrows():
+                          red_pairs.append(
+                                dict(
+                                      lines = f"{short.H2_line} / {long.H2_line}",
+                                      waves = f"{short.wl_lab.strip('A')} / {long.wl_lab.strip('A')}",
+                                      obs_theo_ratio = short.obs_theo / long.obs_theo,
+                                      wav_ratio = long.wl_mic / short.wl_mic,
+                                      Texcit = name,
+                                      long_wav = long.wl_mic,
+                                      rel_error = np.hypot(1.0 / short.s_n, 1.0 / long.s_n),
+                                      bright_product = 100 * short["F(0)"] * long["F(0)"],
+                                )
+                          )
+        # Save list of pairs
+        df0 = pd.DataFrame(red_pairs).sort_values("wav_ratio")
         df0.to_csv(Path(data_dir) / "h2-reddening-pairs-table.csv")
         print(df0)
-        # for name, group in grouped:
-        #       if len(group) > 1:
-        #             print(name)
-        #             print(group)
 
 
   if __name__ == "__main__":
@@ -1164,43 +1192,369 @@ Returning label aw to the pool
 
 #+RESULTS:
 #+begin_example
-     H2_line  Vhi   Jhi  Vlo  Jlo    wl_mic   I_Inorm  Excit_hi_K  g_u_h_nu_Aul        Notes_x      F(0)      E(0)   F(MYSO)   E(MYSO)
-46  3-0 S(0)  3.0   2.0  0.0  0.0  0.827265  0.000078   17387.183  2.591000e-19            NaN  0.166051  0.004725  0.032877  0.016393
-53  3-0 Q(2)  3.0   2.0  0.0  2.0  0.852257  0.000065   17387.183  2.177000e-19            NaN  0.109301  0.004602  0.044541  0.003113
-59  4-1 S(0)  4.0   2.0  1.0  0.0  0.878912  0.000140   22352.468  8.401000e-19            NaN  0.193339  0.008964  0.061324  0.003418
-67  4-1 Q(2)  4.0   2.0  1.0  2.0  0.905720  0.000122   22352.468  7.367000e-19  stronger deep  0.200774  0.006608       NaN       NaN
-10  4-0 Q(3)  4.0   3.0  0.0  3.0  0.661509  0.000007   22758.987  1.507000e-19            NaN  0.008415  0.002855  0.005485  0.000451
-57  4-1 S(1)  4.0   3.0  1.0  1.0  0.865972  0.000291   22758.987  5.904000e-18            NaN  0.380180  0.027189  0.042248  0.011814
-69  4-1 Q(3)  4.0   3.0  1.0  3.0  0.909925  0.000142   22758.987  2.890000e-18            NaN  0.207403  0.017341  0.195240  0.143527
-54  4-1 S(2)  4.0   4.0  1.0  2.0  0.854988  0.000237   23294.809  3.504000e-18            NaN  0.211016  0.014921  0.037104  0.002809
-72  4-1 Q(4)  4.0   4.0  1.0  4.0  0.915556  0.000082   23294.809  1.206000e-18            NaN  0.065545  0.012537       NaN       NaN
-15  5-1 S(1)  5.0   3.0  1.0  1.0  0.677675  0.000059   27374.175  1.848000e-18            NaN  0.055403  0.005957  0.025083  0.002450
-21  5-1 Q(3)  5.0   3.0  1.0  3.0  0.704298  0.000021   27374.175  6.493000e-19            NaN  0.036400  0.001804  0.020118  0.003293
-12  5-1 S(4)  5.0   6.0  1.0  4.0  0.664558  0.000040   29228.502  3.032000e-18            NaN  0.035754  0.002236  0.020364  0.000783
-63  5-2 S(4)  5.0   6.0  2.0  4.0  0.894615  0.000190   29228.502  1.427000e-17            NaN  0.152794  0.028027  0.068645  0.019524
-11  5-1 S(7)  5.0   9.0  1.0  7.0  0.663669  0.000048   32014.382  2.080000e-17            NaN  0.059644  0.007285  0.157934  0.062761
-60  5-2 S(7)  5.0   9.0  2.0  7.0  0.885066  0.000184   32014.382  7.926000e-17            NaN  0.229371  0.015721  0.089079  0.009766
-14  5-1 S(9)  5.0  11.0  1.0  9.0  0.669911  0.000051   34288.459  2.823000e-17            NaN  0.027720  0.002110  0.011564  0.002283
-61  5-2 S(9)  5.0  11.0  2.0  9.0  0.888885  0.000170   34288.459  9.436000e-17            NaN  0.089201  0.011274  0.021779  0.003140
-2   7-2 S(0)  7.0   2.0  2.0  0.0  0.608308  0.000011   35280.972  1.974000e-19            NaN  0.008571  0.004125  0.013754  0.000963
-41  7-3 Q(2)  7.0   2.0  3.0  2.0  0.803844  0.000045   35280.972  8.377000e-19            NaN  0.065477  0.007646  0.018273  0.007428
-1   7-2 S(1)  7.0   3.0  2.0  1.0  0.603746  0.000024   35613.272  1.657000e-18            NaN  0.035879  0.003406  0.022362  0.004802
-38  7-3 S(1)  7.0   3.0  3.0  1.0  0.776849  0.000112   35613.272  7.842000e-18            NaN  0.113539  0.007952  0.023261  0.007891
-42  7-3 Q(3)  7.0   3.0  3.0  3.0  0.808291  0.000047   35613.272  3.301000e-18            NaN  0.059422  0.002252  0.037058  0.003168
-9   8-3 S(1)  8.0   3.0  3.0  1.0  0.650209  0.000035   39219.492  3.389000e-18            NaN  0.045548  0.002180  0.013620  0.001162
-58  8-4 Q(3)  8.0   3.0  4.0  3.0  0.873838  0.000057   39219.492  5.561000e-18            NaN  0.064774  0.004399  0.025118  0.002079
-7   8-3 S(2)  8.0   4.0  3.0  2.0  0.646913  0.000032   39621.684  2.241000e-18   elam = 2 sig  0.053131  0.012392  0.062109  0.028399
-48  8-4 S(2)  8.0   4.0  4.0  2.0  0.832916  0.000104   39621.684  7.239000e-18            NaN  0.069117  0.006560       NaN       NaN
-5   8-3 S(3)  8.0   5.0  3.0  3.0  0.645083  0.000047   40115.502  1.139000e-17            NaN  0.016711  0.005739       NaN       NaN
-47  8-4 S(3)  8.0   5.0  4.0  3.0  0.828727  0.000141   40115.502  3.388000e-17            NaN  0.121723  0.021783  0.439171  0.026252
-22  9-4 S(1)  9.0   3.0  4.0  1.0  0.705669  0.000042   42462.426  5.784000e-18            NaN  0.079988  0.018529  0.059081  0.010433
-71  9-5 S(1)  9.0   3.0  5.0  1.0  0.914566  0.000120   42462.426  1.642000e-17            NaN  0.124354  0.016139  0.062477  0.030923
-19  9-4 S(2)  9.0   4.0  4.0  2.0  0.702514  0.000037   42827.236  3.704000e-18            NaN  0.030010  0.004199  0.054419  0.024145
-68  9-5 S(2)  9.0   4.0  5.0  2.0  0.908340  0.000096   42827.236  9.554000e-18            NaN  0.061664  0.010837  0.054953  0.052135
-18  9-4 S(4)  9.0   6.0  4.0  4.0  0.701536  0.000029   43798.108  9.057000e-18            NaN  0.019512  0.002142  0.027242  0.005749
-66  9-5 S(4)  9.0   6.0  5.0  4.0  0.903488  0.000064   43798.108  1.994000e-17            NaN  0.032524  0.005228  0.035862  0.019386
+17387.183
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo   obs_theo        s_n  wav_ratio
+54   2942  3-0 S(0)  3.0  2.0  0.0  0.0  0.827265  8272.65A  0.166051  0.004725  0.032877  0.016393     2.992281  64.087556  35.139352    1.03021
+67   3142  3-0 Q(2)  3.0  2.0  0.0  2.0  0.852257  8522.57A  0.109301  0.004602  0.044541  0.003113     2.992191  50.207381  23.750375    1.00000
+19085.761
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+47   2692  3-0 S(3)  3.0  5.0  0.0  3.0  0.795975  7959.75A  0.192913  0.058921  0.098050  0.012923     0.322888  3.598461  3.274105   1.089776
+73   3263  3-0 Q(5)  3.0  5.0  0.0  5.0  0.867435  8674.35A  0.048686  0.022489  0.029729  0.014851     0.322917  3.756616  2.164873   1.000000
+22352.468
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo   obs_theo        s_n  wav_ratio
+76   3355  4-1 S(0)  4.0  2.0  1.0  0.0  0.878912  8789.12A  0.193339  0.008964  0.061324  0.003418     1.660517  23.013863  21.567475   1.030502
+84   3570  4-1 Q(2)  4.0  2.0  1.0  2.0  0.905720  9057.20A  0.200774  0.006608       NaN       NaN     1.660106  27.253189  30.381933   1.000000
+22758.987
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+10   1616  4-0 Q(3)  4.0  3.0  0.0  3.0  0.661509  6615.09A  0.008415  0.002855  0.005485  0.000451     0.492701  5.584094   2.947743   1.375529
+72   3252  4-1 S(1)  4.0  3.0  1.0  1.0  0.865972  8659.72A  0.380180  0.027189  0.042248  0.011814     0.492886  6.439371  13.982899   1.050756
+86   3603  4-1 Q(3)  4.0  3.0  1.0  3.0  0.909925  9099.25A  0.207403  0.017341  0.195240  0.143527     0.492734  7.176582  11.959967   1.000000
+23294.809
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+68   3164  4-1 S(2)  4.0  4.0  1.0  2.0  0.854988  8549.88A  0.211016  0.014921  0.037104  0.002809     0.676084  6.022148  14.141855   1.070842
+89   3649  4-1 Q(4)  4.0  4.0  1.0  4.0  0.915556  9155.56A  0.065545  0.012537       NaN       NaN     0.676368  5.434950   5.227997   1.000000
+23954.871
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo   obs_theo       s_n  wav_ratio
+34   2263  4-0 O(7)  4.0  5.0  0.0  7.0  0.742627  7426.27A  0.017396  0.001974  0.070335  0.012076     0.190403  24.408822  8.812503   1.139103
+64   3091  4-1 S(3)  4.0  5.0  1.0  3.0  0.845929  8459.29A  0.468973  0.065199  0.207789  0.024897     0.190319   2.873611  7.192923   1.000000
+25622.762
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+3    1300  4-0 S(5)  4.0  7.0  0.0  5.0  0.622163  6221.63A  0.037499  0.002365  0.023332  0.002593     0.077661  1.064403  15.857241   1.339627
+61   2991  4-1 S(5)  4.0  7.0  1.0  5.0  0.833466  8334.66A  0.517265  0.062334  0.355479  0.028211     0.077669  1.693728   8.298325   1.000000
+27374.175
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+16   1744  5-1 S(1)  5.0  3.0  1.0  1.0  0.677675  6776.75A  0.055403  0.005957  0.025083  0.002450     0.318344  2.997973   9.300593   1.039286
+22   1958  5-1 Q(3)  5.0  3.0  1.0  3.0  0.704298  7042.98A  0.036400  0.001804  0.020118  0.003293     0.318343  5.606026  20.175573   1.000000
+29228.502
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+13   1640  5-1 S(4)  5.0  6.0  1.0  4.0  0.664558  6645.58A  0.035754  0.002236  0.020364  0.000783     0.132817  1.179229  15.992958    1.34618
+80   3481  5-2 S(4)  5.0  6.0  2.0  4.0  0.894615  8946.15A  0.152794  0.028027  0.068645  0.019524     0.132866  1.070736   5.451674    1.00000
+30063.086
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+11   1626  5-1 S(5)  5.0  7.0  1.0  5.0  0.662904  6629.04A  0.063095  0.016229  0.117509  0.057006     0.047634  0.496028  3.887703   1.341643
+79   3439  5-2 S(5)  5.0  7.0  2.0  5.0  0.889381  8893.81A  0.203287  0.040040  0.109499  0.012271     0.047641  0.366019  5.077108   1.000000
+30138.666
+    Index   H2_line  Vhi   Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+58   2967  4-1 S(9)  4.0  11.0  1.0  9.0  0.830407  8304.07A  0.168636  0.040220  0.052620  0.013895     0.028577  0.300438   4.192827        1.0
+59   2969  4-1 S(9)  4.0  11.0  1.0  9.0  0.830407  8304.07A  0.129072  0.010169  0.158844  0.061508     0.028577  0.229951  12.692439        1.0
+31661.077
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo         s_n  wav_ratio
+32   2114  6-2 S(1)  6.0  3.0  2.0  1.0  0.723821  7238.21A  0.066132  0.016501  0.019544  0.016033     0.206537  1.527656    4.007658   1.039819
+37   2345  6-2 Q(3)  6.0  3.0  2.0  3.0  0.752643  7526.43A  0.067217  0.000223  0.030750  0.000823     0.206543  4.034645  301.613333   1.000000
+32014.382
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+12   1632  5-1 S(7)  5.0  9.0  1.0  7.0  0.663669  6636.69A  0.059644  0.007285  0.157934  0.062761     0.023173  0.286748   8.187266   1.333594
+77   3405  5-2 S(7)  5.0  9.0  2.0  7.0  0.885066  8850.66A  0.229371  0.015721  0.089079  0.009766     0.023177  0.289390  14.589635   1.000000
+34288.459
+    Index   H2_line  Vhi   Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+15   1682  5-1 S(9)  5.0  11.0  1.0  9.0  0.669911  6699.11A  0.027720  0.002110  0.011564  0.002283     0.017956  0.098195  13.134514    1.32687
+78   3435  5-2 S(9)  5.0  11.0  2.0  9.0  0.888885  8888.85A  0.089201  0.011274  0.021779  0.003140     0.017963  0.094533   7.912289    1.00000
+35280.972
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo   obs_theo       s_n  wav_ratio
+2    1190  7-2 S(0)  7.0  2.0  2.0  0.0  0.608308  6083.08A  0.008571  0.004125  0.013754  0.000963     0.541540   4.342143  2.077978   1.321443
+44   2602  7-3 S(0)  7.0  2.0  3.0  0.0  0.784768  7847.68A  0.157061  0.051995  0.038968  0.011635     0.541847  14.803124  3.020674   1.024308
+49   2754  7-3 Q(2)  7.0  2.0  3.0  2.0  0.803844  8038.44A  0.065477  0.007646  0.018273  0.007428     0.541841   7.816322  8.563999   1.000000
+35613.272
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+1    1153  7-2 S(1)  7.0  3.0  2.0  1.0  0.603746  6037.46A  0.035879  0.003406  0.022362  0.004802     0.142849  2.165282  10.532945   1.338793
+41   2538  7-3 S(1)  7.0  3.0  3.0  1.0  0.776849  7768.49A  0.113539  0.007952  0.023261  0.007891     0.142821  1.447828  14.277337   1.040474
+50   2790  7-3 Q(3)  7.0  3.0  3.0  3.0  0.808291  8082.91A  0.059422  0.002252  0.037058  0.003168     0.142836  1.800129  26.380769   1.000000
+38707.583
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)     E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+14   1648  8-3 Q(1)  8.0  1.0  3.0  1.0  0.665612  6656.12A  0.030264  0.00241  0.008542  0.001906     0.206333  4.416236  12.557557    1.29958
+71   3244  8-4 Q(1)  8.0  1.0  4.0  1.0  0.865016  8650.16A  0.182262  0.02522  0.054680  0.007434     0.206361  5.129810   7.226752    1.00000
+38913.587
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+65   3104  8-4 S(0)  8.0  2.0  4.0  0.0  0.847517  8475.17A  0.115172  0.010556  0.025858  0.003017     0.365223  6.835105  10.910397   1.024793
+74   3272  8-4 Q(2)  8.0  2.0  4.0  2.0  0.868529  8685.29A  0.096575  0.007186  0.079538  0.029306     0.365064  6.829891  13.439411   1.000000
+39219.492
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo        s_n  wav_ratio
+8    1524  8-3 S(1)  8.0  3.0  3.0  1.0  0.650209  6502.09A  0.045548  0.002180  0.013620  0.001162     0.101888  1.343982  20.894083   1.343935
+75   3315  8-4 Q(3)  8.0  3.0  4.0  3.0  0.873838  8738.38A  0.064774  0.004399  0.025118  0.002079     0.101870  1.164784  14.725264   1.000000
+40115.502
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+5    1484  8-3 S(3)  8.0  5.0  3.0  3.0  0.645083  6450.83A  0.016711  0.005739       NaN       NaN     0.041633  0.146713  2.911953   1.284682
+56   2954  8-4 S(3)  8.0  5.0  4.0  3.0  0.828727  8287.27A  0.121723  0.021783  0.439171  0.026252     0.041647  0.359278  5.588078   1.000000
+42462.426
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+23   1969  9-4 S(1)  9.0  3.0  4.0  1.0  0.705669  7056.69A  0.079988  0.018529  0.059081  0.010433     0.073271  1.382916  4.316896   1.296027
+88   3640  9-5 S(1)  9.0  3.0  5.0  1.0  0.914566  9145.66A  0.124354  0.016139  0.062477  0.030923     0.073264  0.757333  7.705187   1.000000
+42827.236
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+20   1944  9-4 S(2)  9.0  4.0  4.0  2.0  0.702514  7025.14A  0.030010  0.004199  0.054419  0.024145     0.100378  0.810215  7.146297   1.292985
+85   3591  9-5 S(2)  9.0  4.0  5.0  2.0  0.908340  9083.40A  0.061664  0.010837  0.054953  0.052135     0.100387  0.645427  5.690260   1.000000
+43798.108
+    Index   H2_line  Vhi  Jhi  Vlo  Jlo    wl_mic    wl_lab      F(0)      E(0)   F(MYSO)   E(MYSO)  cloudy_theo  obs_theo       s_n  wav_ratio
+19   1936  9-4 S(4)  9.0  6.0  4.0  4.0  0.701536  7015.36A  0.019512  0.002142  0.027242  0.005749     0.032119  0.215430  9.110236   1.287871
+83   3552  9-5 S(4)  9.0  6.0  5.0  4.0  0.903488  9034.88A  0.032524  0.005228  0.035862  0.019386     0.032131  0.163111  6.220834   1.000000
+                  lines              waves  obs_theo_ratio  wav_ratio     Texcit  long_wav  rel_error  bright_product
+11  4-1 S(9) / 4-1 S(9)  8304.07 / 8304.07        1.306531   1.000000  30138.666  0.830407   0.251179        2.176614
+20  8-4 S(0) / 8-4 Q(2)  8475.17 / 8685.29        1.000763   1.024793  38913.587  0.868529   0.118056        1.112265
+0   3-0 S(0) / 3-0 Q(2)  8272.65 / 8522.57        1.276457   1.030210  17387.183  0.852257   0.050820        1.814960
+2   4-1 S(0) / 4-1 Q(2)  8789.12 / 9057.20        0.844447   1.030502  22352.468  0.905720   0.056861        3.881759
+8   5-1 S(1) / 5-1 Q(3)  6776.75 / 7042.98        0.534777   1.039286  27374.175  0.704298   0.118394        0.201665
+12  6-2 S(1) / 6-2 Q(3)  7238.21 / 7526.43        0.378634   1.039819  31661.077  0.752643   0.249544        0.444522
+5   4-1 S(2) / 4-1 Q(4)  8549.88 / 9155.56        1.108041   1.070842  23294.809  0.915556   0.203930        1.383115
+1   3-0 S(3) / 3-0 Q(5)  7959.75 / 8674.35        0.957900   1.089776  19085.761  0.867435   0.553766        0.939214
+6   4-0 O(7) / 4-1 S(3)  7426.27 / 8459.29        8.494129   1.139103  23954.871  0.845929   0.179457        0.815834
+22  8-3 S(3) / 8-4 S(3)  6450.83 / 8287.27        0.408354   1.284682  40115.502  0.828727   0.387241        0.203407
+17  7-2 S(1) / 7-3 S(1)  6037.46 / 7768.49        1.495538   1.286715  35613.272  0.776849   0.117980        0.407362
+25  9-4 S(4) / 9-5 S(4)  7015.36 / 9034.88        1.320763   1.287871  43798.108  0.903488   0.194652        0.063460
+15  7-2 S(0) / 7-3 S(0)  6083.08 / 7847.68        0.293326   1.290084  35280.972  0.784768   0.584110        0.134623
+24  9-4 S(2) / 9-5 S(2)  7025.14 / 9083.40        1.255317   1.292985  42827.236  0.908340   0.224645        0.185056
+23  9-4 S(1) / 9-5 S(1)  7056.69 / 9145.66        1.826035   1.296027  42462.426  0.914566   0.265526        0.994682
+19  8-3 Q(1) / 8-4 Q(1)  6656.12 / 8650.16        0.860897   1.299580  38707.583  0.865016   0.159653        0.551607
+3   4-0 Q(3) / 4-1 S(1)  6615.09 / 8659.72        0.867180   1.309085  22758.987  0.865972   0.346699        0.319931
+16  7-2 S(0) / 7-3 Q(2)  6083.08 / 8038.44        0.555523   1.321443  35280.972  0.803844   0.495201        0.056123
+14  5-1 S(9) / 5-2 S(9)  6699.11 / 8888.85        1.038736   1.326870  34288.459  0.888885   0.147546        0.247269
+13  5-1 S(7) / 5-2 S(7)  6636.69 / 8850.66        0.990869   1.333594  32014.382  0.885066   0.140058        1.368048
+18  7-2 S(1) / 7-3 Q(3)  6037.46 / 8082.91        1.202848   1.338793  35613.272  0.808291   0.102228        0.213199
+7   4-0 S(5) / 4-1 S(5)  6221.63 / 8334.66        0.628438   1.339627  25622.762  0.833466   0.136010        1.939686
+10  5-1 S(5) / 5-2 S(5)  6629.04 / 8893.81        1.355197   1.341643  30063.086  0.889381   0.323971        1.282634
+21  8-3 S(1) / 8-4 Q(3)  6502.09 / 8738.38        1.153847   1.343935  39219.492  0.873838   0.083081        0.295028
+9   5-1 S(4) / 5-2 S(4)  6645.58 / 8946.15        1.101325   1.346180  29228.502  0.894615   0.193794        0.546303
+4   4-0 Q(3) / 4-1 Q(3)  6615.09 / 9099.25        0.778099   1.375529  22758.987  0.909925   0.349395        0.174535
 #+end_example
 
+**** Plot the reddening ratios versus wavelength ratios
+- Note that this gives pretty much a null result
+- There is no obvious dependence of the reddening ratio on the wavelength ratio, suggesting that the reddening is smaller than the noise
+#+begin_src python :eval no :tangle ../scripts/h2-reddening-plot.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+  def main(
+              data_path: Path=Path.cwd(),
+  ):
+        df = pd.read_csv(data_path / "h2-reddening-pairs-table.csv")
+        fig, ax = plt.subplots()
+        x = df.wav_ratio - 1.0
+        y = np.log(df.obs_theo_ratio)
+        ey = np.log(1.0 + df.rel_error)
+        size = 100 * df.bright_product
+        ax.scatter(x, y, s=size)
+        # errorbar does not accept array of lienwidths, so do one at a time
+        for _x, _y, _ey in zip(x, y, ey):
+              ax.errorbar(_x, _y, yerr=_ey, fmt="none", elinewidth=0.1/_ey)
+        ax.set(
+              xlim=[-0.04, 0.39],
+              xlabel="($\lambda_2$ / $\lambda_1$) - 1",
+              ylabel="log [(Observed/Predicted)$_1$ / (Observed/Predicted)$_2$]",
+        )
+
+        sns.despine()
+        figfile = "h2-reddening.pdf"
+        fig.savefig(figfile, bbox_inches="tight")
+        print(figfile, end="")
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data/n346-h2-lines :results file
+  python ../../scripts/h2-reddening-plot.py 
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-h2-lines/h2-reddening.pdf]]
+
+**** Theoretical expectation for reddening ratios
+- assume an extinction curve of 1/lambda
+- then log of ratio of obs/pred ratios is
+  log(exp(-tau_1) / exp(-tau_2)) = tau_2 - tau_1
+- which is tau_2 - tau_1 = tau_2 (1 - tau_1/tau_2) = tau_2 (1 - lambda_2/lambda_1)
+- This implies we should plot against (lambda_2/lambda_1 - 1), not log
+- So we tau_2 as log ratio / (lambda_2/lambda_1 - 1)
+
+**** Statistics of the per-pair obs/pred ratios
+- We can divide the pairs into two groups
+  - df0 :: has wave ratio < 1.15
+    - Used for checking reliability of observations
+  - df1 :: has wave ratio >= 1.15
+    - Used for calculating reddening in next section
+- For the weights, we will use the product of the brightnesses, but capped at a certain value (I will use 1.5), which corresponds to a "good" observation of the two lines
+#+begin_src python :eval no :tangle ../scripts/h2-reddening-statistics.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  from statsmodels.stats.weightstats import DescrStatsW
+  from astropy.stats import SigmaClip
+  import typer
+  import sys
+  from matplotlib import pyplot as plt
+  import matplotlib
+
+  import seaborn as sns
+
+
+  def main(
+              data_path: Path=Path.cwd(),
+              min_wav_ratio: float=1.15,
+              good_bright_product: float=1.5,
+              clip_sigma: float=2.0,
+  ):
+        df = pd.read_csv(data_path / "h2-reddening-pairs-table.csv");
+        # Weight is UNITY for pairs where bright_product is large
+        # enough. These correspond to a "good" observation. Weight may
+        # not exceed 1.0, but may be lower for less trustworthy pairs
+        df["weights"] = np.minimum(1.0, df.bright_product / good_bright_product)
+        df0 = df[df.wav_ratio < min_wav_ratio]
+        df1 = df[df.wav_ratio >= min_wav_ratio]
+        cols = ["wav_ratio", "obs_theo_ratio", "long_wav"]
+        for df, descrip in [[df0, "CLOSE PAIRS"], [df1, "FAR PAIRS"]]:
+              print("\n", descrip, "\n")
+              print("Weighted statistics", "N = ", len(df))
+              wstats = DescrStatsW(df[cols].to_numpy(), weights=df.weights)
+              print("Column:\t", (cols))
+              print("Mean:\t", np.round(wstats.mean, 2))
+              print("Std:\t", np.round(wstats.std, 2))
+              print("SEM:\t", np.round(wstats.std_mean, 2))
+              print("N effective:\t", np.round(wstats.nobs, 2))
+              print("CI 95:\n", np.round(wstats.tconfint_mean(alpha=0.05), 2))
+              print("CI 68:\n", np.round(wstats.tconfint_mean(alpha=0.32), 2))
+              print()
+
+              print("Sigma-clipped statistics\n")
+              clip = SigmaClip(sigma=clip_sigma, maxiters=5)
+              clipped = clip(df.obs_theo_ratio, masked=True)
+              dfc = df.loc[~clipped.mask]
+              print(dfc.describe())
+              print()
+
+              print("Weighted AND sigma-clipped statistics", "N = ", len(dfc))
+              wstats = DescrStatsW(dfc[cols].to_numpy(), weights=dfc.weights)
+              print("Column:\t", (cols))
+              print("Mean:\t", np.round(wstats.mean, 2))
+              print("Std:\t", np.round(wstats.std, 2))
+              print("SEM:\t", np.round(wstats.std_mean, 2))
+              print("N effective:\t", np.round(wstats.nobs, 2))
+              print("CI 95:\n", np.round(wstats.tconfint_mean(alpha=0.05), 2))
+              print("CI 68:\n", np.round(wstats.tconfint_mean(alpha=0.32), 2))
+              print()
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data/n346-h2-lines :results output verbatim
+  COLUMNS=1000 python ../../scripts/h2-reddening-statistics.py
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+ CLOSE PAIRS 
+
+Weighted statistics N =  9
+Column:	 ['wav_ratio', 'obs_theo_ratio', 'long_wav']
+Mean:	 [1.05 1.69 0.86]
+Std:	 [0.04 2.11 0.05]
+SEM:	 [0.02 0.92 0.02]
+N effective:	 6.26
+CI 95:
+ [[ 1.   -0.64  0.81]
+ [ 1.09  4.02  0.91]]
+CI 68:
+ [[1.03 0.68 0.84]
+ [1.07 2.7  0.88]]
+
+Sigma-clipped statistics
+
+       Unnamed: 0  obs_theo_ratio  wav_ratio        Texcit  long_wav  rel_error  bright_product   weights
+count    8.000000        8.000000   8.000000      8.000000  8.000000   8.000000        8.000000  8.000000
+mean     7.375000        0.925944   1.040653  26275.965750  0.837106   0.200319        1.494264  0.715065
+std      6.802048        0.330948   0.027886   7169.638804  0.073500   0.163164        1.165437  0.339636
+min      0.000000        0.378634   1.000000  17387.183000  0.704298   0.050820        0.201665  0.134443
+25%      1.750000        0.767029   1.028856  21535.791250  0.810966   0.102758        0.815541  0.543694
+50%      6.500000        0.979331   1.034894  25334.492000  0.859846   0.161162        1.247690  0.831793
+75%     11.250000        1.150145   1.047575  30519.268750  0.877827   0.249953        1.905374  1.000000
+max     20.000000        1.306531   1.089776  38913.587000  0.915556   0.553766        3.881759  1.000000
+
+Weighted AND sigma-clipped statistics N =  8
+Column:	 ['wav_ratio', 'obs_theo_ratio', 'long_wav']
+Mean:	 [1.04 1.04 0.86]
+Std:	 [0.03 0.24 0.05]
+SEM:	 [0.01 0.11 0.02]
+N effective:	 5.72
+CI 95:
+ [[1.   0.75 0.81]
+ [1.07 1.34 0.92]]
+CI 68:
+ [[1.02 0.92 0.84]
+ [1.05 1.17 0.89]]
+
+
+ FAR PAIRS 
+
+Weighted statistics N =  17
+Column:	 ['wav_ratio', 'obs_theo_ratio', 'long_wav']
+Mean:	 [1.32 1.09 0.87]
+Std:	 [0.02 0.39 0.04]
+SEM:	 [0.01 0.18 0.02]
+N effective:	 5.7
+CI 95:
+ [[1.3  0.61 0.82]
+ [1.35 1.56 0.91]]
+CI 68:
+ [[1.31 0.89 0.85]
+ [1.34 1.29 0.89]]
+
+Sigma-clipped statistics
+
+       Unnamed: 0  obs_theo_ratio  wav_ratio        Texcit   long_wav  rel_error  bright_product    weights
+count   14.000000       14.000000  14.000000     14.000000  14.000000  14.000000       14.000000  14.000000
+mean    14.285714        1.043184   1.324561  33413.935714   0.864784   0.215351        0.546446   0.343360
+std      6.988216        0.279038   0.026162   6739.985558   0.042627   0.119535        0.570775   0.330217
+min      3.000000        0.555523   1.286715  22758.987000   0.776849   0.083081        0.056123   0.037415
+25%      9.250000        0.862468   1.301957  29437.148000   0.841354   0.137022        0.192092   0.128061
+50%     15.000000        1.070031   1.330232  34784.715500   0.879452   0.176724        0.307479   0.204986
+75%     18.750000        1.242200   1.341139  37934.005250   0.893306   0.299139        0.550281   0.366854
+max     25.000000        1.495538   1.375529  43798.108000   0.909925   0.495201        1.939686   1.000000
+
+Weighted AND sigma-clipped statistics N =  14
+Column:	 ['wav_ratio', 'obs_theo_ratio', 'long_wav']
+Mean:	 [1.33 1.02 0.87]
+Std:	 [0.02 0.27 0.03]
+SEM:	 [0.01 0.14 0.02]
+N effective:	 4.81
+CI 95:
+ [[1.3  0.62 0.82]
+ [1.36 1.42 0.91]]
+CI 68:
+ [[1.32 0.86 0.85]
+ [1.34 1.18 0.89]]
+
+#+end_example
+
+**** Hand summary of the above and calculation of the extinction
+- So we will use the weighted and sigma-clipped statistics
+|             | obs/pred | w2/w1 | tau2(beta=1) | tau2(beta=2) | tau2(beta=1.4) |     A_V |     A_K |
+|-------------+----------+-------+--------------+--------------+----------------+--------+--------|
+| Mean + sig  |     1.16 |  1.33 |       -0.450 |       -0.193 |         -0.302 | -0.622 | -0.102 |
+| Mean        |     1.02 |  1.33 |       -0.060 |       -0.026 |         -0.040 | -0.082 | -0.014 |
+| Mean - sig  |     0.88 |  1.33 |        0.387 |        0.166 |          0.261 |  0.538 |  0.088 |
+| 68% low lim |     0.86 |  1.33 |        0.457 |        0.196 |          0.307 |  0.632 |  0.104 |
+| 95% low lim |     0.62 |  1.33 |        1.449 |        0.622 |          0.974 |  2.006 |  0.330 |
+#+TBLFM: $4=-log($2) / ($3 - 1);f3::$5=-log($2) / ($3**2 - 1);f3::$6=-log($2) / ($3**1.4 - 1);f3::$7=$-1 2.06 ; f3::$8=$-2 0.339 ; f3::@2$2=0.14+@3::@4$2=@3-0.14
+- In my ISM course notes I derived the following:
+  : beta = 4.48 log(1 + 1/R_V)
+- So with R_V = 2.74 for SMC we have beta = 4.48 log(1 + 1/2.74) = 1.4
+- So this is the optical depth at 0.87 +/- 0.04 micron
+  - A = -2.5 log10(exp(-tau)) = 2.5 log10(e) \times tau = 1.0857 tau
+- V band is 0.55 micron so A_V = 1.0857 (0.87/0.55)**1.4 tau(8700) = 2.06 tau(8700)
+- K band is around 2 micron so A_K = 1.0857 (0.87/2.0)**1.4 tau(8700) = 0.339 tau(8700)
+- So we have deduced that
+  - A_K = -0.01 +/- 0.10
+  - A_V = -0.08 +/- 0.60
 
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
