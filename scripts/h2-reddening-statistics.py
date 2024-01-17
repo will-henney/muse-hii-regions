@@ -35,7 +35,7 @@ def main(
             print("Std:\t", np.round(wstats.std, 2))
             print("SEM:\t", np.round(wstats.std_mean, 2))
             print("N effective:\t", np.round(wstats.nobs, 2))
-            print("CI 95:\n", np.round(wstats.tconfint_mean(alpha=0.05), 2))
+            print("CI 90:\n", np.round(wstats.tconfint_mean(alpha=0.1), 2))
             print("CI 68:\n", np.round(wstats.tconfint_mean(alpha=0.32), 2))
             print()
 
@@ -53,8 +53,11 @@ def main(
             print("Std:\t", np.round(wstats.std, 2))
             print("SEM:\t", np.round(wstats.std_mean, 2))
             print("N effective:\t", np.round(wstats.nobs, 2))
-            print("CI 95:\n", np.round(wstats.tconfint_mean(alpha=0.05), 2))
+            print("CI 90:\n", np.round(wstats.tconfint_mean(alpha=0.1), 2))
             print("CI 68:\n", np.round(wstats.tconfint_mean(alpha=0.32), 2))
+            tstat, pvalue,  df = wstats.ttest_mean(value=0.8, alternative="larger")
+            print("t-test of value < 0.8: p =", np.round(pvalue, 4))
+
             print()
 
 if __name__ == "__main__":

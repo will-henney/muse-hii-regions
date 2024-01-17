@@ -17,7 +17,7 @@ def main(
              [df1["F(0)"] > min_snr * df1["E(0)"]]
              # removing blends
              [~df1["Notes"].str.contains("blend", na=False)]
-             # [~df1["blend"]]
+             #[~df1["blend"]]
              # And other dubious lines
              [~df1["Notes"].str.contains("elam = 2 sig", na=False)]
              )
@@ -46,6 +46,8 @@ def main(
                   # take ratio of the shortest wave with each longer wave in turn
                   short = group.iloc[0, :]
                   for _, long in group.iloc[1:, :].iterrows():
+                        if short.H2_line == long.H2_line:
+                              continue
                         red_pairs.append(
                               dict(
                                     lines = f"{short.H2_line} / {long.H2_line}",
