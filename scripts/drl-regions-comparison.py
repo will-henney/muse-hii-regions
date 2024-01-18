@@ -23,7 +23,7 @@ for i, x, y, z in zip(icols, xx.T, yy.T, zz.T):
     ax.scatter(x[1], y[1], s=20 + z[1]*10, color=color, facecolor="white", linewidths=3)
 ax.set(
     xlabel=r"100 $\times$  [C I] λ8727 / Hβ",
-    ylabel=r"100 $\times$  max( DRL ) / Hβ",
+    ylabel=r"100 $\times$  max( H$_2$ ) / Hβ",
     xlim=[0.03, 2.0],
     ylim=[0.003, 0.9],
     xscale="log",
