@@ -433,6 +433,15 @@ Note that I see no lines at shorter wavelengths.
 | DRL sum  |           |     85 |    95 |                       |     0.1626 |     0.6341 |
 #+TBLFM: $6=100 $-3 / (@II$-3 / 2.87);f4::$7=100 $-3 / (@II$-3 / 2.87);f4::@23$3..@23$4=vsum(@I..@II)
 
+*** NGC 2023 from Burton et al (1992)
+- Best lines are 4-1 S(1) 8660 and 4-1 S(3) 8459
+  - We have 8660 being about twice as bright as [C I] 8727
+    - 0.38 +/- 0.03 / 0.19 +/- 0.02 = 2. +/- 0.26
+  - They have I(8660) = 6.6e-16, I(8727) = 3.2e-15, so 0.2 or ten times less
+- There are no observed H recomb lines in the Burton spectra
+  - This is not surprising, since the illuminating star is type B3 IV (HD 37903)
+  - There is some radio continuum associated with an H II region, but it is much more compact than the PDR
+    - Wyrowski:2000a
 
 ** Possible atomic candidates
 
