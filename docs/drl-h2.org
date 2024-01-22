@@ -1588,6 +1588,16 @@ t-test of value < 0.8: p = [0.0001 0.0501 0.0439]
 | 90% low lim |      0.8 |  1.33 |        0.676 |        0.290 |          0.455 |  0.937 |  0.154 |
 #+TBLFM: $4=-log($2) / ($3 - 1);f3::$5=-log($2) / ($3**2 - 1);f3::$6=-log($2) / ($3**1.4 - 1);f3::$7=$-1 2.06 ; f3::$8=$-2 0.339 ; f3::@2$2=0.12+@3::@4$2=@3-0.12
 - This is worse
+
+*** Calculate the excitation diagram for these lines
+- [2024-01-22 Mon] Now that we know that the extra PDR reddening is negligible, we can calculate the excitation diagram and compare with other regions and with models
+- Assuming optically thin emission, we have
+  \[I_{ji} = N_j A_{ji} h\nu_{ji} / 4\pi \]
+- And we want to graph \(N_j / g_j\) against excitation energy (or temperature)
+  - so we just take ratios of \(I_{ji} \lambda_{ji} / A_{ji} g_j\), normalised to the brightest line
+- so question is what to with g_j
+  - we have 2 J + 1 for the rotation, but then  we need to multiply by O/P ratio for the odd J states (ortho states),
+    where O/P = 3 for LTE, or could be 1.7 for pure UV excitation without collisions (Kaplan:2021a)
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
 *** Kaplan:2021a
