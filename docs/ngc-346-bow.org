@@ -110,7 +110,7 @@ STEM=02-01-Raman-Wings-IR-Source-C
 - Do we want to be working with the median filtered cube?
   - Advantage that we do not need to bother with the continuum subtraction
   - Disadvantage is that this deviates from what I did with the ESO cube
-*** 
+**** 01-00-line-ratios
 *** Some more ideas about things to add to paper
 **** Line ratios
 - We can look at correlations between relative line strength (wrt H beta)
@@ -127,6 +127,7 @@ STEM=02-01-Raman-Wings-IR-Source-C
     - etcetera
   - But is this really worth doing?
 ** Other bow shocks visible in JWST MIRI data
+- [2024-01-18 Thu] Finally got around to looking at the public JWST MIRI data for NGC 346
 - The W 3 bow is not the most prominent in these images, since it is so big and diffuse
 - We see a more semi-circular north-facing one around SSN 13 (O4 V)
   - This shows a green tinge towards the inner edge since it shows up at 11 microns
@@ -819,12 +820,21 @@ For this we can use interpolation
       #+end_src
 
 *** Ionization potentials
+- Return to this [2024-01-30 Tue]
+  - I want to expand the table and figure to include ions that are seen in the Spitzer spectra
+  - These are
+    - Ne II, III
+    - Si I (this is the only element that I did not have)
+    - S III, IV
 - Where did I get these from? [2022-10-22 Sat]
   - Looks like https://en.wikipedia.org/wiki/Ionization_energies_of_the_elements_(data_page)
+- [2024-02-01 Thu] Turns out that I had a mistake in my figure with the Spitzer images. It is not [Si IV], but [S IV] 10.51 micron that we see.
+- This is good because we now have two adjacent stages of the same element
      
 |      |       eV |   Ryd |
 |------+----------+-------|
 | K^0   |  4.34066 | 0.319 |
+| Si^0  |  8.15169 | 0.599 |
 | S^0   |  10.3600 | 0.762 |
 | Cl^0  |  12.9676 | 0.954 |
 |------+----------+-------|
@@ -832,6 +842,7 @@ For this we can use interpolation
 | O^0   |  13.6181 | 1.001 |
 | N^0   |  14.5341 | 1.069 |
 | Ar^0  |  15.7596 | 1.159 |
+| Si^{+}  | 16.34585 | 1.202 |
 | Ne^0  |  21.5646 | 1.586 |
 | S^{+}   |   23.338 | 1.716 |
 | Cl^{+}  |   23.814 | 1.751 |
@@ -841,11 +852,13 @@ For this we can use interpolation
 | Ar^{+}  |   27.630 | 2.032 |
 | N^{+}   |   29.601 | 2.177 |
 | K^{+}   |    31.63 | 2.326 |
+| Si^{+2} | 33.49302 | 2.463 |
 | S^{+2}  |    34.86 | 2.564 |
 | O^{+}   |   35.121 | 2.583 |
 | Cl^{+2} |    39.80 | 2.927 |
 | Ne^{+}  | 40.96328 | 3.012 |
 | Ar^{+2} |   40.735 | 2.996 |
+| Si^{+3} | 45.14181 | 3.320 |
 | K^{+2}  |   45.806 | 3.368 |
 | S^{+3}  |   47.222 | 3.473 |
 | Cl^{+3} |    53.24 | 3.915 |
@@ -858,32 +871,37 @@ For this we can use interpolation
 | K^{+4}  |    82.66 | 6.079 |
 #+TBLFM: $3=$2 / 13.5984;f3
 + So this might explain why [O III] does not overlap with He II, but [Ar IV] does
-|   IP | Edge     | H        | He         | S       | Ar       | O       | Cl       | K      | Ne       |
-|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
-| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |          |        |          |
-| 13.0 | Cl 0     |          |            | [S II]  |          | [O I]   | [Cl II]  |        |          |
-|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
-| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  | [Cl II]  |        |          |
-| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  |        |          |
-| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl II]  |        |          |
-| 23.8 | Cl +     | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
-|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
-| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  | [Cl III] |        |          |
-| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  | [Cl III] |        |          |
-| 34.9 | S +2     | H I 4861 | He I 5875  |         | [Ar III] | [O II]  | [Cl III] |        |          |
-| 35.1 | O +      | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl III] |        |          |
-| 39.8 | Cl +2    | H I 4861 | He I 5875  |         | [Ar III] | [O III] | [Cl IV]  |        |          |
-| 40.7 | Ar +2    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        |          |
-| 41.0 | Ne +     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |        | [Ne III] |
-| 45.8 | K +2     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
-| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  | [K IV] | [Ne III] |
-| 53.2 | Cl +3    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
-|------+----------+----------+------------+---------+----------+---------+----------+--------+----------|
-| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |          | [K IV] | [Ne III] |
-| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |          | [K IV] | [Ne III] |
-| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |          | [K IV] | [Ne III] |
-| 60.9 | K +3     | H I 4861 | He II 4686 |         |          |         |          |        | [Ne III] |
-| 63.5 | Ne +2    | H I 4861 | He II 4686 |         |          |         |          |        |          |
+|   IP | Edge     | H        | He         | S       | Ar       | O       | Cl       | Si       | K      | Ne       |
+|------+----------+----------+------------+---------+----------+---------+----------+----------+--------+----------|
+|  8.2 | Si 0     |          |            |         |          | [O I]   |          | *[Si II] |        |          |
+| 10.4 | S 0      |          |            | [S II]  |          | [O I]   |          | *[Si II] |        |          |
+| 13.0 | Cl 0     |          |            | [S II]  |          | [O I]   | [Cl II]  | *[Si II] |        |          |
+|------+----------+----------+------------+---------+----------+---------+----------+----------+--------+----------|
+| 13.6 | H 0, O 0 | H I 4861 |            | [S II]  |          | [O II]  | [Cl II]  | *[Si II] |        |          |
+| 15.8 | Ar 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  | *[Si II] |        |          |
+| 16.3 | Si +     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  |          |        |          |
+| 21.6 | Ne 0     | H I 4861 |            | [S II]  | [Ar II]  | [O II]  | [Cl II]  |          |        | *[Ne II] |
+| 23.3 | S +      | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl II]  |          |        | *[Ne II] |
+| 23.8 | Cl +     | H I 4861 |            | [S III] | [Ar II]  | [O II]  | [Cl III] |          |        | *[Ne II] |
+|------+----------+----------+------------+---------+----------+---------+----------+----------+--------+----------|
+| 24.6 | He 0     | H I 4861 | He I 5875  | [S III] | [Ar II]  | [O II]  | [Cl III] |          |        | *[Ne II] |
+| 27.6 | Ar +     | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  | [Cl III] |          |        | *[Ne II] |
+| 33.5 | Si +2    | H I 4861 | He I 5875  | [S III] | [Ar III] | [O II]  | [Cl III] |          |        |          |
+| 34.9 | S +2     | H I 4861 | He I 5875  | *[S IV] | [Ar III] | [O II]  | [Cl III] |          |        | *[Ne II] |
+| 35.1 | O +      | H I 4861 | He I 5875  | *[S IV] | [Ar III] | [O III] | [Cl III] |          |        | *[Ne II] |
+| 39.8 | Cl +2    | H I 4861 | He I 5875  | *[S IV] | [Ar III] | [O III] | [Cl IV]  |          |        | *[Ne II] |
+| 40.7 | Ar +2    | H I 4861 | He I 5875  | *[S IV] | [Ar IV]  | [O III] | [Cl IV]  |          |        | *[Ne II] |
+| 41.0 | Ne +     | H I 4861 | He I 5875  | *[S IV] | [Ar IV]  | [O III] | [Cl IV]  |          |        | [Ne III] |
+| 45.1 | Si +3    | H I 4861 | He I 5875  | *[S IV] | [Ar IV]  | [O III] | [Cl IV]  |          |        |          |
+| 45.8 | K +2     | H I 4861 | He I 5875  | *[S IV] | [Ar IV]  | [O III] | [Cl IV]  |          | [K IV] | [Ne III] |
+| 47.2 | S +3     | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] | [Cl IV]  |          | [K IV] | [Ne III] |
+| 53.2 | Cl +3    | H I 4861 | He I 5875  |         | [Ar IV]  | [O III] |          |          | [K IV] | [Ne III] |
+|------+----------+----------+------------+---------+----------+---------+----------+----------+--------+----------|
+| 54.4 | He +     | H I 4861 | He II 4686 |         | [Ar IV]  | [O III] |          |          | [K IV] | [Ne III] |
+| 54.9 | O +2     | H I 4861 | He II 4686 |         | [Ar IV]  |         |          |          | [K IV] | [Ne III] |
+| 59.6 | Ar +3    | H I 4861 | He II 4686 |         |          |         |          |          | [K IV] | [Ne III] |
+| 60.9 | K +3     | H I 4861 | He II 4686 |         |          |         |          |          |        | [Ne III] |
+| 63.5 | Ne +2    | H I 4861 | He II 4686 |         |          |         |          |          |        |          |
 *** General thoughts on the ionization structure
 :PROPERTIES:
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
@@ -993,6 +1011,7 @@ For this we can use interpolation
 - [2023-01-19 Thu] Jesús sent the spectral images
   - Turns out the [Ne III] traces bow shock quite well, as well as medium ionization zones
   - And [S IV] especially
+  - [ ] [2024-02-02 Fri] Is the [S IV] strength because collisional deexcitation reduces its strength from the rest of the nebula? Seems unlikely
 - [2023-01-20 Fri]
   - Realized that we need to use a better background so as not to oversubtract  the medium ionization lines
 ** Look at fractional excess in different features

@@ -6,14 +6,14 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": true}
 from astropy.table import Table
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -25,14 +25,14 @@ import astropy.units as u
 from astropy import constants
 
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 sns.set_context("talk")
 sns.set_color_codes()
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 datapath = Path.cwd().parent.parent / "data-jesus"
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 regions = "BS", "YSO", "bkg", "bkg2"
 bands = "SL1", "SL2", "LL1", "LL2"
 def _load_spectrum(region, band):
@@ -52,15 +52,15 @@ data = {
     for region in regions
 }
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 data["bkg2"]
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 line_list = yaml.safe_load(open(datapath / "spitzer-lines.yaml"))
 line_list
 
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, ax = plt.subplots(
     figsize=(20, 8),
 )
@@ -107,15 +107,15 @@ ax.set(
 fig.savefig('jesus-spitzer-spectra.pdf', bbox_inches='tight')
 ...;
 
-# + [markdown] pycharm={"name": "#%% md\n"}
-#     ### Take ratios with respect to the background
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
+# ### Take ratios with respect to the background
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 for region in regions:
     for band in bands:
         data[region][band]["RATIO"] = data[region][band]["FLUX"] / data["bkg2"][band]["FLUX"]
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, [ax, axx] = plt.subplots(
     2, 1, sharex=True,
     figsize=(20, 8),
@@ -137,12 +137,12 @@ axx.set(
 fig.savefig('jesus-spitzer-ratios.pdf', bbox_inches='tight')
 ...;
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # ### Subtract BG
 #
 # Mixture of the two BG regions.  Aim is to get the [S III] lines to disappear on the BG-subtracted BS spectrum
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 mix2 = 0.7
 mix1 = 1 - mix2
 
@@ -151,22 +151,22 @@ for region in regions:
         bg = mix1 * data["bkg"][band]["FLUX"] + mix2 * data["bkg2"][band]["FLUX"]
         data[region][band]["BGSUB"] = data[region][band]["FLUX"] - bg
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # Compare with  a black body
 #
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 ((u.cm / u.s) * u.MJy / u.sr / u.micron ** 2).to(u.erg / u.s / u.cm**2 / u.sr / u.micron)
 #(u.MJy / u.sr).to(u.erg / u.s / u.cm**2 / u.sr / u.Hz)
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 waves = np.linspace(5.0, 40.0, 200) * u.micron
 bb = BlackBody(
     temperature=135 * u.K,
     scale=5e-15 * constants.c * u.MJy / u.sr / u.micron ** 2,
 )
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, [ax, axx, axxx] = plt.subplots(
     3, 1, sharex=True,
     figsize=(10, 12),
@@ -200,16 +200,16 @@ axxx.set(
 fig.savefig('jesus-spitzer-bgsub.pdf', bbox_inches='tight')
 ...;
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 bb.lambda_max.to(u.micron)
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 (constants.c / bb.nu_max).to(u.micron)
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # Use modified BB using Cloudy opacities
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 opac_tab = Table.read("../../data/xsec-infrared-dust-silicate_ism_10.ecsv")
 wavgrid = opac_tab["Wavelength"].data * u.micron
 kappa_s = opac_tab["Opacity"].data
@@ -217,7 +217,7 @@ opac_tab = Table.read("../../data/xsec-infrared-dust-graphite_ism_10.ecsv")
 fac = 1.5
 kappa_c = fac * opac_tab["Opacity"].data
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 bb_s = BlackBody(
     temperature=140 * u.K,
     scale=2.8e-15 * constants.c * u.MJy / u.sr / u.micron ** 2,
@@ -243,10 +243,10 @@ mbb_sed_s *= 7 / mbb_sed.max()
 mbb_sed_ss *= 7 / mbb_sed.max()
 mbb_sed *= 7 / mbb_sed.max()
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # Or the same, but the SED
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, [ax, axx, axxx] = plt.subplots(
     3, 1, sharex=True,
     figsize=(8, 9),
@@ -287,19 +287,19 @@ axxx.set(
 fig.savefig('jesus-spitzer-bgsub-sed.pdf', bbox_inches='tight')
 ...;
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # In the end I did not need any if the modified bb curves for the YSO spectrum, since none of them were much good.  It is possible to get the dip between the two silicate peaks fitted pretty well, but not at the same time as the long and short wavelengths
 #
 
-# + [markdown] pycharm={"name": "#%% md\n"}
+# + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # ### Look at all the dust opacity files
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 opac_files = (Path.cwd().parent.parent / "data").glob('xsec-infrared-dust-*.ecsv')
 opacities = {p.stem.split('-')[-1]: Table.read(str(p)) for p in opac_files}
 opacities
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 dtypes = "silicate_ism_10", "graphite_ism_10"
 dweights = 0.1, 1.0
 fig, ax = plt.subplots(figsize=(12, 10))
@@ -313,5 +313,5 @@ ax.legend()
 ax.set(xlim=[4, 42], ylim=[0.0, 3], yscale='linear')
 ...;
 
-# + pycharm={"name": "#%%\n"}
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 

@@ -1598,6 +1598,140 @@ t-test of value < 0.8: p = [0.0001 0.0501 0.0439]
 - so question is what to with g_j
   - we have 2 J + 1 for the rotation, but then  we need to multiply by O/P ratio for the odd J states (ortho states),
     where O/P = 3 for LTE, or could be 1.7 for pure UV excitation without collisions (Kaplan:2021a)
+
+**** Make table of intensities vs excitation energy
+#+begin_src python :eval no :tangle ../scripts/h2-find-column-densities.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+  COLS = [
+        "Index", "H2_line",  "Vhi",  "Jhi",  "Vlo",  "Jlo",
+        "wl_mic", "wl_lab", "I_Inorm",  "Excit_hi_K", "g_u_h_nu_Aul", 
+        "F(0)", "E(0)", "F(MYSO)", "E(MYSO)",
+  ]
+
+  def main(
+              data_dir: str=".",
+              min_snr: float=2.0,
+  ):
+        df1 = pd.read_csv(Path(data_dir) / "known-lines-with-h2-final-table.csv")
+        df1 = (df1       
+               # removing low s/n lines
+               [df1["F(0)"] > min_snr * df1["E(0)"]]
+               # removing blends
+               [~df1["Notes"].str.contains("blend", na=False)]
+               [~df1["blend"]]
+               # And other dubious lines
+               [~df1["Notes"].str.contains("elam = 2 sig", na=False)]
+               )
+        df2 = pd.read_csv(Path(data_dir) / "h2-line-ids.csv")
+        # Merge the two tables on the name of the H2 lines
+        merged = (df2.merge(df1, how="inner", on="H2_index")[COLS]
+                   # sorted by energy, then wavelength
+                   .sort_values(by=["Excit_hi_K", "wl_mic"])
+                   )
+        merged.to_csv(Path(data_dir) / "h2-excitation-table.csv")
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data/n346-h2-lines :results output verbatim
+  COLUMNS=1000 python ../../scripts/h2-find-column-densities.py --min-snr 10
+#+end_src
+
+#+RESULTS:
+
+**** Statistical weights and ortho-to-para ratio
+- We have two separate spin isomers for H2, ortho and para
+  - Ortho has odd J, para has even J
+  - Ortho is 3 times more abundant than para in LTE
+  - Ortho is 1.7 times more abundant than para in pure UV excitation without collisions (Kaplan:2021a)
+  - So we have an O/P ratio, between R=1.7 and 3, which we adjust to match the observations
+- Then we use a statistical weight of the upper state is \(g_u = 2J + 1\) for the para (even J) rotational states and \(g_u = R (2J + 1)\) for the ortho (odd J) rotational states
+- The problem is that I suspect that the cloudy values of ~g_u_h_nu_Aul~ are already using the derived O/P ratio from the Cloudy model
+  - So I need to re-run the Cloudy models and get it to write out more info on the H2 lines and levels
+  - I can use the ~save H2 column density~ or ~save H2 level populations~ commands to get the info directly for the excitation diagram and then cross-check with the same thing calculated from the line intensities
+  - Looks like the ~save H2 column density~ command is the one to use since it is integrated through model, whereas ~populations~ is just the last zone (although there is option for all the xones, but this might be too much information for now)
+- *SOLVED* [2024-01-26 Fri 22:35]
+  - So, it turns out that the statistical weights that Cloudy is using already have the LTE O/P = 3 ratio baked in
+  - This explains why I was having to reduce the para lines
+**** Plot the excitation diagram
+- Normalize by v=4, J=1 as with Kaplan
+  - This is the 4-1 Q(1) 9029.26A line
+  - This is an ortho line, so has factor 3 in the Cloudy statistical weights
+    - g = 3 * (2 * 1 + 1) = 9
+- So if the true O/P ratio is R, then the para lines should be multiplied by R/3
+- [ ] We should really ~groupby~ on the ~Excit_hi_K~ column, and then take the average of the F/(g_u h nu Aul) values
+  - This is because the lines are not all independent, but are from the same upper state
+- [2024-01-28 Sun] Note that I have saved an edited version of this figure - [[file:../figs/ngc346-h2-excitation-annotated.pdf]]
+  - with corresponding .afdesign file
+    
+#+begin_src python :eval no :tangle ../scripts/h2-plot-column-densities.py
+  import numpy as np
+  import yaml
+  from pathlib import Path
+  import pandas as pd
+  import typer
+  import sys
+  from matplotlib import pyplot as plt
+  import matplotlib
+  import seaborn as sns
+
+  sns.set_context("talk")
+
+  def main(
+              data_dir: str=".",
+              ortho_para_ratio: float=3.0,
+  ):
+        df = pd.read_csv(Path(data_dir) / "h2-excitation-table.csv").set_index("Index")
+        ortho = (df.Jhi % 2) == 1
+        x = df.Excit_hi_K
+        y = np.log(
+              (df["F(0)"] / df.g_u_h_nu_Aul)
+              / (df.loc[3548, "F(0)"] / df.loc[3548, "g_u_h_nu_Aul"])
+        )
+        c = df.Vhi
+        fig, ax = plt.subplots(figsize=(12, 4))
+        ax.scatter(
+              x[ortho], y[ortho], c=c[ortho],
+              s=10, cmap="tab20", vmin=2, vmax=13,
+        )
+        ax.scatter(
+              x[~ortho], y[~ortho] + np.log(ortho_para_ratio/3), c=c[~ortho],
+              s=10, marker="v", cmap="tab20", vmin=2, vmax=13,
+        )
+        ax.set(
+              xlabel="Excitation energy, $E/k$, K",
+              ylabel="Column density, $\ln(N/g)$",
+              xlim=[0, 55000],
+              ylim=[-8, 5],
+        )
+        figfile = "h2-excitation.pdf"
+        fig.savefig(figfile, bbox_inches="tight")
+        print(figfile, end="")
+
+
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+#+end_src
+
+#+begin_src sh :dir ../data/n346-h2-lines :results file
+  COLUMNS=1000 python ../../scripts/h2-plot-column-densities.py --ortho-para-ratio 1.5
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-h2-lines/h2-excitation.pdf]]
+
+
 ** Previous work on excitation of ro-vibrational levels in PDRs
 
 *** Kaplan:2021a

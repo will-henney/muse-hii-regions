@@ -25,7 +25,7 @@
 **** First model: n = 100, constant pressure
 - This should be a good guess for a minimum viable model
 - Stopping criterion will be based on H column density
-  - Take 1e21 to start with
+  - Take 3e21 to start with
   - [X] Also, we can try stopping in zone 1 just to make sure everything is working
     - That worked after I copied the SED files over
     - Now for the real thing
@@ -42,6 +42,30 @@
   <<cloudy-pdr-common-physical>>
   <<cloudy-pdr-saves>>
 #+end_src
+
+**** Second model: same but go deeper in to the cloud
+- The previous model stopped at log N = 21.5, so we will try 22, which is 3 times deeper
+- This might stand a chance of getting to the fully molecular zone
+  - although it seems that the nir lines and by extension the optical lines too have peaks that are where the molecular fraction is still small
+
+
+#+begin_src cloudy-input :noweb yes :tangle ../cloudy/h2-models/pdr-w3-n100-pp.in
+  title PDR filament in NGC 346, deeper constant P, n0 = 100 pcc
+  # Density of 100 pcc at illuminated face
+  hden 2.00
+  constant pressure
+  magnetic field -5.3 gauss
+  stop temperature off 
+  stop column density 22
+  <<cloudy-w3-radiation>>
+  <<cloudy-pdr-common-physical>>
+  <<cloudy-pdr-saves>>
+#+end_src
+
+**** Other possible models
+- The above models all use the default magnetic equation of state of \Gamma_m = 4/3
+  - As a result, they get magnetically dominated in the PDR, so that the total density increase is only a factor of 10 or so
+- We could try using constant Alfven speed (\Gamma = 1/2), or even parallel field (\Gamma = 0)
 
 *** Building blocks for the input scripts
 These are initially copied from [[id:8BD38038-BD22-4B97-9A85-774223FD5C2A][the bow shock file]]
@@ -74,6 +98,7 @@ These are initially copied from [[id:8BD38038-BD22-4B97-9A85-774223FD5C2A][the b
   + B / (4 pi \rho)^{1/2} = 3 km/s
   + B = 3 1.0e5 sqrt(4 pi 100 2e-24) = 1.5e-5 G
     + -4.82 on log10 scale
+  + For some reason, I seem to be using a smaller magnetic field in the actual models above, must be 1 km/s for v_A
 + Abundances are largely from Valerdi:2019a
 + *NEW* Changes from the bow shock models
   + Larger inner radius
@@ -113,6 +138,15 @@ These are initially copied from [[id:8BD38038-BD22-4B97-9A85-774223FD5C2A][the b
 **** Save files
 + Unlike the bow shock models, we do need to get various PDR quantities
   - Particularly those related to H2
++ [2024-01-26 Fri] Update: added some of the optical H2 lines
+  + 9029.26A, 4-1 Q(1)
+    - one of the strongest optical lines
+  + 6636.69A, 5-1 S(7)
+    - the best one around H alpha
+  + 6261.73A, 12-5 S(1)
+    + the most reliable of the high-J lines
++ Also added the far-red [C I] lines for good measure
+  - plus strongest of the O I fluorescent lines at 8446.36A, although I should really make a blend for it since there are three closely spaced components
 #+name: cloudy-pdr-saves
 #+begin_src cloudy-input
   save overview last ".ovr"
@@ -123,6 +157,8 @@ These are initially copied from [[id:8BD38038-BD22-4B97-9A85-774223FD5C2A][the b
   save physical conditions last ".phys"
   save pdr last ".pdr"
   save H2 lines, faintest -6 last ".h2lines"
+  save H2 column density last ".h2column"
+  save H2 levels last ".h2levels"
   save H2 PDR last ".h2pdr"
   save H2 temperatures last ".h2temp"
   save chemistry rates last ".h2d" species "H2" destruction
@@ -161,6 +197,13 @@ These are initially copied from [[id:8BD38038-BD22-4B97-9A85-774223FD5C2A][the b
   PAC2 100m
   PAC3 160m
   H2   2.12125m
+  H2   9029.26A
+  H2   6636.69A
+  H2   6261.73A
+  C  1 8727.13A
+  C  1 9824.13A
+  C  1 9850.26A
+  O  1 8446.36A
   end of lines
   save lines, array ".lina" last, units microns
   save radius last ".rad"
