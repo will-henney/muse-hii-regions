@@ -212,6 +212,10 @@ I have made a series of notebooks
      ,* branch            HEAD       -> FETCH_HEAD
      Added dir 'lib/cloudytab'
   #+end_example
++ [2024-03-13 Wed] I deleted this since it is now on pip-installable, which is a much better solution
+  + I got rid of the folder from the command line with ~git rm -rf lib/cloudytab~
+
+  + Then I ditched the remote with ~M k~ in magit
 
 
 ** And again for the wcsfile library

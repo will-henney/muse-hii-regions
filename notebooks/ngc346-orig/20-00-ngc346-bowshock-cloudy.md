@@ -22,10 +22,12 @@ import seaborn as sns
 import cmasher as cmr
 import astropy.units as u
 from pathlib import Path
-ROOT = Path.cwd().parent.parent
 import sys
-sys.path.append(ROOT / "lib")
 from cloudytab import cloudytab
+```
+
+```python
+cloudytab?
 ```
 
 ```python
@@ -34,6 +36,7 @@ sns.set_color_codes()
 ```
 
 ```python
+ROOT = Path.cwd().parent.parent
 m1 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010")
 m2 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010-p")
 m3 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n030-p")
@@ -416,7 +419,5 @@ axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
 sns.despine()
 fig.tight_layout();
 ```
-```python
 
-```
 
