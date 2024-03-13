@@ -308,8 +308,8 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
 #+end_src
 ** Plots of Cloudy models
 + These are in notebook
-  + [[file:~/Dropbox/muse-hii-regions/notebooks/20-00-ngc346-bowshock-cloudy.py][20-00-ngc346-bowshock-cloudy.py]]
-  + [[file:~/Dropbox/muse-hii-regions/notebooks/20-00-ngc346-bowshock-cloudy.ipnb][20-00-ngc346-bowshock-cloudy.ipynb]]
+  - [[file:../notebooks/ngc346-orig/20-00-ngc346-bowshock-cloudy.py][20-00-ngc346-bowshock-cloudy.py]]
+  - [[file:../notebooks/ngc346-orig/20-00-ngc346-bowshock-cloudy.ipynb][20-00-ngc346-bowshock-cloudy.ipynb]]
 + It is hard to get the [Ar IV] to fall off on the right scale
   + We can maybe do it with a constant density model with n = 50
   + Or we can have a density that falls with radius

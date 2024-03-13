@@ -6,9 +6,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -20,16 +20,18 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import cmasher as cmr
 import astropy.units as u
+from pathlib import Path
+ROOT = Path.cwd().parent.parent
 import sys
-sys.path.append("../lib")
+sys.path.append(ROOT / "lib")
 from cloudytab import cloudytab
 
 sns.set_context("talk")
 sns.set_color_codes()
 
-m1 = cloudytab.CloudyModel("../cloudy/models/w3-n010")
-m2 = cloudytab.CloudyModel("../cloudy/models/w3-n010-p")
-m3 = cloudytab.CloudyModel("../cloudy/models/w3-n030-p")
+m1 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010")
+m2 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010-p")
+m3 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n030-p")
 
 m1.data.keys()
 
@@ -384,4 +386,4 @@ sns.despine()
 fig.tight_layout();
 # -
 
-
+#

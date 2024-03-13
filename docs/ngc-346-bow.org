@@ -6,7 +6,7 @@
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [0/0] Return to bow project 2023 Summer
+** TODO [1/3] Return to bow project 2023 Summer
 - [2024-01-18 Thu] Second return 2024 January
   - Inspired by the JWST images
     - which show lots of additional bow shocks 
@@ -17,6 +17,67 @@
     - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
   - [-] Maybe repeat for the Peter Zeigler cube
   - [ ] Think what are the essentials for the paper
+*** TODO Issues in re-running some notebooks 2024
+- [2024-03-12 Tue] I wanted to check on what the limits of the [Cl III] densities were, so I was running the notebook 01-02-yet-more-line-ratios.ipynb
+  - lots of little things were working strangely, mainly relate to different array sizes between different line maps
+    - so I need to work out where this is coming from
+    - it looks like the line maps are actually generated in the 03 series of notebooks, so I need to go back to those
+    - 
+*** TODO Better projection of the Cloudy models
+- In the original notebooks where I looked at the output from the Cloudy models, I had an integral to do the projection onto the plane of the sky
+  - but there is something wrong with it because it gives spikes in the output
+  - I need to go back and see if there is a better way to do this
+  - possibly using the old rot-splat method
+  - or even looking into how pyCloudy does it
+- in order to get to this, we have a whole load of yak shaving to do
+**** Update cloudytab to accept pathlib.Path objects as well a strings
+- While I am doing this, I would like to update the package to use rye
+- And maybe even publish it to PyPI
+- Note that previously I had been including the cloudytab package as a git subtree (legally distinct from submodule I think)
+  - see [[id:FEA75A95-3429-4C02-B970-94D7BC5087F4][Another git subtree for cloudytab library]] in [[file:README-2021.org]]
+***** DONE Convert project to rye
+CLOSED: [2024-03-12 Tue 20:42]
+- First I updated rye
+  #+begin_src sh
+    rye self update
+  #+end_src
+  Now we are on version rye 0.29.0
+- Then I initialized project
+  #+begin_src sh
+    rye init
+  #+end_src
+  This made a src folder and a pyproject.toml file
+- Then I did first sync
+  #+begin_src sh
+    rye sync
+  #+end_src
+  This made a virtual environment in ~.venv/ folder and did an editable install of the package
+- Then I did the following
+  1. Moved the main library source file to the src folder
+  2. Wrote a test file with one test and put it in the test folder
+  3. Did ~rye add pytest --dev~ to add pytest as a development dependency
+     - This seem to automatically install the new dependency, which is new behavior I think. Previously I had had to to do ~rye sync~ to get that
+  4. Ran the tests with ~rye test~
+     - I did not expect this to work, since it is something else that I think is new
+     - The test passed fine, but it did not do the coverage report. Presumably there is some extra config setting I need to do
+  5. Added another test that imports the library. That passes too after I got the right message: "Hello from cloudytab"
+  6. Install pyright type checker with ~rye add pyright --dev~ and configure and run it
+     - I put a minimal config in the pyproject.toml file
+     - Then I ran ~rye run pyright~, which found an error since I am specifying a minimum python version of 3.8, which means I have to use Union instead of the pipe operator. But adding ~from __future__ import annotations~ fixed that
+     - I can make pyright pass using the "standard" mode but not the "strict" mode. This is entirely because of astropy not having type stubs, so I will not leave any sleep over it
+***** DONE Publish to pyPI
+CLOSED: [2024-03-12 Tue 21:55]
+- This is so that I can easily use the package in another project, such  this one
+- First, I try with the test server for which I already have an account
+  - ~rye build~
+  - ~rye publish --repository testpypi --repository-url https://test.pypi.org/legacy/~
+  - Note that you have to remember to do the build step before the publish step, otherwise it will just upload the old version
+  - Also it uploads all the versions each time, which is a bit wasteful. Maybe there is a way to avoid that
+  - I had to generate an access token. I used it with an empty passphrase
+- Now try it on the real pyPI
+  - ~rye publish --skip-existing~
+  - I now have my first package on pyPI - hurray!
+  - The step that took the longest was creating the account, and the recovery codes, and the 2-factor authentication, etc
 *** DONE Rerunning the ~data/ngc346-orig/~ notebooks [2023-06-01 Thu]
 CLOSED: [2023-06-02 Fri 17:42]
 :PROPERTIES:
