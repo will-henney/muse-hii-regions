@@ -40,6 +40,8 @@ m1.data.keys()
 
 
 
+# ## Optical lines
+
 # +
 fig, axes = plt.subplots(3, 1, figsize=(15, 12))
 
@@ -84,9 +86,56 @@ axes[1].set_title("Constant pressure, n = 10")
 axes[2].set_title("Constant pressure, n = 30")
 sns.despine()
 fig.tight_layout();
+# -
+
+# ## Infrared lines and bands
+
+# +
+fig, axes = plt.subplots(3, 1, figsize=(15, 12))
+
+
+# colnames = m.data["emis"].colnames[1:]
+
+embands = [
+ "Ne 3 15.5509m",
+ "Ne 2 12.8101m",
+ "S  4 10.5076m",
+ "S  3 18.7078m",
+ "S  3 33.4704m",
+ "Si 2 34.8046m",
+]
+
+# Take N colors from named colormap in [0.15, 0.85] range in HEX
+colors = cmr.take_cmap_colors(
+    'cmr.neon', 
+    len(embands), 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+for m, ax in zip([m1, m2, m3], axes):
+    radius = m.data["rad"]["radius"] * u.cm.to(u.pc) 
+    hb = m.data["emis"]['H  1 4861.33A'] 
+    for emband, color in zip(embands, colors):
+        em = m.data["emis"][emband] 
+        ax.plot(radius, em / hb.max(), label=emband, color=color)
+    ax.set(
+        yscale="log",
+        ylim=[0.001, 10.1],
+        xlabel="Radius, pc",
+        ylabel="Emissivity",
+    )
+axes[0].legend(ncol=3)
+axes[0].set_title("Constant density, n = 10")
+axes[1].set_title("Constant pressure, n = 10")
+axes[2].set_title("Constant pressure, n = 30")
+sns.despine()
+fig.tight_layout();
 
 
 # -
+
+# ## Physical variables
 
 class C:
     def __init__(self, d):
@@ -108,6 +157,8 @@ for m, ax in zip([m1, m2, m3], axes):
     ax.plot(m.radius, m.p.ovr.hden * m.p.Ar["Ar+3"], label="Ar IV")
     ax.plot(m.radius, m.p.ovr.hden * m.p.Ne["Ne+2"], label="Ne III")
     ax.plot(m.radius, m.p.ovr.hden * m.p.O["O+2"], label="O III")
+    ax.plot(m.radius, m.p.ovr.hden * m.p.S["S+2"], label="S III")
+    ax.plot(m.radius, m.p.ovr.hden * m.p.S["S+3"], label="S IV")
     ax.plot(m.radius, 0.001 * m.p.ovr.Te, label="Te, kK")
 axes[0].legend(ncol=3)
 axes[0].set_title("Constant density, n = 10")
@@ -140,32 +191,35 @@ ax.plot(wavs, sednorm * m3.data["cont"]["DiffOut"])
 ax.plot(wavs, sednorm * m3.data["cont"]["trans"])
 
 ax.axvline(24.0, lw=5, color="k", alpha=0.3)
-ax.axvspan(0, 0.0912/4, lw=0, color="r", alpha=0.3)
+for ip in 1.0, 1.8, 4.0:
+    ax.axvspan(0, 0.0912/ip, lw=0, color="r", alpha=0.1)
 ax.set(
     xscale="log",
     yscale="log",
     xlim=[1e-2, 1e3],
-    ylim=[1.0, 1e7],
+    ylim=[300, 1e6],
     xlabel="Wavelength, micron",
     ylabel=r"$\nu L_\nu$, L$_\odot$",
 )
 sns.despine()
 fig.tight_layout();
 # -
-m4 = cloudytab.CloudyModel("../cloudy/models/w3-n010-p-r08")
-m5 = cloudytab.CloudyModel("../cloudy/models/w3-n005-p-r08")
-m6 = cloudytab.CloudyModel("../cloudy/models/w3-n100-p-r08")
-m7 = cloudytab.CloudyModel("../cloudy/models/w3-n050-p-r08")
-m8 = cloudytab.CloudyModel("../cloudy/models/w3-n010-d01-r08")
+m4 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010-p-r08")
+m5 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n005-p-r08")
+m6 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n100-p-r08")
+m7 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n050-p-r08")
+m8 = cloudytab.CloudyModel(ROOT / "cloudy/models/w3-n010-d01-r08")
 
+
+m4.data.keys()
 
 # +
 fig, ax = plt.subplots(figsize=(15, 10))
 ax.plot(wavs, sednorm * m4.data["cont"]["incident"])
-ax.plot(wavs, sednorm * m4.data["cont"]["DiffOut"])
-ax.plot(wavs, sednorm * m1.data["cont"]["DiffOut"])
-ax.plot(wavs, sednorm * m8.data["cont"]["DiffOut"])
-ax.plot(wavs, sednorm * m4.data["cont"]["trans"])
+ax.plot(wavs, sednorm * m4.data["cont"]["DiffOut"], label="n010-p-r08")
+ax.plot(wavs, sednorm * m1.data["cont"]["DiffOut"], label="n010")
+ax.plot(wavs, sednorm * m8.data["cont"]["DiffOut"], label="n010-d01-r08")
+ax.plot(wavs, sednorm * m7.data["cont"]["DiffOut"], label="n050-p-r08")
 
 ax.axvline(24.0, lw=5, color="k", alpha=0.3)
 ax.axvspan(0, 0.0912/4, lw=0, color="r", alpha=0.3)
@@ -177,6 +231,7 @@ ax.set(
     xlabel="Wavelength, micron",
     ylabel=r"$\nu L_\nu$, L$_\odot$",
 )
+ax.legend()
 sns.despine()
 fig.tight_layout();
 # -
@@ -219,13 +274,13 @@ embands = [
  'Blnd 5875.66A',
  'Ar 3 7135.79A',
  'H  1 4861.33A',
- 'Ca B 6562.82A',
+ 'H  1 6562.82A',
  'O  2 7319.99A',
 ]
 
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
-    'cmr.neon', 
+    'cmr.chroma_r', 
     len(embands), 
     cmap_range=(0.15, 0.85), 
     return_fmt='hex'
@@ -263,14 +318,14 @@ embands = [
  'O  3 5006.84A',
  'Blnd 5875.66A',
  'Ar 3 7135.79A',
- 'H  1 4861.33A',
- 'Ca B 6562.82A',
+# 'H  1 4861.33A',
+ 'H  1 6562.82A',
  'O  2 7319.99A',
 ]
 
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
-    'cmr.neon', 
+    'cmr.chroma_r', 
     len(embands), 
     cmap_range=(0.15, 0.85), 
     return_fmt='hex'
@@ -320,7 +375,7 @@ fig.tight_layout();
 nb = 200
 def brightness(r, dr, e, nb):
     b = np.linspace(0.0, r.max(), nb)
-    _r = np.linspace(0.0, r.max(), 3 * nb + 5)
+    _r = np.linspace(0.0, r.max(), 30 * nb + 5)
     _e = np.interp(_r, r, e, left=0.0, right=0.0)
     nr = len(_r)
     _dr = [r.max() / nr] * nr
@@ -328,7 +383,7 @@ def brightness(r, dr, e, nb):
     rgrid = np.stack([_r] * nb, axis=1)
     egrid = np.stack([_e] * nb, axis=1)
     drgrid = np.stack([_dr] * nb, axis=1)
-    rgrid[rgrid <= bgrid] = np.nan
+    rgrid[rgrid <= bgrid + 0.5 * drgrid] = np.nan
     sb = 2 * np.nansum(egrid * rgrid * drgrid / (drgrid + np.sqrt(rgrid**2 - bgrid**2)), axis=0)
     return b, sb
 
@@ -340,11 +395,13 @@ e = m.data["emis"]["He 2 4685.70A"]
 b, s = brightness(r, dr, e, nb)
 s
 
+# ### Optical line surface brightness
+
 # +
 fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 
 
-# colnames = m.data["emis"].colnames[1:]
+# colnsmes = m.data["emis"].colnames[1:]
 
 embands = [
  'He 2 4685.70A',
@@ -353,14 +410,13 @@ embands = [
  'O  3 5006.84A',
  'Blnd 5875.66A',
  'Ar 3 7135.79A',
- 'H  1 4861.33A',
- 'Ca B 6562.82A',
+ 'H  1 6562.82A',
  'O  2 7319.99A',
 ]
 
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
-    'cmr.neon', 
+    'cmr.chroma_r', 
     len(embands), 
     cmap_range=(0.15, 0.85), 
     return_fmt='hex'
@@ -389,4 +445,106 @@ sns.despine()
 fig.tight_layout();
 # -
 
-#
+# ### IR line and continuum surface brightness
+
+# +
+fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
+
+
+# colnames = m.data["emis"].colnames[1:]
+
+embands = [
+ "S  4 10.5076m",
+ "Ne 3 15.5509m",
+ "S  3 18.7078m",
+ "S  3 33.4704m",
+ "Ne 2 12.8101m",
+ "Si 2 34.8046m",
+]
+normband = "S  3 18.7078m"
+b, sb = brightness(r, dr, m.data["emis"][normband], nb)
+sbnorm = sb.mean()
+
+# Take N colors from named colormap in [0.15, 0.85] range in HEX
+colors = cmr.take_cmap_colors(
+    'cmr.chroma_r', 
+    len(embands), 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+for m, ax in zip([m4, m7, m8], axes):
+    r = m.data["rad"]["radius"]
+    dr = m.data["rad"]["dr"]
+    nb = 200
+    for emband, color in zip(embands, colors):
+        em = m.data["emis"][emband]
+        b, sb = brightness(r, dr, em, nb)
+        radius = b * u.cm.to(u.pc) 
+        ax.plot(radius, sb, label=emband, color=color)
+    ax.set(
+        yscale="linear",
+        ylim=[0.00, None],
+        xlabel="Radius, pc",
+        ylabel="Surface brightness",
+    )
+axes[0].legend(ncol=3)
+axes[0].set_title("Constant pressure, n = 10, Rmax = 8 pc")
+axes[1].set_title("Constant pressure, n = 50, Rmax = 8 pc")
+axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
+sns.despine()
+fig.tight_layout();
+
+# +
+fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
+
+
+# colnames = m.data["emis"].colnames[1:]
+
+embands = [
+ "PAHC 10.9000m",
+ "nFnu 15.6901m",
+ "nFnu 19.6199m",
+ "nFnu 24.7829m",
+ "nFnu 30.8695m",
+ "nFnu 41.2152m",
+ "nFnu 60.8322m",
+]
+normband = "nFnu 15.6901m"
+b, sb = brightness(r, dr, m.data["emis"][normband], nb)
+sbnorm = sb.mean()
+
+# Take N colors from named colormap in [0.15, 0.85] range in HEX
+colors = cmr.take_cmap_colors(
+    'cmr.chroma_r', 
+    len(embands), 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+for m, ax in zip([m4, m7, m8], axes):
+    r = m.data["rad"]["radius"]
+    dr = m.data["rad"]["dr"]
+    nb = 200
+    for emband, color in zip(embands, colors):
+        em = m.data["emis"][emband]
+        b, sb = brightness(r, dr, em, nb)
+        radius = b * u.cm.to(u.pc) 
+        ax.plot(radius, sb / sbnorm, label=emband, color=color)
+    ax.set(
+        yscale="linear",
+        ylim=[0.00, None],
+        xlabel="Radius, pc",
+        ylabel="Surface brightness",
+    )
+axes[0].legend(ncol=3)
+axes[0].set_title("Constant pressure, n = 10, Rmax = 8 pc")
+axes[1].set_title("Constant pressure, n = 50, Rmax = 8 pc")
+axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
+sns.despine()
+fig.tight_layout();
+# -
+
+# ## Line ratio diagnostics
+
+

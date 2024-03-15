@@ -30,7 +30,8 @@
   - possibly using the old rot-splat method
   - or even looking into how pyCloudy does it
 - in order to get to this, we have a whole load of yak shaving to do
-**** Update cloudytab to accept pathlib.Path objects as well a strings
+**** DONE Update cloudytab to accept pathlib.Path objects as well a strings
+CLOSED: [2024-03-13 Wed 10:39]
 - While I am doing this, I would like to update the package to use rye
 - And maybe even publish it to PyPI
 - Note that previously I had been including the cloudytab package as a git subtree (legally distinct from submodule I think)
@@ -78,14 +79,15 @@ CLOSED: [2024-03-12 Tue 21:55]
   - ~rye publish --skip-existing~
   - I now have my first package on pyPI - hurray!
   - The step that took the longest was creating the account, and the recovery codes, and the 2-factor authentication, etc
-***** TODO Switch over to pyPI version of cloudytab for this repo
+***** DONE Switch over to pyPI version of cloudytab for this repo
+CLOSED: [2024-03-13 Wed 10:39]
 - [2024-03-13 Wed 10:03] In the long term, I want to switch this repo to using its own venv but at the moment we will stick to the anaconda python 3.9 that I have been using since forever
 - [X] pip install cloudytab in the conda environment
 - [X] check that I can use this version in my notebooks
   - I removed the addition of ~../../lib~ to sys.path so it should be using the installed version
   - I managed to import the package and load a cloudy model
-- [ ] remove the git subtree of cloudytab from this repo
-- [ ] 
+- [X] remove the git subtree of cloudytab from this repo
+  - deleted the folder and removed the remote
 *** DONE Rerunning the ~data/ngc346-orig/~ notebooks [2023-06-01 Thu]
 CLOSED: [2023-06-02 Fri 17:42]
 :PROPERTIES:

@@ -78,6 +78,7 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
 + From [[id:903F97D6-AF67-4C78-8011-C7DDD449B546][Which are the most important stars for mYSO C?]]
 + Bolometric luminosity: 1.1e6 Lsun = 4.202e39 erg/s
 ** Input files for Cloudy runs
+- *Update* [2024-03-14 Thu] Add the infrared lines and continuum bands to the Cloudy output
 *** Bow shock Cloudy models
 **** First model: n = 10, constant density
 #+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n010.in
@@ -105,7 +106,7 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
 #+end_src
 
 **** Third model: n = 30, constant pressure
-+ The B field has also been increased by sqrt(3) to maintain the smae Alfven speed
++ The B field has also been increased by sqrt(3) to maintain the same Alfven speed
 #+begin_src cloudy-input :noweb yes :tangle ../cloudy/models/w3-n030-p.in
   title Walborn 3 in SMC-N66 / NGC 346, bow shock, constant P, n0 = 30 pcc
   # Density of 30 pcc
@@ -247,6 +248,7 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
 **** Save files
 + Unlike in the Raman project, I am not interested in the PDR or the FUV pumping lines
 + But I am interested in getting all the observed optical lines
++ *Update* [2024-03-14 Thu] I have added a whole bunch of continuum bands in the mid-infrared for comparison with the Spitzer data
 #+name: cloudy-saves
 #+begin_src cloudy-input
   save overview last ".ovr"
@@ -276,6 +278,23 @@ cp -pv ../stars/powr/seds/*.sed ../cloudy/models
   H  1 6562.82
   Ca B 6562.82
   Blnd 5875.66A
+  Ne 3 15.5509m
+  Ne 2 12.8101m
+  S  4 10.5076m
+  S  3 18.7078m
+  S  3 33.4704m
+  Si 2 34.8046m
+  Ar 3 8.98898m
+  PAHC 6.90000m
+  PAHC 10.9000m
+  PAH 11.3000m
+  PAHC 14.1000m
+  nFnu 15.6901m
+  nFnu 19.6199m
+  nFnu 24.7829m
+  nFnu 30.8695m
+  nFnu 41.2152m
+  nFnu 60.8322m
   IRAC 3.60000m
   IRAC 4.50000m
   IRAC 5.80000m
