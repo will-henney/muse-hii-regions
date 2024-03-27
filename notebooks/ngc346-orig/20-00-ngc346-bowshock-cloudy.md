@@ -279,6 +279,7 @@ for m, ax in zip([m4, m7, m8], axes):
     ax.plot(m.radius, m.p.ovr.hden * m.p.ovr.HeII, label="He II")
     ax.plot(m.radius, m.p.ovr.hden * m.p.ovr.HeIII, label="He III")
     ax.plot(m.radius, m.p.ovr.hden * m.p.Ar["Ar+3"], label="Ar IV")
+    ax.plot(m.radius, m.p.ovr.hden * m.p.S["S+3"], label="S IV")
     ax.plot(m.radius, m.p.ovr.hden * m.p.Ne["Ne+2"], label="Ne III")
     ax.plot(m.radius, m.p.ovr.hden * m.p.O["O+2"], label="O III")
     ax.plot(m.radius, 0.001 * m.p.ovr.Te, label="Te, kK")
@@ -409,7 +410,7 @@ $$
 
 ### Naive implementation of surface brightness intergral
 
-This version makes a regular grid of impact parameter and a regular grid of dummy radii for the integration
+This version makes a regular grid of impact paramezter and a regular grid of dummy radii for the integration
 
 ```python
 nb = 200
@@ -550,6 +551,9 @@ fig.tight_layout();
 
 ### IR line and continuum surface brightness
 
+
+First, the infrared emission lines, which we normalise to the [S III] 18 micron line
+
 ```python
 fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 
@@ -565,7 +569,6 @@ embands = [
  "Si 2 34.8046m",
 ]
 normband = "S  3 18.7078m"
-sbnorm = m.sb[normband].mean()
 
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
@@ -576,10 +579,11 @@ colors = cmr.take_cmap_colors(
 )
 
 for m, ax in zip([m4, m7, m8], axes):
+    sbnorm = m.sb[normband].mean()
     radius = m.sb["b"] * u.cm.to(u.pc) 
     for emband, color in zip(embands, colors):
         sb = m.sb[emband]
-        ax.plot(radius, sb, label=emband, color=color)
+        ax.plot(radius, sb / sbnorm, label=emband, color=color)
     ax.set(
         yscale="linear",
         ylim=[0.00, None],
@@ -594,6 +598,8 @@ sns.despine()
 fig.tight_layout();
 ```
 
+Now the infrared continuum we try in two different ways. First, the `nuFnu` samples that I found, but I am not convinced that these are really the full continuum. *Perhaps they are just the bound-free part*
+
 ```python
 fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 
@@ -601,7 +607,6 @@ fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 # colnames = m.data["emis"].colnames[1:]
 
 embands = [
- "PAHC 10.9000m",
  "nFnu 15.6901m",
  "nFnu 19.6199m",
  "nFnu 24.7829m",
@@ -610,7 +615,6 @@ embands = [
  "nFnu 60.8322m",
 ]
 normband = "nFnu 15.6901m"
-sbnorm = m.sb[normband].mean()
 
 # Take N colors from named colormap in [0.15, 0.85] range in HEX
 colors = cmr.take_cmap_colors(
@@ -622,6 +626,56 @@ colors = cmr.take_cmap_colors(
 
 for m, ax in zip([m4, m7, m8], axes):
     radius = m.sb["b"] * u.cm.to(u.pc)
+    sbnorm = m.sb[normband].mean()
+    for emband, color in zip(embands, colors):
+        sb = m.sb[emband]
+        ax.plot(radius, sb / sbnorm, label=emband, color=color)
+    ax.set(
+        yscale="linear",
+        ylim=[0.00, None],
+        xlabel="Radius, pc",
+        ylabel="Surface brightness",
+    )
+axes[0].legend(ncol=3)
+axes[0].set_title("Constant pressure, n = 10, Rmax = 8 pc")
+axes[1].set_title("Constant pressure, n = 50, Rmax = 8 pc")
+axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
+sns.despine()
+fig.tight_layout();
+```
+
+So, those profiles look rather weird.
+
+If we plot the pre-defined bands for different instruments, then we get something more reasonable. 
+
+```python
+fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
+
+
+# colnames = m.data["emis"].colnames[1:]
+
+embands = [
+ "PAHC 10.9000m",
+ "IRAC 8.00000m",
+ "F12 12.0000m",
+ "MIPS 24.0000m",
+ "PAC1 70.0000m",
+ "PAC2 100.000m",
+ "PAC3 160.000m",
+]
+normband = "MIPS 24.0000m"
+
+# Take N colors from named colormap in [0.15, 0.85] range in HEX
+colors = cmr.take_cmap_colors(
+    'cmr.chroma_r', 
+    len(embands), 
+    cmap_range=(0.15, 0.85), 
+    return_fmt='hex'
+)
+
+for m, ax in zip([m4, m7, m8], axes):
+    radius = m.sb["b"] * u.cm.to(u.pc)
+    sbnorm = m.sb[normband].mean()
     for emband, color in zip(embands, colors):
         sb = m.sb[emband]
         ax.plot(radius, sb / sbnorm, label=emband, color=color)
@@ -645,10 +699,15 @@ I can look at the same infrared line ratios as in the Spitzer data.  And also at
 
 ```python
 ratio_dict = {
-    "c15-11-mir": ("nFnu 15.6901m", "PAHC 10.9000m"),
-    "c25-15-mir": ("nFnu 24.7829m", "nFnu 15.6901m"),
+#    "c15-11-mir": ("nFnu 15.6901m", "PAHC 10.9000m"),
+#   "c25-15-mir": ("nFnu 24.7829m", "nFnu 15.6901m"),
+    "c12-08-mir": ("F12 12.0000m", "IRAC 8.00000m"),
+    "c24-12-mir": ("MIPS 24.0000m", "F12 12.0000m"),
+    "c70-24-mir": ("PAC1 70.0000m", "MIPS 24.0000m"),
     "s43-mir": ("S  4 10.5076m", "S  3 18.7078m"),
     "ne3s3-mir": ("Ne 3 15.5509m", "S  3 18.7078m"),
+    "ne32-mir": ("Ne 3 15.5509m", "Ne 2 12.8101m"),
+    "c12-ne3-mir": ("F12 12.0000m", "Ne 3 15.5509m"),
     "ar43-opt": ("Ar 4 4740.12A", "Ar 3 7135.79A"),
     "o3hb-opt": ("O  3 5006.84A", "H  1 4861.33A"),
     "He21-opt": ("He 2 4685.70A", "Blnd 5875.66A"),
@@ -680,7 +739,7 @@ fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 colors = cmr.take_cmap_colors(
     'cmr.chroma_r', 
     len(ratio_dict), 
-    cmap_range=(0.15, 0.85), 
+    cmap_range=(0.1, 0.9), 
     return_fmt='hex'
 )
 
@@ -688,14 +747,16 @@ for m, ax in zip([m4, m7, m8], axes):
     radius = m.sbratios["b"] * u.cm.to(u.pc)
     rlabels = m.sbratios.colnames[1:]
     for rlabel, color in zip(rlabels, colors):
-        ax.plot(radius, m.sbratios[rlabel], label=rlabel, color=color)
+        ratio = m.sbratios[rlabel]
+        ratio_norm = np.percentile(ratio[np.isfinite(ratio)], 90)
+        ax.plot(radius, ratio / ratio_norm, label=f"{rlabel} ({ratio_norm:.2f})", color=color)
     ax.set(
-        yscale="log",
-        ylim=[0.01, 500],
+        yscale="linear",
+        ylim=[0.0, 2],
         xlabel="Radius, pc",
         ylabel="Ratio",
     )
-axes[0].legend(ncol=3)
+    ax.legend(ncol=5, fontsize="x-small")
 axes[0].set_title("Constant pressure, n = 10, Rmax = 8 pc")
 axes[1].set_title("Constant pressure, n = 50, Rmax = 8 pc")
 axes[2].set_title("Density law $r^{-1}$, n = 10, Rmax = 8 pc")
@@ -710,7 +771,7 @@ fig, axes = plt.subplots(3, 1, figsize=(15, 12), sharex=True)
 colors = cmr.take_cmap_colors(
     'cmr.chroma_r', 
     len(ratio_dict), 
-    cmap_range=(0.15, 0.85), 
+    cmap_range=(0.1, 0.9), 
     return_fmt='hex'
 )
 
@@ -718,14 +779,16 @@ for m, ax in zip([m1, m2, m3], axes):
     radius = m.sbratios["b"] * u.cm.to(u.pc)
     rlabels = m.sbratios.colnames[1:]
     for rlabel, color in zip(rlabels, colors):
-        ax.plot(radius, m.sbratios[rlabel], label=rlabel, color=color)
+        ratio = m.sbratios[rlabel]
+        ratio_norm = np.percentile(ratio[np.isfinite(ratio)], 90)
+        ax.plot(radius, ratio / ratio_norm, label=f"{rlabel} ({ratio_norm:.1e})", color=color)
     ax.set(
-        yscale="log",
-        ylim=[0.01, 100],
+        yscale="linear",
+        ylim=[0.0, 2],
         xlabel="Radius, pc",
-        ylabel="Ratio",
+        ylabel="Ratio / norm",
     )
-axes[0].legend(ncol=3)
+    ax.legend(ncol=5, fontsize="x-small")
 axes[0].set_title("Constant density, n = 10")
 axes[1].set_title("Constant pressure, n = 10")
 axes[2].set_title("Constant pressure, n = 30")
@@ -735,6 +798,15 @@ fig.tight_layout();
 
 So these are looking pretty different from the observed ratios, with the exception of the 25/15 micron continuum ratio, which is around 10 in both the observations and the model. 
 
-```python
+Note that I lnow longer have the 15 micron because I do not trust the nuFnu output. But 24/12 behaves very similarly. 
 
+One big difference with the observations is that S43 is much higher in the models, showing values > 4 in the bow shock. 
+
+
+Median value of S43 is 0.25 in the model that includes the ionization front.
+
+```python
+m1.sbratios.to_pandas().describe()
 ```
+
+In the observations

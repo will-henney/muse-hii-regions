@@ -21,6 +21,8 @@
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
+from astropy.convolution import Gaussian2DKernel
+from astropy.convolution import convolve, convolve_fft
 from matplotlib import pyplot as plt
 from reproject import reproject_interp
 from dataclasses import dataclass
@@ -126,6 +128,7 @@ class Ratio:
     num: Union[str, list[str]]
     den: Union[str, list[str]]
     dwave: float = 1.0
+    blur: float = 0.0
 
     def __post_init__(self):
         if isinstance(self.num, str):
@@ -134,6 +137,10 @@ class Ratio:
             self.den = [self.den]
         numerator = np.sum(np.stack([maps[lab] for lab in self.num]), axis=0)
         denominator = np.sum(np.stack([maps[lab] for lab in self.den]), axis=0)
+        if self.blur > 0.0:
+            kernel = Gaussian2DKernel(x_stddev=self.blur)
+            numerator = convolve_fft(numerator, kernel)
+            denominator = convolve_fft(denominator, kernel)
         self.ratio = numerator / denominator
         if "EW" in self.label:
             self.ratio *= self.dwave
@@ -316,5 +323,69 @@ color_color_plot(
     ax=ax,
     nbins=50,
 )
+
+# ### Use just the 18 micron S III line
+#
+# This is to make for easier comparison with the Cloudy results
+#
+#
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III", blur=0.0),
+    Ratio("c14-ne3", "cont14", "Ne III", blur=0.0),
+    maps["S IV"],
+    ax=ax,
+    nbins=50,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("ne3s3", "Ne III", "S III"),
+    Ratio("s43", "S IV", "S III"),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III"),
+#    Ratio("color14-09", "cont14", "cont09"),
+    Ratio("color27-14", "cont27", "cont14"),
+    maps["S IV"],
+    ax=ax,
+    nbins=50,
+)
+
+# + editable=true slideshow={"slide_type": ""}
+ratios = [
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("ne3s3", "Ne III", "S III", blur=2.5),
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
+    Ratio("color27-14", "cont27", "cont14", blur=2.5),
+]
+leveldict = {"s43": [-0.3], "ne3s3": [0.1]}
+NCOL = 2
+NROW = (len(ratios) + NCOL - 1) // NCOL
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(4 * NCOL, 4 * NROW),
+    subplot_kw=dict(projection=w0),
+)
+for ax, rat in zip(axes.flat, ratios):
+    im = ax.imshow(
+        np.log10(rat.ratio),
+        vmin=np.log10(rat.scale) - 1.0,
+        vmax=np.log10(rat.scale) + 1.0,
+        cmap="magma",
+    )
+    if rat.label in leveldict:
+        ax.contour(np.log10(rat.ratio), levels=leveldict[rat.label], colors="g", linestyles="solid")
+    ax.set_title(rat.label)
+    fig.colorbar(im, ax=ax, orientation="horizontal")
+fig.tight_layout()
+# -
 
 
