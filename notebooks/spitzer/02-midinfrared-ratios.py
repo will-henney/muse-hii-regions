@@ -48,6 +48,8 @@ linedict = {
     "Ne II": "SL1_map_12.8_NeII",
     "Ne III": "LL2_map_15.5_NeIII",
     "cont14": "SL1_map_cont_13-14",
+    "cont18": "LL2_map_cont_16-18",
+    "cont21": "LL2_map_cont_20-21",
     "cont09": "SL1_map_cont_8.5-10",
     "S IIIb": "LL1_map_33.4_SIII",
     "Si II": "LL1_map_34.8_SiII",
@@ -98,9 +100,10 @@ maps = {
 # ## Plot the images
 #
 
+ncol = 2
 fig, axes = plt.subplots(
-    5,
-    2,
+    len(linedict) // 2,
+    ncol,
     figsize=(8, 16),
     subplot_kw=dict(projection=w0),
 )
@@ -135,13 +138,17 @@ class Ratio:
             self.num = [self.num]
         if isinstance(self.den, str):
             self.den = [self.den]
-        numerator = np.sum(np.stack([maps[lab] for lab in self.num]), axis=0)
-        denominator = np.sum(np.stack([maps[lab] for lab in self.den]), axis=0)
+        numerator = np.nansum(np.stack([maps[lab] for lab in self.num]), axis=0)
+        denominator = np.nansum(np.stack([maps[lab] for lab in self.den]), axis=0)
         if self.blur > 0.0:
             kernel = Gaussian2DKernel(x_stddev=self.blur)
-            numerator = convolve_fft(numerator, kernel)
-            denominator = convolve_fft(denominator, kernel)
-        self.ratio = numerator / denominator
+            numerator = convolve_fft(numerator, kernel, preserve_nan=True)
+            denominator = convolve_fft(denominator, kernel, preserve_nan=True)
+        self.ratio = np.where(
+            (denominator > 0.0) & np.isfinite(denominator * numerator),
+            numerator / denominator,
+            np.nan
+        )
         if "EW" in self.label:
             self.ratio *= self.dwave
         self.mask = np.isfinite(self.ratio)
@@ -164,6 +171,8 @@ ratios = [
     Ratio("ne32", "Ne III", "Ne II"),
     Ratio("ne3s3", "Ne III", ["S III", "S IIIb"]),
     Ratio("color14-09", "cont14", "cont09"),
+    Ratio("color21-18", "cont21", "cont18"),
+    Ratio("color27-21", "cont27", "cont21"),
     Ratio("color27-14", "cont27", "cont14"),
     Ratio("EWs4", "S IV", ["cont09", "cont14"], dwave=2.5),
     Ratio("EWs3", "S III", "cont27", dwave=5.0),
@@ -171,6 +180,10 @@ ratios = [
     Ratio("c14-s4", "cont14", "S IV"),
     Ratio("s4ne2", "S IV", "Ne II"),
     Ratio("c14-s3", "cont14", ["S III", "S IIIb"]),
+    Ratio("si2-s3", "Si II", "S III"),
+    Ratio("si2-ne2", "Si II", "Ne II"),
+    Ratio("pah-ne2", "PAH", "Ne II"),
+    Ratio("pah-c09", "PAH", "cont09"),
 ]
 # -
 
@@ -199,6 +212,32 @@ for ax, rat in zip(axes.flat, ratios):
 fig.tight_layout()
 # -
 
+# ### Blurred versions of the ratios
+#
+
+bratios = [Ratio(r.label, r.num, r.den, r.dwave, blur=2.5) for r in ratios]
+
+NCOL = 2
+NROW = (len(bratios) + NCOL - 1) // NCOL
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(4 * NCOL, 4 * NROW),
+    subplot_kw=dict(projection=w0),
+)
+for ax, rat in zip(axes.flat, bratios):
+    im = ax.imshow(
+        np.log10(rat.ratio),
+        vmin=np.log10(rat.scale) - 1.0,
+        vmax=np.log10(rat.scale) + 1.0,
+        cmap="viridis",
+    )
+    ax.set_title(rat.label)
+    fig.colorbar(im, ax=ax, orientation="horizontal")
+fig.tight_layout()
+
+
+
 # ## Color-color diagrams
 
 
@@ -207,14 +246,14 @@ fig.tight_layout()
 # Creates a 2d histogram from a pair of ratio images
 
 
-def color_color_plot(rat1, rat2, weights, ax=None, nbins=100):
-    mask = rat1.mask & rat2.mask
+def color_color_plot(rat1, rat2, weights, ax=None, nbins=100, wx=1.0, wy=1.0, aspect="equal"):
+    mask = rat1.mask & rat2.mask & np.isfinite(weights) & (weights > 0.0)
     x = np.log10(rat1.ratio[mask])
-    xmin = np.log10(rat1.scale) - 1.0
-    xmax = np.log10(rat1.scale) + 1.0
+    xmin = np.log10(rat1.scale) - wx
+    xmax = np.log10(rat1.scale) + wx
     y = np.log10(rat2.ratio[mask])
-    ymin = np.log10(rat2.scale) - 1.0
-    ymax = np.log10(rat2.scale) + 1.0
+    ymin = np.log10(rat2.scale) - wy
+    ymax = np.log10(rat2.scale) + wy
 
     H, xedges, yedges = np.histogram2d(
         x,
@@ -230,7 +269,7 @@ def color_color_plot(rat1, rat2, weights, ax=None, nbins=100):
         H.T,
         extent=[xmin, xmax, ymin, ymax],
         origin="lower",
-        aspect="equal",
+        aspect=aspect,
         cmap="inferno_r",
         interpolation="none",
     )
@@ -243,44 +282,31 @@ def color_color_plot(rat1, rat2, weights, ax=None, nbins=100):
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("c14-s4", "cont14", "S IV"),
-    Ratio("s4ne2", "S IV", "Ne II"),
-    maps["S IV"],
-    ax=ax,
-    nbins=50,
-)
-
-fig, ax = plt.subplots()
-color_color_plot(
-    Ratio("ne32", "Ne III", "Ne II"),
-    Ratio("s43", "S IV", ["S III", "S IIIb"]),
-    maps["S IV"],
-    ax=ax,
-    nbins=50,
-)
-
-fig, ax = plt.subplots()
-color_color_plot(
-    Ratio("ne3s3", "Ne III", ["S III", "S IIIb"]),
-    Ratio("s43", "S IV", ["S III", "S IIIb"]),
+    Ratio("c14-s4", "cont14", "S IV", blur=2.5),
+    Ratio("s4ne2", "S IV", "Ne II", blur=2.5),
     maps["S IV"],
     ax=ax,
     nbins=100,
+    wx=1.5,
+    wy=1.5,
 )
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("ne3s3a", "Ne III", "S III"),
-    Ratio("s43b", "S IV", "S IIIb"),
-    maps["S IV"],
+    Ratio("ne32", "Ne III", "Ne II", blur=2.5),
+#    Ratio("s43", "S IV", ["S III", "S IIIb"], blur=2.5),
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    maps["Ne II"],
     ax=ax,
     nbins=100,
+    wx=1.5,
+    wy=1.5,
 )
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("EWs3", "S III", "cont27", dwave=5.0),
-    Ratio("s33", "S III", "S IIIb"),
+    Ratio("ne3s3", "Ne III", ["S III", "S IIIb"], blur=2.5),
+    Ratio("s43", "S IV", ["S III", "S IIIb"], blur=2.5),
     maps["S III"],
     ax=ax,
     nbins=100,
@@ -288,55 +314,141 @@ color_color_plot(
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("color14-09", "cont14", "cont09"),
-    Ratio("color27-14", "cont27", "cont14"),
+    Ratio("ne3s3a", "Ne III", "S III", blur=2.5),
+    Ratio("s43", "S IV", "S III", blur=2.5),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
 )
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("s43", "S IV", ["S III", "S IIIb"]),
-    Ratio("c14-ne3", "cont14", "Ne III"),
+    Ratio("ne3s3", "Ne III", "S III", blur=2.5),
+    Ratio("s4ne3", "S IV", "Ne III", blur=2.5),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("EWs3", "S III", "cont27", dwave=5.0, blur=2.5),
+    Ratio("s33", "S III", "S IIIb", blur=2.5),
+    maps["S III"],
+    ax=ax,
+    nbins=100,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
+    Ratio("color27-14", "cont27", "cont14", blur=2.5),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
+    wx=1.5,
+    wy=1.5,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
+    Ratio("color27-18", "cont27", "cont18", blur=2.5),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
+    Ratio("color27-21", "cont27", "cont21", blur=2.5),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
+#    wy=0.5,
+#    aspect="auto",
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("c14-ne3", "cont14", "Ne III", blur=2.5),
 #   Ratio("c14-s4", "cont14", "S IV"),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
 )
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("s43", "S IV", ["S III", "S IIIb"]),
-    Ratio("color14-09", "cont14", "cont09"),
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
 #    Ratio("color27-14", "cont27", "cont14"),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
 )
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("PAH-ne3", "PAH", "Ne III"),
-    Ratio("c14-c09", "cont14", "cont09"),
+    Ratio("PAH-ne3", "PAH", "Ne III", blur=2.5),
+    Ratio("c14-c09", "cont14", "cont09", blur=2.5),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
+    wx=1.5,
+    wy=1.5,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("PAH-ne3", "PAH", "Ne III", blur=2.5),
+    Ratio("si2-ne2", "Si II", "Ne II", blur=2.5),
+    maps["S III"],
+    ax=ax,
+    nbins=100,
+    wx=1.5,
+    wy=1.5,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("EWs4", "S IV", ["cont09", "cont14"], dwave=2.5, blur=2.5),
+#    Ratio("EWs4", "S IV", ["cont14"], dwave=1.0),
+    maps["S IV"],
+#    maps["Ne III"],
+    ax=ax,
+    nbins=100,
+    wx=1.5,
+    wy=1.5,
 )
 
 # ### Use just the 18 micron S III line
 #
-# This is to make for easier comparison with the Cloudy results
+# This is to make for easier comparison with the Cloudy results. 
+#
+# *Note that this section is a bit pointless now since I have gone back and redone many of the previous ratios with just the shorter line*
 #
 #
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("s43", "S IV", "S III", blur=0.0),
-    Ratio("c14-ne3", "cont14", "Ne III", blur=0.0),
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("c14-ne3", "cont14", "Ne III", blur=2.5),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
+)
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("EWne3", "Ne III", ["cont14", "cont18"], dwave=3.0, blur=2.5),
+    maps["Ne III"],
+    ax=ax,
+    nbins=100,
 )
 
 fig, ax = plt.subplots()
@@ -350,31 +462,51 @@ color_color_plot(
 
 fig, ax = plt.subplots()
 color_color_plot(
-    Ratio("s43", "S IV", "S III"),
+    Ratio("s43", "S IV", "S III", blur=2.5),
 #    Ratio("color14-09", "cont14", "cont09"),
-    Ratio("color27-14", "cont27", "cont14"),
+    Ratio("color27-14", "cont27", "cont14", blur=2.5),
     maps["S IV"],
     ax=ax,
-    nbins=50,
+    nbins=100,
+)
+
+# So the above is a good diagnostic diagram for the bow shock. The bow shock region is `s43 > -0.3` and `color27-14 < 1.05`.
+#
+# This distinguishes it from the SNR, which has redder continuum and higher s43. 
+
+fig, ax = plt.subplots()
+color_color_plot(
+    Ratio("s43", "S IV", "S III", blur=2.5),
+    Ratio("color14-09", "cont14", "cont09", blur=2.5),
+#    Ratio("color27-14", "cont27", "cont14"),
+    maps["S IV"],
+    ax=ax,
+    nbins=100,
 )
 
 # + editable=true slideshow={"slide_type": ""}
-ratios = [
-    Ratio("s43", "S IV", "S III", blur=2.5),
-    Ratio("ne3s3", "Ne III", "S III", blur=2.5),
-    Ratio("color14-09", "cont14", "cont09", blur=2.5),
-    Ratio("color27-14", "cont27", "cont14", blur=2.5),
-]
-leveldict = {"s43": [-0.3], "ne3s3": [0.1]}
+ratios = {
+    "s43": Ratio("s43", "S IV", "S III", blur=2.5),
+    "ne3s3": Ratio("ne3s3", "Ne III", "S III", blur=2.5),
+    "color14-09": Ratio("color14-09", "cont14", "cont09", blur=2.5),
+    "color27-14": Ratio("color27-14", "cont27", "cont14", blur=2.5),
+    "EWs4": Ratio("EWs4", "S IV", ["cont09", "cont14"], dwave=2.5, blur=2.5),
+    "EWne3": Ratio("EWne3", "Ne III", ["cont14", "cont18"], dwave=3.0, blur=2.5),
+    "PAH-s3": Ratio("PAH-s3", "PAH", "S III", blur=2.5),
+    "si2s3": Ratio("si2s3", "Si II", "S III", blur=2.5),
+}
+leveldict = {"s43": [-0.3, -0.15, 0.0], "ne3s3": [0.1], "color27-14": [0.8, 1.05], "color14-09": [0.6], "EWs4": [-0.15], "EWne3": [-0.2]}
 NCOL = 2
 NROW = (len(ratios) + NCOL - 1) // NCOL
 fig, axes = plt.subplots(
     NROW,
     NCOL,
-    figsize=(4 * NCOL, 4 * NROW),
+    figsize=(3 * NCOL, 3 * NROW),
     subplot_kw=dict(projection=w0),
+    sharex=True,
+    sharey=True,
 )
-for ax, rat in zip(axes.flat, ratios):
+for ax, rat in zip(axes.flat, ratios.values()):
     im = ax.imshow(
         np.log10(rat.ratio),
         vmin=np.log10(rat.scale) - 1.0,
@@ -383,9 +515,39 @@ for ax, rat in zip(axes.flat, ratios):
     )
     if rat.label in leveldict:
         ax.contour(np.log10(rat.ratio), levels=leveldict[rat.label], colors="g", linestyles="solid")
-    ax.set_title(rat.label)
-    fig.colorbar(im, ax=ax, orientation="horizontal")
+    fig.colorbar(im, ax=ax, location="top", label=rat.label)
+for ax in axes[:, 1:].flat:
+    ax.coords[1].set_auto_axislabel(False)
+for ax in axes[:-1, :].flat:
+    ax.coords[0].set_auto_axislabel(False)
+    
 fig.tight_layout()
 # -
+
+# ### Put all the best ratio-ratio plots together
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3.5 * NCOL, 3 * NROW),
+#    sharex="col",
+#    sharey="row",
+)
+color_color_plot(ratios["s43"], ratios["ne3s3"], maps["S IV"], ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], maps["S IV"], ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], maps["S IV"], ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], maps["S IV"], ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], maps["S IV"], ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], maps["S IV"], ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], maps["S IV"], ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], maps["S IV"], ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots.pdf", bbox_inches="tight")
 
 
