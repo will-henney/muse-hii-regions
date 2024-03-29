@@ -578,9 +578,9 @@ def get_spatial_weight_array(center: SkyCoord, width: float, wcs: WCS, axis_rati
     
         center is celestial coordinate of peak position
         wcs defines pixel-to-celestial mapping
-        width is major axis in pixels
+        width is major axis in pixels (x axis before rotation)
         axis_ratio < 1 for narrower in y (before rotation)
-        theta is rotation counterclockwise
+        theta is rotation of major axis counterclockwise from x axis (in degrees)
 
     Returns 2D image data array
     """
@@ -596,7 +596,7 @@ def get_spatial_weight_array(center: SkyCoord, width: float, wcs: WCS, axis_rati
         y_mean=yc, 
         x_stddev=width, 
         y_stddev=axis_ratio * width, 
-        theta=theta,
+        theta=np.deg2rad(theta),
     )
     return model(xpix, ypix)
 
@@ -612,15 +612,15 @@ cbow = c0.spherical_offsets_by(-10 * u.arcsec, 0.0 * u.arcsec)
 cbow
 
 # +
-weights = get_spatial_weight_array(cbow, 15, w0)
-weights *= maps["S IV"]
-fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
-ax.imshow(weights)
+weights_bow = get_spatial_weight_array(cbow, 15, w0)
+map_bow = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
 
-map = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
-levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_bow * map_bow)
+
+levels = np.nanpercentile(map_bow, [50, 75, 90, 95, 99])
 linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
-ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+ax.contour(map_bow, levels=levels, cmap="Oranges", linewidths=linewidths)
 
 
 # +
@@ -631,7 +631,7 @@ fig, axes = plt.subplots(
     NCOL,
     figsize=(3. * NCOL, 2.7 * NROW),
 )
-weights = get_spatial_weight_array(cbow, 15, w0) * maps["S IV"]
+weights = weights_bow * map_bow
 
 color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
 color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
@@ -654,15 +654,15 @@ fig.savefig("midinfrared-ratio-ratio-plots-bow.pdf", dpi=300, bbox_inches="tight
 csnr = SkyCoord.from_name("SNR B0057-72.2")
 
 # +
-weights = get_spatial_weight_array(csnr, 30, w0)
-weights *= maps["S IV"]
-fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
-ax.imshow(weights)
+weights_snr = get_spatial_weight_array(csnr, 30, w0)
+map_snr = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
 
-map = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
-levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_snr * map_snr) 
+
+levels = np.nanpercentile(map_snr, [50, 75, 90, 95, 99])
 linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
-ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+ax.contour(map_snr, levels=levels, cmap="Oranges", linewidths=linewidths)
 
 # +
 NCOL = 2
@@ -672,7 +672,7 @@ fig, axes = plt.subplots(
     NCOL,
     figsize=(3. * NCOL, 2.7 * NROW),
 )
-weights = get_spatial_weight_array(csnr, 30, w0) * maps["S IV"]
+weights = weights_snr * map_snr
 
 color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
 color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
@@ -695,15 +695,15 @@ fig.savefig("midinfrared-ratio-ratio-plots-snr.pdf", dpi=300, bbox_inches="tight
 cyso = SkyCoord.from_name("Cl* NGC 346 SSN 152")
 
 # +
-weights = get_spatial_weight_array(cyso, 8, w0)
-weights *= maps["S IV"]
-fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
-ax.imshow(weights)
+weights_yso = get_spatial_weight_array(cyso, 8, w0)
+map_yso = convolve_fft(maps["cont14"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
 
-map = convolve_fft(maps["Ne III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
-levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_yso * map_yso)
+
+levels = np.nanpercentile(map_yso, [50, 75, 90, 95, 99])
 linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
-ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+ax.contour(map_yso, levels=levels, cmap="Oranges", linewidths=linewidths)
 
 # +
 NCOL = 2
@@ -713,7 +713,7 @@ fig, axes = plt.subplots(
     NCOL,
     figsize=(3. * NCOL, 2.7 * NROW),
 )
-weights = get_spatial_weight_array(cyso, 8, w0) * maps["S IV"]
+weights = weights_yso * map_yso
 
 color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
 color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
@@ -729,8 +729,235 @@ fig.tight_layout(w_pad=3)
 
 fig.savefig("midinfrared-ratio-ratio-plots-yso-c.pdf", dpi=300, bbox_inches="tight")
 
+# #### Select plume only
+#
+# The plume is the ridge that goes of to the NNE, perpendicular to the main filaments. 
+#
+# We can define its central point it by one of the sub-clusters `[SGK2009] B` from Schmeja et a 2009ApJ...694..367S 
+#
+
+cplume = SkyCoord.from_name("[SGK2009] B")
+
+# +
+weights_plume = get_spatial_weight_array(cplume, 60, w0, axis_ratio=0.3, theta=125)
+weights_plume *= (1 - weights_snr)
+map_plume = convolve_fft(maps["Si II"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_plume * map_plume)
+
+levels = np.nanpercentile(map_plume, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map_plume, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = weights_plume * map_plume
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-plume.pdf", dpi=300, bbox_inches="tight")
+
+# It is interesting that this has some overlap with the bow shock on the s43-EWs4 diagram, which I did not expect. On the other hand, there is a clear separation on the pure continuum color-color diagram: 14/09 vs 27/14
+
 # #### Select filaments only
 #
-# ***TODO***
+# Here it is a bit trickier to define their position. I will try and pick out 3 filaments
+
+cfil01 = SkyCoord.from_name("[SSN2007] Sc 1")
+cfil02 = SkyCoord.from_name("[SSN2007] Sc 2")
+cfil03 = SkyCoord.from_name("[SSN2007] Sc 7")
+
+# +
+weights_fil = 2 * get_spatial_weight_array(cfil01, 60, w0, axis_ratio=0.2, theta=30)
+weights_fil += get_spatial_weight_array(cfil02, 60, w0, axis_ratio=0.2, theta=15)
+weights_fil += get_spatial_weight_array(cfil03, 90, w0, axis_ratio=0.2, theta=0)
+# remove the YSO and bow
+weights_fil *= (1 - weights_yso)
+weights_fil *= (1 - weights_bow)
+weights_fil *= (1 - weights_snr)
+weights_fil /= np.max(weights_fil)
+
+map_fil = convolve_fft(maps["S III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_fil * map_fil)
+
+levels = np.nanpercentile(map_fil, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map_fil, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = weights_fil * map_fil
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-fil.pdf", dpi=300, bbox_inches="tight")
+
+# #### Select SE filament only
+#
+# There is another filament in the SE that seems different
+
+cse = SkyCoord.from_name("[SSN2007] Sc 12")
+
+# +
+weights_se = get_spatial_weight_array(cse, 90, w0, axis_ratio=0.2, theta=-30)
+
+# remove other nearby regions
+weights_fil *= (1 - weights_fil)
+weights_fil *= (1 - weights_snr)
+
+map_se = convolve_fft(maps["S III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_se * map_se)
+
+levels = np.nanpercentile(map_se, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map_se, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = weights_se * map_se
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-se.pdf", dpi=300, bbox_inches="tight")
+
+# #### Select outer swoop only
+# We can use a YSO that is seen in the center of this feature: `[SBW2007b] 73`
+#
+
+cswoop = SkyCoord.from_name("[SBW2007b] 73")
+
+# +
+weights_swoop = get_spatial_weight_array(cswoop, 120, w0, axis_ratio=0.2, theta=15)
+map_swoop = convolve_fft(maps["S III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(map_swoop * weights_swoop)
+
+levels = np.nanpercentile(map_swoop, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map_swoop, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = weights_swoop * map_swoop
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-swoop.pdf", dpi=300, bbox_inches="tight")
+
+# #### Now look at what is left over
+#
+
+# +
+
+weights_all = (
+    weights_bow + weights_snr + weights_yso + weights_plume 
+    + weights_fil + weights_se + weights_swoop
+)
+weights_rest = np.maximum(1 - weights_all, 0.0)
+# eliminate the inner part
+weights_rest *= (1 - get_spatial_weight_array(cyso, 180, w0))
+
+map_rest = convolve_fft(maps["S III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights_rest * map_rest)
+#ax.imshow(weights_rest)
+
+levels = np.nanpercentile(map_rest, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map_rest, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = weights_rest * map_rest
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-rest.pdf", dpi=300, bbox_inches="tight")
 
 
