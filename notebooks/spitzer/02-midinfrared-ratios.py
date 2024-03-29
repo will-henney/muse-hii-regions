@@ -20,6 +20,7 @@
 # +
 from astropy.io import fits
 from astropy.wcs import WCS
+import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.convolution import Gaussian2DKernel
 from astropy.convolution import convolve, convolve_fft
@@ -83,6 +84,7 @@ w0.wcs.crpix = [NX / 2, NY / 2]
 w0.wcs.crval = [c0.ra.deg, c0.dec.deg]
 w0.wcs.cdelt = np.array([-1.0, 1.0]) / 3600.0
 w0.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+w0.array_shape = NY, NX 
 
 maps = {
     label: reproject_interp(
@@ -271,11 +273,11 @@ def color_color_plot(rat1, rat2, weights, ax=None, nbins=100, wx=1.0, wy=1.0, as
         origin="lower",
         aspect=aspect,
         cmap="inferno_r",
-        interpolation="none",
+        interpolation="nearest",
     )
     ax.set(
-        xlabel=f"log10( {rat1.label} )",
-        ylabel=f"log10( {rat2.label} )",
+        xlabel=f"log$_{{10}}$( {rat1.label} )",
+        ylabel=f"log$_{{10}}$( {rat2.label} )",
     )
     return im
 
@@ -532,7 +534,7 @@ NROW = 4
 fig, axes = plt.subplots(
     NROW,
     NCOL,
-    figsize=(3.5 * NCOL, 3 * NROW),
+    figsize=(3. * NCOL, 2.7 * NROW),
 #    sharex="col",
 #    sharey="row",
 )
@@ -548,6 +550,187 @@ color_color_plot(ratios["color14-09"], ratios["PAH-s3"], maps["S IV"], ax=axes[3
 fig.tight_layout(w_pad=3)
 # -
 
-fig.savefig("midinfrared-ratio-ratio-plots.pdf", bbox_inches="tight")
+fig.savefig("midinfrared-ratio-ratio-plots.pdf", dpi=300, bbox_inches="tight")
+
+# ### Try different types of weights
+#
+# We could try having a weight that falls of with distance from the bowshock peak. Or from any other point for that matter. 
+#
+# First get a coordinate grid for our images:
+
+ny, nx = maps["S IV"].shape
+xpix, ypix = np.meshgrid(np.arange(nx), np.arange(ny))
+pixcoords = w0.pixel_to_world(xpix, ypix)
+c0.to_pixel(w0)
+
+# So we can easily find the distance of each pixel from a particular point. For instance W3
+
+pixcoords.separation(c0).arcsec
+
+# Now make a function to make a weight array that falls off with distance from a point. Would be easier to do it in pixel space, so we won't actually be using separation. We need to make sure that the WCS object knows about the image shape via the `.array_shape` attribute, which is optional.
+
+# +
+from astropy.modeling.models import Gaussian2D, Sersic2D
+
+def get_spatial_weight_array(center: SkyCoord, width: float, wcs: WCS, axis_ratio=1.0, theta=0.0):
+    """
+    Create image of elliptical gaussian profile, defined by parameters:
+    
+        center is celestial coordinate of peak position
+        wcs defines pixel-to-celestial mapping
+        width is major axis in pixels
+        axis_ratio < 1 for narrower in y (before rotation)
+        theta is rotation counterclockwise
+
+    Returns 2D image data array
+    """
+    assert wcs.array_shape is not None and len(wcs.array_shape) >= 2
+    # Get pixel coordinates of image
+    xpix, ypix = np.meshgrid(np.arange(wcs.array_shape[1]), np.arange(wcs.array_shape[0]))
+    #  Pixel coordinates of peak
+    xc, yc = center.to_pixel(wcs)
+    
+    model = Gaussian2D(
+        amplitude=1.0, 
+        x_mean=xc, 
+        y_mean=yc, 
+        x_stddev=width, 
+        y_stddev=axis_ratio * width, 
+        theta=theta,
+    )
+    return model(xpix, ypix)
+
+
+
+# -
+
+# #### Select bow shock only
+#
+# Test it out by moving 10 arcsec to West of star to get approximate center of bow shock
+
+cbow = c0.spherical_offsets_by(-10 * u.arcsec, 0.0 * u.arcsec)
+cbow
+
+# +
+weights = get_spatial_weight_array(cbow, 15, w0)
+weights *= maps["S IV"]
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights)
+
+map = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = get_spatial_weight_array(cbow, 15, w0) * maps["S IV"]
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-bow.pdf", dpi=300, bbox_inches="tight")
+
+# #### Select SNR only 
+#
+# Get position of SNR
+
+csnr = SkyCoord.from_name("SNR B0057-72.2")
+
+# +
+weights = get_spatial_weight_array(csnr, 30, w0)
+weights *= maps["S IV"]
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights)
+
+map = convolve_fft(maps["S IV"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = get_spatial_weight_array(csnr, 30, w0) * maps["S IV"]
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-snr.pdf", dpi=300, bbox_inches="tight")
+
+# #### Select MYSO only 
+#
+# Get position of massive YSO C
+
+cyso = SkyCoord.from_name("Cl* NGC 346 SSN 152")
+
+# +
+weights = get_spatial_weight_array(cyso, 8, w0)
+weights *= maps["S IV"]
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0))
+ax.imshow(weights)
+
+map = convolve_fft(maps["Ne III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
+levels = np.nanpercentile(map, [50, 75, 90, 95, 99])
+linewidths = 0.3 * np.sqrt(1 + np.arange(len(levels)))
+ax.contour(map, levels=levels, cmap="Oranges", linewidths=linewidths)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+weights = get_spatial_weight_array(cyso, 8, w0) * maps["S IV"]
+
+color_color_plot(ratios["s43"], ratios["ne3s3"], weights, ax=axes[0, 0])
+color_color_plot(ratios["s43"], ratios["EWs4"], weights, ax=axes[1, 0])
+color_color_plot(ratios["s43"], ratios["color27-14"], weights, ax=axes[2, 0])
+color_color_plot(ratios["s43"], ratios["color14-09"], weights, ax=axes[3, 0])
+
+color_color_plot(ratios["color14-09"], ratios["si2s3"], weights, ax=axes[0, 1])
+color_color_plot(ratios["color14-09"], ratios["EWs4"], weights, ax=axes[1, 1])
+color_color_plot(ratios["color14-09"], ratios["color27-14"], weights, ax=axes[2, 1])
+color_color_plot(ratios["color14-09"], ratios["PAH-s3"], weights, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-yso-c.pdf", dpi=300, bbox_inches="tight")
+
+# #### Select filaments only
+#
+# ***TODO***
 
 
