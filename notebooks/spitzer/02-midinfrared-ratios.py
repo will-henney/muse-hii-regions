@@ -924,7 +924,7 @@ weights_all = (
 )
 weights_rest = np.maximum(1 - weights_all, 0.0)
 # eliminate the inner part
-weights_rest *= (1 - get_spatial_weight_array(cyso, 180, w0))
+#weights_rest *= (1 - get_spatial_weight_array(cyso, 180, w0))
 
 map_rest = convolve_fft(maps["S III"], Gaussian2DKernel(x_stddev=2.5), preserve_nan=True)
 
@@ -959,5 +959,169 @@ fig.tight_layout(w_pad=3)
 # -
 
 fig.savefig("midinfrared-ratio-ratio-plots-rest.pdf", dpi=300, bbox_inches="tight")
+
+# ### Now try and combine all of these with different colors
+#
+# I can try something similar to what I did with the spatial zones in the Mabel paper. Except that maybe add an alpha channel too. 
+
+colordb = {
+    "black": (0, 0, 0),
+    "blue": (250, 90, 30),
+    "purple": (290, 70, 40),
+    "magenta": (352, 80, 50),
+    "red": (10, 100, 50),
+    "orange": (20, 90, 60),
+    "light blue": (200, 85, 70),
+    "green": (150, 85, 70),
+}
+
+
+# +
+@dataclass
+class Zone:
+    label: str
+    weights: np.ndarray
+    color: str = "black"
+    max_alpha: float = 1.0
+    
+    
+# -
+
+# #### Make a new function to deal with multiple weight images
+
+def color_color_multiweight(
+    rat1, rat2, zones: list[Zone], ax=None, nbins=100, wx=1.0, wy=1.0, aspect="equal",
+):
+    # These are independent of the weight data
+    xmin = np.log10(rat1.scale) - wx
+    xmax = np.log10(rat1.scale) + wx
+    ymin = np.log10(rat2.scale) - wy
+    ymax = np.log10(rat2.scale) + wy
+    
+    ratmask = rat1.mask & rat2.mask 
+
+    # And now we loop over all the different zones
+    for zone in zones:
+        weights = zone.weights
+        mask = ratmask & np.isfinite(weights) & (weights > 0.0)
+        x = np.log10(rat1.ratio[mask])
+        y = np.log10(rat2.ratio[mask])
+
+        H, xedges, yedges = np.histogram2d(
+            x,
+            y,
+            bins=nbins,
+            range=[[xmin, xmax], [ymin, ymax]],
+            density=True,
+            weights=weights[mask],
+        )
+        cmap = sns.light_palette(
+            colordb[zone.color],
+            input="husl",
+            as_cmap=True,
+        )
+        alpha = zone.max_alpha * H / H.max()
+        if ax is None:
+            ax = plt.gca()
+        im = ax.imshow(
+#            H.T,
+            np.ones_like(H).T,
+            extent=[xmin, xmax, ymin, ymax],
+            origin="lower",
+            aspect=aspect,
+            cmap=cmap,
+            interpolation="nearest",
+            alpha=alpha.T,
+            vmin=0.0,
+            vmax=1.0,
+        )
+    # End of loop over the zones
+    
+    # Finally add the axis labels
+    ax.set(
+        xlabel=f"log$_{{10}}$( {rat1.label} )",
+        ylabel=f"log$_{{10}}$( {rat2.label} )",
+    )
+    return im
+
+
+# #### Set up list of zones
+
+# +
+zones = [
+    Zone("All", maps["S IV"], "black", max_alpha=0.3),
+    Zone("Swoop", weights_swoop * map_swoop, "magenta", max_alpha=0.5),
+    Zone("SE", weights_se * map_se, "green"),
+    Zone("Filaments", weights_fil * map_fil, "purple"),
+    Zone("Plume", weights_plume * map_plume, "blue"),
+    Zone("MYSO", weights_yso * map_yso, "light blue"),
+    Zone("Bow shock", weights_bow * map_bow, "red"),
+    Zone("SNR", weights_snr * map_snr, "orange"),
+#    Zone("Remainder", weights_rest * map_rest, ""),
+]
+
+zones_snr = [
+    Zone("All", maps["S IV"], "black", max_alpha=0.3),
+    Zone("SNR", weights_snr * map_snr, "orange"),
+]
+# -
+
+# #### Try the muticolor plots
+# First of all do a test with just a single panel:
+
+fig, ax = plt.subplots()
+color_color_multiweight(ratios["s43"], ratios["EWs4"], zones, ax=ax)
+
+# +
+NCOL = 2
+NROW = 4
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+
+color_color_multiweight(ratios["s43"], ratios["ne3s3"], zones, ax=axes[0, 0])
+color_color_multiweight(ratios["s43"], ratios["EWs4"], zones, ax=axes[1, 0])
+color_color_multiweight(ratios["s43"], ratios["color27-14"], zones, ax=axes[2, 0])
+color_color_multiweight(ratios["s43"], ratios["color14-09"], zones, ax=axes[3, 0])
+
+color_color_multiweight(ratios["color14-09"], ratios["si2s3"], zones, ax=axes[0, 1])
+color_color_multiweight(ratios["color14-09"], ratios["EWs4"], zones, ax=axes[1, 1])
+color_color_multiweight(ratios["color14-09"], ratios["color27-14"], zones, ax=axes[2, 1])
+color_color_multiweight(ratios["color14-09"], ratios["PAH-s3"], zones, ax=axes[3, 1])
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-zones.pdf", dpi=300, bbox_inches="tight")
+
+# #### And an image of the nebula, showing the zones
+
+fig, ax = plt.subplots(subplot_kw=dict(projection=w0),)
+for zone in zones[:]:
+    cmap = sns.light_palette(
+        colordb[zone.color],
+        input="husl",
+        as_cmap=True,
+    )
+    alpha = np.where(
+        np.isfinite(zone.weights) & (zone.weights > 0.0),
+        0.8 * zone.max_alpha * zone.weights / np.nanmax(zone.weights),
+        0.0
+    )
+    ax.imshow(
+            np.ones_like(zone.weights),
+            cmap=cmap,
+            interpolation="nearest",
+            alpha=alpha,
+            vmin=0.0,
+            vmax=1.0,
+        )
+
+
+fig.savefig("midinfrared-color-zones.pdf", dpi=300, bbox_inches="tight")
+
+fig, ax = plt.subplots()
+color_color_multiweight(ratios["ne3s3"], Ratio("ne32", "Ne III", "Ne II", blur=2.5), zones, ax=ax)
 
 
