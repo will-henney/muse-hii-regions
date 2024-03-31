@@ -18,6 +18,8 @@
 # The idea is to look at the ionization-sensitive ratios and compare them with the optical
 
 # +
+from __future__ import annotations
+
 from astropy.io import fits
 from astropy.wcs import WCS
 import astropy.units as u
@@ -970,9 +972,9 @@ colordb = {
     "purple": (290, 70, 40),
     "magenta": (352, 80, 50),
     "red": (10, 100, 50),
-    "orange": (20, 90, 60),
+    "orange": (40, 90, 60),
     "light blue": (200, 85, 70),
-    "green": (150, 85, 70),
+    "green": (120, 85, 70),
 }
 
 
@@ -1051,10 +1053,10 @@ def color_color_multiweight(
 zones = [
     Zone("All", maps["S IV"], "black", max_alpha=0.3),
     Zone("Swoop", weights_swoop * map_swoop, "magenta", max_alpha=0.5),
-    Zone("SE", weights_se * map_se, "green"),
-    Zone("Filaments", weights_fil * map_fil, "purple"),
-    Zone("Plume", weights_plume * map_plume, "blue"),
-    Zone("MYSO", weights_yso * map_yso, "light blue"),
+    Zone("SE", weights_se * map_se, "purple"),
+    Zone("Filaments", weights_fil * map_fil, "green"),
+    Zone("Plume", weights_plume * map_plume, "light blue"),
+    Zone("MYSO", weights_yso * map_yso, "blue"),
     Zone("Bow shock", weights_bow * map_bow, "red"),
     Zone("SNR", weights_snr * map_snr, "orange"),
 #    Zone("Remainder", weights_rest * map_rest, ""),
@@ -1123,5 +1125,188 @@ fig.savefig("midinfrared-color-zones.pdf", dpi=300, bbox_inches="tight")
 
 fig, ax = plt.subplots()
 color_color_multiweight(ratios["ne3s3"], Ratio("ne32", "Ne III", "Ne II", blur=2.5), zones, ax=ax)
+
+# #### Put it all together in a more square figure
+#
+# We can have a 3 x 3 grid with the 8 ratio-ratio figures around the outside and the celestial image in the center
+
+# +
+NCOL = 3
+NROW = 3
+fig, axes = plt.subplots(
+    NROW,
+    NCOL,
+    figsize=(3. * NCOL, 2.7 * NROW),
+)
+
+color_color_multiweight(ratios["s43"], ratios["ne3s3"], zones, ax=axes[0, 1])
+color_color_multiweight(ratios["s43"], ratios["EWs4"], zones, ax=axes[0, 0])
+color_color_multiweight(ratios["s43"], ratios["color27-14"], zones, ax=axes[1, 0])
+color_color_multiweight(ratios["s43"], ratios["color14-09"], zones, ax=axes[2, 0])
+
+color_color_multiweight(ratios["color14-09"], ratios["si2s3"], zones, ax=axes[2, 1])
+color_color_multiweight(ratios["color14-09"], ratios["EWs4"], zones, ax=axes[0, 2])
+color_color_multiweight(ratios["color14-09"], ratios["color27-14"], zones, ax=axes[1, 2])
+color_color_multiweight(ratios["color14-09"], ratios["PAH-s3"], zones, ax=axes[2, 2])
+
+fig.delaxes(axes[1, 1])
+axes[1, 1] = fig.add_subplot(3, 3, 5, projection=w0)
+
+for zone in zones[:]:
+    cmap = sns.light_palette(
+        colordb[zone.color],
+        input="husl",
+        as_cmap=True,
+    )
+    if "YSO" in zone.label:
+        alpha_adjust = 1.0
+    else:
+        alpha_adjust = 0.7
+    alpha = np.where(
+        np.isfinite(zone.weights) & (zone.weights > 0.0),
+        alpha_adjust * zone.max_alpha * zone.weights / np.nanmax(zone.weights),
+        0.0
+    )
+    axes[1, 1].imshow(
+            np.ones_like(zone.weights),
+            cmap=cmap,
+            interpolation="nearest",
+            alpha=alpha,
+            vmin=0.0,
+            vmax=1.0,
+            origin="lower",
+        )
+
+fig.tight_layout(w_pad=3)
+# -
+
+fig.savefig("midinfrared-ratio-ratio-plots-3x3-zones.pdf", dpi=300, bbox_inches="tight")
+
+
+# # What happens to the ratio-ratio diagram when you mix two pure states?
+#
+# I have a feeling that I have calculated this before, and you get straight lines in linear ratio space, but they are curved in the more common case of log ratios. *But it turns out that I was missing some subtleties*
+#
+#
+
+def mix_pure_ratios(
+    A_B_1: float, 
+    A_B_2: float, 
+    f_B_1: np.ndarray | None, 
+    f_A_1: np.ndarray | None = None):
+    """Calculate the ratio A/B of a mixture of two states 1 and 2
+    
+    Inputs:
+    
+    A_B_1: ratio A/B for state 1
+    A_B_2: ratio A/B for state 2
+    f_B_1: array of fractions of the denominator B emission that comes from state 1
+    f_A_1: optiona array of fractions of the numerator A emission that comes from state 1 
+           (None by default and if set, then f_B_1 must be None)
+
+    Returns: ratio of the mixture (array of same shape as f_A_1, or f_B_1 if set)
+    """
+    if f_A_1 is None:
+        # case that we know emission fraction of denominator B
+        assert np.all(0.0 <= f_B_1) and  np.all(f_B_1 <= 1.0)
+        # fraction of B emission from state 2
+        f_B_2 = 1 - f_B_1
+        # total B emission
+        Bsum = f_B_1 + f_B_2
+        assert np.allclose(Bsum, 1.0)
+        Asum = f_B_1 * A_B_1 + f_B_2 * A_B_2
+    else:
+        # case that we know emission fraction of numerator A
+        assert np.all(0.0 <= f_A_1) and  np.all(f_A_1 <= 1.0)
+        assert f_B_1 is None
+        # fraction of A emission from state 2
+        f_A_2 = 1 - f_A_1
+        # total A emission
+        Asum = f_A_1 + f_A_2
+        assert np.allclose(Asum, 1.0)
+        Bsum = f_A_1 / A_B_1 + f_A_2 / A_B_2
+       
+    return Asum / Bsum
+
+
+# So it turns out that it depends if we know the fraction of the numerator or the denominator. So, we can try out the different cases:
+# * DD: same denominator on x and y axis
+# * NN: same numerator on x and y axis
+# * ND: numerator of x is same as denominator of y
+# * DN: denominator of x is the same as numerator of y
+# * M: all 4 quantities are different (numerator and denominator of x and y axes)
+#
+# Obviously, for case M we cannot trace the mixing lines. But we can for the other cases
+
+def ratio_ratio_xymixline(
+    ratrat1: tuple[float, float], 
+    ratrat2: tuple[float, float], 
+    case: str = "DD",
+    nfracs: int = 200,
+):
+    assert case in ["DD", "NN", "ND", "DN"]
+    xrat1, yrat1 = ratrat1
+    xrat2, yrat2 = ratrat2
+    fracs = np.linspace(0.0, 1.0, nfracs)
+
+    if case[0] == "D":
+        xratios = mix_pure_ratios(xrat1, xrat2, f_B_1=fracs, f_A_1=None)
+    else:
+        xratios = mix_pure_ratios(xrat1, xrat2, f_B_1=None, f_A_1=fracs)
+
+    if case[1] == "D":
+        yratios = mix_pure_ratios(yrat1, yrat2, f_B_1=fracs, f_A_1=None)
+    else:
+        yratios = mix_pure_ratios(yrat1, yrat2, f_B_1=None, f_A_1=fracs)
+
+    return xratios, yratios
+    
+
+
+ratio_ratio_xymixline((1, 0.5), (3, 10), "DD", 10)
+
+ratio_ratio_xymixline((1, 0.5), (3, 10), "NN", 10)
+
+import itertools
+
+purestates_ratios = 0.1, 0.3, 1.0, 3.0, 10.0
+purestates_xy = list(itertools.product(purestates_ratios, repeat=2))
+combos = list(itertools.combinations(purestates_xy, 2))
+
+# +
+labels = {
+    "DD": ("A / B", "C / B"),
+    "NN": ("A / B", "A / C"),
+    "DN": ("A / B", "B / C"),
+    "ND": ("A / B", "C / A"),
+}
+
+fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+for i, xcase in enumerate("DN"):
+    for j, ycase in enumerate("DN"):
+        ax = axes[1 - j, i]
+        case = xcase + ycase
+        xlabel, ylabel = labels[case]
+        ax.scatter(*zip(*purestates_xy))
+        for xy1, xy2 in combos:
+            ax.plot(
+                *ratio_ratio_xymixline(xy1, xy2, case=case), 
+                color="k", 
+                linewidth=0.5,
+                alpha=0.3,
+            )
+        ax.set(
+            xscale="log",
+            yscale="log",
+            xlabel=xlabel,
+            ylabel=ylabel,
+        )
+        ax.set_aspect("equal")
+        ax.set_title(f"Case: {case}")
+
+fig.tight_layout(pad=2)
+# -
+
+fig.savefig("ratio-ratio-mixing-line-plots.pdf", dpi=300, bbox_inches="tight")
 
 
