@@ -404,7 +404,7 @@ h1 = pn.RecAtom("H", 1)
 
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-e4686 = he2.getEmissivity(tem=[12500, 15500], den=100, wave=4686)
+e4686 = he2.getEmissivity(tem=[12500, 15500], den=1, wave=4686)
 e4861 = h1.getEmissivity(tem=[12500, 15500], den=1, wave=4861)
 e5875 = he1.getEmissivity(tem=[12500, 15500], den=1, wave=5876)
 e4686, e4861, e5875
@@ -568,7 +568,7 @@ From the profile graph above, the peak He II brightness is about 400 MUSE bright
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 peak_heii = muse_bright_unit * 400
-peak_heiir
+peak_heii
 ```
 
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
@@ -730,6 +730,99 @@ $$
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
+```
+
+## Alternative route to density from Balmer lines
+
+We can estimate the bow shock shell emission measure from the jump in the surface brightness of H beta, say. This has the advantage that we know that the hydrogen is fully ionized.
+
+```python
+jump_hb = 31.7 * 300 * muse_bright_unit
+f"{jump_hb=}"
+```
+
+The 300 is my estimate from the above figure of the Hb jump at the bow shock inner edge, while the 31.7 is what we divided Hb by before plotting it. So this should be the surface brightness of Hb, which should be EM times emission coefficient / 4 pi
+
+```python
+EM = jump_hb * (4 * np.pi * u.sr).to(u.arcsec**2) / (e4686 * pn_e_units)
+EM
+```
+
+There are two answers, corrending to assumed temperature of 12,500 of 15,500 K
+
+```python
+np.sqrt(EM / depth_heii).to(u.cm**-3)
+```
+
+So that gives exactly the same value for the density, which means the He must be fully doubly ionized
+
+
+### Sanity check from He II / H I
+
+In principle, we can come to the same conclusion starting from the 4686/4861 ratio, so long as we account for the fraction of the H beta emission that comes from the bow shock.
+
+```python
+fig, ax = plt.subplots(figsize=(15, 6))
+ix0 = 227.5
+nx = len(heii_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+imargin = 10
+ratio = heii_profile / hb_profile
+ax.plot(pos[imargin:], ratio[imargin:], label="He II / H beta", lw=4)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=3, loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    ylabel="Line ratio",
+#    xlim=[-12, 22],
+    ylim=[-0.005, 0.018],
+)
+sns.despine()
+fig.savefig(figdir / "ngc346-bow-shock-heii-hbeta-cuts.pdf")
+```
+
+So the peak ratio is about 0.015. We have to divide this by the fraction of H beta that comes frm the bow shock.
+
+```python
+hb_bow_frac = 0.3
+heii_hb_bow_max = np.max(ratio[imargin:]) / hb_bow_frac
+heii_hb_bow_max
+```
+
+Then we should have
+$$
+\texttt{heii\_hb\_bow\_max} = 
+\frac{I(4686)}{I(4681)} =
+\frac{
+\int e(4686)\, n(\mathrm{He^{++}})\, n_e\, dz
+}{
+\int e(4861)\, n(\mathrm{H^+})\, n_e\, dz
+}
+\approx
+\frac{e(4686)}{e(4861)}\,
+y(\mathrm{He})\,
+x(\mathrm{He}^{++})
+$$
+
+```python
+yhe = 0.08325295
+xheiii = (heii_hb_bow_max * e4861) / (yhe * e4686)
+xheiii
+```
+
+Note that this assumes that the line-of-sight path length is the same for He++ and for H+. In reality it may be longer for H+ because the thickness of the emitting shell is greater. In the thin shell approximation, the ratio of path lengths is the sqrt of the ratio of thickness. 
+
+```python
+
+```
+
+```python
+
 ```
 
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
@@ -1031,14 +1124,14 @@ sns.despine()
 ```
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-bs_5048 = im5048[bsbox.slices].data.mean()
-bs_5876 = im5876[bsbox.slices].data.mean()
+bs_5048 = im5048[bs_slices].data.mean()
+bs_5876 = im5876[bs_slices].data.mean()
 bs_5048 / bs_5876
 ```
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-bg_5048 = im5048[bgbox.slices].data.mean()
-bg_5876 = im5876[bgbox.slices].data.mean()
+bg_5048 = im5048[bg_slices].data.mean()
+bg_5876 = im5876[bg_slices].data.mean()
 bg_5048 / bg_5876
 ```
 
@@ -1061,20 +1154,21 @@ siii_profile = make_profile(im9069)
 ```python pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
-nx = len(hei_profile)
+nx = len(sii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
+pos2 = (np.arange(len(siii_profile)) - ix0) * 0.2
 
 ax.plot(
     pos, 0.01 * n_sii_profile, ds="steps-mid", label="$n$([S II]) / 100 cm$^{-3}$", lw=2
 )
 ax.plot(
-    pos, 0.0001 * T_siii_profile, ds="steps-mid", label="$T$([S III]) / 10,000 K", lw=2
+    pos2, 0.0001 * T_siii_profile, ds="steps-mid", label="$T$([S III]) / 10,000 K", lw=2
 )
 ax.plot(
     pos, 1.0 * sii_profile / np.median(sii_profile), label="[S II] brightness", lw=3
 )
 ax.plot(
-    pos, 1.8 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3
+    pos2, 1.8 * siii_profile / np.median(siii_profile), label="[S III] brightness", lw=3
 )
 
 ax.axhline(0, color="k")
@@ -1099,13 +1193,14 @@ So the [S III] temperature is significantly larger than the [O III] temperature 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
-nx = len(hei_profile)
+nx = len(sii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
+pos2 = (np.arange(len(siii_profile)) - ix0) * 0.2
 
 ax.plot(pos, 0.01 * n_sii_profile, label="$n$([S II]) / 100 cm$^{-3}$", lw=4)
-ax.plot(pos, 0.0001 * T_siii_profile, label="$T$([S III]) / 10,000 K", lw=3)
-ax.plot(pos, 1.0 * sii_profile / siii_profile, label="[S II] / [S III]", lw=3)
-ax.plot(pos, 4.0 * oi_profile / sii_profile, label="[O I] / [S II]", lw=3)
+ax.plot(pos2, 0.0001 * T_siii_profile, label="$T$([S III]) / 10,000 K", lw=3)
+ax.plot(pos2, 1.0 * sii_profile[1:] / siii_profile, label="[S II] / [S III]", lw=3)
+ax.plot(pos2, 4.0 * oi_profile / sii_profile[1:], label="[O I] / [S II]", lw=3)
 
 
 ax.axhline(0, color="k")
@@ -1127,10 +1222,12 @@ fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
 imhei_c = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
 imhi_c = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
 imheii_c = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
+imcont2 = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
+
 ```
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-m = imcont.data > 500.0
+m = imcont2.data > 500.0
 for im in imhei_c, imheii_c, imhi_c:
     im.mask = im.mask | m
 ```
@@ -1391,4 +1488,8 @@ cl3.getTemDen(R2 - 5 * dR2, tem=15000, wave1=5518, wave2=5538)
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 cl3.getTemDen(R2 - 5 * dR2, tem=1000, wave1=5518, wave2=5538)
+```
+
+```python
+
 ```

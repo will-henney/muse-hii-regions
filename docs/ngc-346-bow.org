@@ -6,7 +6,7 @@
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [1/3] Return to bow project 2023 Summer
+** TODO [3/4] Return to bow project 2023 Summer
 - [2024-01-18 Thu] Second return 2024 January
   - Inspired by the JWST images
     - which show lots of additional bow shocks 
@@ -17,25 +17,42 @@
     - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
   - [-] Maybe repeat for the Peter Zeigler cube
   - [ ] Think what are the essentials for the paper
-*** TODO Issues in re-running some notebooks 2024
+*** DONE Issues in re-running some notebooks 2024
+CLOSED: [2024-04-11 Thu 18:30]
 - [2024-03-12 Tue] I wanted to check on what the limits of the [Cl III] densities were, so I was running the notebook 01-02-yet-more-line-ratios.ipynb
   - lots of little things were working strangely, mainly relate to different array sizes between different line maps
     - so I need to work out where this is coming from
     - it looks like the line maps are actually generated in the 03 series of notebooks, so I need to go back to those
-    - 
-*** TODO Better projection of the Cloudy models
+- [2024-04-11 Thu] *hurray* I solved this problem I think
+  - The issue was that on June 4 I made a mistake when running one of the new PZ series of notebooks and I overwrote the original versions of the hei-5875 maps. I didn't notice this until after I had committed the changes.
+  - This is why I was getting an error about inconsistent array dimensions when trying to take line ratios
+  - Anyhow, I managed to fix it by checking out those files from the git history, which I did using magit as follows
+    - visit fits file in emacs and do ~C-c G~ to bring up the magit file actions
+    - type ~, c~ to checkout a previous revision
+    - paste in the id of the commit I wanted to use (previously copied from the history)
+    - confirm the file I want to check out
+    - had to repeat this for all 3 files, which was a bit of a pain
+  - And that now works in the notebook, so all is now sorted
+*** DONE Better projection of the Cloudy models
+CLOSED: [2024-04-11 Thu 10:10]
 - In the original notebooks where I looked at the output from the Cloudy models, I had an integral to do the projection onto the plane of the sky
   - but there is something wrong with it because it gives spikes in the output
   - I need to go back and see if there is a better way to do this
   - possibly using the old rot-splat method
   - or even looking into how pyCloudy does it
 - in order to get to this, we have a whole load of yak shaving to do
+**** DONE All working now with a change of variables
+CLOSED: [2024-04-11 Thu 10:09]
+- We now do the integral explicitly in z, instead of in r, which is much better since it avoids any singularities
+- Here is the [[file:../notebooks/ngc346-orig/20-00-ngc346-bowshock-cloudy.py::Alternatively, we can do the integral in z][relevant section of the notebook]] 
+- And we do not need to do any interpolation either
 **** DONE Update cloudytab to accept pathlib.Path objects as well a strings
 CLOSED: [2024-03-13 Wed 10:39]
 - While I am doing this, I would like to update the package to use rye
 - And maybe even publish it to PyPI
 - Note that previously I had been including the cloudytab package as a git subtree (legally distinct from submodule I think)
   - see [[id:FEA75A95-3429-4C02-B970-94D7BC5087F4][Another git subtree for cloudytab library]] in [[file:README-2021.org]]
+
 ***** DONE Convert project to rye
 CLOSED: [2024-03-12 Tue 20:42]
 - First I updated rye
@@ -159,7 +176,7 @@ STEM=02-01-Raman-Wings-IR-Source-C
    #+begin_src sh
      jupyter nbconvert --to html $STEM.ipynb
    #+end_src
-*** Do versions of notebooks but with Peter data swapped in
+*** TODO Do versions of notebooks but with Peter data swapped in
 - [ ] Decide exactly what needs to be done for the bow paper
   - I think mainly the line ratios series of notebooks
     - ~01-00-line-ratios.ipynb~ will be a good one to start with
@@ -183,6 +200,24 @@ STEM=02-01-Raman-Wings-IR-Source-C
   - Disadvantage is that this deviates from what I did with the ESO cube
 **** 01-00-line-ratios
 *** Some more ideas about things to add to paper
+**** Density from Ha surface brightness
+- We see an increase in Ha at the inner edge of the bow shell, although it is pretty weak (about 40% of the background)
+- So we need the following steps:
+  1. We first need to calibrate this in physical surface brightness units
+  2. Then we need to make the small correction for extinction
+  3. Then convert to emission measure using an assumed effective recombination coefficient at the relevant temperature
+  4. Finally, we have to estimate the path length through the shell. This is the most uncertain step. But we can assume it is similar to the chord length on the plane of the sky, or we could do the calculation based on the effective thickness
+- It turns out that I already did a similar calculation for the He++ in the notebook [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py::So electron density of 11 pcc!**][01-02-yet-more-line-ratios.py]]
+  - Note that this has not been ported to the PZ series yet
+  - So I am going to carry on doing this in the same notebook, since it is already set up with all the pyneb stuff and the brightness maps
+***** Step 1: Calibrate in physical units
+- Muse cube is in units of
+  : 1e-20 erg / (Angstrom cm2 s)
+- With an implicit extra unit of per pixel
+***** Step 2: Correct for extinction
+***** Step 3: Convert to emission measure
+***** Step 4: Estimate path length
+
 **** Line ratios
 - We can look at correlations between relative line strength (wrt H beta)
 - We can do this per-pixel and colored by the Zones from the DRL paper
