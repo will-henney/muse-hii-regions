@@ -404,10 +404,15 @@ h1 = pn.RecAtom("H", 1)
 
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-e4686 = he2.getEmissivity(tem=[12500, 15500], den=1, wave=4686)
-e4861 = h1.getEmissivity(tem=[12500, 15500], den=1, wave=4861)
-e5875 = he1.getEmissivity(tem=[12500, 15500], den=1, wave=5876)
+temperatures = [12500, 13800, 15500]
+e4686 = he2.getEmissivity(tem=temperatures, den=1, wave=4686)
+e4861 = h1.getEmissivity(tem=temperatures, den=1, wave=4861)
+e5875 = he1.getEmissivity(tem=temperatures, den=1, wave=5876)
 e4686, e4861, e5875
+```
+
+```python
+np.mean(e4861[1])
 ```
 
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
@@ -486,6 +491,7 @@ import astropy.units as u
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 muse_bright_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2 / (0.2 * u.arcsec) ** 2
+muse_bright_unit.to(u.erg / u.s / u.cm ** 2 / u.sr)
 ```
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
@@ -634,7 +640,7 @@ ne
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
 **So electron density of 11 pcc!**
 
-Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is alower limit (density would scale approximately as $x_{++}^{-1/2}$).
+Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is a lower limit (density would scale approximately as $x_{++}^{-1/2}$).
 <!-- #endregion -->
 
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
@@ -737,24 +743,39 @@ Q2
 We can estimate the bow shock shell emission measure from the jump in the surface brightness of H beta, say. This has the advantage that we know that the hydrogen is fully ionized.
 
 ```python
-jump_hb = 31.7 * 300 * muse_bright_unit
+A_hb = 0.33
+jump_hb = 31.7 * 300 * muse_bright_unit * 10**(0.4*A_hb)
 f"{jump_hb=}"
 ```
 
-The 300 is my estimate from the above figure of the Hb jump at the bow shock inner edge, while the 31.7 is what we divided Hb by before plotting it. So this should be the surface brightness of Hb, which should be EM times emission coefficient / 4 pi
+The 300 is my estimate from the above figure of the Hb jump at the bow shock inner edge, while the 31.7 is what we divided Hb by before plotting it. 
+
+Thhen we also correct for the dust extinction `A_hb`. 
+
+So this should be the intrinsic surface brightness of Hb, which should be EM times emission coefficient / 4 pi
+
 
 ```python
-EM = jump_hb * (4 * np.pi * u.sr).to(u.arcsec**2) / (e4686 * pn_e_units)
+EM = jump_hb * (4 * np.pi * u.sr).to(u.arcsec**2) / (e4861 * pn_e_units)
 EM
 ```
 
-There are two answers, corrending to assumed temperature of 12,500 of 15,500 K
+There are three answers, corrending to assumed temperature of 12,500, 13,800, or 15,500 K
 
 ```python
 np.sqrt(EM / depth_heii).to(u.cm**-3)
 ```
 
-So that gives exactly the same value for the density, which means the He must be fully doubly ionized
+So that gives a bigger density than I was getting before. On the other hand, it might be a slight over-estimate since the H+ path length may be largerby a factor of 2 (see next section). There is also a small correction for the ionized helium contribution to the electron density, but that is much smaller than the uncertainty in the path length. 
+
+So, we would finally get
+
+
+```python
+np.sqrt(EM / (2 * depth_heii)).to(u.cm**-3)
+```
+
+So, taking into account the uncertainty in the path length would give us a hydrogen density of 35 +/- 10 pcc
 
 
 ### Sanity check from He II / H I
@@ -786,7 +807,9 @@ sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-heii-hbeta-cuts.pdf")
 ```
 
-So the peak ratio is about 0.015. We have to divide this by the fraction of H beta that comes frm the bow shock.
+So the peak ratio is about 0.015. Note that we already did this once above in the *He II emission measure* section. We got exactly the same value. 
+
+We now have to divide this by the fraction of H beta that comes frm the bow shock.
 
 ```python
 hb_bow_frac = 0.3
@@ -810,12 +833,22 @@ x(\mathrm{He}^{++})
 $$
 
 ```python
+e4686, e4861, e4686 / e4861
+```
+
+So the He II emission coefficient is about 12 times larger than H beta, which almost exactly cancels out the He abundance factor. And the temperature dependence is very slight.
+
+```python
 yhe = 0.08325295
 xheiii = (heii_hb_bow_max * e4861) / (yhe * e4686)
 xheiii
 ```
 
 Note that this assumes that the line-of-sight path length is the same for He++ and for H+. In reality it may be longer for H+ because the thickness of the emitting shell is greater. In the thin shell approximation, the ratio of path lengths is the sqrt of the ratio of thickness. 
+
+The ratio of thicknesses is between 2 and 5, depending on just how we measure it. So this would give a ratio of path lengths of about (2 +/- 1), which is also what you would have guessed by looking at the chord lengths on the plane of the sky (for [Ar IV] and He II). 
+
+This would give a final value of $x(\mathrm{He^{++}}) \approx 0.1$
 
 ```python
 

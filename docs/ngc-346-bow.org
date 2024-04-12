@@ -210,14 +210,64 @@ STEM=02-01-Raman-Wings-IR-Source-C
 - It turns out that I already did a similar calculation for the He++ in the notebook [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py::So electron density of 11 pcc!**][01-02-yet-more-line-ratios.py]]
   - Note that this has not been ported to the PZ series yet
   - So I am going to carry on doing this in the same notebook, since it is already set up with all the pyneb stuff and the brightness maps
+***** Prior work relevant to this
+- I already did work on the He++ line, which is described at
+  - [[id:2B8BE02D-527B-413D-9FB9-B122B7D7B7EC][He II lines]] in this file
+    - Refers to various calculations in jupyter notebooks, but then does more calculations
+    - Working to determine He++ ionizing luminosity, Q_2
+      - Q_2 = (2.8 +/- 0.1)e45 /s
+      - Based on total He II 4686 flux of 2.04e-15 erg/s/cm^2 giving  L(4686) = 9.28e32 erg/s
+      - Then we have Q_2 = \alpha_B(He^++) L(4686) / e(4686) (\Omega / 4\pi) where \alpha_B(He^++) and e(4686) come from pyneb
+      - But the biggest uncertainty is going to be the solid angle, \Omega
+    - Then calculation of electron density from the peak He II 4686 surface brightness
+      - But this also depends on the He++ ionization fraction
+  - [[id:BFFEAFD1-2FAD-47BC-BFAE-9075C9E23E24][Helium-plus ionizing luminosities]] in [[file:ngc-346.org]]
+    - Mainly concerned with the He++ ionizing luminosity, Q_2, which it relates to the stellar atmosphere models
+      - Q_2 = 2.8e45 /s which is more or less consistent with the POWR model ~SMC-OB-I 50-42~
+    - Also calculates thickness of the He++ shell
+      - h =  0.61 pc = 2 arcsec
+    - And finally calculates the He++ ionization fraction
+      - x = 0.63 and H density n = 13 pcc
+  - Other calculations in the notebook [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py]]
+    - Here is where I worked out various complementary quantities
+    - The average ionization fraction of He++ for the entire path length through the ionized nebula is only about 0.02
+      - I got 0.025 originally, but now it seems to be 0.016
+    - This is consistent with the small observed dip in the He+ fraction from 5875/4861
+    - So if we take seriously the idea that the bow shock is 30% contribution to the H Balmer emission, then this gives a x(He++) = 0.07 for the bow shock
+      - By accounting for the smaller path length for He++ vs H+, we can push this up to 0.1
+    - *this seems to contradict the previous calculation*
+  - OK, so let's do the calculation for H+ too
 ***** Step 1: Calibrate in physical units
 - Muse cube is in units of
   : 1e-20 erg / (Angstrom cm2 s)
-- With an implicit extra unit of per pixel
+  - With an implicit extra unit of per spaxel (0.2 arcsec x 0.2 arcsec)
+  - We are summing along the wavelength axis, which has 1.4 Angstrom pixels
+  - So final result is 1.489e-8 erg / s / cm^2 / sr
+- Measured H beta brightness is 950 / (3 * 0.0105) = 3e4 Muse units
+  - Fraction that we attribute to the bow shock is 0.3
+  - So the bow shock brightness is 9e3 Muse units = 1.3e-4 erg / s / cm^2 / sr
+  
 ***** Step 2: Correct for extinction
+- For the bow shock region we measure E(B-V) = 0.097
+- We calculate the extinction curve in the notebook [[file:../notebooks/ngc346-new/PZ-01-01-more-line-ratios.py]]
+- At H beta this gives A(H beta) = 0.33, so we need to multiply by 10**(0.4 0.33) = 1.36
+- So intrinsic brightness is 1.8e-4 erg / s / cm^2 / sr
 ***** Step 3: Convert to emission measure
+- The pyneb emission coefficient e(4861) is in erg cm^3 /s (of order 1e-25)
+- So we have that
+  \[I(4861) = \int n_e n_p[e(4861) / 4\pi] dz\]
+- EM = \int n_e n_p dz = 4\pi I(4861) / e(4861)
+- We have estimates of T = (15.5 \pm 1) kK from [Ar IV] or T = (13.8 \pm 0.6) kK from [O III]
+- Taking the average of these, we get  e(4861) = 9.3e-26 erg cm^3 / s
+- So final result for emission measure is EM = 2.4e22 cm^{-5}
 ***** Step 4: Estimate path length
-
+- For the He II shell, I was using 60 pixels, but now that I look at it, I think that 40 pixels better represents the FWHM of the He II brightness
+- For H I, I should use something bigger. probably best to use the FWHM from the [Ar IV] line, which is about 90 pixels
+- So path length = 90 0.2 61700 au = 1.66e19 cm (or 5.4 pc)
+***** Step 5: Estimate density
+- Assuming that He is all singly ionized (a pretty good assumption), we can say that n_e \approx (1 + y) n_p = 1.08 n_p
+- So n_p = sqrt(EM / 1.08 path length) = 37 cm^{-3}
+- With an uncertainty of at least 25%
 **** Line ratios
 - We can look at correlations between relative line strength (wrt H beta)
 - We can do this per-pixel and colored by the Zones from the DRL paper
@@ -1670,6 +1720,9 @@ Try this in a notebook
 ** Analysis of bow shock density, etc
 
 *** He II lines
+:PROPERTIES:
+:ID:       2B8BE02D-527B-413D-9FB9-B122B7D7B7EC
+:END:
 + I have already tried to do this analysis in notebook 01-02:
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.py]]
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.ipynb]]
