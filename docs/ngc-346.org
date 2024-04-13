@@ -668,11 +668,12 @@ CLOSED: [2021-05-29 Sat 00:16]
 + The Q0' (H0) and Q2' (He+) columns are ionizing luminosities rescaled so that the model has a bolometric luminosity of log L = 5.98, as implied by the cooler Rivero-Gonzalez solution
   + [X] We should also rescale the Mdot values - /now done in the final column/
   + All these models now give Q_0 = 49.80 +/- 0.01
-+ The observationally derived Q2 is 45.45
-  + For T = 50,000 K this is consistent with the SMC-OB-I 50-42 model, with Mdot = 2.2e-7
-  + This is the intermediate wind case - the stronger wind has 2x too high a Q_2 (45.74) and the weaker wind has 4x too small
-  + The higher gravity model (50-44) would require a slightly stronger wind (intermediate between I and II) to get the right Q_2
-  + The lower temperature model (49-42) would require the strong wind (SMC-OB-II), which has Mdot = 2.3e-6
++ The observationally derived Q2 is 45.62
+  + [2024-04-12 Fri] Updated to slightly higher value
+  + For T = 50,000 K this is in between the SMC-OB-I (intermediate wind) and SMC-OB-II (strong wind) 50-42 models
+    + (62 - 41) / (74 - 41) = 0.64 is the fraction between I and II => log Mdot = -6.02 => Mdot = 1.05e-6
+    + The weaker wind has 6x too small a value of Q2
+  + The higher gravity model (50-44) would require a slightly stronger wind to get, which has Mdot = 2.3e-6
 | Grid       | Model | log L | V_inf | log M_dot |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 | 1e4 Q2/Q0 | Q3/Q0 |   Q0' |   Q2' | Mdot' |
 |------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
 | OB-I       | 56-42 | 6.230 | 4136 |       -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |

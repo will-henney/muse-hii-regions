@@ -657,10 +657,13 @@ im4686[160:210, 235:255].plot(vmin=0, vmax=400)
 muse_flux_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2
 ```
 
+Calculate the intrinsic flux of the He II line, taking into account the foreground extinction (calculated from the Balmer decrement in the previous notebook)
+
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 cutout = im4686[160:210, 235:255]
 m = (cutout.data > 0.0) & ~cutout.mask
-F_heii = muse_flux_unit * np.sum(cutout.data[m])
+A_heii = 0.34
+F_heii = muse_flux_unit * np.sum(cutout.data[m]) * 10**(0.4*A_heii)
 F_heii
 ```
 
@@ -705,7 +708,7 @@ It only works as follows:
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 pn.atomicData.setDataFile("he_ii_trc_SH95-caseB.dat")
-alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=[1.25e4, 1.55e4], den=100)
+alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=temperatures, den=100)
 alphaB_He_plus *= u.cm ** 3 / u.s
 alphaB_He_plus
 ```
@@ -737,6 +740,9 @@ $$
 Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
 ```
+
+This is a bit higher than what we got last time, which is due including the effects of foreground extinction.
+
 
 ## Alternative route to density from Balmer lines
 

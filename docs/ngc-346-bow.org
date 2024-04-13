@@ -250,7 +250,7 @@ STEM=02-01-Raman-Wings-IR-Source-C
 ***** Step 2: Correct for extinction
 - For the bow shock region we measure E(B-V) = 0.097
 - We calculate the extinction curve in the notebook [[file:../notebooks/ngc346-new/PZ-01-01-more-line-ratios.py]]
-- At H beta this gives A(H beta) = 0.33, so we need to multiply by 10**(0.4 0.33) = 1.36
+  - At H beta this gives A(H beta) = 0.33, so we need to multiply by 10**(0.4 0.33) = 1.36
 - So intrinsic brightness is 1.8e-4 erg / s / cm^2 / sr
 ***** Step 3: Convert to emission measure
 - The pyneb emission coefficient e(4861) is in erg cm^3 /s (of order 1e-25)
@@ -1727,15 +1727,17 @@ Try this in a notebook
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.py]]
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.ipynb]]
 + But I was getting inconsistent results, so I am going to start again
+  + [2024-04-12 Fri] Revisit these calculations, now that I am more confident in the He++ fraction and electron density. 
 + I had used a few different approaches:
   1. (Comes second in the notebook). Use the total He II luminosity to derive the ionizing photon rate Q_2.  The only assumption here is that all the He II emission comes from recombination (in photoionization equilibrium).
-     - We find a flux of 2.04e-15 erg/s/cm^2
-     - This corresponds to a luminosity of 9.28e32 erg/s = 0.242 Lsun
+     - We find a flux of 2.78e-15 erg/s/cm^2
+     - This corresponds to a luminosity of 1.27e33 erg/s = 0.33 Lsun
      - PyNeb is used to get emissivity of 4686 and \alpha_B(He^++)
        - but I had assumed T = 18000 and 12000
-       - Switched this now to 12500, 15500 as more representative of measured values
+       - Switched this now to 12500, 13800, 15500 as more representative of measured values
      - This gives Q_2 = \alpha_B(He^++) L(4686) / e(4686) (\Omega / 4\pi)
-       - Q_2 = (2.8 +/- 0.1)e45
+       - Q_2 = (4.2 +/- 0.1)e45
+     - The uncertainty is probably dominated by uncertainty in covering factor of the bow shock shell, so is much larger than stated here. 
      - This can be compared with stellar atmosphere models
        - See [[id:262D3FA1-80BD-4225-BE22-7970BD1FF6FF][Rearrange and rescale the models]] in this file. 
   2. (First in notebook).  Use peak He II brightness to estimate the electron density
