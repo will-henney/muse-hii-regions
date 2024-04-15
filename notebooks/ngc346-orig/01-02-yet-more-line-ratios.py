@@ -643,10 +643,12 @@ alphaB_He_plus *= u.cm ** 3 / u.s
 alphaB_He_plus
 
 # + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
-# Solid angle: assume a +/- 75 degree end cap.
+# Solid angle: 
+#
+# Originally, I had assumed a +/- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
 
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-Omega_over_4pi = (1 - np.cos(75 * u.deg)) / 2
+Omega_over_4pi = (1 - np.cos(54 * u.deg)) / 2
 Omega_over_4pi
 
 # + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
@@ -667,7 +669,7 @@ Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
 # -
 
-# This is a bit higher than what we got last time, which is due including the effects of foreground extinction.
+# This is way higher than what we got last time, which is due to including the effects of foreground extinction plus a smaller esitimate of the covering fraction. The uncertainty is +/- 50%, which is dominated by the uncertainty in the covering fraction. 
 
 # ## Alternative route to density from Balmer lines
 #

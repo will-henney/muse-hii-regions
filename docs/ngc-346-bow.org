@@ -1736,8 +1736,19 @@ Try this in a notebook
        - but I had assumed T = 18000 and 12000
        - Switched this now to 12500, 13800, 15500 as more representative of measured values
      - This gives Q_2 = \alpha_B(He^++) L(4686) / e(4686) (\Omega / 4\pi)
-       - Q_2 = (4.2 +/- 0.1)e45
-     - The uncertainty is probably dominated by uncertainty in covering factor of the bow shock shell, so is much larger than stated here. 
+       - Q_2 = (3.8 +/- 0.1)e45
+     - The uncertainty is probably dominated by uncertainty in covering factor of the bow shock shell, so is much larger than stated here.
+       - I had assumed +/-75 degrees end cap
+       - [2024-04-14 Sun 14:12] New estimate:
+         - radius of He II shell is 4 arcsec = 20 pixels
+         - Lateral extent of He II shell is 18 +/- 3 pixels
+           - This is a rather generous estimate of the uncertainty depending on whether we take the half-brightness point or the steepest part of the profile
+         - So angle is arctan((18 +/- 3)/20) = 42 +/- 5 deg
+           - or arcsin((18 +/- 3)/20) = 64 +/- 20
+           - neither of these are quite right. First is wrong because shell is not flat, second is wrong because shell is not circle centered on star
+           - In reality, planitude is about 2, so we should have an intermediate value: say 54 +/- 16
+           - covering factor \Omega/4\pi is then (1 - cos(theta)) / 2 = 0.21 +/- 0.11
+         - This is smaller than I was previously using, since I had assumed 75 deg opening angle? On reflection, that would  seem to be too large
      - This can be compared with stellar atmosphere models
        - See [[id:262D3FA1-80BD-4225-BE22-7970BD1FF6FF][Rearrange and rescale the models]] in this file. 
   2. (First in notebook).  Use peak He II brightness to estimate the electron density

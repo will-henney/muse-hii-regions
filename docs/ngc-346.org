@@ -598,34 +598,33 @@ CLOSED: [2021-05-29 Sat 00:16]
 :ID:       CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2
 :END:
 + Based on the notebook [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.md]]
-+ There I find that Q_2 = 2.8e45 /s
-  + Old value of Q_2 = 4.7e45 /s was not using the right temperature
-+ And I also found that n_e = 9.5 +/- 0.5 /cm^3
-  + But that has to be multiplied by sqrt((1.0824 + 0.0824 x) / 1.1648 x)
-  + Where x is the He++ fraction
-  + And where we can simplify to 1 / sqrt(x) to +/- 10%
-  + So another way of putting this is that x = (10/n_e)^2
++ *Updated [2024-04-14 Sun] with new concordance solutions for He++ ionization*
++ There I find that Q_2 = (6.8 +/- 3.4)e45 /s 
+  + Previous value of 2.8e45 /s was not taking into account extinction and assuming a larger covering fraction
+  + Even more previous value of Q_2 = 4.7e45 /s was not using the right temperature
++ And I also found that n_H = (35 +/- 10) cm^-3 is the hydrogen nucleon density
+  + The He++ fraction is measured to be x_{He++} = 0.1
+    + This comes from the value of about \langle x_{He++} \rang = 0.016 for the entire line of sight, but then taking into account the He++ shell being half of the H+ shell, which is in turn 30% of the total emission measure
+  + The electron density is n_e = x_e n_H where x_e = 1 + y (1 + x_{He++}) assuming no neutral helium
+    + so n_e = 1.09 n_H
 + The distance of the inner edge from the star is 4 arcsec = 4 9.23e+17 cm = 1.2 pc
-+ So the ionizing flux is F_2 = Q_2 / 4 \pi R^2 = 1.625e+07 phot/s/cm^2
-+ This should be equal to n_e n_i \alpha_B h = y_He x n_e^2 \alpha_B h / (1 + 2 y_He)
++ So the ionizing flux is F_2 = Q_2 / 4 \pi R^2 = 3.95e07 phot/s/cm^2
++ This should be equal to n_e n_i \alpha_B h = y_He x_e x_{He++} n^2 \alpha_B h 
   + Assuming y_He = 0.082 and \alpha_B = 1.2e-12 cm^3/s
-  + h = 1.165 F / y_He x n_e^2 \alpha_B = 1.165 1.625e+07 / 0.082 10**2 1.2e-12 = 1.9e18 cm = 0.61 pc
+  + y_He x_e x_{He++} = 0.082 1.09 0.1 = 0.009
+  + h = F / y_He x_e x_{He++} n^2 \alpha_B =  3.95e07 / 0.009 35**2 1.2e-12 = 3.0e18 cm = 0.97 pc
     + 1 arcsec = 0.3 pc
-    + So this is 2 arcsec - just right!
-+ *Return to this* [2021-07-23 Fri]
-  + We now have Q_2 = (2.8 +/- 0.1)e45
-  + Found the mistake! I missed a factor of 4 in the distance
-  + I am going to now edit the values above
-  + Now it all works out fine.
-****** Estimating He++ ionization fraction
+    + So this is 3 arcsec - marginally OK
+***** Estimating He++ ionization fraction
 + Now that we have the F_2 flux determined we can estimate the He++ x from local ionization balance:
-  + (1 - x) y n \sigma F_2 = x y n^2 (1 + 2 y)  \alpha
-  + x / (1 - x) = \sigma F_2 / \alpha n
+  + In principle, this will be consistent with the value that we already determined
+  + (1 - x) y n \sigma F_2 = x y x_e n^2  \alpha
+  + x / (1 - x) = \sigma F_2 / 1.09 \alpha n
   + We have all these ingredients except for \sigma, which we can easily find since it is hydrogenic
   + Turns out to be about 1.6e-18 cm^2 at threshold
   + Therefore, we can find
-    + \sigma F_2 / \alpha n = 1.6e-18 1.625e+07 / 1.2e-12 (10 / sqrt(x)) = 2.17 sqrt(x)
-    + x^{1/2} / (1 - x) = 2.17 => x = 0.63
+    + \sigma F_2 / \alpha n = 1.6e-18 3.95e+07 / 1.2e-12 35 = 1.5
+    + x / (1 - x) = 1.5 => x = 0.63
   + So n = 13 pcc
   + Is this consistent with the Cloudy models?
     + Yes, more or less - but it requires the density to fall with radius
@@ -668,12 +667,19 @@ CLOSED: [2021-05-29 Sat 00:16]
 + The Q0' (H0) and Q2' (He+) columns are ionizing luminosities rescaled so that the model has a bolometric luminosity of log L = 5.98, as implied by the cooler Rivero-Gonzalez solution
   + [X] We should also rescale the Mdot values - /now done in the final column/
   + All these models now give Q_0 = 49.80 +/- 0.01
-+ The observationally derived Q2 is 45.62
++ The observationally derived Q2 is 45.83 +/- 0.22 ((6.8 +/- 3.4)e45)
   + [2024-04-12 Fri] Updated to slightly higher value
-  + For T = 50,000 K this is in between the SMC-OB-I (intermediate wind) and SMC-OB-II (strong wind) 50-42 models
-    + (62 - 41) / (74 - 41) = 0.64 is the fraction between I and II => log Mdot = -6.02 => Mdot = 1.05e-6
-    + The weaker wind has 6x too small a value of Q2
-  + The higher gravity model (50-44) would require a slightly stronger wind to get, which has Mdot = 2.3e-6
+  + [2024-04-14 Sun] Updated to significantly higher value with realistic uncertainties
+  + For T = 50,000 K only the strong wind model SMC-OB-II (strong wind) 50-42 model is consistent with the observed Q2 value
+    + log Mdot = -5.66=> Mdot = 2e-6
+    + The weak wind model has 10x too small a value of Q2, and intermediate wind model has 2.5x too small a value
+  + The higher gravity model (50-44) is similiar in that only the stronger wind model works
+    + log Mdot = -5.66 => Mdot = 2e-6
+  + The lower temperature model (49-42) only marginally consistent with observed Q2 for the strongest wind (SMC-OB-II: Q2 = 45.60), which implies Mdot = 2.34e-6
++ In summary, the He++ ionizing luminosity is a strong function of Teff and Mdot, but very weak gravity dependence
+  + Acceptable solutions require Mdot >= 2e-6 and tendo to favor  50 kK over 49 kK
+  + /Is there any observational constraint on the mass loss rate?/
+  + [X] But we need to have error bars on our value for Q2. This is now done. 
 | Grid       | Model | log L | V_inf | log M_dot |    Q0 |    Q1 |    Q2 |    Q3 | Q1/Q0 | 1e4 Q2/Q0 | Q3/Q0 |   Q0' |   Q2' | Mdot' |
 |------------+-------+-------+------+----------+-------+-------+-------+-------+-------+-----------+-------+-------+-------+-------|
 | OB-I       | 56-42 | 6.230 | 4136 |       -7 | 50.08 | 49.67 | 46.99 | 49.10 | 0.389 |     8.128 | 0.105 | 49.83 | 46.74 | -7.44 |
