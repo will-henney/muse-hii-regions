@@ -1739,20 +1739,32 @@ Try this in a notebook
        - Q_2 = (3.8 +/- 0.1)e45
      - The uncertainty is probably dominated by uncertainty in covering factor of the bow shock shell, so is much larger than stated here.
        - I had assumed +/-75 degrees end cap
-       - [2024-04-14 Sun 14:12] New estimate:
-         - radius of He II shell is 4 arcsec = 20 pixels
-         - Lateral extent of He II shell is 18 +/- 3 pixels
-           - This is a rather generous estimate of the uncertainty depending on whether we take the half-brightness point or the steepest part of the profile
-         - So angle is arctan((18 +/- 3)/20) = 42 +/- 5 deg
-           - or arcsin((18 +/- 3)/20) = 64 +/- 20
-           - neither of these are quite right. First is wrong because shell is not flat, second is wrong because shell is not circle centered on star
-           - In reality, planitude is about 2, so we should have an intermediate value: say 54 +/- 16
-           - covering factor \Omega/4\pi is then (1 - cos(theta)) / 2 = 0.21 +/- 0.11
-         - This is smaller than I was previously using, since I had assumed 75 deg opening angle? On reflection, that would  seem to be too large
      - This can be compared with stellar atmosphere models
        - See [[id:262D3FA1-80BD-4225-BE22-7970BD1FF6FF][Rearrange and rescale the models]] in this file. 
   2. (First in notebook).  Use peak He II brightness to estimate the electron density
   3. (Not in notebook, but see [[id:CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2][Consistency check on the ionization fraction and thickness of the He II zone]] in this file). Estimate the thickness of the He++ zone. 
+
+**** Covering fraction of the He II shell
+- I have already calculated this a few times. The first time, I assumed a 75 degree opening angle, but I never wrote down my reasoning
+- And then I did [[id:BC7D457E-10D9-45E7-8DFC-9A3E736DE519][Previous calculation that on reflection is too small]] and got 54 degrees, but that was based on the erroneous assumption that I should be using the half-maximum width or similar
+- But really I need to use the full width, since I am summing all the He II emission from the shell, so the covering fraction is that of my whole integration box
+- So assuming radius of 20 pixels and a lateral extent of 25 +/- 5 pixels, the covering fraction is
+  - arctan((25 +/- 5) / 20) = 51 +/- 6
+
+***** Previous calculation that on reflection is too small
+:PROPERTIES:
+:ID:       BC7D457E-10D9-45E7-8DFC-9A3E736DE519
+:END:
+- [2024-04-14 Sun 14:12] New estimate:
+  - radius of He II shell is 4 arcsec = 20 pixels
+  - Lateral extent of He II shell is 18 +/- 3 pixels
+    - This is a rather generous estimate of the uncertainty depending on whether we take the half-brightness point or the steepest part of the profile
+  - So angle is arctan((18 +/- 3)/20) = 42 +/- 5 deg
+    - or arcsin((18 +/- 3)/20) = 64 +/- 20
+    - neither of these are quite right. First is wrong because shell is not flat, second is wrong because shell is not circle centered on star
+    - In reality, planitude is about 2, so we should have an intermediate value: say 54 +/- 16
+    - covering factor \Omega/4\pi is then (1 - cos(theta)) / 2 = 0.21 +/- 0.11
+  - This is smaller than I was previously using, since I had assumed 75 deg opening angle? On reflection, that would  seem to be too large
 
 
 *** Ionization state based upon multiple lines

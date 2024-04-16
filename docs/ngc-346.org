@@ -452,7 +452,8 @@
   + Spectroscopy of the brighter stars
 + 
 **** [#A] Ionizing luminosities and fluxes
-***** DONE Which are the most important stars for mYSO C?
+***** DONE Which are
+ithe most important stars for mYSO C?
 CLOSED: [2021-05-29 Sat 00:16]
 :PROPERTIES:
 :ID:       903F97D6-AF67-4C78-8011-C7DDD449B546
@@ -625,7 +626,7 @@ CLOSED: [2021-05-29 Sat 00:16]
   + Therefore, we can find
     + \sigma F_2 / \alpha n = 1.6e-18 3.95e+07 / 1.2e-12 35 = 1.5
     + x / (1 - x) = 1.5 => x = 0.63
-  + So n = 13 pcc
+  + /This is not consistent with the estimate from the He II / He I ratio/
   + Is this consistent with the Cloudy models?
     + Yes, more or less - but it requires the density to fall with radius
 
@@ -633,7 +634,7 @@ CLOSED: [2021-05-29 Sat 00:16]
 #+begin_src python :tangle "../scripts/powr-parse.py" :results output table
   from pathlib import Path
 
-  datapath = Path("../stars/powr")
+  datapath = Path("../stars/powr/colors")
   datafiles = datapath.glob("*_colors.txt")
 
   rslt = [
@@ -658,8 +659,30 @@ CLOSED: [2021-05-29 Sat 00:16]
 #+end_src
 
 #+RESULTS:
-| Grid | Model | Q0 | Q1 | Q2 | Q3 |
-|------+-------+----+----+----+----|
+| Grid       | Model |    Q0 |    Q1 |    Q2 |    Q3 |
+|------------+-------+-------+-------+-------+-------|
+| OB-I       | 54-42 | 50.00 | 49.52 | 45.79 | 48.85 |
+| OB-I       | 50-42 | 49.66 | 49.08 | 45.49 | 48.37 |
+| SMC-OB-II  | 49-44 | 49.25 | 48.72 | 45.02 | 48.12 |
+| SMC-OB-I   | 50-44 | 49.32 | 48.82 | 44.80 | 48.24 |
+| SMC-OB-III | 50-42 | 49.59 | 49.05 | 44.63 | 48.34 |
+| OB-I       | 53-42 | 49.92 | 49.41 | 45.53 | 48.74 |
+| OB-I       | 50-40 | 50.09 | 49.52 | 45.37 | 48.80 |
+| SMC-OB-III | 49-42 | 49.52 | 48.96 | 44.68 | 48.24 |
+| SMC-OB-II  | 50-44 | 49.33 | 48.82 | 45.28 | 48.23 |
+| SMC-OB-I   | 49-44 | 49.24 | 48.73 | 44.36 | 48.14 |
+| OB-I       | 49-42 | 49.57 | 48.97 | 44.79 | 48.24 |
+| SMC-OB-III | 49-44 | 49.26 | 48.70 | 44.65 | 48.01 |
+| SMC-OB-I   | 36-38 | 48.82 | 47.81 | 42.06 | 46.54 |
+| SMC-OB-I   | 49-42 | 49.51 | 48.99 | 44.65 | 48.38 |
+| SMC-OB-II  | 50-42 | 49.58 | 49.07 | 45.52 | 48.46 |
+| SMC-OB-II  | 42-38 | 49.57 | 48.85 | 41.43 | 48.09 |
+| SMC-OB-I   | 50-42 | 49.58 | 49.07 | 45.19 | 48.47 |
+| SMC-OB-II  | 49-42 | 49.51 | 48.98 | 45.32 | 48.36 |
+| OB-I       | 52-42 | 49.81 | 49.34 | 45.93 | 48.72 |
+| OB-I       | 56-42 | 50.08 | 49.67 | 46.99 | 49.10 |
+| OB-I       | 51-42 | 49.75 | 49.20 | 45.23 | 48.50 |
+| SMC-OB-III | 50-44 | 49.33 | 48.79 | 44.75 | 48.10 |
 ***** Rearrange and rescale the models
 :PROPERTIES:
 :ID:       262D3FA1-80BD-4225-BE22-7970BD1FF6FF
