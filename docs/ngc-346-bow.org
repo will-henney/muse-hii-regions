@@ -261,6 +261,9 @@ STEM=02-01-Raman-Wings-IR-Source-C
 - Taking the average of these, we get  e(4861) = 9.3e-26 erg cm^3 / s
 - So final result for emission measure is EM = 2.4e22 cm^{-5}
 ***** Step 4: Estimate path length
+:PROPERTIES:
+:ID:       6357C2A7-544A-4B41-9ED5-2E713F966C73
+:END:
 - For the He II shell, I was using 60 pixels, but now that I look at it, I think that 40 pixels better represents the FWHM of the He II brightness
 - For H I, I should use something bigger. probably best to use the FWHM from the [Ar IV] line, which is about 90 pixels
 - So path length = 90 0.2 61700 au = 1.66e19 cm (or 5.4 pc)
@@ -1744,14 +1747,84 @@ Try this in a notebook
   2. (First in notebook).  Use peak He II brightness to estimate the electron density
   3. (Not in notebook, but see [[id:CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2][Consistency check on the ionization fraction and thickness of the He II zone]] in this file). Estimate the thickness of the He++ zone. 
 
+**** He II peak brightness
+- I am getting inconsistent results for the He++ ionization fraction in the bow shock shell from two different approaches.
+  1. The He II/He I ratio, which favors a low ratio: 0.1
+  2. The local ionization balance at the inner edge, which favors a high ratio: 0.7
+- To get a third opinion, I am going to try to use the peak He II 4686 brightness to estimate the ionizing flux at the inner edge of the shell
+  - This is similar to the estimate in the notebook of the ionizing luminosity from the He II luminosity
+r
+***** Ionization equilibrium and He II brightness of the shell
+:PROPERTIES:
+:ID:       C705A98C-81F3-46E2-9E63-B754EE5EC94C
+:END:
+- So we have F = \int n_e n_{He^{++}} \alpha_B(He^{++}) d r from ionization balance across the shell
+- And we have I(He II 4686) = \int n_e n_{He^{++}} [e(He II 4686) / 4\pi] d z from the He II line luminosity
+- So we can write F = 4\pi I(He II 4686) [ \alpha_B(He^{++}) / e(He II 4686) ] [ \int d r / \int d z ]
+
+***** Observed He II brightness
+- I have the muse brightness unit as 1.4e-20 erg/s/cm^2/pixel with a pixel scale of 0.2 arcsec
+  - which is 1.5e-8 erg/s/cm^2/sr
+- The peak He II brightness is 400 in MUSE units
+- The extinction is estimated to be A(4686) = 0.34
+- So intrinsic brightness is 1.5e-8 400 10**(0.4 0.34) = *8.21e-6 erg/s/cm^2/sr*
+   
+***** Recombination coefficient for He++
+- For the inner rim of the shell, the T may be even higher than the [Ar IV] temperature, but we have no way of knowing
+- So probably best to use the 15500 K value
+- This implies \alpha_B(He^{++}) = 1.1e-12 cm^3/s
+- [ ] pyneb gives reference as SH95 - need to check what paper this is (Seaton?)
+- Also we have an equation from Draine
+  - 2.54e-13 Z^2 (T_4/Z^2)^b
+  - where b = -0.8163 - 0.0208 ln(T_4/Z^2)
+  - for T_4 = 1.55, Z = 2, we get T_4/Z^2 = 0.3875, b = -0.797, \alpha_B =  2.54e-13 4 (0.3875)**-0.797 = *2.163e-12 cm^3/s*
+    - [ ] This is about double what I got from pyneb, which is odd
+
+***** He II 4686 emissivity
+- This comes straight from pyneb
+  - result is *9.59e-25 erg.cm^3/s*
+
+#+begin_src python :return result :results verbatim
+  import pyneb as pn
+  heii = pn.RecAtom('He', 2)
+  result = heii.getEmissivity(tem=[15500], den=30, wave=4686)
+#+end_src
+
+#+RESULTS:
+: [9.59135484e-25]
+
+***** Path lengths through shell
+- The radial path length \int d r is the thickness of the shell
+  - From the images, the FWHM looks to be about 10 pixels, or 2 arcsec = 1.846e18 cm
+- Line of sight path length \int d z can be approximated by the chord length through the projected shell on the plane of the sky (assuming cylindrical symmetry)
+  - In the section [[id:6357C2A7-544A-4B41-9ED5-2E713F966C73][Step 4: Estimate path length]] above, I estimated the chord length to be 40 pixels
+- So finally the ratio is \int d r / \int d z = 40 / 10 = *0.25*
+
+***** Putting it all together to find the He++ ionizing photon flux
+- F = 4\pi I(He II 4686) [ \alpha_B(He^{++}) / e(He II 4686) ] [ \int d r / \int d z ]
+- F = 4 pi 0.25 8.21e-6  2.163e-12 / 9.59e-25 = *5.82e7*
+  - Units: sr (erg/(s cm^2 sr)) cm^3/s / (erg cm^3/s) =  *s^-1 cm^-2*   
+
+***** Converting flux to an ionizing luminosity Q_2
+- The radius of the shell is 20 pixels, or 4 arcsec, which is 4 9.23e+17 cm = 3.692e18 cm = 1.2 pc
+- So area of full sphere with that radius is 4 pi 3.692e18**2 = 1.71e38 cm^2
+- Implying that Q_2 = 5.82e7 1.71e38 = *9.96e45 s^-1*
+- This is even higher than what I was getting before!!!
+- Assuming y_He = 0.08, x_e = 1.08, n = 25 cm^-3, we get x_{He^{++}} = 14.6 / 25**2 0.08 1.08 = 0.27
+
+**** Rematch for the He++ ionization fraction
+- The original calculation from 2021 in [[id:6A6EC6C8-4754-4B62-8A8D-231CCFC9C677][Estimating He++ ionization fraction]] in the [[file:ngc-346.org]] notebook, together with the ionizing luminosities from the stellar atmosphere models
+- The key additional data that we need 
+
 **** Covering fraction of the He II shell
 - I have already calculated this a few times. The first time, I assumed a 75 degree opening angle, but I never wrote down my reasoning
 - And then I did [[id:BC7D457E-10D9-45E7-8DFC-9A3E736DE519][Previous calculation that on reflection is too small]] and got 54 degrees, but that was based on the erroneous assumption that I should be using the half-maximum width or similar
 - But really I need to use the full width, since I am summing all the He II emission from the shell, so the covering fraction is that of my whole integration box
-- So assuming radius of 20 pixels and a lateral extent of 25 +/- 5 pixels, the covering fraction is
+- So assuming radius of 20 pixels and a lateral extent of 25 +/- 5 pixels, the half-cone angle is
   - arctan((25 +/- 5) / 20) = 51 +/- 6
+  - This is depressingly close to my previous estimate, so it will also give an uncomfortably large He++ ionizing luminosity and hence ionization fraction
 
-***** Previous calculation that on reflection is too small
+***** Previous calculation that may be too small
 :PROPERTIES:
 :ID:       BC7D457E-10D9-45E7-8DFC-9A3E736DE519
 :END:
@@ -1765,8 +1838,6 @@ Try this in a notebook
     - In reality, planitude is about 2, so we should have an intermediate value: say 54 +/- 16
     - covering factor \Omega/4\pi is then (1 - cos(theta)) / 2 = 0.21 +/- 0.11
   - This is smaller than I was previously using, since I had assumed 75 deg opening angle? On reflection, that would  seem to be too large
-
-
 *** Ionization state based upon multiple lines
 From the analysis of the
 

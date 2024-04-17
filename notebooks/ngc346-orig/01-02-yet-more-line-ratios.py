@@ -367,7 +367,7 @@ g = sns.pairplot(
 )
 g.fig.suptitle("Temperature vs Density")
 # + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
-# ## He II emission measure
+#     ## He II emission measure
 
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 he2 = pn.RecAtom("He", 2)
@@ -524,6 +524,12 @@ fig.savefig(figdir / "ngc346-bow-shock-brightness-cuts.pdf")
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 peak_heii = muse_bright_unit * 400
 peak_heii
+# -
+
+mshell = (abs(pos) < 10) & (heii_profile > 200)
+heii_profile[mshell]
+
+pos[mshell]
 
 # + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # From the image, the chord length through the bow is about 60 pixels.  We can assume that the line-of-sight depth is similar:
@@ -645,7 +651,8 @@ alphaB_He_plus
 # + [markdown] pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false}
 # Solid angle: 
 #
-# Originally, I had assumed a +/- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
+# Originally, I had assumed a +
+# /- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
 
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 Omega_over_4pi = (1 - np.cos(54 * u.deg)) / 2

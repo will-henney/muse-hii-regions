@@ -393,7 +393,7 @@ g = sns.pairplot(
 g.fig.suptitle("Temperature vs Density")
 ```
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
-## He II emission measure
+    ## He II emission measure
 <!-- #endregion -->
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
@@ -577,6 +577,15 @@ peak_heii = muse_bright_unit * 400
 peak_heii
 ```
 
+```python
+mshell = (abs(pos) < 10) & (heii_profile > 200)
+heii_profile[mshell]
+```
+
+```python
+pos[mshell]
+```
+
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
 From the image, the chord length through the bow is about 60 pixels.  We can assume that the line-of-sight depth is similar:
 <!-- #endregion -->
@@ -716,7 +725,8 @@ alphaB_He_plus
 <!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
 Solid angle: 
 
-Originally, I had assumed a +/- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
+Originally, I had assumed a +
+/- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
 <!-- #endregion -->
 
 ```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
