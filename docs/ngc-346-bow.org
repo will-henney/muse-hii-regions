@@ -1753,7 +1753,8 @@ Try this in a notebook
   2. The local ionization balance at the inner edge, which favors a high ratio: 0.7
 - To get a third opinion, I am going to try to use the peak He II 4686 brightness to estimate the ionizing flux at the inner edge of the shell
   - This is similar to the estimate in the notebook of the ionizing luminosity from the He II luminosity
-r
+
+
 ***** Ionization equilibrium and He II brightness of the shell
 :PROPERTIES:
 :ID:       C705A98C-81F3-46E2-9E63-B754EE5EC94C
@@ -1809,13 +1810,20 @@ r
 - The radius of the shell is 20 pixels, or 4 arcsec, which is 4 9.23e+17 cm = 3.692e18 cm = 1.2 pc
 - So area of full sphere with that radius is 4 pi 3.692e18**2 = 1.71e38 cm^2
 - Implying that Q_2 = 5.82e7 1.71e38 = *9.96e45 s^-1*
-- This is even higher than what I was getting before!!!
-- Assuming y_He = 0.08, x_e = 1.08, n = 25 cm^-3, we get x_{He^{++}} = 14.6 / 25**2 0.08 1.08 = 0.27
+- This is even higher than what I was getting before!!! 
 
+
+***** Finding product of electron and He++ densities
+- This follows directly from the first equation in [[id:C705A98C-81F3-46E2-9E63-B754EE5EC94C][Ionization equilibrium and He II brightness of the shell]] above
+- n_e n_{He^{++}} = F / \alpha_B(He^{++}) dr = 5.82e7 / 2.163e-12 1.846e18 = *14.6 cm^-6*
+- This should be equal to n^2 y_He x_e x_{He^{++}}
+  - So with y_He = 0.08, x_e = 1.08 we have n^2 x_{He^{++}} = 169 cm^-6
+- Assuming y_He = 0.08, x_e = 1.08, n = 25 cm^-3, we get x_{He^{++}} = 14.6 / 25**2 0.08 1.08 = 0.27
 **** Rematch for the He++ ionization fraction
 - The original calculation from 2021 in [[id:6A6EC6C8-4754-4B62-8A8D-231CCFC9C677][Estimating He++ ionization fraction]] in the [[file:ngc-346.org]] notebook, together with the ionizing luminosities from the stellar atmosphere models
-- The key additional data that we need 
-
+- The key additional data that we need is the photoionization cross section for He+
+  - This is hydrogenic, so it just scales as sigma(Z, E) = (sigma_0 / Z^2) (E/Z^2 E_0)^{-3}
+  
 **** Covering fraction of the He II shell
 - I have already calculated this a few times. The first time, I assumed a 75 degree opening angle, but I never wrote down my reasoning
 - And then I did [[id:BC7D457E-10D9-45E7-8DFC-9A3E736DE519][Previous calculation that on reflection is too small]] and got 54 degrees, but that was based on the erroneous assumption that I should be using the half-maximum width or similar
