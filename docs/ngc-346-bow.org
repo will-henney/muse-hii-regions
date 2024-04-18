@@ -1814,6 +1814,9 @@ Try this in a notebook
 
 
 ***** Finding product of electron and He++ densities
+:PROPERTIES:
+:ID:       8AC74CFB-86FA-4705-B13B-028ED6E2BAE5
+:END:
 - This follows directly from the first equation in [[id:C705A98C-81F3-46E2-9E63-B754EE5EC94C][Ionization equilibrium and He II brightness of the shell]] above
 - n_e n_{He^{++}} = F / \alpha_B(He^{++}) dr = 5.82e7 / 2.163e-12 1.846e18 = *14.6 cm^-6*
 - This should be equal to n^2 y_He x_e x_{He^{++}}
@@ -1823,7 +1826,43 @@ Try this in a notebook
 - The original calculation from 2021 in [[id:6A6EC6C8-4754-4B62-8A8D-231CCFC9C677][Estimating He++ ionization fraction]] in the [[file:ngc-346.org]] notebook, together with the ionizing luminosities from the stellar atmosphere models
 - The key additional data that we need is the photoionization cross section for He+
   - This is hydrogenic, so it just scales as sigma(Z, E) = (sigma_0 / Z^2) (E/Z^2 E_0)^{-3}
-  
+  - At threshold it is therefore sigma_0 / Z^2 = 1.5e-18 cm^2
+  - Question is, what is the average value over the He II ionizing spectrum? This will depend on the spectra slope. But could easily give a reduction by a factor of 2.
+  - From the stellar SEDs, it looks like continuum is very steep there
+- Local ionization balance is
+  - F \sigma n(He+) = \alpha_B n_e n(He++)
+  - x / (1-x) = F \sigma / \alpha_B n_e
+- We can define a characteristic hydrogen density corresponding to 50% ionization
+  - n* = F \sigma / x_e \alpha_B = 5.82e7 0.5 1.5e-18 / 1.08 2.163e-12 = 19 cm^-3
+    - This assumes that the mean cross section is 0.5 times the threshold value
+    - Also assumes that He++ contribution to electrons is small
+  - x / (1-x) = n* / n
+  - So we would need n = 180 to get x = 0.1
+- But from [[id:8AC74CFB-86FA-4705-B13B-028ED6E2BAE5][Finding product of electron and He++ densities]] we also have n^2 x = 169
+- It seems that these two equations have similar derivations, so maybe things can be simplified
+  1. F =  \alpha_B \int n_e n(He^{++}) dr : Global through shell
+  2. F = \alpha_B n_e n(He^{++}) / \sigma n(He+) : Local at inner edge of shell
+- This has the solution
+  - x_0 = 1 - \tau^-1
+  - where \tau is the optical depth that the shell would  have if all its He were in the form of He+
+  - \tau = \sigma n(He) dr = \sigma y n dr
+    - where n is the hydrogen density and y = 0.0824 is the He abundance
+- Uncertainties in the ingredients that go into \tau
+  - cross section \sigma = (0.5 +/- 0.25) 1.5e-18 cm^2 (relative uncertainty 50%)
+  - y = 0.0824 +/- 0.004 (relative uncertainty 5%)
+  - n = 35 +/- 10 cm^-3 (relative uncertainty 30%) from the jump in H beta surface brightness
+  - dr = 10 +/- 2 pixels (relative uncertainty 20%) giving 1.846e18 cm
+- Putting it all together
+  - \tau = 0.5 1.5e-18 0.0824 35 1.846e18 = 4.0
+  - x = 0.75
+  - Adding the uncertainties in quadrature gives sqrt(0.5**2 + 0.05**2 + 0.3**2 + 0.2**2) = 0.62
+  - So \tau = 4.0 +/- 2.5 and x = 0.75 +/- 0.16
+**** The dilemma of the He++ ionization fraction
+- Result from the shell analysis taken at face value is x = 0.75 +/- 0.16
+- Result from the He II/He I ratio is that \langle x \rangle = 0.015
+- So on the face of it, we need that the shell is only 2% of the total emission measure
+  - This is much less then one would naturally think
+- But we should really be asking, what is the required tau such that x = 0.1, and how confidently we can exclude that value 
 **** Covering fraction of the He II shell
 - I have already calculated this a few times. The first time, I assumed a 75 degree opening angle, but I never wrote down my reasoning
 - And then I did [[id:BC7D457E-10D9-45E7-8DFC-9A3E736DE519][Previous calculation that on reflection is too small]] and got 54 degrees, but that was based on the erroneous assumption that I should be using the half-maximum width or similar
