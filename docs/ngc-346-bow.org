@@ -201,6 +201,9 @@ STEM=02-01-Raman-Wings-IR-Source-C
 **** 01-00-line-ratios
 *** Some more ideas about things to add to paper
 **** Density from Ha surface brightness
+:PROPERTIES:
+:ID:       D5232AF9-381B-4A53-B6DC-A07255224C07
+:END:
 - We see an increase in Ha at the inner edge of the bow shell, although it is pretty weak (about 40% of the background)
 - So we need the following steps:
   1. We first need to calibrate this in physical surface brightness units
@@ -1797,9 +1800,10 @@ Try this in a notebook
 ***** Path lengths through shell
 - The radial path length \int d r is the thickness of the shell
   - From the images, the FWHM looks to be about 10 pixels, or 2 arcsec = 1.846e18 cm
+  - The seeing is about 5 pixels, or 1 arcsec, which should be subtracted in quadrature: d r = 1.73 arcsec = 8.65 pix = 1.6e18 cm
 - Line of sight path length \int d z can be approximated by the chord length through the projected shell on the plane of the sky (assuming cylindrical symmetry)
   - In the section [[id:6357C2A7-544A-4B41-9ED5-2E713F966C73][Step 4: Estimate path length]] above, I estimated the chord length to be 40 pixels
-- So finally the ratio is \int d r / \int d z = 40 / 10 = *0.25*
+- So finally the ratio is \int d r / \int d z = 8.65 / 40  = *0.22*
 
 ***** Putting it all together to find the He++ ionizing photon flux
 - F = 4\pi I(He II 4686) [ \alpha_B(He^{++}) / e(He II 4686) ] [ \int d r / \int d z ]
@@ -1851,18 +1855,100 @@ Try this in a notebook
   - cross section \sigma = (0.5 +/- 0.25) 1.5e-18 cm^2 (relative uncertainty 50%)
   - y = 0.0824 +/- 0.004 (relative uncertainty 5%)
   - n = 35 +/- 10 cm^-3 (relative uncertainty 30%) from the jump in H beta surface brightness
-  - dr = 10 +/- 2 pixels (relative uncertainty 20%) giving 1.846e18 cm
+  - dr = 8.6 +/- 2.0 pixels (relative uncertainty 23%) giving 1.6e18 cm
 - Putting it all together
-  - \tau = 0.5 1.5e-18 0.0824 35 1.846e18 = 4.0
-  - x = 0.75
+  - \tau = 0.5 1.5e-18 0.0824 35 1.6e18 = 3.46
+  - x = 0.71
   - Adding the uncertainties in quadrature gives sqrt(0.5**2 + 0.05**2 + 0.3**2 + 0.2**2) = 0.62
-  - So \tau = 4.0 +/- 2.5 and x = 0.75 +/- 0.16
+  - So \tau = 3.5 +/- 2.2 and x = 0.7 +/- 0.2
 **** The dilemma of the He++ ionization fraction
-- Result from the shell analysis taken at face value is x = 0.75 +/- 0.16
+- Result from the shell analysis taken at face value is x = 0.7 +/- 0.2
 - Result from the He II/He I ratio is that \langle x \rangle = 0.015
 - So on the face of it, we need that the shell is only 2% of the total emission measure
-  - This is much less then one would naturally think
-- But we should really be asking, what is the required tau such that x = 0.1, and how confidently we can exclude that value 
+  - This is much less then one would naturally think, which would be about 20% of total
+- But we should really be asking, what is the required tau such that x = 0.1, and how confidently we can exclude that value
+  - Given that \tau = 3.5 +/- 2.2, then \tau = 1 (small x) can only be excluded at 1.1 sigma, which is not that much
+  - One way of achieving it would be to have a 3.5 times lower density n = 10 cm^-3
+  - Alternatively, the density could be just a bit lower (n = 20 cm^-3) and the cross section down to 0.25 times the threshold value, which is perhaps reasonable when integrated over the shell due to the hardening of the spectrum
+**** The density from the Balmer line jump reconsidered
+- [2024-04-22 Mon] I already did this in the notebook, based on the H beta line jump, but I want to look at it again using the Ha HST image, which is higher resolution. I mainly want to get confidence limits on what the fraction of the emission measure is associated with the bow shock shell
+- The previous calculation is described in [[id:D5232AF9-381B-4A53-B6DC-A07255224C07][Density from Ha surface brightness]] above
+- 
+***** Brightness Measurements from the Ha image
+| Region | Background      | Bow             | Bow Excess      | Fraction        |
+|--------+-----------------+-----------------+-----------------+-----------------|
+| North  | 0.452 +/- 0.016 | 0.511 +/- 0.017 | 0.059 +/- 0.023 | 0.135 +/- 0.054 |
+| Center | 0.480 +/- 0.021 | 0.539 +/- 0.019 | 0.059 +/- 0.028 | 0.127 +/- 0.061 |
+| South  | 0.499 +/- 0.016 | 0.532 +/- 0.014 | 0.033 +/- 0.021 | 0.072 +/- 0.046 |
+|--------+-----------------+-----------------+-----------------+-----------------|
+|        |                 |                 | 0.048 +/- 0.014 | 0.106 +/- 0.030 |
+#+TBLFM: $4=($3-$2);f3::$5=$4/($3-0.075+/-0.025);f3::@5$4..@5$5=vmeane(@I..@II);f3
+- Optionally, we could subtract off the far background too, which is 0.05 to 0.10
+  - Question is, whether this is included in the MUSE surface brightness or not
+  - I have decided to subtract it (0.075+/-0.025) and it does not make much difference
+  - 
+****** Conversion to physical brightness units
+- From the FITS header we have the following photometric keywords
+  : PHOTMODE= 'ACS WFC1 F658N MJD#53201.6669' / observation con
+  : PHOTFLAM= 1.94917473333333E-18 / inverse sensitivity, ergs/cm2/Ang/electron
+  : PHOTZPT =                -21.1 / ST magnitude zero point
+  : PHOTPLAM=        6.5839512E+03 / Pivot wavelength (Angstroms)
+  : PHOTBW  =        3.7009235E+01 / RMS bandwidth of filter plus detector
+- Also, I guess we do not need the exposure time since we also have
+  : BUNIT   = 'ELECTRONS/S'        / Units of science product                       
+- So the bowshock excess brightness of 0.05 elec/s is equivalent to
+  : 0.05 1.94917473333333E-18 = 9.75e-20 erg/s/cm^2/A/pixel
+- Pixel size is 1.38888888888896E-05 deg = 0.05 arcsec = 5.87609659544e-14 sr
+  : 9.75e-20 / 5.87609659544e-14 = 1.66e-6 erg/s/cm^2/A/sr
+- Now we need the effective width of the filter, which is not the same as the ~PHOTBW = 37~ parameter
+  - We have ~FWHM = 136~ and ~RANGE = 180~ but neither are the rectangular width, which is W_eff = 74.82 Angstrom according to [[http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?mode=browse&gname=hst&gname2=ACS_WFC&asttype=][this page]]
+  - The redshift is about 200 km/s, or 4 Angstrom, which is small compared with the filter width, so it should still be in the flat part with maximum transmission
+- So we get the final answer of
+  : 1.66e-6 74.82 = 1.24e-4 erg/s/cm^2/sr
+- This is with a brightness fraction of 0.1 and is almost the same as we previously obtained for H beta, assuming a brightness fraction of 0.3. So this is fully consistent, given that Ha/Hb is about 3
+- 
+***** Extinction corrected H alpha surface brightness
+- We have A(Ha) = 0.2 for E(B-V) = 0.097, so intrinsic brightness is 10**(0.4 0.2) = 1.20
+- Final result: 1.49e-4 erg/s/cm^2/sr
+***** Correction for the continuum
+- Fractional contribution of continuum is W_eff / EW(Ha)
+- We can get the EW(Ha) from the MUSE observations
+  - I now do this in PZ-01-01-more-line-ratios.py
+  - The result is about 550 Angstrom for the bow shock
+    : 74.82 / 550 = 0.136
+- So the corrected brightness is 1.49e-4 (1 - 0.136) = 1.29e-4 erg/s/cm^2/sr
+- Coincidentally, this exactly cancels out the extinction correction
+***** Correction for [N II] 6583 contamination
+- This can actually be neglected since the results from the Mabel paper show that 6583/6563 is only 0.03 in Zone II and 0.01 in Zone III, and 6583 is not detected at all in Zone IV
+- So it might not 1% off the denominator - hardly worth bothering about
+***** Find e(6563) and hence the emission measure
+#+begin_src python :return eha
+  import pyneb as pn
+  hi = pn.RecAtom('H', 1)
+  eha = hi.getEmissivity(tem=[13800, 15500], den=1e2, wave=6563)
+#+end_src
+
+#+RESULTS:
+| 2.59886957e-25 | 2.32174194e-25 |
+
+- So the average is 2.46e-25 erg/s/cm^3
+- Emission measure is 4\pi I(6563) / e(6563)
+  : 4 pi 1.29e-4 / 2.46e-25 = 6.59e21 /cm^5
+***** Uncertainty budget for the emission measure
+- We have a 30% uncertainty in the observed brightness, which is what will dominate
+- Everything else is much better constrained
+***** Path length and conversion to density
+- As previously, we assume 90 pixels = 18 arcsec for the path length
+- 18 arcsec = 18 61700 au = 1.66e19 cm
+- But we need to admit a considerable uncertainty in this: say 50%
+- So density is sqrt(6.59e21 / 1.08 1.66e19) = (19 +/- 8) cm^-3
+- Uncertainty is found as sqrt((0.3**2 + 0.5**2)/2) = 40%
+***** Brightness of supernova remnant
+- The semicircular shell is a bit higher than the bow shock in brightness
+- About 0.25+/-0.01 - 0.17+/-0.01 = 0.08 +/- 0.02
+- Path length is twice as long though. Chord length is 36 arcsec
+- So these cancel out and the density comes out to be similar: 20 pcc
+  
 **** Covering fraction of the He II shell
 - I have already calculated this a few times. The first time, I assumed a 75 degree opening angle, but I never wrote down my reasoning
 - And then I did [[id:BC7D457E-10D9-45E7-8DFC-9A3E736DE519][Previous calculation that on reflection is too small]] and got 54 degrees, but that was based on the erroneous assumption that I should be using the half-maximum width or similar
@@ -1870,6 +1956,7 @@ Try this in a notebook
 - So assuming radius of 20 pixels and a lateral extent of 25 +/- 5 pixels, the half-cone angle is
   - arctan((25 +/- 5) / 20) = 51 +/- 6
   - This is depressingly close to my previous estimate, so it will also give an uncomfortably large He++ ionizing luminosity and hence ionization fraction
+  - /Addendum/ [2024-04-19 Fri] I now find the high ionization fraction independent of the ionizing luminosity, so the pervious objection is probably moot
 
 ***** Previous calculation that may be too small
 :PROPERTIES:

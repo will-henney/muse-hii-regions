@@ -113,25 +113,25 @@ g.fig.suptitle("Correlation between Ha and Hb brightness")
 # Now define some regions to take averages
 
 boxes = {
-    "sw filament": regions.BoundingBox(
+    "sw filament": regions.RegionBoundingBox(
         iymin=20,
         iymax=40,
         ixmin=200,
         ixmax=310,
     ),
-    "bow shock": regions.BoundingBox(
+    "bow shock": regions.RegionBoundingBox(
         iymin=165,
         iymax=205,
         ixmin=240,
         ixmax=290,
     ),
-    "w filament": regions.BoundingBox(
+    "w filament": regions.RegionBoundingBox(
         iymin=100,
         iymax=130,
         ixmin=25,
         ixmax=55,
     ),
-    "c filament": regions.BoundingBox(
+    "c filament": regions.RegionBoundingBox(
         iymin=195,
         iymax=210,
         ixmin=155,
@@ -167,12 +167,53 @@ for box, c in zip(boxes.values(), "yrmgc"):
 # Look at average values in the sample boxes
 
 for label, box in boxes.items():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(imha.shape)
     ha = np.median(imha[yslice, xslice].data.data)
     hb = np.median(imhb[yslice, xslice].data.data)
     print(f"{label}: {ha/hb:.3f}")
 
 # I tried mean and median, and it made very little difference.  Lowest in the bow shock region; slightly higher in the west and central filaments.  Even higher in the southwest filament.
+
+# ### Equivalent widths
+# *New 2024-04-23*
+
+#imnii = Image(str(ROOT / "data/ngc346-PZ-nii-6583-bin01-sum.fits"))
+imcont = Image(str(ROOT / "data/ngc346-PZ-cont-6312-mean.fits"))
+
+# Turns out that we never extracted the N II red lines. And also, the closest continuum we have is S III
+
+ewha = 1.25 * imha / imcont
+
+# +
+fig, ax = plt.subplots(figsize=(12, 12))
+(ewha).plot(
+    vmin=0,
+    vmax=1000,
+    scale="linear",
+    cmap="gray_r",
+    colorbar="v",
+)
+
+for box, c in zip(boxes.values(), "yrmgc"):
+    box.plot(
+        ax=ax,
+        lw=3,
+        edgecolor=c,
+        linestyle="dashed",
+        #        facecolor=(1.0, 1.0, 1.0, 0.4),
+        fill=False,
+    )
+# -
+
+for label, box in boxes.items():
+    (yslice, xslice), _ = box.get_overlap_slices(imha.shape)
+    ew = np.mean(ewha[yslice, xslice].data.data)
+    dew = np.std(ewha[yslice, xslice].data.data)
+    print(f"{label}: {ew:.3f} +/- {dew:.3f}")
+
+
+
+
 
 # ### The reddening law
 

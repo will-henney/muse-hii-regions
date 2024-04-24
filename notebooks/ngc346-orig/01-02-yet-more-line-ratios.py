@@ -1153,6 +1153,7 @@ yyslice = slice(160, 210)  # broader
 hei_c_profile = make_profile(imhei_c)
 hi_c_profile = make_profile(imhi_c)
 heii_c_profile = make_profile(imheii_c)
+cont_profile = make_profile(imcont2)
 
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 fig, ax = plt.subplots(figsize=(15, 6))
@@ -1188,6 +1189,51 @@ ax.set(
 )
 sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-he-ratios.pdf")
+
+# + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+fig, ax = plt.subplots(figsize=(15, 6))
+ix0 = 227.5
+nx = len(hei_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+
+ax.plot(
+    pos,
+    heii_c_profile / hi_c_profile,
+    ds="steps-mid",
+    label="He II λ4686 / H I λ4861",
+    lw=2,
+)
+ax.plot(
+    pos,
+    hei_c_profile / hi_c_profile - 0.10,
+    ds="steps-mid",
+    label="(He I λ5875 / H I λ4861) – 0.1",
+    lw=2,
+)
+ax.plot(
+    pos,
+    0.012 * cont_profile / np.max(cont_profile[np.abs(pos) < 10]),
+    ds="steps-mid",
+    label="continuum",
+    lw=2,
+    color="k",
+)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=1, loc="upper right")
+ax.set_yticks([0.0, 0.005, 0.010])
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    xlim=[-12, 22],
+    ylim=[-0.005, 0.015],
+)
+sns.despine()
+# -
+
+# These show the continuum as well, so we can see the PSF width of about 5 pixels, which is less thn the shell thickness of about 10 pixels.
 
 # + pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
 im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
