@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -34,19 +34,9 @@ sns.set_context("talk")
 sns.set_color_codes()
 # -
 
-# <span style="color:red">**<<<<<<< local**</span>
-
 # ## Path to the root of this repo
 
 ROOT = Path.cwd().parent.parent 
-
-# <span style="color:red">**=======**</span>
-
-# ## Path to the root of this repo
-
-ROOT = Path.cwd().parent.parent 
-
-# <span style="color:red">**>>>>>>> remote**</span>
 
 # ## Calculate reddening from Balmer decrement
 
@@ -165,16 +155,16 @@ fig, ax = plt.subplots(figsize=(12, 12))
 # Now define some regions to take averages
 
 boxes = {
-    "sw filament": regions.BoundingBox(
+    "sw filament": regions.RegionBoundingBox(
         iymin=30, iymax=50, ixmin=300, ixmax=330,
     ),
-    "bow shock": regions.BoundingBox(
+    "bow shock": regions.RegionBoundingBox(
         iymin=165, iymax=205, ixmin=240, ixmax=290,
     ),
-    "w filament": regions.BoundingBox(
+    "w filament": regions.RegionBoundingBox(
         iymin=100, iymax=130, ixmin=25, ixmax=55,
     ),
-    "c filament": regions.BoundingBox(
+    "c filament": regions.RegionBoundingBox(
         iymin=195, iymax=210, ixmin=155, ixmax=195,
     ),
 }
@@ -205,13 +195,14 @@ for box, c in zip(boxes.values(), "yrmgc"):
 # Look at average values in the sample boxes
 
 for label, box in boxes.items():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(imha.shape)
     ha = np.median(imha[yslice, xslice].data.data)
     hb = np.median(imhb[yslice, xslice].data.data - hbfix)
     print(f"{label}: {ha/hb:.3f}")
 
 # I tried mean and median, and it made very little difference.  Lowest in the bow shock region; slightly higher in the west and central filaments.  Much higher in the southwest filament. 
-
+#
+#
 #
 
 # ### The reddening law
@@ -294,7 +285,7 @@ imEBV.plot(
 # Looks like I would expect. Check values in the boxes:
 
 for label, box in boxes.items():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(imha.shape)
     ebv = np.median(imEBV[yslice, xslice].data.data)
     print(f"{label}: {ebv:.3f}")
 
@@ -728,14 +719,16 @@ imR_oiii_hb.write(str(ROOT / "data/ngc346-R-oiii-5007-hi-4861.fits"), savemask="
 
 fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 6))
 imR_oiii_siii.plot(
-    vmin=20, vmax=100, 
+    vmin=5, vmax=75, 
     colorbar="v", scale="linear",
     ax=axes[0],
+    cmap="Purples",
 );
 imR_oiii_hb.plot(
-    vmin=3, vmax=7, 
+    vmin=2, vmax=6.5, 
     colorbar="v", scale="linear",
     ax=axes[1],
+    cmap="Greens",
 )
 axes[0].set_title("[O III] / [S III]")
 axes[1].set_title("[O III] / Hβ")
@@ -880,7 +873,7 @@ sns.histplot(
     data=df, 
     x="5875 / 4861", 
     hue="high",
-    multiple="stack", 
+    multiple="dodge", 
     shrink=1.0,
     stat="probability",
     common_norm=False,

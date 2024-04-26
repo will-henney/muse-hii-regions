@@ -6,7 +6,7 @@
 + Also visible in [O III]
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [3/4] Return to bow project 2023 Summer
+** TODO [3/5] Return to bow project 2023 Summer
 - [2024-01-18 Thu] Second return 2024 January
   - Inspired by the JWST images
     - which show lots of additional bow shocks 
@@ -15,7 +15,8 @@
   - [X] Rerun all the notebooks since I seem to have lost all the results cells
     - Looks like best way is with nbconvert
     - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
-  - [-] Maybe repeat for the Peter Zeigler cube
+  - [-] Maybe repeat for the Peter Zeidler cube
+  - 
   - [ ] Think what are the essentials for the paper
 *** DONE Issues in re-running some notebooks 2024
 CLOSED: [2024-04-11 Thu 18:30]
@@ -33,6 +34,25 @@ CLOSED: [2024-04-11 Thu 18:30]
     - confirm the file I want to check out
     - had to repeat this for all 3 files, which was a bit of a pain
   - And that now works in the notebook, so all is now sorted
+- [2024-04-24 Wed] Turns out that there were further files that had got overwritten. Instead of restoring them from git, I have been re-running the notebooks to get the data back. 
+*** TODO Combining best aspects of all the data
+:LOGBOOK:
+- State "TODO"       from              [2024-04-24 Wed 22:00] \\
+  Plan for how to improve all the line ratios
+:END:
+- So the Peter cube is the only one with a decent zero point, but it is very noisy in other respects
+  - /In the following I will use *PZ* to refer to the Peter Zeidler cube and *ESO* to refer to the standard pipeline-reduced cube from the ESO archive/
+- The original ESO cube is less noisy but many of the extracted lines have negative portions
+- The lines extracted as part of the Mabel project seem better than the original ones from the notebooks, although I need to check exactly how they were generated
+- If I plot the PZ images against the corresponding ESO ones, I can find a correction to the zero points and hopefully get the best of both worlds
+**** Plan for combining PZ and ESO
+1. Run the image extraction for all the lines on the PZ cube. Follow the steps in [[id:B915BA48-D7C9-4FFE-9ECF-511CBF1A4ED7][Step 4: Maps of different lines]] in [[file:ngc-346-drl-spectra.org]]
+2. Reproject to a common WCS with the ESO-derived maps
+   - Turns out that the pixels are the same, so we can jus transfer the PZ wcs, no need to reproject
+   - We just need to shave the rightmost column from the PZ maps, since they are one pixel wider than the ESO ones
+3. Plot the joint histogram of the two maps for each line, so we can correct the zero point
+4. Then we can redo the analysis of the line ratios, such as He I/H I
+   - For this, we could use the Zones to mask out all but Zones III and IV
 *** DONE Better projection of the Cloudy models
 CLOSED: [2024-04-11 Thu 10:10]
 - In the original notebooks where I looked at the output from the Cloudy models, I had an integral to do the projection onto the plane of the sky
@@ -200,9 +220,14 @@ STEM=02-01-Raman-Wings-IR-Source-C
   - Disadvantage is that this deviates from what I did with the ESO cube
 **** 01-00-line-ratios
 *** Some more ideas about things to add to paper
-**** Density from Ha surface brightness
+**** DONE Density from Ha surface brightness
+CLOSED: [2024-04-24 Wed 11:58]
 :PROPERTIES:
 :ID:       D5232AF9-381B-4A53-B6DC-A07255224C07
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-04-24 Wed 11:58] \\
+  This is now done better in [[id:C56D5FC4-B477-4D73-9748-6F8F3CF27B3D][The density from the Balmer line jump reconsidered]] below
 :END:
 - We see an increase in Ha at the inner edge of the bow shell, although it is pretty weak (about 40% of the background)
 - So we need the following steps:
@@ -214,6 +239,9 @@ STEM=02-01-Raman-Wings-IR-Source-C
   - Note that this has not been ported to the PZ series yet
   - So I am going to carry on doing this in the same notebook, since it is already set up with all the pyneb stuff and the brightness maps
 ***** Prior work relevant to this
+:PROPERTIES:
+:ID:       2FF200A5-189A-440B-A441-F60FCD3A0C5F
+:END:
 - I already did work on the He++ line, which is described at
   - [[id:2B8BE02D-527B-413D-9FB9-B122B7D7B7EC][He II lines]] in this file
     - Refers to various calculations in jupyter notebooks, but then does more calculations
@@ -1725,13 +1753,18 @@ Try this in a notebook
 
 ** Analysis of bow shock density, etc
 
-*** He II lines
+*** TODO He II lines
 :PROPERTIES:
 :ID:       2B8BE02D-527B-413D-9FB9-B122B7D7B7EC
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2024-04-24 Wed 11:51] \\
+  I want to concentrate all the He II notes in this section, or at least to have links to all the other places that I have worked on this
 :END:
 + I have already tried to do this analysis in notebook 01-02:
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.py]]
   + [[file:~/Dropbox/muse-hii-regions/notebooks/01-02-yet-more-line-ratios.ipynb]]
+  + See also discussion in [[id:D5232AF9-381B-4A53-B6DC-A07255224C07][Density from Ha surface brightness]] above, in particular the section [[id:2FF200A5-189A-440B-A441-F60FCD3A0C5F][Prior work relevant to this]] that talks about the He II lines
 + But I was getting inconsistent results, so I am going to start again
   + [2024-04-12 Fri] Revisit these calculations, now that I am more confident in the He++ fraction and electron density. 
 + I had used a few different approaches:
@@ -1750,7 +1783,12 @@ Try this in a notebook
   2. (First in notebook).  Use peak He II brightness to estimate the electron density
   3. (Not in notebook, but see [[id:CC0FB6FC-FE95-4F68-B4F4-6CD1096297A2][Consistency check on the ionization fraction and thickness of the He II zone]] in this file). Estimate the thickness of the He++ zone. 
 
-**** He II peak brightness
+**** DONE He II peak brightness
+CLOSED: [2024-04-24 Wed 12:02]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-04-24 Wed 12:02] \\
+  This is now mainly superseded by [[id:89812E2B-AB5E-40BB-9554-381D8B61119D][Rematch for the He++ ionization fraction at inner edge]], but at  some point I need to go through it to see if anything needs salvaging. It has some important details on the estimation of various parameters, which are not found elsewhere
+:END:
 - I am getting inconsistent results for the He++ ionization fraction in the bow shock shell from two different approaches.
   1. The He II/He I ratio, which favors a low ratio: 0.1
   2. The local ionization balance at the inner edge, which favors a high ratio: 0.7
@@ -1826,7 +1864,26 @@ Try this in a notebook
 - This should be equal to n^2 y_He x_e x_{He^{++}}
   - So with y_He = 0.08, x_e = 1.08 we have n^2 x_{He^{++}} = 169 cm^-6
 - Assuming y_He = 0.08, x_e = 1.08, n = 25 cm^-3, we get x_{He^{++}} = 14.6 / 25**2 0.08 1.08 = 0.27
-**** Rematch for the He++ ionization fraction
+
+**** TODO Reconsidering the He II/He I ratio (and He II/H I)
+:LOGBOOK:
+- State "TODO"       from              [2024-04-24 Wed 12:12] \\
+  This needs checking over again so that I can get a handle on the uncertainties in this estimate, and also check that I have accounted for the reddening
+:END:
+
+- In the [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py][01-02-yet-more-line-ratios.py]] notebook I calculate the He II/H I ratio
+- Somewhere I must be doing the same with He II/He I
+**** DONE Rematch for the He++ ionization fraction at inner edge
+CLOSED: [2024-04-24 Wed 11:13]
+:PROPERTIES:
+:ID:       89812E2B-AB5E-40BB-9554-381D8B61119D
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-04-24 Wed 11:13] \\
+  I seem to have gone as far as possible with this now. Preferred solution is x = 0.5, but all we can really say is that x < 0.8
+- State "TODO"       from              [2024-04-24 Wed 10:19] \\
+  I am updating this to incorporate the new determination of the H density from [[id:C56D5FC4-B477-4D73-9748-6F8F3CF27B3D][The density from the Balmer line jump reconsidered]] below
+:END:
 - The original calculation from 2021 in [[id:6A6EC6C8-4754-4B62-8A8D-231CCFC9C677][Estimating He++ ionization fraction]] in the [[file:ngc-346.org]] notebook, together with the ionizing luminosities from the stellar atmosphere models
 - The key additional data that we need is the photoionization cross section for He+
   - This is hydrogenic, so it just scales as sigma(Z, E) = (sigma_0 / Z^2) (E/Z^2 E_0)^{-3}
@@ -1854,23 +1911,61 @@ Try this in a notebook
 - Uncertainties in the ingredients that go into \tau
   - cross section \sigma = (0.5 +/- 0.25) 1.5e-18 cm^2 (relative uncertainty 50%)
   - y = 0.0824 +/- 0.004 (relative uncertainty 5%)
-  - n = 35 +/- 10 cm^-3 (relative uncertainty 30%) from the jump in H beta surface brightness
+  - n = 19 +/- 8 cm^-3 (relative uncertainty 40%) from the jump in H alpha surface brightness
   - dr = 8.6 +/- 2.0 pixels (relative uncertainty 23%) giving 1.6e18 cm
 - Putting it all together
-  - \tau = 0.5 1.5e-18 0.0824 35 1.6e18 = 3.46
+  - \tau = 0.5 1.5e-18 0.0824 19 1.6e18 = 1.88
   - x = 0.71
-  - Adding the uncertainties in quadrature gives sqrt(0.5**2 + 0.05**2 + 0.3**2 + 0.2**2) = 0.62
-  - So \tau = 3.5 +/- 2.2 and x = 0.7 +/- 0.2
-**** The dilemma of the He++ ionization fraction
-- Result from the shell analysis taken at face value is x = 0.7 +/- 0.2
+  - Adding the relative uncertainties in quadrature gives sqrt(0.5**2 + 0.05**2 + 0.4**2 + 0.2**2) = 0.67
+  - **Final answer**
+    - So \tau = 1.88 +/- 1.26 and *x = 0.47 +/- 0.36*
+    - Note that the errors on x are not realistic, since x is positive definite and tau = 1 (x = 0) is in the +/- 1 sigma interval. Physically, tau cannot be larger than 1. So, what we have really is an upper limit.
+      | sigmas |  tau |    x |
+      |--------+------+------|
+      |      0 | 1.88 | 0.47 |
+      |      1 | 3.14 | 0.68 |
+      |      2 |  4.4 | 0.77 |
+      |      3 | 5.66 | 0.82 |
+      #+TBLFM: $2=1.88 + $1 1.26::$3=1-1/$2;f2
+    - So the 1 sigma upper limit is x < 0.68 and the 3 sigma upper limit is x < 0.82
+    - But in the other direction, we cannot exclude the possibility that x is very small. 
+- What empirical data and assumptions go into this estimate?
+  1. H density in shell
+     - Comes from Ha brightness jump
+     - Plus assumption of cylindrical symmetry to get geometric depth from chord length
+  2. Shell thickness
+  3. He abundance
+  4. He+ photoionization cross section
+    
+**** TODO The dilemma of the He++ ionization fraction
+:LOGBOOK:
+- State "TODO"       from              [2024-04-24 Wed 11:18] \\
+  Reworking this in the light of findings from [[id:89812E2B-AB5E-40BB-9554-381D8B61119D][Rematch for the He++ ionization fraction]]
+:END:
+- Result from the shell analysis at inner edge is x_0 = 0.5 (+0.2, -0.5)
+  - So really an upper limit
 - Result from the He II/He I ratio is that \langle x \rangle = 0.015
+  - [ ] But what are the errors on this?
+  - This is the peak of the mean He++ fraction, which is the product of the shell He++ fraction and the shell fractional contribution to the emission measure (ignoring variations in T because they are small)
+  - Both of these will vary with depth into the shell
+    - But the longest path through shell is at the projection of the *inner* edge (the classical horn-shaped profile of a constant emissivity shell)
+    - So, given that x is also biggest at the inner edge, the peak in \langle x \rangle should be exactly at the inner edge
+    - [ ] *However* the seeing of 1 arcsec is about half the shell thickness, and this blurring may reduce the peak in \langle x \rangle
 - So on the face of it, we need that the shell is only 2% of the total emission measure
   - This is much less then one would naturally think, which would be about 20% of total
 - But we should really be asking, what is the required tau such that x = 0.1, and how confidently we can exclude that value
   - Given that \tau = 3.5 +/- 2.2, then \tau = 1 (small x) can only be excluded at 1.1 sigma, which is not that much
   - One way of achieving it would be to have a 3.5 times lower density n = 10 cm^-3
   - Alternatively, the density could be just a bit lower (n = 20 cm^-3) and the cross section down to 0.25 times the threshold value, which is perhaps reasonable when integrated over the shell due to the hardening of the spectrum
-**** The density from the Balmer line jump reconsidered
+**** DONE The density from the Balmer line jump reconsidered
+CLOSED: [2024-04-24 Wed 10:14]
+:PROPERTIES:
+:ID:       C56D5FC4-B477-4D73-9748-6F8F3CF27B3D
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-04-24 Wed 10:14] \\
+  This finally gave a smaller density than I had found before, which is mainly down to the evidence that the brightness fraction from the bow shock in the Balmer lines is only 0.1, rather than the 0.3 that I had previously assumed
+:END:
 - [2024-04-22 Mon] I already did this in the notebook, based on the H beta line jump, but I want to look at it again using the Ha HST image, which is higher resolution. I mainly want to get confidence limits on what the fraction of the emission measure is associated with the bow shock shell
 - The previous calculation is described in [[id:D5232AF9-381B-4A53-B6DC-A07255224C07][Density from Ha surface brightness]] above
 - 
@@ -1941,8 +2036,9 @@ Try this in a notebook
 - As previously, we assume 90 pixels = 18 arcsec for the path length
 - 18 arcsec = 18 61700 au = 1.66e19 cm
 - But we need to admit a considerable uncertainty in this: say 50%
-- So density is sqrt(6.59e21 / 1.08 1.66e19) = (19 +/- 8) cm^-3
-- Uncertainty is found as sqrt((0.3**2 + 0.5**2)/2) = 40%
+- So density is sqrt(6.59e21 / 1.08 1.66e19) where 1.08 assume He+ dominates, which will be true for the H alpha shell
+  - Final H density: **n = (19 +/- 8) cm^-3**
+  - Uncertainty is found as sqrt((0.3**2 + 0.5**2)/2) = 40%
 ***** Brightness of supernova remnant
 - The semicircular shell is a bit higher than the bow shock in brightness
 - About 0.25+/-0.01 - 0.17+/-0.01 = 0.08 +/- 0.02

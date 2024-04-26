@@ -6,9 +6,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -65,38 +65,38 @@ xbb, ybb = 121, 133
 m = 3
 
 boxes = {
-    "SSN 152+168": regions.BoundingBox(
+    "SSN 152+168": regions.RegionBoundingBox(
         iymin=y - m,
         iymax=y + m,
         ixmin=x - m,
         ixmax=x + m,
     ),
-    #    "BG 152+168": regions.BoundingBox(
+    #    "BG 152+168": regions.RegionBoundingBox(
     #        iymin=y-2*m, iymax=y+2*m, ixmin=x-2*m, ixmax=x+2*m,
     #    ),
-    "SSN 43": regions.BoundingBox(
+    "SSN 43": regions.RegionBoundingBox(
         iymin=yb - m,
         iymax=yb + m,
         ixmin=xb - m,
         ixmax=xb + m,
     ),
-    #    "BG 43": regions.BoundingBox(
+    #    "BG 43": regions.RegionBoundingBox(
     #        iymin=yb-2*m, iymax=yb+2*m, ixmin=xb-2*m, ixmax=xb+2*m,
     #    ),
-    "SSN 40": regions.BoundingBox(
+    "SSN 40": regions.RegionBoundingBox(
         iymin=ybb - m,
         iymax=ybb + m,
         ixmin=xbb - m,
         ixmax=xbb + m,
     ),
-    #    "BG 40": regions.BoundingBox(
+    #    "BG 40": regions.RegionBoundingBox(
     #        iymin=ybb-2*m, iymax=ybb+2*m, ixmin=xbb-2*m, ixmax=xbb+2*m,
     #    ),
-    "blue": regions.BoundingBox(iymin=75, iymax=140, ixmin=15, ixmax=40),
-    "red": regions.BoundingBox(iymin=200, iymax=250, ixmin=210, ixmax=300),
-    "magenta": regions.BoundingBox(iymin=10, iymax=50, ixmin=100, ixmax=150),
-    "green": regions.BoundingBox(iymin=10, iymax=100, ixmin=200, ixmax=300),
-    "cyan": regions.BoundingBox(iymin=170, iymax=210, ixmin=90, ixmax=120),
+    "blue": regions.RegionBoundingBox(iymin=75, iymax=140, ixmin=15, ixmax=40),
+    "red": regions.RegionBoundingBox(iymin=200, iymax=250, ixmin=210, ixmax=300),
+    "magenta": regions.RegionBoundingBox(iymin=10, iymax=50, ixmin=100, ixmax=150),
+    "green": regions.RegionBoundingBox(iymin=10, iymax=100, ixmin=200, ixmax=300),
+    "cyan": regions.RegionBoundingBox(iymin=170, iymax=210, ixmin=90, ixmax=120),
 }
 
 # -
@@ -114,7 +114,7 @@ wavranges = [
 # +
 fig, ax = plt.subplots(figsize=(12, 12))
 for box in boxes.values():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(oi6300cube.shape[1:])
     spec = oi6300cube[:, yslice, xslice].mean(axis=(1, 2))
     spec.plot()
 
@@ -123,7 +123,7 @@ for wavrange in wavranges:
 sns.despine()
 # -
 
-yslice, xslice = boxes["SSN 152+168"].slices
+(yslice, xslice), _ = boxes["SSN 152+168"].get_overlap_slices(oi6300cube.shape[1:])
 subcube = oi6300cube[:, yslice, xslice]
 contcube = extract.fit_continuum(
     subcube,
@@ -152,7 +152,7 @@ mcontcube = extract.fit_continuum(
 # +
 fig, ax = plt.subplots(figsize=(12, 12))
 for box in boxes.values():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(oi6300cube.shape[1:])
     spec = oi6300cube[:, yslice, xslice].mean(axis=(1, 2))
     cspec = contcube[:, yslice, xslice].mean(axis=(1, 2))
     spec.plot()
@@ -165,38 +165,38 @@ sns.despine()
 
 # These are defined with respect to mcube
 mboxes = {
-    #    "sw filament": regions.BoundingBox(
+    #    "sw filament": regions.RegionBoundingBox(
     #        iymin=30, iymax=50, ixmin=300, ixmax=330,
     #    ),
-    "bow shock": regions.BoundingBox(
+    "bow shock": regions.RegionBoundingBox(
         iymin=165,
         iymax=205,
         ixmin=240,
         ixmax=290,
     ),
-    "w filament": regions.BoundingBox(
+    "w filament": regions.RegionBoundingBox(
         iymin=100,
         iymax=130,
         ixmin=25,
         ixmax=55,
     ),
-    "c filament": regions.BoundingBox(
+    "c filament": regions.RegionBoundingBox(
         iymin=195,
         iymax=210,
         ixmin=155,
         ixmax=195,
     ),
-    "blue": regions.BoundingBox(iymin=75, iymax=140, ixmin=15, ixmax=40),
-    "red": regions.BoundingBox(iymin=200, iymax=250, ixmin=210, ixmax=300),
-    "magenta": regions.BoundingBox(iymin=10, iymax=50, ixmin=100, ixmax=150),
-    "green": regions.BoundingBox(iymin=10, iymax=100, ixmin=200, ixmax=300),
-    "cyan": regions.BoundingBox(iymin=170, iymax=210, ixmin=90, ixmax=120),
+    "blue": regions.RegionBoundingBox(iymin=75, iymax=140, ixmin=15, ixmax=40),
+    "red": regions.RegionBoundingBox(iymin=200, iymax=250, ixmin=210, ixmax=300),
+    "magenta": regions.RegionBoundingBox(iymin=10, iymax=50, ixmin=100, ixmax=150),
+    "green": regions.RegionBoundingBox(iymin=10, iymax=100, ixmin=200, ixmax=300),
+    "cyan": regions.RegionBoundingBox(iymin=170, iymax=210, ixmin=90, ixmax=120),
 }
 
 # +
 fig, ax = plt.subplots(figsize=(12, 12))
 for box in mboxes.values():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(moi6300cube.shape[1:])
     spec = moi6300cube[:, yslice, xslice].mean(axis=(1, 2))
     cspec = mcontcube[:, yslice, xslice].mean(axis=(1, 2))
     spec.plot()
@@ -215,20 +215,20 @@ wavmin, wavmax
 
 csubcube = oi6300cube - contcube
 cdivcube = oi6300cube / contcube
-csubcube.write(
-    f"{prefix}-contsub.fits",
-    savemask="nan",
-)
-cdivcube.write(
-    f"{prefix}-contdiv.fits",
-    savemask="nan",
-)
-contcube.write(
-    f"{prefix}-cont.fits",
-    savemask="nan",
-)
+# csubcube.write(
+#     f"{prefix}-contsub.fits",
+#     savemask="nan",
+# )
+# cdivcube.write(
+#     f"{prefix}-contdiv.fits",
+#     savemask="nan",
+# )
+# contcube.write(
+#     f"{prefix}-cont.fits",
+#     savemask="nan",
+# )
 
-prefix = f"../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
+prefix = f"../../big-data/ngc346-{wavmin:d}-{wavmax:d}-cube"
 mcsubcube = moi6300cube - mcontcube
 mcdivcube = moi6300cube / mcontcube
 mcsubcube.write(
@@ -245,7 +245,7 @@ mcontcube.write(
 )
 
 for label, box in mboxes.items():
-    yslice, xslice = box.slices
+    (yslice, xslice), _ = box.get_overlap_slices(csubcube.shape[1:])
     spec = csubcube[:, yslice, xslice].select_lambda(6280, 6330).mean(axis=(1, 2))
     try:
         spec.plot(color=label[0])
@@ -904,7 +904,7 @@ moments.save_moments_to_fits(
 
 cont_6312 = mcontcube.select_lambda(6311, 6321).mean(axis=0)
 
-cont_6312.write("../data/ngc346-cont-6312-mean.fits")
+cont_6312.write("../../data/ngc346-cont-6312-mean.fits")
 
 
 # ### The Si II lines
