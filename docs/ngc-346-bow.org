@@ -589,8 +589,19 @@ python ../scripts/rgb-meanwavs.py
   - [[file:CleanShot 2022-08-28 at 15.01.34.jpg]]
   - [[file:CleanShot 2022-08-28 at 15.01.34.cleanshot]] editable version
 
-**** The bias in the 3 channel method and how to overcome it
+**** TODO The bias in the 3 channel method and how to overcome it
+:LOGBOOK:
+- State "TODO"       from              [2024-04-30 Tue 11:29] \\
+  Revisiting this, so we can apply to the ESO and PZ cubes in the big redo of the bow shock analysis
+:END:
 
+***** Return to 3-wav
+- Looking at what I did before, I have a few doubts
+- [ ] First, how did we ever get m_2 larger than 2/3?
+  - It turns out that this is spurious
+  - The mean must lie in the range [-0.5, 0.5] so that it is within the B pixel, which by definition is the peak.
+  - See my apple note [[file:Three-wave method for line extraction.pdf]["Three-wave method for line extraction"]]
+    
 ***** Theory of 3-wav method
 - We can use erf function to describe gaussian contribution to the three channels
 - If we assume that channel intensities are A, B, C where B is peak and C > A
@@ -680,6 +691,7 @@ python ../scripts/rgb-meanwavs.py
 #+begin_src python :return plotfile :results file
   import sys
   import numpy as np
+
   sys.path.append("../lib")
   from three_wav_moments import M0, M1, M2
   from matplotlib import pyplot as plt
@@ -687,42 +699,58 @@ python ../scripts/rgb-meanwavs.py
 
   plotfile = "3wav-test.pdf"
   fig, axes = plt.subplots(3, 1, sharex=True, figsize=(5, 6.5))
-  x0grid = np.linspace(0.0, 1.0)
-  #sigs = [0.1, 0.25, 0.5, 1.0, 1.5]
-  sigs = [0.6, 0.8, 1.0, 1.2]
+  xmin, xmax = -0.5, 0.5
+  x0grid = np.linspace(xmin, xmax, 200)
+  sigs = [0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0]
+  #sigs = [0.4, 0.6, 0.8, 1.0, 1.2, 1.4]
 
   ax = axes[0]
+  alpha = 1.0
+  lw = 0.5
   for sig in sigs:
       label = f"sigma = {sig:.2f}"
-      ax.plot(x0grid, M1(x0grid, sig) / M0(x0grid, sig), label=label)
-  ax.plot([0, 1], [0, 1], color='k', linestyle='dashed')
-  ax.legend()
-  ax.set(
-      xlim=[0, 1],
-      ylim=[-0.01, 1.01],
+      color = "r" if sig == 0.5 else "k"
+      axes[0].plot(
+          x0grid,
+          M1(x0grid, sig) / M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      axes[1].plot(
+          x0grid,
+          M2(x0grid, sig) / M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      axes[2].plot(
+          x0grid,
+          M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      alpha /= 1.5
+      lw *= 1.3
+
+  axes[0].plot([xmin, xmax], [xmin, xmax], color="k", linestyle="dashed")
+  axes[1].plot([xmin, xmax], [2 / 3, 2 / 3], color="k", linestyle="dashed")
+  axes[2].plot([xmin, xmax], [1, 1], color="k", linestyle="dashed")
+
+  axes[2].legend(ncol=2, fontsize="small")
+  axes[0].set(
+      ylim=[-0.51, 0.51],
       ylabel="$m_1 = (C - A) / (A + B + C)$",
   )
-
-  ax = axes[1]
-  for sig in sigs:
-      label = f"sigma = {sig:.2f}"
-      ax.plot(x0grid, M2(x0grid, sig) / M0(x0grid, sig), label=label)
-  ax.plot([0, 1], [2/3, 2/3], color='k', linestyle='dashed')
-  ax.set(
-      xlim=[0, 1],
-      ylim=[-0.01, 1.01],
+  axes[1].set(
+      ylim=[-0.01, 0.68],
       ylabel="$m_2 = (A + C) / (A + B + C)$",
   )
-
-  ax = axes[2]
-
-  for sig in sigs:
-      label = fr"$\sigma = {sig:.2f}$"
-      ax.plot(x0grid, M0(x0grid, sig), label=label)
-  ax.plot([0, 1], [1, 1], color='k', linestyle='dashed')
-
-  ax.set(
-      xlim=[0, 1],
+  axes[2].set(
       ylim=[-0.01, 1.01],
       xlabel=r"$\mu$",
       ylabel="$M_0 = (A + B + C)$",
@@ -734,6 +762,81 @@ python ../scripts/rgb-meanwavs.py
 
 #+RESULTS:
 [[file:3wav-test.pdf]]
+
+****** Graphs of blue and red fraction as function of mean wave and sigma
+
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+
+  sys.path.append("../lib")
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import seaborn as sns
+
+  plotfile = "3wav-blue-red.pdf"
+  fig, axes = plt.subplots(3, 1, sharex=True, figsize=(5, 6.5))
+  xmin, xmax = -0.5, 0.5
+  x0grid = np.linspace(xmin, xmax, 200)
+  sigs = [0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0]
+  #sigs = [0.4, 0.6, 0.8, 1.0, 1.2, 1.4]
+
+  ax = axes[0]
+  alpha = 1.0
+  lw = 0.5
+  for sig in sigs:
+      label = f"sigma = {sig:.2f}"
+      color = "r" if sig == 0.5 else "k"
+      axes[0].plot(
+          x0grid,
+          0.5 * (M2(x0grid, sig) - M1(x0grid, sig)) / M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      axes[1].plot(
+          x0grid,
+          0.5 * (M2(x0grid, sig) + M1(x0grid, sig)) / M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      axes[2].plot(
+          x0grid,
+          M0(x0grid, sig),
+          label=label,
+          color=color,
+          alpha=alpha,
+          lw=lw,
+      )
+      alpha /= 1.5
+      lw *= 1.3
+
+  axes[2].plot([xmin, xmax], [1, 1], color="k", linestyle="dashed")
+
+  axes[2].legend(ncol=2, fontsize="small")
+  axes[0].set(
+      ylim=[-0.01, 0.51],
+      ylabel="Blue $= A / (A + B + C)$",
+  )
+  axes[1].set(
+      ylim=[-0.01, 0.51],
+      ylabel="Red $= C / (A + B + C)$",
+  )
+  axes[2].set(
+      ylim=[-0.01, 1.01],
+      xlabel=r"$\mu$",
+      ylabel="$M_0 = (A + B + C)$",
+  )
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-blue-red.pdf]]
 
 ****** Contours of moments in (mu, sigma) plane
 #+begin_src python :return plotfile :results file
@@ -747,7 +850,7 @@ python ../scripts/rgb-meanwavs.py
 
   NMU, NSIG = 400, 400
   mu, sig = np.meshgrid(
-      np.linspace(0.0, 1.0, NMU),
+      np.linspace(0.0, 0.5, NMU),
       np.logspace(-1.5, 1.5, NSIG),
   )
 
@@ -759,12 +862,12 @@ python ../scripts/rgb-meanwavs.py
   levels1 = [
       0.0, 0.001,
       0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
-      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
-      0.999, 1.0,
+      # 0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+      # 0.999, 1.0,
   ]
   levels2 = [
       0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
-      0.6, 0.65, 0.66, 0.666, 0.7, 0.8, 0.9, 0.95, 0.99,
+      0.6, 0.65, 0.66, 0.666,
   ]
 
   cmap1 = cmr.get_sub_cmap("cmr.fall", 0.25, 0.95)
@@ -810,15 +913,16 @@ For this we can use interpolation
   import three_wav_moments
   from three_wav_moments import M0, M1, M2
   from matplotlib import pyplot as plt
+  from matplotlib import colors
   import scipy.stats as ss
   import seaborn as sns
   import cmasher as cmr
 
   #three_wav_moments._PROFILE = ss.cauchy
 
-  N = 200
+  N = 151
   mu_grid, sig_grid = np.meshgrid(
-      np.linspace(0.0, 1.0, N),
+      np.linspace(-0.5, 0.5, N),
       np.concatenate(
           (np.linspace(0.0, 2.0, N, endpoint=False),
            np.linspace(2.0, 10.0, N)),
@@ -828,14 +932,14 @@ For this we can use interpolation
 
   m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
   m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
-  m1[m1 < 0.0] = 0.0
+  m0 = M0(mu_grid, sig_grid)
   m2[m2 < 0.0] = 0.0
   mask = np.isfinite(m1 * m2)
 
 
   m1_grid, m2_grid = np.meshgrid(
-      np.linspace(0.0, 0.8, 4*N),
-      np.linspace(0.0, 0.8, 4*N),
+      np.linspace(-0.5, 0.5, 4*N),
+      np.linspace(0.0, 2/3, 4*N),
   )
 
 
@@ -843,52 +947,71 @@ For this we can use interpolation
   points = (m1[mask], m2[mask])
   xi = (m1_grid, m2_grid)
   mu = griddata(points, mu_grid[mask], xi, method="linear")
+  #sys.exit("after mu griddata")
   sig = griddata(points, sig_grid[mask], xi, method="linear")
-  mu[m1_grid > m2_grid] = np.nan
-  sig[m1_grid > m2_grid] = np.nan
-  mu[mu >= 1.0] = np.nan
-  sig[mu >= 1.0] = np.nan
+  frac = griddata(points, m0[mask], xi, method="linear")
+  # mu[m1_grid > m2_grid] = np.nan
+  # sig[m1_grid > m2_grid] = np.nan
+  # mu[mu > 0.5] = np.nan
+  # sig[mu > 0.5] = np.nan
 
 
   # Find upper envelope of m2, which corresponds to mu = 1
-  m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
-  outside = m2_grid > m2_max
-  mu[outside] = np.nan
-  sig[outside] = np.nan
+  # m2_max = np.interp(m1_grid, m1[::-1, -1], m2[::-1, -1])
+  # outside = m2_grid > m2_max
+  # mu[outside] = np.nan
+  # sig[outside] = np.nan
+
+  # mu[~np.isfinite(mu) & (m2_grid < 0.5)] = 0.0
 
 
   plotfile = "3wav-inverse-contours.pdf"
-  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  fig, ax = plt.subplots(1, 1, figsize=(8, 5))
   levels = [
       0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
       0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
   ]
 
-  cmap1 = cmr.get_sub_cmap("cmr.emerald", 0.25, 1.0)
-  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  cmap1 = cmr.get_sub_cmap("cmr.redshift", 0.2, 0.8)
+  cmap2 = cmr.get_sub_cmap("cmr.emerald_r", 0.25, 1.0)
+  cmap0 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
   sigmax = 2.0
-  c2 = ax.contourf(
-      m1_grid, m2_grid, np.where(sig > sigmax, sigmax, sig),
-      vmin=0, vmax=sigmax, 
-      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
-      #linestyles="dashed",
-      cmap=cmap2,
+  c0 = ax.contourf(
+      m1_grid, m2_grid, np.minimum(1 - frac, 1.0),
+      levels=[0.0, 0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 0.9],
+      cmap=cmap0,
+      norm=colors.LogNorm(vmin=0.001, vmax=1.0, linthresh=0.15, linscale=1.0, clip=True),
       alpha=0.5,
   )
   c1 = ax.contour(
       m1_grid, m2_grid, mu,
-      levels=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+      levels=[-0.495, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.495],
       cmap=cmap1,
       alpha=1.0,
   )
-  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  c2 = ax.contour(
+      m1_grid, m2_grid, sig,
+      vmin=0, vmax=sigmax,
+      levels=[0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0],
+      linestyles="dashed",
+      cmap=cmap2,
+      alpha=1.0,
+  )
+  fig.colorbar(c0, label=r"Loss fraction: $1 - (A + B + C)$")
   # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
   # labels = [lab.replace("x =", r"\mu =") for lab in labels]
   # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
   ax.clabel(
       c1,
-      c1.levels[::2],
-      fmt=lambda x: fr"$\mu = {x:.1f}$",
+      c1.levels[1::2],
+      fmt=lambda x: fr"${x:+.1f}$",
+      inline=True,
+      inline_spacing=2,
+  )
+  ax.clabel(
+      c2,
+      c2.levels,
+      fmt=lambda x: fr"${x:.1f}$",
       inline=True,
       inline_spacing=2,
   )
@@ -896,8 +1019,8 @@ For this we can use interpolation
   #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
   #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
   ax.set(
-      xlabel=r"$m_1 = (C - A) / (A + B + C)$",
-      ylabel=r"$m_2 = (A + C) / (A + B + C)$",
+      xlabel=r"First moment: $m_1 = (C - A) / (A + B + C)$",
+      ylabel=r"Second moment: $m_2 = (A + C) / (A + B + C)$",
   )
 
   sns.despine()
@@ -909,7 +1032,120 @@ For this we can use interpolation
 [[file:3wav-inverse-contours.pdf]]
 
 
-****** Apply algorithm to a particular line
+****** Finding mean wave and sigma from red and blue fraction
+This is just the same idea as the previous, except I am hoping to fill more of the square
+
+#+begin_src python :return plotfile :results file
+  import sys
+  import numpy as np
+  from scipy.interpolate import griddata
+  sys.path.append("../lib")
+  import three_wav_moments
+  from three_wav_moments import M0, M1, M2
+  from matplotlib import pyplot as plt
+  import scipy.stats as ss
+  import seaborn as sns
+  import cmasher as cmr
+
+  #three_wav_moments._PROFILE = ss.cauchy
+
+  N = 150
+  mu_grid, sig_grid = np.meshgrid(
+      np.linspace(-0.5, 0.5, N),
+      np.concatenate(
+          (np.linspace(0.0, 2.0, N, endpoint=False),
+           np.linspace(2.0, 10.0, N)),
+      ),
+  )
+
+
+  m1 = M1(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2 = M2(mu_grid, sig_grid) / M0(mu_grid, sig_grid)
+  m2[m2 < 0.0] = 0.0
+  mask = np.isfinite(m1 * m2)
+
+
+  blue_grid, red_grid = np.meshgrid(
+      np.linspace(0.0, 0.5, 4*N),
+      np.linspace(0.0, 0.5, 4*N),
+  )
+  m1_grid = red_grid - blue_grid
+  m2_grid = red_grid + blue_grid
+  blue = 0.5 * (m2 - m1)
+  red = 0.5 * (m2 + m1)
+
+  # Two-dimensional interpolation from (mu, sig) -> (blue, red) plane
+  points = (blue[mask], red[mask])
+  xi = (blue_grid, red_grid)
+  mu = griddata(points, mu_grid[mask], xi, method="linear")
+  sig = griddata(points, sig_grid[mask], xi, method="linear")
+  #sys.exit("after sigma griddata")
+  # mu[m1_grid > m2_grid] = np.nan
+  # sig[m1_grid > m2_grid] = np.nan
+  # mu[mu > 0.5] = np.nan
+  # sig[mu > 0.5] = np.nan
+
+
+  # mu[~np.isfinite(mu) & (m2_grid < 0.5)] = 0.0
+
+  plotfile = "3wav-inverse-contours-red-blue.pdf"
+  fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+  levels = [
+      0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5,
+      0.6, 0.7, 0.8, 0.9, 0.95, 0.99,
+  ]
+
+  cmap1 = cmr.get_sub_cmap("cmr.emerald_r", 0.25, 1.0)
+  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 1.0)
+  sigmax = 2.0
+  c2 = ax.contourf(
+      blue_grid, red_grid, np.where(sig > sigmax, sigmax, sig),
+      vmin=0, vmax=sigmax, 
+      #levels=[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8],
+      #linestyles="dashed",
+      cmap=cmap2,
+      alpha=0.5,
+  )
+  c1 = ax.contour(
+      blue_grid, red_grid, mu,
+      levels=[-0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4],
+      cmap=cmap1,
+      alpha=1.0,
+  )
+  fig.colorbar(c2, label=r"Line width: $\sigma$")
+  # artists, labels = c1.legend_elements(str_format='{:2.1f}'.format)
+  # labels = [lab.replace("x =", r"\mu =") for lab in labels]
+  # ax.legend(artists, labels, framealpha=1, ncol=2, loc="lower right")
+  ax.clabel(
+      c1,
+      c1.levels[::2],
+      fmt=lambda x: fr"$\mu = {x:.2f}$",
+      inline=True,
+      inline_spacing=2,
+  )
+  #ax.clabel(c2, c2.levels, inline=True)
+  #ax.scatter(m1[mask], m2[mask], c=mu_grid[mask], marker=".")
+  #ax.scatter(m1[:, -1], m2[:, -1], marker=".")
+  ax.set(
+      xlabel=r"$A / (A + B + C)$",
+      ylabel=r"$C / (A + B + C)$",
+  )
+
+  sns.despine()
+  fig.tight_layout()
+  fig.savefig(plotfile)
+#+end_src
+
+#+RESULTS:
+[[file:3wav-inverse-contours-red-blue.pdf]]
+
+
+****** TODO Apply algorithm to a particular line
+:LOGBOOK:
+- State "TODO"       from              [2024-04-30 Tue 10:53] \\
+  This was clearly unfinished when I was last working on this
+:END:
+
 #+begin_src python :return plotfile :results file
   import sys
   import json
