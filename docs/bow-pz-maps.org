@@ -2,3 +2,83 @@
 - Find what steps need to be repeated from the list in [[file:ngc-346-drl-spectra.org]]
   - Continuum subtraction ([[id:59F3D73A-6179-462C-86E8-1F915C76E274][Step -1]])
   - Maps of different lines ([[id:B915BA48-D7C9-4FFE-9ECF-511CBF1A4ED7][Step 4]])
+** Continuum subtraction
+- This uses the median filter method
+- Previously, filtered cube files had been written out to [[file:../big-data/ngc346new/]]
+  - I might as well write them out in same place, but with a different prefix
+#+begin_src sh :dir ../big-data/ngc346new/ :results output verbatim :eval no
+  time python ../../lib/median_continuum.py\
+       --two-pass \
+       --out-prefix n346-PZ-2pass \
+       --cube-name PeterZeidler/DATACUBE_FINAL_fwhm_cor.fits \
+       11
+#+end_src
+
+#+RESULTS:
+: /Users/will/Dropbox/muse-hii-regions/big-data/ngc346new
+
+- I have repeated this for window widths of 7, 11, 101
+** Image maps
+
+
+*** First try and make the rainbow maps
+Start off with the ESO cube. This differs from what we did previously in that it uses the 2pass 007 filtered cube
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-muse-2pass-csub-007.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix ESO007
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-ESO007.pdf]]
+
+Now the PZ one
+
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-007.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix PZ007
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-PZ007.pdf]]
+
+That one is OK
+
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-007.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --ncolumns 8 \
+         --subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix PZ007B
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-PZ007B.pdf]]
+
+That one is terrible. We should not subtract the base
+
+#+begin_src sh :dir ../data/spec1d :results output file
+  python ../../scripts/peak-image-plot.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-101.fits \
+         n346-nostar-bs-peaks-p0010-d0030.csv \
+         --ncolumns 8 \
+         --no-subtract-base \
+         --wavelength-window-pad 0.5 \
+         --extra-suffix PZ101
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-PZ101.pdf]]
+
+And that one is mostly fine too. 
