@@ -1181,14 +1181,14 @@ Again, this is the same as the previous, except for allowing the peak to be outs
   sig[mred | mblue] = 0.0
   kernel = Gaussian2DKernel(x_stddev=1.0)
   mu = interpolate_replace_nans(mu, kernel)
-  # sig = convolve(sig, kernel)
 
 
   plotfile = "3wav-extended-inverse-contours.pdf"
   fig, ax = plt.subplots(1, 1, figsize=(8, 5))
 
-  cmap1 = cmr.get_sub_cmap("cmr.redshift", 0.2, 0.8)
-  cmap2 = cmr.get_sub_cmap("cmr.gothic_r", 0.0, 0.9)
+  cmap1 = cmr.get_sub_cmap("cmr.guppy_r", 0.15, 0.85)
+  #cmap1 = cmr.get_sub_cmap("cmr.pride", 0.15, 0.85)
+  cmap2 = cmr.get_sub_cmap("cmr.voltage_r", 0.0, 0.9)
   cmap0 = cmr.get_sub_cmap("cmr.apple_r", 0.0, 1.0)
   sigmax = 2.0
   c0 = ax.contourf(
@@ -1231,6 +1231,7 @@ Again, this is the same as the previous, except for allowing the peak to be outs
       vmax=0.5,
       cmap=cmap1,
       alpha=1.0,
+      zorder=1.1,
   )
   c2 = ax.contour(
       m1_grid,
@@ -1242,6 +1243,7 @@ Again, this is the same as the previous, except for allowing the peak to be outs
       linestyles="dashed",
       cmap=cmap2,
       alpha=1.0,
+      zorder=1.2,
   )
   # ax.imshow(mu, extent=(-0.8, 0.8, 0.0, 0.8), origin="lower", cmap=cmap1, vmin=-0.5, vmax=0.5)
   nudge = 1.007
@@ -1250,13 +1252,15 @@ Again, this is the same as the previous, except for allowing the peak to be outs
       nudge * np.array([0.5, 0.5, 2/3, 0.5, 0.5]),
       [0.8, 0.8, 0.8, 0.8, 0.8],
       color="white",
-      alpha=0.8,
+      alpha=0.7,
+      zorder=1.5,
   )
   nudge = 0.006
   ax.fill_between(
       [-0.8 - nudge,  -nudge, nudge, 0.8+nudge],
       np.array([0.8, 0, 0, 0.8]),
-      color="0.7",
+      color="0.8",
+      zorder=1.6,
   )
   fig.colorbar(c0, label=r"Loss fraction: $1 - (A + B + C)$")
   ax.set(
