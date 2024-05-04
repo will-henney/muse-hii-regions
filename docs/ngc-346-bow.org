@@ -597,10 +597,17 @@ python ../scripts/rgb-meanwavs.py
 
 ***** Return to 3-wav
 - Looking at what I did before, I have a few doubts
-- [ ] First, how did we ever get m_2 larger than 2/3?
+- [X] First, how did we ever get m_2 larger than 2/3?
   - It turns out that this is spurious
   - The mean must lie in the range [-0.5, 0.5] so that it is within the B pixel, which by definition is the peak.
   - See my apple note [[file:Three-wave method for line extraction.pdf]["Three-wave method for line extraction"]]
+- I now have the mapping from (m_1, m_2) to (\mu, \sigma, f) sorted
+  - See [[id:AE951AB5-DA4E-426A-B1DD-C6D3F87B4122][Extended range mean wave and sigma from moments]]
+  - The f is the fraction of the total flux that we lose by using only 3 pixels, which turns out to be mainly a function of m_2
+  - The best results are obtained when \sigma is about 0.5, since that is when we are most sensitive
+  - From the observations, I find that m_2 tends to vary from 0.5 to 0.6, which is great
+    - This gives \sigma = 0.9 \pm 0.2
+    - This implies f = 0.15 +/- 0.08, which is not to bad
     
 ***** Theory of 3-wav method
 - We can use erf function to describe gaussian contribution to the three channels
@@ -1112,8 +1119,23 @@ For this we can use interpolation
 [[file:3wav-inverse-contours.pdf]]
 
 
-****** Extended range mean wave and sigma from moments
-Again, this is the same as the previous, except for allowing the peak to be outside of the central pixel, meaning |mu| > 0.5
+****** DONE Extended range mean wave and sigma from moments
+CLOSED: [2024-05-03 Fri 11:23]
+:PROPERTIES:
+:ID:       AE951AB5-DA4E-426A-B1DD-C6D3F87B4122
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-03 Fri 11:23] \\
+  We have made the annotated version of this graph
+:END:
++ Annotated version is at [[file:../figs/3wav-extended-inverse-contours-annotated.pdf]]
++ Again, this is the same as the previous, except for allowing the peak to be outside of the central pixel, meaning |mu| > 0.5
++ There are two different kinds of forbidden regions
+  + Where "forbidden" is only in the idea case. With real data, we might enter these regions due to noise
+  + The lower forbidden regions represent negative fluxes in one of the flanking pixels, A or C
+  + The upper forbidden regions are when mu is outside of the range [-0.5, 0.5]
+  + This which means that we do not have the correct peak pixel
+  + But, we might want to keep a consistent central pixel in a given region, so we might want to allow this
 #+begin_src python :return plotfile :results file
   import sys
   import numpy as np

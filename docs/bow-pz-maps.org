@@ -82,11 +82,17 @@ That one is terrible. We should not subtract the base
 [[file:/Users/will/Dropbox/muse-hii-regions/data/spec1d/peak-images-n346-nostar-bs-peaks-p0010-d0030-PZ101.pdf]]
 
 And that one is mostly fine too. 
-*** Now make the individual maps
+*** Now make all the individual maps
 - It turns out that the [[file:../scripts/make-one-map.py][make-one-map.py]] script uses info from the spreadsheet to decide how to extract the line and from which median-filtered image.
 - I would rather use a homogeneous approach this time
+- And more efficient to do all the lines at once, so we do not need to keep reading in the same cube file
 **** New version of map script
-#+begin_src python :tangle ../scripts/make-one-map-2024.py
+- The yaml files are in [[file:../data/n346-lines/all-lines-orig/]]
+- I will make a new folder [[file:../data/n346-bow-lines/]] to store the maps
+  - This will have sub-folders named after the particular median-filtered cube, such as [[file:../data/n346-bow-lines/maps-n346-PZ-2pass-csub-007/]]
+- Unlike previous scripts, this finds all paths relative to the project root directory, which may or may not be a good idea
+  - We can run it from the [[file:../scripts/]] directory or the [[file:../data/]] directory, or anywhere else that is one level down from the project root (or otherwise use the ~--root-dir~ option)
+#+begin_src python :tangle ../scripts/make-all-3wav-maps.py
   import numpy as np
   import sys
   from pathlib import Path
@@ -97,23 +103,24 @@ And that one is mostly fine too.
   from astropy.io import fits
   from astropy.wcs import WCS
 
-  unwanted_types = ["sky",  "telluric", "noise", "nan"]
+  unwanted_types = ["sky", "telluric", "noise", "nan", "stellar"]
+
 
   def get_line_type(s):
+      if s is None:
+          return None
       ltype = slugify.slugify(str(s).rstrip("?"))
-      if ltype in unwanted_types:
+      if not ltype or ltype in unwanted_types:
           return None
       else:
           return ltype
 
 
   def load_cube_hdu(
-          cwindow: int,
-          prefix: str="n346-muse-csub",
-          big_data_folder: Path=Path("../../big-data/ngc346new"),
+      cube_path: Path,
   ):
-      cube_path = big_data_folder / f"{prefix}-{cwindow:03d}.fits"
       return fits.open(cube_path)[0]
+
 
   def get_id_string(data):
       s = f"{data['Index']:04d}-"
@@ -122,90 +129,94 @@ And that one is mostly fine too.
           s += "-" + slugify.slugify(f"{data['lambda_HM']:.2f}")
       return s
 
-  def choose_cont_window(data: dict) -> tuple[int, bool]:
-      """Decide which type of continuum subtraction is preferred
-
-      Returns tuple: width of window, and whether to subtract baseline
-      """
-
-      # Case of no preference given
-      if not data["Cont_method"]:
-          # Just use the wide window
-          return 101, False
-
-      try:
-          # Case of only one method listed and it is an integer
-          return int(data["Cont_method"]), False
-      except ValueError:
-          # Case of various methods listed, or one that contains letters. Take the first
-          cont_methods = data["Cont_method"].split(",")
-          first_cont_method = cont_methods[0]
-          if first_cont_method.endswith("B"):
-              # Case that we want to subtract the baseline
-              return int(first_cont_method.rstrip("B")), True
-          else:
-              # Case that we do not
-              return int(first_cont_method), False
-
-
 
   def main(
-          yaml_file : str,
+      cube_file: str = "n346-muse-2pass-csub-007.fits",
+      project_root: Path = Path("../"),
+      yaml_folder: str = "data/n346-lines/all-lines-orig",
+      maps_folder: str = "data/n346-bow-lines",
   ):
-      """Create map of a single emission line from data in YAML file
-      """
-      if not yaml_file.endswith(".yaml"):
-          yaml_file = yaml_file + ".yaml"
-      with open(yaml_file) as f:
-          metadata = yaml.load(f)
+      """Create ABC channel maps of all emission lines from data in YAML files"""
 
-      # Group all lines of same type into their own folder
-      line_type = get_line_type(metadata["Type"])
-      save_path = Path("type-" + line_type)
-      save_path.mkdir(exist_ok=True)
 
-      cwindow, yes_sub_base = choose_cont_window(metadata)
-      cube = load_cube_hdu(cwindow)
-      ipeak = metadata["Index"]
-      # First try: just use 3 pixels along wave axis
-      cube_window = cube.data[ipeak-1:ipeak+2, ...]
-      if yes_sub_base:
-          # This will fail if the line is broad
-          base = 0.5 * (cube.data[ipeak-2, ...] + cube.data[ipeak+2, ...])
-          cube_window -= base
-      image = np.sum(cube_window, axis=0)
-      header = WCS(cube.header).celestial.to_header()
-      # FITS headers allow only ASCII strings
-      header.update({k: unidecode(str(v)) for k, v in metadata.items()})
+      # Get the spectral cube
+      big_data_folder = project_root / "big-data" / "ngc346new"
+      cube_path = big_data_folder / f"{cube_file}"
+      cube = load_cube_hdu(cube_path)
 
-      fits_file = get_id_string(metadata) + ".fits"
-      fits.PrimaryHDU(header=header, data=image).writeto(save_path / fits_file, overwrite=True)
-      print("Image saved to", save_path / fits_file)
+      # The YAML files contain metadata for each line
+      yaml_files = (project_root / yaml_folder).glob("*.yaml")
+      # Loop over all the lines
+      for yaml_file in yaml_files:
+          with open(yaml_file) as f:
+              metadata = yaml.safe_load(f)
+          # Group all lines of same type into their own folder
+          line_type = get_line_type(metadata["Type"])
+          if line_type is None:
+              # Skip unwanted types
+              continue
+
+          # Make folder for this line type if necessary
+          save_path = project_root / maps_folder / f"maps-{cube_path.stem}" / f"type-{line_type}" 
+          save_path.mkdir(exist_ok=True, parents=True)
+
+          ipeak = metadata["Index"]
+          # Save each of 3 channels as a separate FITS file
+          images = {}
+          for chan_label, ichan in zip(["A", "B", "C"], [ipeak - 1, ipeak, ipeak + 1]):
+              images[chan_label] = cube.data[ichan, ...]
+          # And also the moments
+          images["ABC"] = images["A"] + images["B"] + images["C"]
+          images["m1"] = (images["C"] - images["A"]) / images["ABC"]
+          images["m2"] = (images["C"] + images["A"]) / images["ABC"]
+          header = WCS(cube.header).celestial.to_header()
+          # FITS headers allow only ASCII strings
+          header.update({k: unidecode(str(v)) for k, v in metadata.items()})
+          for label, image in images.items():
+              fits_file = get_id_string(metadata) + f"-{label}.fits"
+              fits.PrimaryHDU(header=header, data=image).writeto(
+                  save_path / fits_file, overwrite=True
+              )
+          print("Image saved to", save_path / f"{get_id_string(metadata)}-*.fits")
+
 
   if __name__ == "__main__":
       typer.run(main)
-
 #+end_src
 
-#+begin_src sh :dir ../data/n346-lines :results verbatim
-  python ../../scripts/make-one-map.py all-lines-orig/3711.yaml
+
+
+#+begin_src sh :dir ../data :results verbatim :eval no
+python ../scripts/make-all-3wav-maps.py --cube-file n346-muse-2pass-csub-007.fits
 #+end_src
 
-#+RESULTS:
-: Image saved to type-deep-neutral/3711-uil-9233-46.fits
-
-
-#+begin_src sh :dir ../data/n346-lines :results verbatim
-python ../../scripts/make-one-map.py all-lines-orig/1547.yaml
+#+begin_src sh :dir ../data :results verbatim
+python ../scripts/make-all-3wav-maps.py --help 
 #+end_src
 
 #+RESULTS:
-: Image saved to type-low-neb/1547-uil-6529-50.fits
+#+begin_example
+                                                                                
+ Usage: make-all-3wav-maps.py [OPTIONS]                                         
+                                                                                
+ Create ABC channel maps of all emission lines from data in YAML files          
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --cube-file           TEXT  [default: n346-muse-2pass-csub-007.fits]         │
+│ --project-root        PATH  [default: ..]                                    │
+│ --yaml-folder         TEXT  [default: data/n346-lines/all-lines-orig]        │
+│ --maps-folder         TEXT  [default: data/n346-bow-lines]                   │
+│ --help                      Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 
-
-
-#+begin_src sh :dir ../data/n346-lines :results verbaatim
-python ../../scripts/make-one-map.py --help 
-#+end_src
-
+#+end_example
+** Initial impressions of the PZ maps
+- These are a lot better than I had expected
+- Maybe we can just use these, instead of trying to use them to calibrate the ESO ones
+*** Some lines that may need tweaking
+- The [Ar IV] aurora lines are a bit weird
+  - I suspect that the central pixel may be off by one
+  - [Ar IV] 7170.5 has no obvious blend
+  - [Ar IV] 7237.4 has a blend with an H_2 line, so is listed under that
+  - [Ar IV] 7262.7 has a blend with [Cl IV] 7261.4, but it is not so apparent
 
