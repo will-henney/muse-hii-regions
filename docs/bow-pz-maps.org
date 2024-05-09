@@ -2,15 +2,26 @@
 - Find what steps need to be repeated from the list in [[file:ngc-346-drl-spectra.org]]
   - Continuum subtraction ([[id:59F3D73A-6179-462C-86E8-1F915C76E274][Step -1]])
   - Maps of different lines ([[id:B915BA48-D7C9-4FFE-9ECF-511CBF1A4ED7][Step 4]])
-** Continuum subtraction
+** DONE Continuum subtraction
+CLOSED: [2024-05-09 Thu 11:37]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-09 Thu 11:37] \\
+  This is done for now, but I may need to revisit it later if I want another intermediate sied window between 011 and 101
+- State "TODO"       from              [2024-05-09 Thu 11:20] \\
+  This needs to be re-run for each window size of the PZ file now that I have trimmed off a column.
+:END:
 - This uses the median filter method
 - Previously, filtered cube files had been written out to [[file:../big-data/ngc346new/]]
-  - I might as well write them out in same place, but with a different prefix
+  - I might as well write them out in the same place, but with a different prefix
+- I have done the following window sizes in the terminal, since it takes a while
+  - [X] 7
+  - [X] 11
+  - [X] 101
 #+begin_src sh :dir ../big-data/ngc346new/ :results output verbatim :eval no
   time python ../../lib/median_continuum.py\
        --two-pass \
        --out-prefix n346-PZ-2pass \
-       --cube-name PeterZeidler/DATACUBE_FINAL_fwhm_cor.fits \
+       --cube-name PeterZeidler/DATACUBE_FINAL_fwhm_cor_trim.fits \
        11
 #+end_src
 
@@ -18,6 +29,57 @@
 : /Users/will/Dropbox/muse-hii-regions/big-data/ngc346new
 
 - I have repeated this for window widths of 7, 11, 101
+** DONE [#A] Fixing the map size discrepancy once and for all
+CLOSED: [2024-05-09 Thu 11:19]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-09 Thu 11:19] \\
+  I ran this and it seems to have worked. Now to redo all the downstream steps
+:END:
+- (3801,326,347) is the size of the PZ cube, but (3801,326,346) is the size of the ESO cube
+- This difference has caused me no end of pain, and half-assed attempts to fix it have had unwanted knock-on effects, since all my previous workflow assumes the ESO cube size
+- The only sane thing to do is to trim off a column from the PZ cube right at the start, so we can just avoid the entire issue
+  - This means I will have to rerun the median filters, but that is a small price to pay
+
+#+begin_src python :tangle ../scripts/trim-cube.py
+  from astropy.io import fits
+  import numpy as np
+  import typer
+  from pathlib import Path
+
+
+  def main(
+      hdu_index: int = 1,
+      cube_name: str = "PeterZeidler/DATACUBE_FINAL_fwhm_cor.fits",
+      data_path=Path.home() / "Work/Muse-Hii-Data/SMC-NGC-346",
+      extra_suffix: str = "_trim",
+      target_shape: tuple[int, int, int] = (3801, 326, 346),
+  ):
+      # Open the FITS file
+      hdu = fits.open(data_path / cube_name)[hdu_index]
+      # Trim off the rightmost column
+      hdu.data = hdu.data[..., :-1]
+      # Check shape of result
+      assert hdu.data.shape == target_shape
+
+      # Write the new FITS file
+      hdu.writeto(data_path / cube_name.replace(".fits", f"{extra_suffix}.fits"), overwrite=True)
+
+
+  if __name__ == "__main__":
+      typer.run(main)
+#+end_src
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :dir ../big-data/ngc346new/ :results output verbatim
+  time python ../../scripts/trim-cube.py
+#+end_src
+
+#+RESULTS:
+: 
+: real	0m46.969s
+: user	0m26.132s
+: sys	0m6.325s
+
 ** Image maps
 
 
@@ -86,12 +148,17 @@ And that one is mostly fine too.
 - It turns out that the [[file:../scripts/make-one-map.py][make-one-map.py]] script uses info from the spreadsheet to decide how to extract the line and from which median-filtered image.
 - I would rather use a homogeneous approach this time
 - And more efficient to do all the lines at once, so we do not need to keep reading in the same cube file
-**** New version of map script
+**** DONE New version of map script
+CLOSED: [2024-05-09 Thu 13:11]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-09 Thu 13:11] \\
+  Re-run this for all PZ cubes after doing the column trimming
+:END:
 - The yaml files are in [[file:../data/n346-lines/all-lines-orig/]]
 - I will make a new folder [[file:../data/n346-bow-lines/]] to store the maps
   - This will have sub-folders named after the particular median-filtered cube, such as [[file:../data/n346-bow-lines/maps-n346-PZ-2pass-csub-007/]]
 - Unlike previous scripts, this finds all paths relative to the project root directory, which may or may not be a good idea
-  - We can run it from the [[file:../scripts/]] directory or the [[file:../data/]] directory, or anywhere else that is one level down from the project root (or otherwise use the ~--root-dir~ option)
+  - We can run it from the [[file:../scripts/]] directory or the [[file:../data/]] directory, or anywhere else that is one level down from the project root (or otherwise use the ~--project-root~ option)
 #+begin_src python :tangle ../scripts/make-all-3wav-maps.py
   import numpy as np
   import sys
@@ -210,6 +277,126 @@ python ../scripts/make-all-3wav-maps.py --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 #+end_example
+** TODO Spectra of each zone
+:LOGBOOK:
+- State "TODO"       from              [2024-05-09 Thu 10:03] \\
+  I need to do this so I can have a panel in my [[id:376C7C7C-FE81-48F2-8D6E-DF06BC2274C5][quality assurance figures]] that shows the spectra around each line
+:END:
+- For a first pass on this, I will use the same zones as in the H_2 lines project
+  - Eventually, we could maybe redo the zones using the new maps for consistency, although I cannot imagine that it will make much difference.
+- The zones are defined in [[file:../data/n346-lines/zones.yaml]]
+- The map of zone indices is in [[file:../data/n346-lines/zone-indices.fits]]
+- Then there are mask files for each zone in [[file:../data/n346-lines/zone-IV-mask.fits]] etc
+  - These are what we should use to extract the spectra
+- It looks like I used a really space-inefficient method for doing the zones spectra: I first make an entire masked cube for each zone, then extract the spectra from that
+  - Never mind, I will do the same - disk space is not a problem
+  - 
+*** DONE Generate the masked cubes for each zone
+CLOSED: [2024-05-09 Thu 11:39]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-09 Thu 11:39] \\
+  Done for 007, 011, and 101
+:END:
+First the 007 window
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  time for z in I II III IV MYSO S; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-PZ-2pass-csub-007.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+#+begin_example
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+
+real	2m7.901s
+user	1m13.664s
+sys	0m42.645s
+Last run:
+Thu May  9 11:27:34 CST 2024
+#+end_example
+
+Now the 101 window. This one I run in the terminal so as not to block the notebook. And I do the same for the 011 window
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines :eval no
+  time for z in I II III IV MYSO S; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-PZ-2pass-csub-101.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+Somehow I forgot the Zone 0 case
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  z=0
+  time for w in 007 011 101; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-PZ-2pass-csub-$w.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: 
+: real	1m1.540s
+: user	0m30.565s
+: sys	0m18.825s
+: Last run:
+: Thu May  9 11:56:20 CST 2024
+
+*** DONE Extract the spectra from each zone
+CLOSED: [2024-05-09 Thu 13:06]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-09 Thu 13:06] \\
+  Finished the version with mean and without any chopping off for all the PZ windows and the 007 ESO window
+:END:
+Unlike with the previous project, we do not necessarily want to chop off the south filament, so we will initially try it with the entire cube
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-bow-lines
+  time for z in 0 I II III IV MYSO S; do
+      python ../../scripts/extract-zone-spectrum.py \
+       ../../big-data/ngc346new/n346-PZ-2pass-csub-007-zone-$z.fits \
+       zone-$z-P-007-mean
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: /Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
+:   spec = reduction_method(
+: 
+: real	0m57.864s
+: user	0m25.488s
+: sys	0m13.890s
+: Last run:
+: Thu May  9 11:57:26 CST 2024
+
+Also done for the 011 and 101 windows. And for the ESO cube with 007 window
+
 ** Initial impressions of the PZ maps
 - These are a lot better than I had expected
 - Maybe we can just use these, instead of trying to use them to calibrate the ESO ones
@@ -237,7 +424,10 @@ python ../scripts/make-all-3wav-maps.py --help
   - Shows the 2d histogram of the sum, m1, and m2 values
 
 
-*** Script to compare two maps
+*** TODO Script to compare two maps
+:PROPERTIES:
+:ID:       376C7C7C-FE81-48F2-8D6E-DF06BC2274C5
+:END:
 #+begin_src python :tangle ../scripts/compare-two-maps.py
   from astropy.io import fits
   import numpy as np
@@ -246,6 +436,7 @@ python ../scripts/make-all-3wav-maps.py --help
   from pathlib import Path
   import typer
   from astropy.convolution import Gaussian2DKernel, convolve_fft
+  from astropy.wcs import WCS
 
   SAVEPATH = Path("maps-compare")
 
@@ -263,15 +454,23 @@ python ../scripts/make-all-3wav-maps.py --help
 
 
   def get_data(line_path: Path, suffix: str = "ABC"):
-      """Get the image data from a line path, and remove the last column if it is the PZ version."""
+      """Get the image data from a line path"""
       hdu = fits.open(
           line_path.with_stem(line_path.stem.replace("ABC", suffix))
       )[0]
-      if "PZ" in line_path.parent.parent.stem:
-          return hdu.data[:, :-1]
-      else:
-          return hdu.data
+      return hdu.data
 
+  def get_zone_spectra(combo: str, zones: list[str]  = ["0", "I", "II", "III", "IV", "S", "MYSO"]):
+      """Get the 1-d spectrum of a zone from a given cube"""
+      specdict = {}
+      for zone in zones:
+          spec_file = f"zone_spectra/zone-{zone}-{combo}-mean-spec1d.fits"
+          hdu = fits.open(spec_file)[0]
+          specdict[zone] = hdu.data
+          if not "wave" in specdict:
+              w = WCS(hdu.header)
+              specdict["wave"] = w.array_index_to_world(np.arange(hdu.data.size)).to_value("Angstrom")
+      return specdict
 
   def rgb_ABC(line_path: Path):
       rgb = []
@@ -357,6 +556,9 @@ python ../scripts/make-all-3wav-maps.py --help
       ax[0, 0].set_title(f"{acombo} {line}")
       ax[0, 1].set_title(f"{bcombo} {line}")
 
+      # Zoom on the spectrum around the line
+      ax[0, 2].plot(abc_a[100, 100, :], label=acombo)
+    
       # Correlations between the two cubes, channel by channel
       nbins = 100
       H_rgb = np.empty((nbins, nbins, 3))

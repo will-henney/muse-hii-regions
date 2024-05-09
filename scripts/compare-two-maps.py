@@ -22,14 +22,11 @@ def line_path(combo: str, line: str):
 
 
 def get_data(line_path: Path, suffix: str = "ABC"):
-    """Get the image data from a line path, and remove the last column if it is the PZ version."""
+    """Get the image data from a line path"""
     hdu = fits.open(
         line_path.with_stem(line_path.stem.replace("ABC", suffix))
     )[0]
-    if "PZ" in line_path.parent.parent.stem:
-        return hdu.data[:, :-1]
-    else:
-        return hdu.data
+    return hdu.data
 
 
 def rgb_ABC(line_path: Path):
