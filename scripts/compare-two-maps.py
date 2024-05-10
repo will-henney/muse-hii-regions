@@ -46,6 +46,11 @@ def get_zone_spectra(
                 .array_index_to_world(np.arange(hdu.data.size))
                 .to_value("Angstrom")
             )
+    # Add some combination zones
+    # Average diffuse
+    specdict["I,III"] = (specdict["I"] + specdict["III"]) / 2
+    # Average filaments
+    specdict["0,II"] = (specdict["0"] + specdict["II"]) / 2
     return specdict
 
 
@@ -78,9 +83,9 @@ def auto_scale_channels(rgb, p=1.0, mask=None):
 def split_line_string(line: str):
     """Extract the ion and the central wavelength from a line string."""
     parts = line.split("-")
-    assert len(parts) == 4
-    species = " ".join(parts[:2])
-    wave0 = float(".".join(parts[2:]))
+    assert len(parts) in (3, 4)
+    species = " ".join(parts[:-3])
+    wave0 = float(".".join(parts[-2:]))
     return species, wave0
 
 def main(
@@ -131,7 +136,8 @@ def main(
     abmax = max(amax, bmax)
     abmin = min(min(amin, bmin), 0.0)
 
-    fig, ax = plt.subplots(2, 3, figsize=(10, 5))
+    sns.set_color_codes("muted")
+    fig, ax = plt.subplots(3, 3, figsize=(10, 7))
 
     # RGB images of the ABC channels from the two cubes
     ax[0, 0].imshow(auto_scale_channels(rgb_a, mask=star_mask), origin="lower")
@@ -146,14 +152,31 @@ def main(
     ax[0, 0].set_title(f"{acombo} {line}")
     ax[0, 1].set_title(f"{bcombo} {line}")
 
-    # Zoom on the spectrum around the line
+    ## 1D spectra in right column of plots
+    ##
     spec_a = get_zone_spectra(acombo)
     spec_b = get_zone_spectra(bcombo)
     wslice = slice(index0 - 7, index0 + 8)
-    ax[0, 2].plot(spec_a["wave"][wslice], spec_a["IV"][wslice], label=f"{acombo} zone IV", ds="steps-mid")
-    ax[0, 2].plot(spec_b["wave"][wslice], spec_b["IV"][wslice], label=f"{bcombo} zone IV", ds="steps-mid")
-    # ax[0, 2].set_xlim(wave_obs - 5, wave_obs + 5)
-
+    for axx, zone in [
+            [ax[0, -1], "IV"],
+            [ax[1, -1], "I,III"],
+            [ax[2, -1], "0,II"],
+    ]:
+        axx.plot(spec_a["wave"][wslice], spec_a[zone][wslice], label=f"{acombo} zone {zone}", ds="steps-mid")
+        axx.plot(spec_b["wave"][wslice], spec_b[zone][wslice], label=f"{bcombo} zone {zone}", ds="steps-mid")
+        axx.axhline(0.0, color="k", lw=0.5)
+        # add RGB rectangles for the ABC channels
+        dwave = np.diff(spec_a["wave"])[0]
+        for i, color in ([index0 - 1, "b"], [index0, "g"], [index0 + 1, "r"]):
+            axx.axvspan(
+                spec_a["wave"][i] - dwave / 2,
+                spec_a["wave"][i] + dwave / 2,
+                facecolor=color,
+                alpha=0.2,
+                lw=0,
+            )
+        axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
+    ## Correlations in bottom left corner
     # Correlations between the two cubes, channel by channel
     nbins = 100
     H_rgb = np.empty((nbins, nbins, 3))
@@ -197,8 +220,8 @@ def main(
 
     # Correlations between the velocity moments
     for axx, mlabel, mrange, mlines in [
-        [ax[1, 1], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
-        [ax[1, 2], "m2", (-0.2, 1.2), (0, 2 / 3)],
+        [ax[2, 0], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
+        [ax[2, 1], "m2", (-0.2, 1.2), (0, 2 / 3)],
     ]:
         # Joint histogram of velocity moments
         if mlabel == "m1":
@@ -235,8 +258,11 @@ def main(
                 xlabel=f"{acombo} {mlabel}",
                 ylabel=f"{bcombo} {mlabel}",
             )
-            figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
-            fig.savefig(figfile, bbox_inches="tight")
+
+
+    sns.despine()
+    figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
+    fig.savefig(figfile, bbox_inches="tight")
 
     print(figfile, end="")
 
