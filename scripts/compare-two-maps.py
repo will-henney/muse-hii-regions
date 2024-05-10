@@ -32,7 +32,7 @@ def get_data(line_path: Path, suffix: str = "ABC", return_header: bool = False):
 
 
 def get_zone_spectra(
-        combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO"],
+        combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
 ):
     """Get the 1-d spectrum of each zone from a given cube"""
     specdict = {}
@@ -97,6 +97,7 @@ def main(
     mask_out_stars: bool = False,
     star_mask_threshold: float = 10.0,
     star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
+    subtract_bg: bool = False,
 ):
     species, wave0 = split_line_string(line)
     line_path_a = line_path(acombo, line)
@@ -136,6 +137,17 @@ def main(
     abmax = max(amax, bmax)
     abmin = min(min(amin, bmin), 0.0)
 
+    # Load the spectra for each zone into dicts
+    spec_a = get_zone_spectra(acombo)
+    spec_b = get_zone_spectra(bcombo)
+    # Optionally subtract the background spectrum from each zone
+    if subtract_bg:
+        for zone in spec_a.keys():
+            if zone not in ("wave", "BG"):
+                spec_a[zone] -= spec_a["BG"]
+                spec_b[zone] -= spec_b["BG"]
+
+    # Set up the figure
     sns.set_color_codes("muted")
     fig, ax = plt.subplots(3, 3, figsize=(10, 7))
 
@@ -154,13 +166,12 @@ def main(
 
     ## 1D spectra in right column of plots
     ##
-    spec_a = get_zone_spectra(acombo)
-    spec_b = get_zone_spectra(bcombo)
     wslice = slice(index0 - 7, index0 + 8)
     for axx, zone in [
             [ax[0, -1], "IV"],
             [ax[1, -1], "I,III"],
             [ax[2, -1], "0,II"],
+            [ax[1, 1], "BG"],
     ]:
         axx.plot(spec_a["wave"][wslice], spec_a[zone][wslice], label=f"{acombo} zone {zone}", ds="steps-mid")
         axx.plot(spec_b["wave"][wslice], spec_b[zone][wslice], label=f"{bcombo} zone {zone}", ds="steps-mid")

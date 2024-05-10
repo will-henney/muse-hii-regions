@@ -290,7 +290,122 @@ python ../scripts/make-all-3wav-maps.py --help
   - These are what we should use to extract the spectra
 - It looks like I used a really space-inefficient method for doing the zones spectra: I first make an entire masked cube for each zone, then extract the spectra from that
   - Never mind, I will do the same - disk space is not a problem
-  - 
+  -
+*** DONE Define a background (BG) zone
+CLOSED: [2024-05-10 Fri 13:26]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-10 Fri 13:26] \\
+  Decided to go for a border of 10 pixels to avoid the noise around the edges
+:END:
+- It looks like I may be able to improve things by subtracting off a background, so I am next going to define a new zone to the north of the map where there is very little emission apart from some neutral lines
+- Looking at the zone-*-bright-map.fits files, it looks like a combination of two criteria will work:
+  - III < -0.1
+  - S < 0.2
+- This will select a couple of regions in the north where nothing is happening
+
+
+#+begin_src python :tangle ../scripts/make-bg-zone-mask.py 
+  from pathlib import Path
+  import numpy as np
+  from astropy.io import fits
+  import yaml
+  import typer
+
+  def trim_pixel_border_from_mask(mask: np.ndarray, border: int) -> np.ndarray:
+      """Set to False all pixels within certain border of mask array"""
+      assert mask.ndim == 2
+      mask2 = np.zeros_like(mask)
+      # Easier to set the pixels that we do not want to set to FALSE
+      mask2[border:-border,  border:-border] = True
+      # and just AND it with the original
+      return mask & mask2
+
+  BG_THRESHOLDS = [("III", -0.1), ("S", 0.2)]
+
+
+  def main(
+          trim_border: int=5,
+  ):
+      """Write a fits image file for the BG zone mask"""
+
+      # Initialise the mask to all True
+      mask = None
+      # For each criterion, set to False any pixels that do not meet it
+      for zlabel, threshold in BG_THRESHOLDS:
+          zone_bright_map = fits.open(f"zone-{zlabel}-bright-map.fits")[0]
+          if mask is None:
+              mask = zone_bright_map.data < threshold
+          else:
+              mask = mask & (zone_bright_map.data < threshold)
+      # And trim around the border to avoid noisy pixels
+      mask = trim_pixel_border_from_mask(mask, trim_border)
+      maskfilename = f"zone-BG-mask.fits"
+      fits.PrimaryHDU(
+          header=zone_bright_map.header,
+          data=mask.astype(int),
+      ).writeto(maskfilename, overwrite=True)
+      print("Saved mask to", maskfilename)
+
+  if __name__ == "__main__":
+      typer.run(main)
+
+  #+end_src
+
+  #+RESULTS:
+
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  python ../../scripts/make-bg-zone-mask.py --trim-border 10
+#+end_src
+
+#+RESULTS:
+: Saved mask to zone-BG-mask.fits
+*** DONE Generate the masked cube for the BG zone
+CLOSED: [2024-05-10 Fri 13:35]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-10 Fri 13:35] \\
+  Done for 3 PZ windows and one ESO window
+:END:
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  z=BG
+  time for w in 007 011 101; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-PZ-2pass-csub-$w.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+: 
+: real	1m6.621s
+: user	0m31.011s
+: sys	0m20.328s
+: Last run:
+: Fri May 10 13:30:22 CST 2024
+
+Repeat for the ESO cube
+#+begin_src sh :results output verbatim :dir ../data/n346-lines
+  z=BG
+  time for w in 007; do
+      python ../../scripts/make-masked-cube.py \
+       ../../big-data/ngc346new/n346-muse-2pass-csub-$w.fits \
+       zone-$z-mask.fits \
+       zone-$z
+  done
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+: Last run:
+: Fri May 10 13:44:59 CST 2024
+
 *** DONE Generate the masked cubes for each zone
 CLOSED: [2024-05-09 Thu 11:39]
 :LOGBOOK:
@@ -300,7 +415,7 @@ CLOSED: [2024-05-09 Thu 11:39]
 First the 007 window
 #+header: :prologue "exec 2>&1" :epilogue ":"
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
-  time for z in I II III IV MYSO S; do
+  time for z in 0 I II III IV MYSO S BG; do
       python ../../scripts/make-masked-cube.py \
        ../../big-data/ngc346new/n346-PZ-2pass-csub-007.fits \
        zone-$z-mask.fits \
@@ -397,9 +512,57 @@ Unlike with the previous project, we do not necessarily want to chop off the sou
 
 Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 
+Repeat for the new BG zone
+
+#+header: :prologue "exec 2>&1" :epilogue ":"
+#+begin_src sh :results output verbatim :dir ../data/n346-bow-lines
+  z=BG
+  time python ../../scripts/extract-zone-spectrum.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-007-zone-$z.fits \
+         zone-$z-P-007-mean
+  time python ../../scripts/extract-zone-spectrum.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-011-zone-$z.fits \
+         zone-$z-P-011-mean
+  time python ../../scripts/extract-zone-spectrum.py \
+         ../../big-data/ngc346new/n346-PZ-2pass-csub-101-zone-$z.fits \
+         zone-$z-P-101-mean
+  time python ../../scripts/extract-zone-spectrum.py \
+         ../../big-data/ngc346new/n346-muse-2pass-csub-007-zone-$z.fits \
+         zone-$z-E-007-mean
+  echo "Last run:"
+  date
+#+end_src
+
+#+RESULTS:
+#+begin_example
+/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
+  spec = reduction_method(
+
+real	0m4.090s
+user	0m3.313s
+sys	0m1.645s
+/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
+  spec = reduction_method(
+
+real	0m4.043s
+user	0m3.340s
+sys	0m1.603s
+
+real	0m4.047s
+user	0m3.318s
+sys	0m1.601s
+
+real	0m4.100s
+user	0m3.355s
+sys	0m1.612s
+Last run:
+Fri May 10 13:45:43 CST 2024
+#+end_example
+
 ** Initial impressions of the PZ maps
 - These are a lot better than I had expected
 - Maybe we can just use these, instead of trying to use them to calibrate the ESO ones
+- No, they have the same old problem with the weak lines
 *** Some lines that may need tweaking
 - The [Ar IV] aurora lines are a bit weird
   - I suspect that the central pixel may be off by one in some cases
@@ -428,6 +591,12 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 :PROPERTIES:
 :ID:       376C7C7C-FE81-48F2-8D6E-DF06BC2274C5
 :END:
+- This has now expanded into an all singing, all dancing figure, which I am refering to as the Quality Assurance (QA) plot
+- [2024-05-10 Fri] Future plans are as follows
+  - [ ] Define a BG zone to extract a spectrum that we will subtract from all the other zones
+    - I am hoping that this will allows us to eliminate all the rubbish that we see in the PZ spectra of the faint lines with an amplitude of about 5
+    - Possibly it also might help to fix the oversubtraction in the ESO spectra with bright lines, similar to what I did by hand on a line-by-line basis in the jupyter notebooks
+  - [ ] Add a map of the zones as the central panel of the figure
 #+begin_src python :tangle ../scripts/compare-two-maps.py
   from astropy.io import fits
   import numpy as np
@@ -463,7 +632,7 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 
 
   def get_zone_spectra(
-          combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO"],
+          combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
   ):
       """Get the 1-d spectrum of each zone from a given cube"""
       specdict = {}
@@ -528,6 +697,7 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
       mask_out_stars: bool = False,
       star_mask_threshold: float = 10.0,
       star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
+      subtract_bg: bool = False,
   ):
       species, wave0 = split_line_string(line)
       line_path_a = line_path(acombo, line)
@@ -567,6 +737,17 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
       abmax = max(amax, bmax)
       abmin = min(min(amin, bmin), 0.0)
 
+      # Load the spectra for each zone into dicts
+      spec_a = get_zone_spectra(acombo)
+      spec_b = get_zone_spectra(bcombo)
+      # Optionally subtract the background spectrum from each zone
+      if subtract_bg:
+          for zone in spec_a.keys():
+              if zone not in ("wave", "BG"):
+                  spec_a[zone] -= spec_a["BG"]
+                  spec_b[zone] -= spec_b["BG"]
+
+      # Set up the figure
       sns.set_color_codes("muted")
       fig, ax = plt.subplots(3, 3, figsize=(10, 7))
 
@@ -585,13 +766,12 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 
       ## 1D spectra in right column of plots
       ##
-      spec_a = get_zone_spectra(acombo)
-      spec_b = get_zone_spectra(bcombo)
       wslice = slice(index0 - 7, index0 + 8)
       for axx, zone in [
               [ax[0, -1], "IV"],
               [ax[1, -1], "I,III"],
               [ax[2, -1], "0,II"],
+              [ax[1, 1], "BG"],
       ]:
           axx.plot(spec_a["wave"][wslice], spec_a[zone][wslice], label=f"{acombo} zone {zone}", ds="steps-mid")
           axx.plot(spec_b["wave"][wslice], spec_b[zone][wslice], label=f"{bcombo} zone {zone}", ds="steps-mid")
@@ -706,7 +886,7 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007
+python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007 --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -721,7 +901,7 @@ python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo P-101
 
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 1.0
+python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -735,7 +915,7 @@ python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo P-101 --s
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-he-ii-4685-68.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo E-007
+python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo E-007 --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -756,14 +936,14 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-011-ar-iv-4740-17.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo E-007 --smooth 5 --mask-out-stars --star-mask-threshold 2.0
+  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo E-007 --smooth 5 --mask-out-stars --star-mask-threshold 2.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-k-iv-6101-79.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2.0
+  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -1032,10 +1212,19 @@ python ../../scripts/compare-two-maps.py --help
  Usage: compare-two-maps.py [OPTIONS]                                           
                                                                                 
 ╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --acombo        TEXT  [default: P-007]                                       │
-│ --bcombo        TEXT  [default: E-007]                                       │
-│ --line          TEXT  [default: h-i-6562-79]                                 │
-│ --help                Show this message and exit.                            │
+│ --acombo                                        TEXT   [default: P-007]      │
+│ --bcombo                                        TEXT   [default: E-007]      │
+│ --line                                          TEXT   [default:             │
+│                                                        h-i-6562-79]          │
+│ --histogram-gamma                               FLOAT  [default: 2.0]        │
+│ --smooth                                        FLOAT  [default: 0.0]        │
+│ --mask-out-stars         --no-mask-out-stars           [default:             │
+│                                                        no-mask-out-stars]    │
+│ --star-mask-threshold                           FLOAT  [default: 10.0]       │
+│ --star-map-path                                 PATH   [default:             │
+│                                                        /Users/will/Dropbox/… │
+│ --help                                                 Show this message and │
+│                                                        exit.                 │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 #+end_example
