@@ -5,6 +5,7 @@ import seaborn as sns
 from pathlib import Path
 import typer
 from astropy.convolution import Gaussian2DKernel, convolve_fft
+from astropy.wcs import WCS
 
 SAVEPATH = Path("maps-compare")
 
@@ -21,12 +22,31 @@ def line_path(combo: str, line: str):
     return candidates[0]
 
 
-def get_data(line_path: Path, suffix: str = "ABC"):
+def get_data(line_path: Path, suffix: str = "ABC", return_header: bool = False):
     """Get the image data from a line path"""
-    hdu = fits.open(
-        line_path.with_stem(line_path.stem.replace("ABC", suffix))
-    )[0]
-    return hdu.data
+    hdu = fits.open(line_path.with_stem(line_path.stem.replace("ABC", suffix)))[0]
+    if return_header:
+        return hdu.data, hdu.header
+    else:
+        return hdu.data
+
+
+def get_zone_spectra(
+        combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO"],
+):
+    """Get the 1-d spectrum of each zone from a given cube"""
+    specdict = {}
+    for zone in zones:
+        spec_file = f"zone_spectra/zone-{zone}-{combo}-mean-spec1d.fits"
+        hdu = fits.open(spec_file)[0]
+        specdict[zone] = hdu.data
+        if not "wave" in specdict:
+            specdict["wave"] = (
+                WCS(hdu.header)
+                .array_index_to_world(np.arange(hdu.data.size))
+                .to_value("Angstrom")
+            )
+    return specdict
 
 
 def rgb_ABC(line_path: Path):
@@ -51,28 +71,37 @@ def auto_scale_channels(rgb, p=1.0, mask=None):
             *np.nanpercentile(
                 rgb[..., i] if mask is None else rgb[..., i][mask],
                 [p, 100 - p],
-            )
+            ),
         )
     return _rgb
 
+def split_line_string(line: str):
+    """Extract the ion and the central wavelength from a line string."""
+    parts = line.split("-")
+    assert len(parts) == 4
+    species = " ".join(parts[:2])
+    wave0 = float(".".join(parts[2:]))
+    return species, wave0
 
 def main(
-        acombo: str = "P-007",
-        bcombo: str = "E-007",
-        line: str = "h-i-6562-79",
-        histogram_gamma: float = 2.0,
-        smooth: float = 0.0,
-        mask_out_stars: bool = False,
-        star_mask_threshold: float = 10.0,
-        star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
+    acombo: str = "P-007",
+    bcombo: str = "E-007",
+    line: str = "h-i-6562-79",
+    histogram_gamma: float = 2.0,
+    smooth: float = 0.0,
+    mask_out_stars: bool = False,
+    star_mask_threshold: float = 10.0,
+    star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
 ):
-
+    species, wave0 = split_line_string(line)
     line_path_a = line_path(acombo, line)
     line_path_b = line_path(bcombo, line)
-    abc_a = get_data(line_path_a)
+    abc_a, hdr = get_data(line_path_a, return_header=True)
     abc_b = get_data(line_path_b)
     rgb_a = rgb_ABC(line_path_a)
     rgb_b = rgb_ABC(line_path_b)
+    wave_obs = float(hdr["lambda_obs"])
+    index0 = int(hdr["Index"])
     # Optionally smooth the images
     if smooth > 0.0:
         kernel = Gaussian2DKernel(smooth)
@@ -102,16 +131,28 @@ def main(
     abmax = max(amax, bmax)
     abmin = min(min(amin, bmin), 0.0)
 
-    fig, ax = plt.subplots(2, 3, figsize=(9, 5))
+    fig, ax = plt.subplots(2, 3, figsize=(10, 5))
 
     # RGB images of the ABC channels from the two cubes
     ax[0, 0].imshow(auto_scale_channels(rgb_a, mask=star_mask), origin="lower")
     ax[0, 1].imshow(auto_scale_channels(rgb_b, mask=star_mask), origin="lower")
     if mask_out_stars:
-        ax[0, 0].contour(star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5)
-        ax[0, 1].contour(star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5)
+        ax[0, 0].contour(
+            star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5
+        )
+        ax[0, 1].contour(
+            star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5
+        )
     ax[0, 0].set_title(f"{acombo} {line}")
     ax[0, 1].set_title(f"{bcombo} {line}")
+
+    # Zoom on the spectrum around the line
+    spec_a = get_zone_spectra(acombo)
+    spec_b = get_zone_spectra(bcombo)
+    wslice = slice(index0 - 7, index0 + 8)
+    ax[0, 2].plot(spec_a["wave"][wslice], spec_a["IV"][wslice], label=f"{acombo} zone IV", ds="steps-mid")
+    ax[0, 2].plot(spec_b["wave"][wslice], spec_b["IV"][wslice], label=f"{bcombo} zone IV", ds="steps-mid")
+    # ax[0, 2].set_xlim(wave_obs - 5, wave_obs + 5)
 
     # Correlations between the two cubes, channel by channel
     nbins = 100
@@ -156,8 +197,8 @@ def main(
 
     # Correlations between the velocity moments
     for axx, mlabel, mrange, mlines in [
-            [ax[1, 1], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
-            [ax[1, 2], "m2", (-0.2, 1.2), (0, 2/3)],
+        [ax[1, 1], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
+        [ax[1, 2], "m2", (-0.2, 1.2), (0, 2 / 3)],
     ]:
         # Joint histogram of velocity moments
         if mlabel == "m1":
@@ -169,7 +210,7 @@ def main(
         # m_a = get_data(line_path_a, suffix=mlabel)
         # m_b = get_data(line_path_b, suffix=mlabel)
         mask = np.isfinite(m_a) & np.isfinite(m_b)
-        mask &= (abc_a > 0.0)
+        mask &= abc_a > 0.0
         if mask_out_stars:
             mask &= star_mask
         mmin, mmax = mrange
