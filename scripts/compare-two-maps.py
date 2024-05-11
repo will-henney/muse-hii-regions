@@ -32,7 +32,8 @@ def get_data(line_path: Path, suffix: str = "ABC", return_header: bool = False):
 
 
 def get_zone_spectra(
-        combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
+    combo: str,
+    zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
 ):
     """Get the 1-d spectrum of each zone from a given cube"""
     specdict = {}
@@ -80,6 +81,7 @@ def auto_scale_channels(rgb, p=1.0, mask=None):
         )
     return _rgb
 
+
 def split_line_string(line: str):
     """Extract the ion and the central wavelength from a line string."""
     parts = line.split("-")
@@ -87,6 +89,7 @@ def split_line_string(line: str):
     species = " ".join(parts[:-3])
     wave0 = float(".".join(parts[-2:]))
     return species, wave0
+
 
 def main(
     acombo: str = "P-007",
@@ -126,16 +129,6 @@ def main(
     else:
         star_mask = np.ones_like(abc_a, dtype=bool)
     star_mask_rgb = np.stack([star_mask] * 3, axis=-1)
-    amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
-    aspan = amax - amin
-    amin -= 0.1 * aspan
-    amax += 0.1 * aspan
-    bmin, bmax = np.nanpercentile(rgb_b[star_mask_rgb], [1, 99])
-    bspan = bmax - bmin
-    bmin -= 0.1 * bspan
-    bmax += 0.1 * bspan
-    abmax = max(amax, bmax)
-    abmin = min(min(amin, bmin), 0.0)
 
     # Load the spectra for each zone into dicts
     spec_a = get_zone_spectra(acombo)
@@ -146,6 +139,30 @@ def main(
             if zone not in ("wave", "BG"):
                 spec_a[zone] -= spec_a["BG"]
                 spec_b[zone] -= spec_b["BG"]
+
+    # Optionally apply the BG subtraction to the images
+    if subtract_bg:
+        # Subtract from each channel of the RGB images
+        for i in range(3):
+            # index in wave array for the current channel
+            wav_index = index0 + 1 - i
+            rgb_a[..., i] -= spec_a["BG"][wav_index]
+            rgb_b[..., i] -= spec_b["BG"][wav_index]
+        # Subtract from the summed ABC images
+        abc_a -= np.sum(spec_a["BG"][index0 - 1: index0 + 2])
+        abc_b -= np.sum(spec_b["BG"][index0 - 1: index0 + 2])
+
+    # Calculate suitable limits for the plots and histograms
+    amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
+    aspan = amax - amin
+    amin -= 0.1 * aspan
+    amax += 0.1 * aspan
+    bmin, bmax = np.nanpercentile(rgb_b[star_mask_rgb], [1, 99])
+    bspan = bmax - bmin
+    bmin -= 0.1 * bspan
+    bmax += 0.1 * bspan
+    abmax = max(amax, bmax)
+    abmin = min(min(amin, bmin), 0.0)
 
     # Set up the figure
     sns.set_color_codes("muted")
@@ -167,14 +184,34 @@ def main(
     ## 1D spectra in right column of plots
     ##
     wslice = slice(index0 - 7, index0 + 8)
+    smaxima = []
+    sminima = []
     for axx, zone in [
-            [ax[0, -1], "IV"],
-            [ax[1, -1], "I,III"],
-            [ax[2, -1], "0,II"],
-            [ax[1, 1], "BG"],
+        [ax[0, -1], "IV"],
+        [ax[1, -1], "I,III"],
+        [ax[2, -1], "0,II"],
+        [ax[1, 1], "BG"],
     ]:
-        axx.plot(spec_a["wave"][wslice], spec_a[zone][wslice], label=f"{acombo} zone {zone}", ds="steps-mid")
-        axx.plot(spec_b["wave"][wslice], spec_b[zone][wslice], label=f"{bcombo} zone {zone}", ds="steps-mid")
+        axx.plot(
+            spec_a["wave"][wslice],
+            spec_a[zone][wslice],
+            label=f"{acombo} zone {zone}",
+            ds="steps-mid",
+        )
+        axx.plot(
+            spec_b["wave"][wslice],
+            spec_b[zone][wslice],
+            label=f"{bcombo} zone {zone}",
+            ds="steps-mid",
+        )
+        # Save the highest and lowest values for the y-axis limits
+        if zone != "BG":
+            smaxima.append(np.nanmax(spec_a[zone][wslice]))
+            smaxima.append(np.nanmax(spec_b[zone][wslice]))
+            sminima.append(np.nanmin(spec_a[zone][wslice]))
+            sminima.append(np.nanmin(spec_b[zone][wslice]))
+
+        # Add the zero line
         axx.axhline(0.0, color="k", lw=0.5)
         # add RGB rectangles for the ABC channels
         dwave = np.diff(spec_a["wave"])[0]
@@ -187,6 +224,16 @@ def main(
                 lw=0,
             )
         axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
+
+    # Set common plot limits for all spectra
+    smax = max(smaxima)
+    smin = min(sminima)
+    sspan = smax - smin
+    smin -= 0.1 * sspan
+    smax += 0.1 * sspan
+    for axx in ax[:, -1]:
+        axx.set_ylim(smin, smax)
+
     ## Correlations in bottom left corner
     # Correlations between the two cubes, channel by channel
     nbins = 100
@@ -269,7 +316,6 @@ def main(
                 xlabel=f"{acombo} {mlabel}",
                 ylabel=f"{bcombo} {mlabel}",
             )
-
 
     sns.despine()
     figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"

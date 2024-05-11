@@ -593,10 +593,11 @@ Fri May 10 13:45:43 CST 2024
 :END:
 - This has now expanded into an all singing, all dancing figure, which I am refering to as the Quality Assurance (QA) plot
 - [2024-05-10 Fri] Future plans are as follows
-  - [ ] Define a BG zone to extract a spectrum that we will subtract from all the other zones
+  - [X] Define a BG zone to extract a spectrum that we will subtract from all the other zones
     - I am hoping that this will allows us to eliminate all the rubbish that we see in the PZ spectra of the faint lines with an amplitude of about 5
     - Possibly it also might help to fix the oversubtraction in the ESO spectra with bright lines, similar to what I did by hand on a line-by-line basis in the jupyter notebooks
   - [ ] Add a map of the zones as the central panel of the figure
+  - [ ] Weight the histograms by the brightness of the pixels
 #+begin_src python :tangle ../scripts/compare-two-maps.py
   from astropy.io import fits
   import numpy as np
@@ -632,7 +633,8 @@ Fri May 10 13:45:43 CST 2024
 
 
   def get_zone_spectra(
-          combo: str, zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
+      combo: str,
+      zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
   ):
       """Get the 1-d spectrum of each zone from a given cube"""
       specdict = {}
@@ -680,6 +682,7 @@ Fri May 10 13:45:43 CST 2024
           )
       return _rgb
 
+
   def split_line_string(line: str):
       """Extract the ion and the central wavelength from a line string."""
       parts = line.split("-")
@@ -687,6 +690,7 @@ Fri May 10 13:45:43 CST 2024
       species = " ".join(parts[:-3])
       wave0 = float(".".join(parts[-2:]))
       return species, wave0
+
 
   def main(
       acombo: str = "P-007",
@@ -726,16 +730,6 @@ Fri May 10 13:45:43 CST 2024
       else:
           star_mask = np.ones_like(abc_a, dtype=bool)
       star_mask_rgb = np.stack([star_mask] * 3, axis=-1)
-      amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
-      aspan = amax - amin
-      amin -= 0.1 * aspan
-      amax += 0.1 * aspan
-      bmin, bmax = np.nanpercentile(rgb_b[star_mask_rgb], [1, 99])
-      bspan = bmax - bmin
-      bmin -= 0.1 * bspan
-      bmax += 0.1 * bspan
-      abmax = max(amax, bmax)
-      abmin = min(min(amin, bmin), 0.0)
 
       # Load the spectra for each zone into dicts
       spec_a = get_zone_spectra(acombo)
@@ -746,6 +740,30 @@ Fri May 10 13:45:43 CST 2024
               if zone not in ("wave", "BG"):
                   spec_a[zone] -= spec_a["BG"]
                   spec_b[zone] -= spec_b["BG"]
+
+      # Optionally apply the BG subtraction to the images
+      if subtract_bg:
+          # Subtract from each channel of the RGB images
+          for i in range(3):
+              # index in wave array for the current channel
+              wav_index = index0 + 1 - i
+              rgb_a[..., i] -= spec_a["BG"][wav_index]
+              rgb_b[..., i] -= spec_b["BG"][wav_index]
+          # Subtract from the summed ABC images
+          abc_a -= np.sum(spec_a["BG"][index0 - 1: index0 + 2])
+          abc_b -= np.sum(spec_b["BG"][index0 - 1: index0 + 2])
+
+      # Calculate suitable limits for the plots and histograms
+      amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
+      aspan = amax - amin
+      amin -= 0.1 * aspan
+      amax += 0.1 * aspan
+      bmin, bmax = np.nanpercentile(rgb_b[star_mask_rgb], [1, 99])
+      bspan = bmax - bmin
+      bmin -= 0.1 * bspan
+      bmax += 0.1 * bspan
+      abmax = max(amax, bmax)
+      abmin = min(min(amin, bmin), 0.0)
 
       # Set up the figure
       sns.set_color_codes("muted")
@@ -767,14 +785,34 @@ Fri May 10 13:45:43 CST 2024
       ## 1D spectra in right column of plots
       ##
       wslice = slice(index0 - 7, index0 + 8)
+      smaxima = []
+      sminima = []
       for axx, zone in [
-              [ax[0, -1], "IV"],
-              [ax[1, -1], "I,III"],
-              [ax[2, -1], "0,II"],
-              [ax[1, 1], "BG"],
+          [ax[0, -1], "IV"],
+          [ax[1, -1], "I,III"],
+          [ax[2, -1], "0,II"],
+          [ax[1, 1], "BG"],
       ]:
-          axx.plot(spec_a["wave"][wslice], spec_a[zone][wslice], label=f"{acombo} zone {zone}", ds="steps-mid")
-          axx.plot(spec_b["wave"][wslice], spec_b[zone][wslice], label=f"{bcombo} zone {zone}", ds="steps-mid")
+          axx.plot(
+              spec_a["wave"][wslice],
+              spec_a[zone][wslice],
+              label=f"{acombo} zone {zone}",
+              ds="steps-mid",
+          )
+          axx.plot(
+              spec_b["wave"][wslice],
+              spec_b[zone][wslice],
+              label=f"{bcombo} zone {zone}",
+              ds="steps-mid",
+          )
+          # Save the highest and lowest values for the y-axis limits
+          if zone != "BG":
+              smaxima.append(np.nanmax(spec_a[zone][wslice]))
+              smaxima.append(np.nanmax(spec_b[zone][wslice]))
+              sminima.append(np.nanmin(spec_a[zone][wslice]))
+              sminima.append(np.nanmin(spec_b[zone][wslice]))
+
+          # Add the zero line
           axx.axhline(0.0, color="k", lw=0.5)
           # add RGB rectangles for the ABC channels
           dwave = np.diff(spec_a["wave"])[0]
@@ -787,6 +825,16 @@ Fri May 10 13:45:43 CST 2024
                   lw=0,
               )
           axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
+
+      # Set common plot limits for all spectra
+      smax = max(smaxima)
+      smin = min(sminima)
+      sspan = smax - smin
+      smin -= 0.1 * sspan
+      smax += 0.1 * sspan
+      for axx in ax[:, -1]:
+          axx.set_ylim(smin, smax)
+
       ## Correlations in bottom left corner
       # Correlations between the two cubes, channel by channel
       nbins = 100
@@ -870,7 +918,6 @@ Fri May 10 13:45:43 CST 2024
                   ylabel=f"{bcombo} {mlabel}",
               )
 
-
       sns.despine()
       figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
       fig.savefig(figfile, bbox_inches="tight")
@@ -893,7 +940,7 @@ python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007 --sub
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-h-i-6562-79.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo P-101
+python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo P-101  --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -908,21 +955,21 @@ python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo E-007 --s
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-he-ii-4685-68.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 1.0
+python ../../scripts/compare-two-maps.py --line he-ii-4685-68 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 0.5 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-he-ii-4685-68.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo E-007 --subtract-bg
+python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo E-007 --smooth 3 --mask-out-stars --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-4740-17.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-101 --smooth 3 --mask-out-stars
+python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-101 --smooth 3 --mask-out-stars --subtract-bg
 #+end_src
 
 #+RESULTS:
@@ -965,84 +1012,91 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo E-007 --smooth 9 --mask-out-stars --star-mask-threshold 1.0
+  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo E-007 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-7262-7.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0
+  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-ar-iv-7262-7.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo E-007 --smooth 9 --mask-out-stars --star-mask-threshold 1.0
+  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo E-007 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-7170-5.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0
+  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-ar-iv-7170-5.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line ar-iv-4711-37 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 2
+python ../../scripts/compare-two-maps.py --line ar-iv-4711-37 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-4711-37.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line ar-iv-4711-37 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2
+python ../../scripts/compare-two-maps.py --line ar-iv-4711-37 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-ar-iv-4711-37.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2
+python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 2  --subtract-bg
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-cl-iv-7530-8.pdf]]
+
+#+begin_src sh :dir ../data/n346-bow-lines :results file
+python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2  --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-cl-iv-7530-8.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line fe-iii-4658-10 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10
+python ../../scripts/compare-two-maps.py --line fe-iii-4658-10 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-fe-iii-4658-10.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 10
+python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-o-i-8446-48.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10
+python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-o-i-8446-48.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line uil-8150-72 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 10
+python ../../scripts/compare-two-maps.py --line uil-8150-72 --bcombo E-007 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-uil-8150-72.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line uil-8150-72 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10
+python ../../scripts/compare-two-maps.py --line uil-8150-72 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
 
 #+RESULTS:
