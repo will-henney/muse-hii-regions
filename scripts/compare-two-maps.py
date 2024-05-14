@@ -1,6 +1,7 @@
 from astropy.io import fits
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import colors
 import seaborn as sns
 from pathlib import Path
 import typer
@@ -55,6 +56,20 @@ def get_zone_spectra(
     return specdict
 
 
+def get_zone_masks(
+    zones_folder: Path = Path.cwd().parent / "n346-lines",
+    zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
+):
+    maskdict = {
+        zone: fits.open(zones_folder / f"zone-{zone}-mask.fits")[0].data
+        for zone in zones
+    }
+    # Add the combination zones
+    maskdict["I,III"] = maskdict["I"] | maskdict["III"]
+    maskdict["0,II"] = maskdict["0"] | maskdict["II"]
+    return maskdict
+
+
 def rgb_ABC(line_path: Path):
     rgb = []
     for chan in "CBA":
@@ -100,6 +115,7 @@ def main(
     mask_out_stars: bool = False,
     star_mask_threshold: float = 10.0,
     star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
+    zones_folder: Path = Path.cwd().parent / "n346-lines",
     subtract_bg: bool = False,
 ):
     species, wave0 = split_line_string(line)
@@ -130,6 +146,9 @@ def main(
         star_mask = np.ones_like(abc_a, dtype=bool)
     star_mask_rgb = np.stack([star_mask] * 3, axis=-1)
 
+    # Get the zone masks
+    zone_masks = get_zone_masks(zones_folder)
+
     # Load the spectra for each zone into dicts
     spec_a = get_zone_spectra(acombo)
     spec_b = get_zone_spectra(bcombo)
@@ -149,8 +168,8 @@ def main(
             rgb_a[..., i] -= spec_a["BG"][wav_index]
             rgb_b[..., i] -= spec_b["BG"][wav_index]
         # Subtract from the summed ABC images
-        abc_a -= np.sum(spec_a["BG"][index0 - 1: index0 + 2])
-        abc_b -= np.sum(spec_b["BG"][index0 - 1: index0 + 2])
+        abc_a -= np.sum(spec_a["BG"][index0 - 1 : index0 + 2])
+        abc_b -= np.sum(spec_b["BG"][index0 - 1 : index0 + 2])
 
     # Calculate suitable limits for the plots and histograms
     amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
@@ -169,17 +188,53 @@ def main(
     fig, ax = plt.subplots(3, 3, figsize=(10, 7))
 
     # RGB images of the ABC channels from the two cubes
-    ax[0, 0].imshow(auto_scale_channels(rgb_a, mask=star_mask), origin="lower")
-    ax[0, 1].imshow(auto_scale_channels(rgb_b, mask=star_mask), origin="lower")
+    ax_ima, ax_imb = ax[0, 0], ax[1, 0]
+    ax_ima.imshow(auto_scale_channels(rgb_a, mask=star_mask), origin="lower")
+    ax_imb.imshow(auto_scale_channels(rgb_b, mask=star_mask), origin="lower")
     if mask_out_stars:
-        ax[0, 0].contour(
+        ax_ima.contour(
             star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5
         )
-        ax[0, 1].contour(
+        ax_imb.contour(
             star_map, levels=[star_mask_threshold], colors="r", linewidths=0.5
         )
-    ax[0, 0].set_title(f"{acombo} {line}")
-    ax[0, 1].set_title(f"{bcombo} {line}")
+    ax_ima.set_title(f"{acombo} {line}")
+    ax_imb.set_title(f"{bcombo} {line}")
+
+    # Zones plotted on the map
+    ax_map = ax[2, 0]
+    for zone, color, alpha in [
+        ("0,II", "m", 0.7),
+        ("I,III", "c", 0.7),
+        ("IV", "y", 0.9),
+        ("BG", "0.9", 1.0),
+   ]:
+        ax_map.contourf(
+            zone_masks[zone],
+            levels=[0.5, 1.5],
+            colors=color,
+            alpha=alpha,
+        )
+
+    # And over-plot brightness contours
+    nlevels = 10
+    map = (abc_a + abc_b) / 2.0
+    if mask_out_stars:
+        map[~star_mask] = np.nan
+    levels = np.linspace(0.2, 1.0, nlevels) * np.nanpercentile(map, 99.5) * 1.1
+    # levels = np.geomspace(0.01, 1.0, nlevels) * np.nanpercentile(abc_a, 99.5) * 1.1
+    linewidths = np.linspace(0.1, 0.7, nlevels)
+    ax_map.contour(
+        map,
+        levels=levels,
+        # norm=colors.PowerNorm(gamma=5, vmin=None, vmax=abmax, clip=True),
+        # cmap="gray_r",
+        origin="lower",
+        alpha=1.0,
+        linewidths=linewidths,
+        colors="k",
+    )
+    ax_map.set_aspect("equal")
 
     ## 1D spectra in right column of plots
     ##
@@ -190,7 +245,7 @@ def main(
         [ax[0, -1], "IV"],
         [ax[1, -1], "I,III"],
         [ax[2, -1], "0,II"],
-        [ax[1, 1], "BG"],
+        # [ax[2, 0], "BG"],
     ]:
         axx.plot(
             spec_a["wave"][wslice],
@@ -234,8 +289,9 @@ def main(
     for axx in ax[:, -1]:
         axx.set_ylim(smin, smax)
 
-    ## Correlations in bottom left corner
+    ## Correlations in middle column
     # Correlations between the two cubes, channel by channel
+    ax_corr_rgb = ax[2, 1]
     nbins = 100
     H_rgb = np.empty((nbins, nbins, 3))
     for ichan in range(3):
@@ -248,6 +304,7 @@ def main(
         H, xedges, yedges = np.histogram2d(
             x[mask],
             y[mask],
+            weights=x[mask] - abmin,
             bins=nbins,
             range=[[abmin, abmax], [abmin, abmax]],
         )
@@ -257,15 +314,40 @@ def main(
         #     print(H)
         H_rgb[..., ichan] = H.T
 
-    ax[1, 0].imshow(
+    ax_corr_rgb.imshow(
         auto_scale_channels(H_rgb, p=0) ** (1 / histogram_gamma),
         origin="lower",
         extent=[abmin, abmax, abmin, abmax],
     )
-    ax[1, 0].axhline(0.0, color="w", lw=0.5, linestyle="--")
-    ax[1, 0].axvline(0.0, color="w", lw=0.5, linestyle="--")
-    ax[1, 0].plot([abmin, abmax], [abmin, abmax], color="w", lw=0.5, linestyle="--")
-    ax[1, 0].set(
+    # Add marginal rgb distributions along the axes
+    for ichan, color in enumerate(["r", "g", "b"]):
+        Hx = np.sum(H_rgb[..., ichan], axis=0) / np.sum(H_rgb[..., ichan])
+        Hy = np.sum(H_rgb[..., ichan], axis=1) / np.sum(H_rgb[..., ichan])
+        ax_corr_rgb.stairs(
+            values=Hx * 2 * (abmax - abmin) + abmin,
+            edges=xedges,
+            orientation="vertical",
+            baseline=abmin,
+            fill=True,
+            alpha=0.5,
+            color=color,
+            lw=0.5,
+        )
+        ax_corr_rgb.stairs(
+            values=Hy * 2 * (abmax - abmin) + abmin,
+            edges=yedges,
+            orientation="horizontal",
+            baseline=abmin,
+            fill=True,
+            alpha=0.5,
+            color=color,
+            lw=0.5,
+        )
+
+    ax_corr_rgb.axhline(0.0, color="w", lw=0.5, linestyle="--")
+    ax_corr_rgb.axvline(0.0, color="w", lw=0.5, linestyle="--")
+    ax_corr_rgb.plot([abmin, abmax], [abmin, abmax], color="w", lw=0.5, linestyle="--")
+    ax_corr_rgb.set(
         xlabel=f"{acombo} {line}",
         ylabel=f"{bcombo} {line}",
     )
@@ -278,8 +360,8 @@ def main(
 
     # Correlations between the velocity moments
     for axx, mlabel, mrange, mlines in [
-        [ax[2, 0], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
-        [ax[2, 1], "m2", (-0.2, 1.2), (0, 2 / 3)],
+        [ax[0, 1], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
+        [ax[1, 1], "m2", (-0.2, 1.2), (0, 2 / 3)],
     ]:
         # Joint histogram of velocity moments
         if mlabel == "m1":
@@ -316,6 +398,29 @@ def main(
                 xlabel=f"{acombo} {mlabel}",
                 ylabel=f"{bcombo} {mlabel}",
             )
+        # Add marginal distributions along the axes
+        Hx = np.sum(H.T, axis=0) / np.sum(H)
+        Hy = np.sum(H.T, axis=1) / np.sum(H)
+        axx.stairs(
+            values=Hx * 1 * (mmax - mmin) + mmin,
+            edges=xedges,
+            orientation="vertical",
+            baseline=mmin,
+            fill=True,
+            alpha=0.5,
+            color="r",
+            lw=0.5,
+        )
+        axx.stairs(
+            values=Hy * 1 * (mmax - mmin) + mmin,
+            edges=yedges,
+            orientation="horizontal",
+            baseline=mmin,
+            fill=True,
+            alpha=0.5,
+            color="r",
+            lw=0.5,
+        )
 
     sns.despine()
     figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
