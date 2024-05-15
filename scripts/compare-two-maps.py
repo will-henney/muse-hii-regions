@@ -13,6 +13,13 @@ import astropy.units as u  # type: ignore
 SAVEPATH = Path("maps-compare")
 LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 
+# husl tuples (hue, saturation, lightness) for each zone
+KEY_COLORS = {
+    "IV": (50, 90, 50),  # orange-yellow
+    "I,III": (200, 85, 60),  # blue-green
+    "0,II": (275, 80, 40),  # purple
+}
+
 
 def combo_folder(combo: str):
     cubeid, winid = combo.split("-")
@@ -59,7 +66,7 @@ def get_zone_spectra(
     specdict["0,II"] = (specdict["0"] + specdict["II"]) / 2
 
     # Correct the velocities to nebular frame
-    specdict["wave"] /= (1 + vsys / LIGHT_SPEED_KMS)
+    specdict["wave"] /= 1 + vsys / LIGHT_SPEED_KMS
     return specdict
 
 
@@ -112,10 +119,11 @@ def split_line_string(line: str):
     wave0 = float(".".join(parts[-2:]))
     return species, wave0
 
+
 def get_trim_mask(im, margin=5):
     """Return mask that trims the edges off an image by a given margin"""
     mask = np.zeros_like(im, dtype=bool)
-    mask[margin:-margin, margin:-margin] = True    
+    mask[margin:-margin, margin:-margin] = True
     return mask
 
 
@@ -171,7 +179,6 @@ def main(
     else:
         star_mask = np.ones_like(abc_a, dtype=bool)
     star_mask_rgb = np.stack([star_mask] * 3, axis=-1)
-
 
     # Get the mask for each of the spatial zones
     zone_masks = get_zone_masks(zones_folder)
@@ -235,11 +242,13 @@ def main(
         ("I,III", "c", 0.7),
         ("IV", "y", 0.9),
         ("BG", "0.9", 1.0),
-   ]:
+    ]:
+        if zone in KEY_COLORS:
+            color = sns.light_palette(KEY_COLORS[zone], input="husl", as_cmap=True)(0.5)
         ax_map.contourf(
             zone_masks[zone],
             levels=[0.5, 1.5],
-            colors=color,
+            colors=[color, color],
             alpha=alpha,
         )
 
@@ -274,22 +283,29 @@ def main(
         [ax[2, -1], "0,II"],
         # [ax[2, 0], "BG"],
     ]:
+        cmap = sns.light_palette(KEY_COLORS[zone], input="husl", as_cmap=True)
         axx.plot(
             spec_a["wave"][wslice],
             spec_a[zone][wslice],
             label=f"{acombo} zone {zone}",
             ds="steps-mid",
+            color=cmap(0.5),
+            lw=1.5,
         )
         axx.plot(
             spec_b["wave"][wslice],
             spec_b[zone][wslice],
             label=f"{bcombo} zone {zone}",
             ds="steps-mid",
+            color=cmap(1.0),
+            lw=1.0,
         )
         # Save the highest and lowest values for the y-axis limits
         if zone != "BG":
-            smaxima.append(np.nanmax(spec_a[zone][wslice]))
-            smaxima.append(np.nanmax(spec_b[zone][wslice]))
+            # Consider only the ABC pixels for the maximum
+            smaxima.append(np.nanmax(spec_a[zone][index0 - 1 : index0 + 2]))
+            smaxima.append(np.nanmax(spec_b[zone][index0 - 1 : index0 + 2]))
+            # Consider all pixels for the minimum
             sminima.append(np.nanmin(spec_a[zone][wslice]))
             sminima.append(np.nanmin(spec_b[zone][wslice]))
 
@@ -308,6 +324,7 @@ def main(
         # Add an indication of the rest wavelength
         axx.axvline(wave0, color="k", lw=0.5, ls="dotted")
         axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
+        axx.minorticks_on()
 
     # Set common plot limits for all spectra
     smax = max(smaxima)
@@ -389,9 +406,10 @@ def main(
     m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
 
     # Correlations between the velocity moments
-    for axx, mlabel, mrange, mlines in [
-        [ax[0, 1], "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5)],
-        [ax[1, 1], "m2", (-0.2, 1.2), (0, 2 / 3)],
+    ax_m1, ax_m2 = ax[0, 1], ax[1, 1]
+    for axx, mlabel, mrange, mlines, ticks in [
+        [ax_m1, "m1", (-0.7, 0.7), (-0.5, 0.0, 0.5), (-0.5, 0.0, 0.5)],
+        [ax_m2, "m2", (-0.2, 1.2), (0, 2 / 3), (0, 0.5, 1)],
     ]:
         # Joint histogram of velocity moments
         if mlabel == "m1":
@@ -451,10 +469,21 @@ def main(
             color="r",
             lw=0.5,
         )
+        # Ensure same tick marks on x, y axes
+        axx.set_xticks(ticks)
+        axx.set_yticks(ticks)
+        axx.minorticks_on()
+        axx.minorticks_on()
 
     sns.despine()
     figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
-    fig.tight_layout()
+
+    # Set spacing between the panels. We need it to be consistent
+    # between different runs, so we cannot use tight_layout
+    plt.subplots_adjust(
+        left=0.07, bottom=0.07, right=0.97, top=0.95, wspace=0.3, hspace=0.3,
+    )
+    # fig.tight_layout()
     fig.savefig(figfile)
 
     print(figfile, end="")
