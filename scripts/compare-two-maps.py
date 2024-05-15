@@ -7,8 +7,11 @@ from pathlib import Path
 import typer
 from astropy.convolution import Gaussian2DKernel, convolve_fft
 from astropy.wcs import WCS
+import astropy.constants as const  # type: ignore
+import astropy.units as u  # type: ignore
 
 SAVEPATH = Path("maps-compare")
+LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 
 
 def combo_folder(combo: str):
@@ -34,6 +37,7 @@ def get_data(line_path: Path, suffix: str = "ABC", return_header: bool = False):
 
 def get_zone_spectra(
     combo: str,
+    vsys: float,
     zones: list[str] = ["0", "I", "II", "III", "IV", "S", "MYSO", "BG"],
 ):
     """Get the 1-d spectrum of each zone from a given cube"""
@@ -53,6 +57,9 @@ def get_zone_spectra(
     specdict["I,III"] = (specdict["I"] + specdict["III"]) / 2
     # Average filaments
     specdict["0,II"] = (specdict["0"] + specdict["II"]) / 2
+
+    # Correct the velocities to nebular frame
+    specdict["wave"] /= (1 + vsys / LIGHT_SPEED_KMS)
     return specdict
 
 
@@ -105,6 +112,12 @@ def split_line_string(line: str):
     wave0 = float(".".join(parts[-2:]))
     return species, wave0
 
+def get_trim_mask(im, margin=5):
+    """Return mask that trims the edges off an image by a given margin"""
+    mask = np.zeros_like(im, dtype=bool)
+    mask[margin:-margin, margin:-margin] = True    
+    return mask
+
 
 def main(
     acombo: str = "P-007",
@@ -117,6 +130,8 @@ def main(
     star_map_path: Path = Path.cwd().parent / "n346-lines" / "zone-S-bright-map.fits",
     zones_folder: Path = Path.cwd().parent / "n346-lines",
     subtract_bg: bool = False,
+    trim_edges: int = 0,
+    vsys: float = 171.1,
 ):
     species, wave0 = split_line_string(line)
     line_path_a = line_path(acombo, line)
@@ -127,14 +142,25 @@ def main(
     rgb_b = rgb_ABC(line_path_b)
     wave_obs = float(hdr["lambda_obs"])
     index0 = int(hdr["Index"])
+
+    # Optionally trim the edges
+    if trim_edges > 0:
+        trim_mask = get_trim_mask(abc_a, margin=trim_edges)
+        trim_mask_rgb = np.stack([trim_mask] * 3, axis=-1)
+        # Apply the trim mask to the images
+        abc_a[~trim_mask] = np.nan
+        abc_b[~trim_mask] = np.nan
+        rgb_a[~trim_mask_rgb] = np.nan
+        rgb_b[~trim_mask_rgb] = np.nan
+
     # Optionally smooth the images
     if smooth > 0.0:
         kernel = Gaussian2DKernel(smooth)
         for i in range(3):
-            rgb_a[..., i] = convolve_fft(rgb_a[..., i], kernel)
-            rgb_b[..., i] = convolve_fft(rgb_b[..., i], kernel)
-            abc_a = convolve_fft(abc_a, kernel)
-            abc_b = convolve_fft(abc_b, kernel)
+            rgb_a[..., i] = convolve_fft(rgb_a[..., i], kernel, preserve_nan=True)
+            rgb_b[..., i] = convolve_fft(rgb_b[..., i], kernel, preserve_nan=True)
+        abc_a = convolve_fft(abc_a, kernel, preserve_nan=True)
+        abc_b = convolve_fft(abc_b, kernel, preserve_nan=True)
     # Optionally mask out the stars
     if mask_out_stars:
         star_map = fits.open(star_map_path)[0].data
@@ -146,12 +172,13 @@ def main(
         star_mask = np.ones_like(abc_a, dtype=bool)
     star_mask_rgb = np.stack([star_mask] * 3, axis=-1)
 
-    # Get the zone masks
+
+    # Get the mask for each of the spatial zones
     zone_masks = get_zone_masks(zones_folder)
 
     # Load the spectra for each zone into dicts
-    spec_a = get_zone_spectra(acombo)
-    spec_b = get_zone_spectra(bcombo)
+    spec_a = get_zone_spectra(acombo, vsys)
+    spec_b = get_zone_spectra(bcombo, vsys)
     # Optionally subtract the background spectrum from each zone
     if subtract_bg:
         for zone in spec_a.keys():
@@ -185,7 +212,7 @@ def main(
 
     # Set up the figure
     sns.set_color_codes("muted")
-    fig, ax = plt.subplots(3, 3, figsize=(10, 7))
+    fig, ax = plt.subplots(3, 3, figsize=(10, 8.5))
 
     # RGB images of the ABC channels from the two cubes
     ax_ima, ax_imb = ax[0, 0], ax[1, 0]
@@ -278,6 +305,8 @@ def main(
                 alpha=0.2,
                 lw=0,
             )
+        # Add an indication of the rest wavelength
+        axx.axvline(wave0, color="k", lw=0.5, ls="dotted")
         axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
 
     # Set common plot limits for all spectra
@@ -353,6 +382,7 @@ def main(
     )
 
     # Recalculate the moments, since we may have smoothed the arrays
+    # and/or subtracted the background
     m1_a = (rgb_a[..., 0] - rgb_a[..., 2]) / abc_a
     m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
     m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
@@ -424,7 +454,8 @@ def main(
 
     sns.despine()
     figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
-    fig.savefig(figfile, bbox_inches="tight")
+    fig.tight_layout()
+    fig.savefig(figfile)
 
     print(figfile, end="")
 
