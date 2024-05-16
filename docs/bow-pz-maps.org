@@ -1207,6 +1207,7 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-cl-iv-8045-62.pdf]]
 
+Blend with H_2 line
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line cl-iv-8045-62 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 5.0 --subtract-bg
 #+end_src
@@ -1222,6 +1223,7 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-7262-7.pdf]]
 
+This could do with using the hyperlocal continuum, since the continuum is a bit oversubtracted
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20
 #+end_src
@@ -1236,6 +1238,8 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-ar-iv-7170-5.pdf]]
 
+This has a much better zero level, and is clearly the best of the [Ar
+IV] auroral lines
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20
 #+end_src
@@ -1250,6 +1254,8 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-uil-7237-66.pdf]]
 
+This is the H_2 7238.21 line, blended with the central one of the 3 [Ar
+IV] auroral lines 7237.40. The P-007 version is oversubtracted
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line uil-7237-66 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 5.0 --subtract-bg
 #+end_src
@@ -1279,7 +1285,7 @@ python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo E-007 --sm
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-cl-iv-7530-8.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2  --subtract-bg
+python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2  --subtract-bg --trim-edges 20
 #+end_src
 
 #+RESULTS:
@@ -1512,9 +1518,33 @@ This is totally dominated by the YSO
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-4861-32.pdf]]
 
+This one is weird. Not really useable. 
+#+begin_src sh :dir ../data/n346-bow-lines :results file
+  python ../../scripts/compare-two-maps.py --line h-i-8306-11 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 3 --subtract-bg
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-8306-11.pdf]]
+
+Oversubtracted continuum
+#+begin_src sh :dir ../data/n346-bow-lines :results file
+  python ../../scripts/compare-two-maps.py --line h-i-8314-26 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-8314-26.pdf]]
+
+This would be better with the central pixel moved one to the red
+#+begin_src sh :dir ../data/n346-bow-lines :results file
+  python ../../scripts/compare-two-maps.py --line h-i-8323-42 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-8323-42.pdf]]
+
 Affected by inaccurate baseline
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line h-i-8345-55 --bcombo P-101 --smooth 2 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+  python ../../scripts/compare-two-maps.py --line h-i-8345-55 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
 
 #+RESULTS:
