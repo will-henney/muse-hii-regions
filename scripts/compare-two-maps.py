@@ -158,9 +158,12 @@ def main(
     trim_edges: int = 0,
     vsys: float = 171.1,
     fix_continuum: bool = False,
+    hyper_local_blue: int = 3,
+    hyper_local_red: int = 3,
     mark_moments_bow_shock: bool = True,
     mark_moments_nebula: bool = True,
     mark_moments_filaments: bool = True,
+    debug: bool = False,
 ):
     species, wave0 = split_line_string(line)
     line_path_a = line_path(acombo, line)
@@ -218,13 +221,21 @@ def main(
     if fix_continuum:
         # We use the pixels that are 3 to the left/right of the peak
         hyper_local_a = (
-            spec_a["I,III,IV"][index0 - 3] + spec_a["I,III,IV"][index0 + 3]
+            spec_a["I,III,IV"][index0 - hyper_local_blue]
+            + spec_a["I,III,IV"][index0 + hyper_local_red]
         ) / 2
         hyper_local_b = (
-            spec_b["I,III,IV"][index0 - 3] + spec_b["I,III,IV"][index0 + 3]
+            spec_b["I,III,IV"][index0 - hyper_local_blue]
+            + spec_b["I,III,IV"][index0 + hyper_local_red]
         ) / 2
+        if debug:
+            print(f"Hyper-local continuum: {hyper_local_a:.2f}, {hyper_local_b:.2f}")
         for zone in spec_a.keys():
-            if zone not in ("wave",):
+            # Very important not to subtract continuum from BG zone,
+            # otherwise the BG subtraction will cancel out the
+            # continuum subtraction for the other zones (2024-05-17
+            # spent whole day figuring this out!!!)
+            if zone not in ("wave", "BG"):
                 spec_a[zone] -= hyper_local_a
                 spec_b[zone] -= hyper_local_b
 
@@ -245,7 +256,12 @@ def main(
         abc_b -= np.sum(spec_b["BG"][index0 - 1 : index0 + 2])
 
     # Optionally apply the hyper-local continuum fix to the images
+    if debug:
+        rgb_a_orig = rgb_a.copy()
+        abc_a_orig = abc_a.copy()
     if fix_continuum:
+        if debug:
+            print(f"Subtracting hyper-local continuum from RGB and ABC images")
         rgb_a -= hyper_local_a
         rgb_b -= hyper_local_b
         abc_a -= 3 * hyper_local_a
@@ -263,6 +279,12 @@ def main(
     m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
     m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
     m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
+
+    if debug:
+        m2_a_orig = (rgb_a_orig[..., 0] + rgb_a_orig[..., 2]) / abc_a_orig
+        print(
+            "Median m2 =", np.nanmedian(m2_a), "original m2 =", np.nanmedian(m2_a_orig)
+        )
 
     # Calculate suitable limits for the plots and histograms
     amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
@@ -460,7 +482,6 @@ def main(
         xlabel=f"{acombo} {line}",
         ylabel=f"{bcombo} {line}",
     )
-
 
     # Correlations between the velocity moments
     ax_m1, ax_m2 = ax[0, 1], ax[1, 1]
