@@ -607,7 +607,7 @@ Fri May 10 13:45:43 CST 2024
   - [X] Option to remove a border of pixels from the maps
     - important for the weak lines, where the left and right edges in
       particuar are very noisy
-  - [ ] Add mean moments for different zones to the stats figures
+  - [X] Add mean moments for different zones to the stats figures
   - [X] Use a consistent color scheme for the zones, based on a key
     color with varying saturation and/or brightness
   - [X] Change to nebular frame of reference for the wavelength axis
@@ -619,6 +619,12 @@ Fri May 10 13:45:43 CST 2024
       stronger line, such as He I 5015.68
   - [ ] Write out FITS images of the BG-subtracted maps for later
     analysis in the notebooks
+  - [X] Center the spectral plots on the rest wavelength
+  - [ ] Optionally fix the baseline using the hyper-local continuum
+    - To avoid adding noise, this will be a global fix that uses the
+      line profile from the combined I,III,IV zones
+    - We can use the pixels that are peak - 3 and peak + 3 in the
+      combined spectrum to make sure we have escaped from the line wings
 
 #+begin_src python :tangle ../scripts/compare-two-maps.py
   from astropy.io import fits
@@ -661,7 +667,7 @@ Fri May 10 13:45:43 CST 2024
       hdu = fits.open(line_path.with_stem(line_path.stem.replace("ABC", suffix)))[0]
       if return_header:
           return hdu.data, hdu.header
-      else:
+a      else:
           return hdu.data
 
 
@@ -675,22 +681,39 @@ Fri May 10 13:45:43 CST 2024
       for zone in zones:
           spec_file = f"zone_spectra/zone-{zone}-{combo}-mean-spec1d.fits"
           hdu = fits.open(spec_file)[0]
-          specdict[zone] = hdu.data
           if not "wave" in specdict:
               specdict["wave"] = (
                   WCS(hdu.header)
                   .array_index_to_world(np.arange(hdu.data.size))
                   .to_value("Angstrom")
               )
+          specdict[zone] = hdu.data
+
       # Add some combination zones
       # Average diffuse
       specdict["I,III"] = (specdict["I"] + specdict["III"]) / 2
       # Average filaments
       specdict["0,II"] = (specdict["0"] + specdict["II"]) / 2
-
+      # Average non-filaments - to use for correcting hyper-local continuum
+      specdict["I,III,IV"] = (specdict["I,III"] + specdict["IV"]) / 2
       # Correct the velocities to nebular frame
       specdict["wave"] /= 1 + vsys / LIGHT_SPEED_KMS
       return specdict
+
+
+  def get_moments_from_zone_spectra(specdict: dict[str, np.ndarray], ipeak: int):
+      """Get the moments of the spectra from a dictionary of zone spectra"""
+      moments = {}
+      for zone, spec in specdict.items():
+          if zone == "wave":
+              continue
+          M0 = np.sum(spec[ipeak - 1 : ipeak + 2])
+          moments[zone] = {
+              "sum": M0,
+              "m1": (spec[ipeak + 1] - spec[ipeak - 1]) / M0,
+              "m2": (spec[ipeak + 1] + spec[ipeak - 1]) / M0,
+          }
+      return moments
 
 
   def get_zone_masks(
@@ -763,6 +786,10 @@ Fri May 10 13:45:43 CST 2024
       subtract_bg: bool = False,
       trim_edges: int = 0,
       vsys: float = 171.1,
+      fix_continuum: bool = False,
+      mark_moments_bow_shock: bool = True,
+      mark_moments_nebula: bool = True,
+      mark_moments_filaments: bool = True,
   ):
       species, wave0 = split_line_string(line)
       line_path_a = line_path(acombo, line)
@@ -816,6 +843,24 @@ Fri May 10 13:45:43 CST 2024
                   spec_a[zone] -= spec_a["BG"]
                   spec_b[zone] -= spec_b["BG"]
 
+      # Optionally fix the hyper-local continuum level using average spectrum from diffuse zones
+      if fix_continuum:
+          # We use the pixels that are 3 to the left/right of the peak
+          hyper_local_a = (
+              spec_a["I,III,IV"][index0 - 3] + spec_a["I,III,IV"][index0 + 3]
+          ) / 2
+          hyper_local_b = (
+              spec_b["I,III,IV"][index0 - 3] + spec_b["I,III,IV"][index0 + 3]
+          ) / 2
+          for zone in spec_a.keys():
+              if zone not in ("wave",):
+                  spec_a[zone] -= hyper_local_a
+                  spec_b[zone] -= hyper_local_b
+
+      # Get the moments of the spectra
+      moments_spec_a = get_moments_from_zone_spectra(spec_a, index0)
+      moments_spec_b = get_moments_from_zone_spectra(spec_b, index0)
+
       # Optionally apply the BG subtraction to the images
       if subtract_bg:
           # Subtract from each channel of the RGB images
@@ -828,6 +873,26 @@ Fri May 10 13:45:43 CST 2024
           abc_a -= np.sum(spec_a["BG"][index0 - 1 : index0 + 2])
           abc_b -= np.sum(spec_b["BG"][index0 - 1 : index0 + 2])
 
+      # Optionally apply the hyper-local continuum fix to the images
+      if fix_continuum:
+          rgb_a -= hyper_local_a
+          rgb_b -= hyper_local_b
+          abc_a -= 3 * hyper_local_a
+          abc_b -= 3 * hyper_local_b
+
+      # Sanity check that the summed image is still equal to the sum of the ABC channels
+      mm = np.isfinite(abc_a)
+      check1 = abc_a[mm]
+      check2 = np.nansum(rgb_a, axis=-1)[mm]
+      # assert np.allclose(check1, check2, atol=0.1, rtol=1e-3), np.sort(np.abs(check1 - check2))[-3:]
+
+      # Recalculate the moments, since we may have smoothed the arrays
+      # and/or subtracted the background and hyper-local continuum
+      m1_a = (rgb_a[..., 0] - rgb_a[..., 2]) / abc_a
+      m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
+      m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
+      m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
+
       # Calculate suitable limits for the plots and histograms
       amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
       aspan = amax - amin
@@ -839,6 +904,8 @@ Fri May 10 13:45:43 CST 2024
       bmax += 0.1 * bspan
       abmax = max(amax, bmax)
       abmin = min(min(amin, bmin), 0.0)
+
+      # Save the recalibrated images and spectra
 
       # Set up the figure
       sns.set_color_codes("muted")
@@ -948,6 +1015,8 @@ Fri May 10 13:45:43 CST 2024
           axx.axvline(wave0, color="k", lw=0.5, ls="dotted")
           axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
           axx.minorticks_on()
+          # Center the viewport on the rest wavelength
+          axx.set_xlim(wave0 - 10, wave0 + 10)
 
       # Set common plot limits for all spectra
       smax = max(smaxima)
@@ -1021,12 +1090,6 @@ Fri May 10 13:45:43 CST 2024
           ylabel=f"{bcombo} {line}",
       )
 
-      # Recalculate the moments, since we may have smoothed the arrays
-      # and/or subtracted the background
-      m1_a = (rgb_a[..., 0] - rgb_a[..., 2]) / abc_a
-      m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
-      m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
-      m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
 
       # Correlations between the velocity moments
       ax_m1, ax_m2 = ax[0, 1], ax[1, 1]
@@ -1041,8 +1104,6 @@ Fri May 10 13:45:43 CST 2024
           else:
               m_a = m2_a
               m_b = m2_b
-          # m_a = get_data(line_path_a, suffix=mlabel)
-          # m_b = get_data(line_path_b, suffix=mlabel)
           mask = np.isfinite(m_a) & np.isfinite(m_b)
           mask &= abc_a > 0.0
           if mask_out_stars:
@@ -1092,6 +1153,22 @@ Fri May 10 13:45:43 CST 2024
               color="r",
               lw=0.5,
           )
+          # Optionally mark the moments of the average spectrum for each zone
+          for zone, mark_moments in [
+              ["I,III", mark_moments_nebula],
+              ["0,II", mark_moments_filaments],
+              ["IV", mark_moments_bow_shock],
+          ]:
+              if mark_moments:
+                  mzone_a = moments_spec_a[zone][mlabel]
+                  mzone_b = moments_spec_b[zone][mlabel]
+                  color = color = sns.light_palette(
+                      KEY_COLORS[zone], input="husl", as_cmap=True
+                  )(0.7)
+                  axx.plot(
+                      mzone_a, mzone_b, marker="+", color=color, mew=0.5, ms=10, alpha=1.0
+                  )
+
           # Ensure same tick marks on x, y axes
           axx.set_xticks(ticks)
           axx.set_yticks(ticks)
@@ -1104,7 +1181,12 @@ Fri May 10 13:45:43 CST 2024
       # Set spacing between the panels. We need it to be consistent
       # between different runs, so we cannot use tight_layout
       plt.subplots_adjust(
-          left=0.07, bottom=0.07, right=0.97, top=0.95, wspace=0.3, hspace=0.3,
+          left=0.07,
+          bottom=0.07,
+          right=0.97,
+          top=0.95,
+          wspace=0.3,
+          hspace=0.3,
       )
       # fig.tight_layout()
       fig.savefig(figfile)
@@ -1126,12 +1208,47 @@ python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007 --sub
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-h-i-6562-79.pdf]]
 
-#+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo P-101  --subtract-bg
+
+
+*** Usage documentation for the comparison script
+#+begin_src sh :dir ../data/n346-bow-lines :results verbatim
+python ../../scripts/compare-two-maps.py --help 
 #+end_src
 
 #+RESULTS:
-[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-6562-79.pdf]]
+#+begin_example
+                                                                                
+ Usage: compare-two-maps.py [OPTIONS]                                           
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --acombo                                       TEXT     [default: P-007]     │
+│ --bcombo                                       TEXT     [default: E-007]     │
+│ --line                                         TEXT     [default:            │
+│                                                         h-i-6562-79]         │
+│ --histogram-gamma                              FLOAT    [default: 2.0]       │
+│ --smooth                                       FLOAT    [default: 0.0]       │
+│ --mask-out-stars        --no-mask-out-stars             [default:            │
+│                                                         no-mask-out-stars]   │
+│ --star-mask-thresho…                           FLOAT    [default: 10.0]      │
+│ --star-map-path                                PATH     [default:            │
+│                                                         /Users/will/Dropbox… │
+│ --zones-folder                                 PATH     [default:            │
+│                                                         /Users/will/Dropbox… │
+│ --subtract-bg           --no-subtract-bg                [default:            │
+│                                                         no-subtract-bg]      │
+│ --trim-edges                                   INTEGER  [default: 0]         │
+│ --vsys                                         FLOAT    [default: 171.1]     │
+│ --mark-moments-bow-…    --no-mark-moments-…             [default:            │
+│                                                         no-mark-moments-bow… │
+│ --mark-moments-nebu…    --no-mark-moments-…             [default:            │
+│                                                         no-mark-moments-neb… │
+│ --mark-moments-fila…    --no-mark-moments-…             [default:            │
+│                                                         no-mark-moments-fil… │
+│ --help                                                  Show this message    │
+│                                                         and exit.            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+#+end_example
 
 *** Run the comparison script on all the lines
 
@@ -1505,6 +1622,13 @@ This is totally dominated by the YSO
 
 **** H I lines
 #+begin_src sh :dir ../data/n346-bow-lines :results file
+python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo P-101  --subtract-bg
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-6562-79.pdf]]
+
+#+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line h-i-4861-32 --bcombo E-007 --smooth 1 --mask-out-stars --star-mask-threshold 15 --subtract-bg
 #+end_src
 
@@ -1520,7 +1644,7 @@ This is totally dominated by the YSO
 
 This one is weird. Not really useable. 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line h-i-8306-11 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 3 --subtract-bg
+  python ../../scripts/compare-two-maps.py --line h-i-8306-11 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 3 --subtract-bg --fix-continuum
 #+end_src
 
 #+RESULTS:
@@ -1528,7 +1652,7 @@ This one is weird. Not really useable.
 
 Oversubtracted continuum
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line h-i-8314-26 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+  python ../../scripts/compare-two-maps.py --line h-i-8314-26 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg --fix-continuum
 #+end_src
 
 #+RESULTS:
@@ -1536,7 +1660,7 @@ Oversubtracted continuum
 
 This would be better with the central pixel moved one to the red
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line h-i-8323-42 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+  python ../../scripts/compare-two-maps.py --line h-i-8323-42 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg --fix-continuum
 #+end_src
 
 #+RESULTS:
@@ -1544,11 +1668,12 @@ This would be better with the central pixel moved one to the red
 
 Affected by inaccurate baseline
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line h-i-8345-55 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg
+  python ../../scripts/compare-two-maps.py --line h-i-8345-55 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg --fix-continuum
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-8345-55.pdf]]
+
 
 This is affected by a blend with He I 8361.73
 #+begin_src sh :dir ../data/n346-bow-lines :results file
@@ -1602,6 +1727,8 @@ line on the blue side
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-h-i-8545-38.pdf]]
 
+This seems to be blended with something, although I never identified
+it as a blend in the table. Evidence is a larger m2 than its neighbours, plus the fact that the peak is in the B pixel, not the G one
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line h-i-8598-39 --bcombo P-101 --smooth 1 --mask-out-stars --star-mask-threshold 10 --subtract-bg
 #+end_src
@@ -1810,36 +1937,4 @@ python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo P-101 --
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-si-iii-5739-73.pdf]]
 
-**** Usage documentation for the script
-#+begin_src sh :dir ../data/n346-bow-lines :results verbatim
-python ../../scripts/compare-two-maps.py --help 
-#+end_src
-
-#+RESULTS:
-#+begin_example
-                                                                                
- Usage: compare-two-maps.py [OPTIONS]                                           
-                                                                                
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --acombo                                       TEXT     [default: P-007]     │
-│ --bcombo                                       TEXT     [default: E-007]     │
-│ --line                                         TEXT     [default:            │
-│                                                         h-i-6562-79]         │
-│ --histogram-gamma                              FLOAT    [default: 2.0]       │
-│ --smooth                                       FLOAT    [default: 0.0]       │
-│ --mask-out-stars        --no-mask-out-stars             [default:            │
-│                                                         no-mask-out-stars]   │
-│ --star-mask-thresho…                           FLOAT    [default: 10.0]      │
-│ --star-map-path                                PATH     [default:            │
-│                                                         /Users/will/Dropbox… │
-│ --zones-folder                                 PATH     [default:            │
-│                                                         /Users/will/Dropbox… │
-│ --subtract-bg           --no-subtract-bg                [default:            │
-│                                                         no-subtract-bg]      │
-│ --trim-edges                                   INTEGER  [default: None]      │
-│ --help                                                  Show this message    │
-│                                                         and exit.            │
-╰──────────────────────────────────────────────────────────────────────────────╯
-
-#+end_example
 

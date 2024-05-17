@@ -52,22 +52,39 @@ def get_zone_spectra(
     for zone in zones:
         spec_file = f"zone_spectra/zone-{zone}-{combo}-mean-spec1d.fits"
         hdu = fits.open(spec_file)[0]
-        specdict[zone] = hdu.data
         if not "wave" in specdict:
             specdict["wave"] = (
                 WCS(hdu.header)
                 .array_index_to_world(np.arange(hdu.data.size))
                 .to_value("Angstrom")
             )
+        specdict[zone] = hdu.data
+
     # Add some combination zones
     # Average diffuse
     specdict["I,III"] = (specdict["I"] + specdict["III"]) / 2
     # Average filaments
     specdict["0,II"] = (specdict["0"] + specdict["II"]) / 2
-
+    # Average non-filaments - to use for correcting hyper-local continuum
+    specdict["I,III,IV"] = (specdict["I,III"] + specdict["IV"]) / 2
     # Correct the velocities to nebular frame
     specdict["wave"] /= 1 + vsys / LIGHT_SPEED_KMS
     return specdict
+
+
+def get_moments_from_zone_spectra(specdict: dict[str, np.ndarray], ipeak: int):
+    """Get the moments of the spectra from a dictionary of zone spectra"""
+    moments = {}
+    for zone, spec in specdict.items():
+        if zone == "wave":
+            continue
+        M0 = np.sum(spec[ipeak - 1 : ipeak + 2])
+        moments[zone] = {
+            "sum": M0,
+            "m1": (spec[ipeak + 1] - spec[ipeak - 1]) / M0,
+            "m2": (spec[ipeak + 1] + spec[ipeak - 1]) / M0,
+        }
+    return moments
 
 
 def get_zone_masks(
@@ -140,6 +157,10 @@ def main(
     subtract_bg: bool = False,
     trim_edges: int = 0,
     vsys: float = 171.1,
+    fix_continuum: bool = False,
+    mark_moments_bow_shock: bool = True,
+    mark_moments_nebula: bool = True,
+    mark_moments_filaments: bool = True,
 ):
     species, wave0 = split_line_string(line)
     line_path_a = line_path(acombo, line)
@@ -193,6 +214,24 @@ def main(
                 spec_a[zone] -= spec_a["BG"]
                 spec_b[zone] -= spec_b["BG"]
 
+    # Optionally fix the hyper-local continuum level using average spectrum from diffuse zones
+    if fix_continuum:
+        # We use the pixels that are 3 to the left/right of the peak
+        hyper_local_a = (
+            spec_a["I,III,IV"][index0 - 3] + spec_a["I,III,IV"][index0 + 3]
+        ) / 2
+        hyper_local_b = (
+            spec_b["I,III,IV"][index0 - 3] + spec_b["I,III,IV"][index0 + 3]
+        ) / 2
+        for zone in spec_a.keys():
+            if zone not in ("wave",):
+                spec_a[zone] -= hyper_local_a
+                spec_b[zone] -= hyper_local_b
+
+    # Get the moments of the spectra
+    moments_spec_a = get_moments_from_zone_spectra(spec_a, index0)
+    moments_spec_b = get_moments_from_zone_spectra(spec_b, index0)
+
     # Optionally apply the BG subtraction to the images
     if subtract_bg:
         # Subtract from each channel of the RGB images
@@ -205,6 +244,26 @@ def main(
         abc_a -= np.sum(spec_a["BG"][index0 - 1 : index0 + 2])
         abc_b -= np.sum(spec_b["BG"][index0 - 1 : index0 + 2])
 
+    # Optionally apply the hyper-local continuum fix to the images
+    if fix_continuum:
+        rgb_a -= hyper_local_a
+        rgb_b -= hyper_local_b
+        abc_a -= 3 * hyper_local_a
+        abc_b -= 3 * hyper_local_b
+
+    # Sanity check that the summed image is still equal to the sum of the ABC channels
+    mm = np.isfinite(abc_a)
+    check1 = abc_a[mm]
+    check2 = np.nansum(rgb_a, axis=-1)[mm]
+    # assert np.allclose(check1, check2, atol=0.1, rtol=1e-3), np.sort(np.abs(check1 - check2))[-3:]
+
+    # Recalculate the moments, since we may have smoothed the arrays
+    # and/or subtracted the background and hyper-local continuum
+    m1_a = (rgb_a[..., 0] - rgb_a[..., 2]) / abc_a
+    m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
+    m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
+    m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
+
     # Calculate suitable limits for the plots and histograms
     amin, amax = np.nanpercentile(rgb_a[star_mask_rgb], [1, 99])
     aspan = amax - amin
@@ -216,6 +275,8 @@ def main(
     bmax += 0.1 * bspan
     abmax = max(amax, bmax)
     abmin = min(min(amin, bmin), 0.0)
+
+    # Save the recalibrated images and spectra
 
     # Set up the figure
     sns.set_color_codes("muted")
@@ -325,6 +386,8 @@ def main(
         axx.axvline(wave0, color="k", lw=0.5, ls="dotted")
         axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
         axx.minorticks_on()
+        # Center the viewport on the rest wavelength
+        axx.set_xlim(wave0 - 10, wave0 + 10)
 
     # Set common plot limits for all spectra
     smax = max(smaxima)
@@ -398,12 +461,6 @@ def main(
         ylabel=f"{bcombo} {line}",
     )
 
-    # Recalculate the moments, since we may have smoothed the arrays
-    # and/or subtracted the background
-    m1_a = (rgb_a[..., 0] - rgb_a[..., 2]) / abc_a
-    m1_b = (rgb_b[..., 0] - rgb_b[..., 2]) / abc_b
-    m2_a = (rgb_a[..., 0] + rgb_a[..., 2]) / abc_a
-    m2_b = (rgb_b[..., 0] + rgb_b[..., 2]) / abc_b
 
     # Correlations between the velocity moments
     ax_m1, ax_m2 = ax[0, 1], ax[1, 1]
@@ -418,8 +475,6 @@ def main(
         else:
             m_a = m2_a
             m_b = m2_b
-        # m_a = get_data(line_path_a, suffix=mlabel)
-        # m_b = get_data(line_path_b, suffix=mlabel)
         mask = np.isfinite(m_a) & np.isfinite(m_b)
         mask &= abc_a > 0.0
         if mask_out_stars:
@@ -469,6 +524,22 @@ def main(
             color="r",
             lw=0.5,
         )
+        # Optionally mark the moments of the average spectrum for each zone
+        for zone, mark_moments in [
+            ["I,III", mark_moments_nebula],
+            ["0,II", mark_moments_filaments],
+            ["IV", mark_moments_bow_shock],
+        ]:
+            if mark_moments:
+                mzone_a = moments_spec_a[zone][mlabel]
+                mzone_b = moments_spec_b[zone][mlabel]
+                color = color = sns.light_palette(
+                    KEY_COLORS[zone], input="husl", as_cmap=True
+                )(0.7)
+                axx.plot(
+                    mzone_a, mzone_b, marker="+", color=color, mew=0.5, ms=10, alpha=1.0
+                )
+
         # Ensure same tick marks on x, y axes
         axx.set_xticks(ticks)
         axx.set_yticks(ticks)
@@ -481,7 +552,12 @@ def main(
     # Set spacing between the panels. We need it to be consistent
     # between different runs, so we cannot use tight_layout
     plt.subplots_adjust(
-        left=0.07, bottom=0.07, right=0.97, top=0.95, wspace=0.3, hspace=0.3,
+        left=0.07,
+        bottom=0.07,
+        right=0.97,
+        top=0.95,
+        wspace=0.3,
+        hspace=0.3,
     )
     # fig.tight_layout()
     fig.savefig(figfile)
