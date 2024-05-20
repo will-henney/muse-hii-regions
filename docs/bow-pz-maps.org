@@ -620,7 +620,12 @@ Fri May 10 13:45:43 CST 2024
   - [ ] Write out FITS images of the BG-subtracted maps for later
     analysis in the notebooks
   - [X] Center the spectral plots on the rest wavelength
-  - [ ] Optionally fix the baseline using the hyper-local continuum
+  - [X] Add legend to the spectral plots and use better names for the
+    combo zones:
+    - Bow shock for IV
+    - Diffuse for I,III
+    - Filaments for 0,II
+  - [X] Optionally fix the baseline using the hyper-local continuum
     - To avoid adding noise, this will be a global fix that uses the
       line profile from the combined I,III,IV zones
     - We can use the pixels that are peak - 3 and peak + 3 in the
@@ -754,7 +759,7 @@ python ../../scripts/compare-two-maps.py --line ar-iv-4740-17 --bcombo P-011 --s
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-k-iv-6101-79.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2.0 --subtract-bg --trim-edges 20
+  python ../../scripts/compare-two-maps.py --line k-iv-6101-79 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2.0 --subtract-bg --trim-edges 20 --fix-continuum
 #+end_src
 
 #+RESULTS:
@@ -785,7 +790,7 @@ Blend with H_2 line
 
 This could do with using the hyperlocal continuum, since the continuum is a bit oversubtracted
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20
+  python ../../scripts/compare-two-maps.py --line ar-iv-7262-7 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20 --fix-continuum --no-mark-moments-filaments
 #+end_src
 
 #+RESULTS:
@@ -801,7 +806,7 @@ This could do with using the hyperlocal continuum, since the continuum is a bit 
 This has a much better zero level, and is clearly the best of the [Ar
 IV] auroral lines
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20
+  python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 1.0 --subtract-bg --trim-edges 20 --fix-continuum 
 #+end_src
 
 #+RESULTS:
@@ -845,14 +850,14 @@ python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo E-007 --sm
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-cl-iv-7530-8.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2  --subtract-bg --trim-edges 20
+python ../../scripts/compare-two-maps.py --line cl-iv-7530-8 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2  --subtract-bg --trim-edges 20 --fix-continuum
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-cl-iv-7530-8.pdf]]
 
 
-**** Fe lines
+**** Fe lineqios
 
 Blend with 4985.90
 #+begin_src sh :dir ../data/n346-bow-lines :results file
@@ -892,12 +897,21 @@ python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo E-007 --smo
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-E-007-o-i-8446-48.pdf]]
 
+This is ok, but it is hampered by the nearby H I line, and ~--fix-contiuum~ is not working well.
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg --trim-edges 0
+python ../../scripts/compare-two-maps.py --line o-i-8446-48 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg --trim-edges 0 --no-fix-continuum 
 #+end_src
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-o-i-8446-48.pdf]]
+
+The [N I] lines are a bit of a mess because they are a doublet
+#+begin_src sh :dir ../data/n346-bow-lines :results file
+python ../../scripts/compare-two-maps.py --line n-i-5199-00 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 2 --subtract-bg --trim-edges 0 --fix-continuum --hyper-local-red 4 --hyper-local-blue 4 --no-mark-moments-bow-shock
+#+end_src
+
+#+RESULTS:
+[[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/maps-compare/P-007-P-101-n-i-5199-00.pdf]]
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
 python ../../scripts/compare-two-maps.py --line n-i-8216-34 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 0.5 --subtract-bg --trim-edges 20
@@ -1398,7 +1412,7 @@ python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo E-007 --
 This looks like it might be a blend with a medium ionization line slightly to the red
 
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 2 --subtract-bg
+python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 2 --subtract-bg --fix-continuum --trim-edges 25
 #+end_src
 
 #+RESULTS:

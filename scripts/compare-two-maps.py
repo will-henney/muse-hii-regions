@@ -20,6 +20,11 @@ KEY_COLORS = {
     "0,II": (275, 80, 40),  # purple
 }
 
+ZONE_TEXTS = {
+    "IV": "Bow shock",
+    "I,III": "Diffuse",
+    "0,II": "Filaments",
+}
 
 def combo_folder(combo: str):
     cubeid, winid = combo.split("-")
@@ -370,7 +375,7 @@ def main(
         axx.plot(
             spec_a["wave"][wslice],
             spec_a[zone][wslice],
-            label=f"{acombo} zone {zone}",
+            label=f"{acombo}",
             ds="steps-mid",
             color=cmap(0.5),
             lw=1.5,
@@ -378,7 +383,7 @@ def main(
         axx.plot(
             spec_b["wave"][wslice],
             spec_b[zone][wslice],
-            label=f"{bcombo} zone {zone}",
+            label=f"{bcombo}",
             ds="steps-mid",
             color=cmap(1.0),
             lw=1.0,
@@ -406,7 +411,8 @@ def main(
             )
         # Add an indication of the rest wavelength
         axx.axvline(wave0, color="k", lw=0.5, ls="dotted")
-        axx.set_title(f"Zone {zone} ", loc="right", y=0.8)
+        axx.legend(loc="upper left", fontsize="small")
+        axx.set_title(f"{ZONE_TEXTS[zone]} ", loc="right", y=0.8, color=cmap(1.0))
         axx.minorticks_on()
         # Center the viewport on the rest wavelength
         axx.set_xlim(wave0 - 10, wave0 + 10)
