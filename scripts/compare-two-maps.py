@@ -5,12 +5,14 @@ from matplotlib import colors
 import seaborn as sns
 from pathlib import Path
 import typer
+import yaml
 from astropy.convolution import Gaussian2DKernel, convolve_fft
 from astropy.wcs import WCS
 import astropy.constants as const  # type: ignore
 import astropy.units as u  # type: ignore
 
-SAVEPATH = Path("maps-compare")
+FIGPATH = Path("figs-compare")
+SAVE_PATH = Path("refined")
 LIGHT_SPEED_KMS = const.c.to(u.km / u.s).value
 
 # husl tuples (hue, saturation, lightness) for each zone
@@ -25,6 +27,7 @@ ZONE_TEXTS = {
     "I,III": "Diffuse",
     "0,II": "Filaments",
 }
+
 
 def combo_folder(combo: str):
     cubeid, winid = combo.split("-")
@@ -165,6 +168,7 @@ def main(
     fix_continuum: bool = False,
     hyper_local_blue: int = 3,
     hyper_local_red: int = 3,
+    continuum_zone: str = "I,III,IV",
     mark_moments_bow_shock: bool = True,
     mark_moments_nebula: bool = True,
     mark_moments_filaments: bool = True,
@@ -226,12 +230,12 @@ def main(
     if fix_continuum:
         # We use the pixels that are 3 to the left/right of the peak
         hyper_local_a = (
-            spec_a["I,III,IV"][index0 - hyper_local_blue]
-            + spec_a["I,III,IV"][index0 + hyper_local_red]
+            spec_a[continuum_zone][index0 - hyper_local_blue]
+            + spec_a[continuum_zone][index0 + hyper_local_red]
         ) / 2
         hyper_local_b = (
-            spec_b["I,III,IV"][index0 - hyper_local_blue]
-            + spec_b["I,III,IV"][index0 + hyper_local_red]
+            spec_b[continuum_zone][index0 - hyper_local_blue]
+            + spec_b[continuum_zone][index0 + hyper_local_red]
         ) / 2
         if debug:
             print(f"Hyper-local continuum: {hyper_local_a:.2f}, {hyper_local_b:.2f}")
@@ -305,6 +309,71 @@ def main(
 
     # Save the recalibrated images and spectra
 
+    # The spectra plus metadata go in yaml files
+    wslice = slice(index0 - 7, index0 + 8)
+    info = {
+        "line": line,
+        "index0": index0,
+        "smooth": smooth,
+        "trim": trim_edges,
+        "subtract_bg": subtract_bg,
+        "fix_continuum": fix_continuum,
+        "hyper_local_blue": hyper_local_blue,
+        "hyper_local_red": hyper_local_red,
+    }
+    with open(SAVE_PATH / f"info-{line}-{acombo}.yaml", "w") as f:
+        yaml.dump(
+            {
+                **info,
+                "hyper local continuum": hyper_local_a if fix_continuum else 0.0,
+                **{zone: spec_a[zone][wslice].tolist() for zone in spec_a},
+            },
+            f,
+            allow_unicode=True,
+            sort_keys=False,
+            default_flow_style=False,
+        )
+    with open(SAVE_PATH / f"info-{line}-{bcombo}.yaml", "w") as f:
+        yaml.dump(
+            {
+                **info,
+                "hyper local continuum": hyper_local_a if fix_continuum else 0.0,
+                **{zone: spec_a[zone][wslice].tolist() for zone in spec_b},
+            },
+            f,
+            allow_unicode=True,
+            sort_keys=False,
+            default_flow_style=False,
+        )
+
+    # The images go in multi-extension FITS files
+    hdulist_a = fits.HDUList(
+        [
+            fits.PrimaryHDU(),
+            fits.ImageHDU(header=hdr, data=abc_a, name="sum"),
+            fits.ImageHDU(header=hdr, data=rgb_a[..., 2], name="A channel"),
+            fits.ImageHDU(header=hdr, data=rgb_a[..., 1], name="B channel"),
+            fits.ImageHDU(header=hdr, data=rgb_a[..., 0], name="C channel"),
+            fits.ImageHDU(header=hdr, data=m1_a, name="m1 moment"),
+            fits.ImageHDU(header=hdr, data=m2_a, name="m2 moment"),
+            fits.ImageHDU(header=hdr, data=star_mask.astype(int), name="star mask"),
+        ]
+    )
+    hdulist_b = fits.HDUList(
+        [
+            fits.PrimaryHDU(),
+            fits.ImageHDU(header=hdr, data=abc_b, name="sum"),
+            fits.ImageHDU(header=hdr, data=rgb_b[..., 2], name="A channel"),
+            fits.ImageHDU(header=hdr, data=rgb_b[..., 1], name="B channel"),
+            fits.ImageHDU(header=hdr, data=rgb_b[..., 0], name="C channel"),
+            fits.ImageHDU(header=hdr, data=m1_b, name="m1 moment"),
+            fits.ImageHDU(header=hdr, data=m2_b, name="m2 moment"),
+            fits.ImageHDU(header=hdr, data=star_mask.astype(int), name="star mask"),
+        ]
+    )
+    hdulist_a.writeto(SAVE_PATH / f"map-{line}-{acombo}.fits", overwrite=True)
+    hdulist_a.writeto(SAVE_PATH / f"map-{line}-{bcombo}.fits", overwrite=True)
+
     # Set up the figure
     sns.set_color_codes("muted")
     fig, ax = plt.subplots(3, 3, figsize=(10, 8.5))
@@ -362,7 +431,6 @@ def main(
 
     ## 1D spectra in right column of plots
     ##
-    wslice = slice(index0 - 7, index0 + 8)
     smaxima = []
     sminima = []
     for axx, zone in [
@@ -572,9 +640,11 @@ def main(
         axx.set_yticks(ticks)
         axx.minorticks_on()
         axx.minorticks_on()
+        axx.set_xlim(*mrange)
+        axx.set_ylim(*mrange)
 
     sns.despine()
-    figfile = SAVEPATH / f"{acombo}-{bcombo}-{line}.pdf"
+    figfile = FIGPATH / f"{acombo}-{bcombo}-{line}.pdf"
 
     # Set spacing between the panels. We need it to be consistent
     # between different runs, so we cannot use tight_layout
