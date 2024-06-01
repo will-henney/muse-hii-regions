@@ -1,0 +1,29 @@
+#+LINK: viewnb elisp:(view-file-other-window "../notebooks/ngc346-orig/%s")
+
+[[viewnb:01-00-line-ratios.py]]
+[[viewnb:01-01-more-line-ratios.py]]
+[[viewnb:01-02-yet-more-line-ratios.py]]
+
+* Calculate line ratios from the new "refined" emission maps and spectra
+- This is going to be a partial re-run of all that I did in the notebooks such as
+  - [[file:../notebooks/ngc346-orig/01-00-line-ratios.py]]
+    Mainly [S II] ratios
+  - [[file:../notebooks/ngc346-orig/01-01-more-line-ratios.py]]
+  - [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py]]
+- Question is, do I want to do it in notebooks, or here in this org file with some scripts
+  - Notebooks might be easier, but it might be better to split it up into smaller parts
+  - Although the easiest thing to do to start with is to just run them as is. 
+
+    
+** TODO Rerun of the PZ-01-*.ipynb as ZZ-01-*.ipynb
+
+- [X] Copy the .py files to the new folder [[file:../notebooks/ngc346-bow/]] and rename them with ZZ prefix
+- [X] Regenerate the notebook files with jupytext
+  #+begin_src sh :dir ../notebooks/ngc346-bow/ :eval no
+    jupytext --show-changes --sync *.py
+  #+end_src
+  Note that the ~-d~ option has changed to ~--show-changes~
+  
+*** Look at the [S II] line ratios
+- Going through the initial part of the first notebook
+  - I loaded the median-subtracted cube and followed the same steps, except that I did not subtract the continuum, since that has already been done

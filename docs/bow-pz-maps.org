@@ -1,4 +1,4 @@
-* Maps of all lines from the PZ cube
+* Generate maps of all lines from the PZ cube
 - Find what steps need to be repeated from the list in [[file:ngc-346-drl-spectra.org]]
   - Continuum subtraction ([[id:59F3D73A-6179-462C-86E8-1F915C76E274][Step -1]])
   - Maps of different lines ([[id:B915BA48-D7C9-4FFE-9ECF-511CBF1A4ED7][Step 4]])
@@ -277,7 +277,8 @@ python ../scripts/make-all-3wav-maps.py --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 #+end_example
-** TODO Spectra of each zone
+** DONE Spectra of each zone
+CLOSED: [2024-05-21 Tue 13:30]
 :LOGBOOK:
 - State "TODO"       from              [2024-05-09 Thu 10:03] \\
   I need to do this so I can have a panel in my [[id:376C7C7C-FE81-48F2-8D6E-DF06BC2274C5][quality assurance figures]] that shows the spectra around each line
@@ -586,13 +587,18 @@ Fri May 10 13:45:43 CST 2024
   - Shows the ABC color images of the two lines
   - Shows the 2d histogram of the sum, m1, and m2 values
 *** Summary of results from the PZ-ESO comparison
-- The key to success here wqs in subtracting the BG zone from both cubes
+- The key to success here was in subtracting the BG zone from both cubes
   - For the ESO cube, this leads to positive pine brightnesses every where, which is good!
   - For the PZ cube, this removes the garbage features around an intensity of 20, which effected the weak lines
 
-*** TODO Script to compare two maps
+*** DONE Script to compare two maps
+CLOSED: [2024-05-21 Tue 13:31]
 :PROPERTIES:
 :ID:       376C7C7C-FE81-48F2-8D6E-DF06BC2274C5
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-05-21 Tue 13:31] \\
+  This was a mammoth undertaking, but now it is finally done. The only thing I might want to revisit is to add indication of hyper-local continuum pixels in the spectra graphs
 :END:
 - This has now expanded into an all singing, all dancing figure, which I am refering to as the Quality Assurance (QA) plot
 - [2024-05-10 Fri] Future plans are as follows
@@ -617,7 +623,7 @@ Fri May 10 13:45:43 CST 2024
     pixels
     - This allows us to see wek lines that zre very close to a much
       stronger line, such as He I 5015.68
-  - [ ] Write out FITS images of the BG-subtracted maps for later
+  - [X] Write out FITS images of the BG-subtracted maps for later
     analysis in the notebooks
   - [X] Center the spectral plots on the rest wavelength
   - [X] Add legend to the spectral plots and use better names for the
@@ -684,7 +690,8 @@ python ../../scripts/compare-two-maps.py --help
 
 #+end_example
 
-*** TODO Debugging the comparison script
+*** DONE Debugging the comparison script
+CLOSED: [2024-05-21 Tue 13:33]
 #+header: :prologue "exec 2>&1" :epilogue ":"
 #+begin_src sh :dir ../data/n346-bow-lines :results output verbatim
   python ../../scripts/compare-two-maps.py --line h-i-8345-55 --bcombo P-101 --smooth 3 --mask-out-stars --star-mask-threshold 10 --subtract-bg --fix-continuum --debug
@@ -698,7 +705,8 @@ python ../../scripts/compare-two-maps.py --help
 : Median m2 = 0.6127645104718388 original m2 = 0.5414611150166987
 : maps-compare/P-007-P-101-h-i-8345-55.pdf
 
-*** Run the comparison script on all the lines
+*** DONE Run the comparison script on all the lines
+CLOSED: [2024-05-21 Tue 13:33]
 
 **** He II lines
 #+begin_src sh :dir ../data/n346-bow-lines :results file
@@ -1530,5 +1538,6 @@ python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo P-101 --
 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/figs-compare/P-007-P-101-si-iii-5739-73.pdf]]
-
+* Further analysis of the PZ maps
+This wlud be better in another file. 
 
