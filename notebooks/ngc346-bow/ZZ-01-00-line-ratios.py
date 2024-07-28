@@ -138,12 +138,13 @@ g.fig.suptitle("Correction to 6716 and 6731 brightnesses")
 fig = plt.figure(figsize=(10, 10))
 (im_sii16_bgsub / im_sii31_bgsub).plot(
     vmin=0.8,
-    vmax=1.55,
+    vmax=1.5,
     use_wcs=True,
     cmap="rocket",
     scale="linear",
     colorbar="v",
 )
+fig.axes[0].contour(np.log10(im_sii31_bgsub.data))
 fig.axes[0].set_title(
     label="[S II] 6716 / 6731 ratio",
     pad=25,
@@ -266,9 +267,18 @@ ax.set(
 # As we pass to the brighter and brighter partitions (orange, green, red lines), then the CDF 
 # first becomes steeper, but without the median changing. This is a suign that the noise is decreasing, but the density not necessarily increasing. But then for > 8000, we do get the median point moving to the left, indicating higher densities.
 #
-# For the brightest partition (red line), the median value is about 1.3, which corresponds to a density of about 200 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 30 pcc. *We should use pyneb to invert the ratio properly.*
+# For the brightest partition (red line), the median value is about 1.2, which corresponds to a density of about 2
+# 300 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 50 pcc. 
 #
 # It will be interesting to compare the distribution of $n$ with the distribution of brightness.
+
+import pyneb as pn
+
+s2 = pn.Atom("S", 2)
+
+s2.getTemDen([0.8, 1.2, 1.35, 1.4 ], tem=10000, wave1=6716, wave2=6731)
+
+# So brightest pixels have density more than 1000, but this is a small proportion of the total map (probably the mYSO)
 
 # ### Try again, but using the saved maps
 #
@@ -319,7 +329,33 @@ fig.axes[0].set_title(
 
 # So these are unfortunately worse due to the background subtraction. The lines go negative in the faint parts, which is not good, especially if we want to take ratios. 
 
+# +
+max_bright = 1e6
+min_bright = 100.0
+sum_sii = im_sii31_map.data + im_sii16_map.data
+r_sii = im_sii16_map.data / im_sii31_map.data
 
+m = sum_sii < 2 * max_bright
+m = m & (sum_sii > 2 * min_bright)
+m = m & ~im_ha.mask
+m = m & np.isfinite(r_sii) & (r_sii > 0.3) & (r_sii < 1.7)
+
+df = pd.DataFrame(
+    {
+        "log10 (6716 + 6731)": np.log10(sum_sii[m]),
+        "ratio 6716/6731": r_sii[m],
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axhline(1.45, ls="--", color="r")
+g.axes[1, 0].axhline(0.45, ls=":", color="r")
+g.fig.suptitle("[S II] 6716/6731 ratio versus summed brightness from maps")
+# -
 
 
 
@@ -332,18 +368,10 @@ fig.axes[0].set_title(
 #
 #
 
-# +
-im_blue_cont = cube.select_lambda(6540.0, 6545.0).mean(axis=0)
-im_red_cont = cube.select_lambda(6555.0, 6560.0).mean(axis=0)
-im_6548_cont = (im_blue_cont + im_red_cont) / 2.0
-im_6548_bgsub = (cube.select_lambda(6545.0, 6555.0) - im_6548_cont).sum(axis=0)
+im_6548_bgsub = (cube.select_lambda(6545.0, 6555.0)).sum(axis=0)
+im_6583_bgsub = (cube.select_lambda(6580.0, 6590.0)).sum(axis=0)
 
-
-im_blue_cont = cube.select_lambda(6575.0, 6580.0).mean(axis=0)
-im_red_cont = cube.select_lambda(6590.0, 6595.0).mean(axis=0)
-im_6583_cont = (im_blue_cont + im_red_cont) / 2.0
-im_6583_bgsub = (cube.select_lambda(6580.0, 6590.0) - im_6548_cont).sum(axis=0)
-# -
+# Simplify previous treatment: no need to subtract the background
 
 fig = plt.figure(figsize=(10, 10))
 (im_6583_bgsub + im_6548_bgsub).plot(
@@ -388,40 +416,12 @@ g.fig.suptitle("Correlation between 6548 and 6583 brightness")
 
 # So this is fine. No need to do the tedious corrrections that we did before.
 
-cube.mask.shape
-
-m = np.array(im_6583_bgsub.data) < -3 * 180
-m.sum(), m.sum() / np.product(m.shape)
-
-mmm = np.repeat(m[None, :, :], cube.data.shape[0], axis=0).astype(float)
-mmm.sum(), mmm.sum() / np.product(mmm.shape)
-
-sp_faint = np.average(cube.data, weights=mmm, axis=(1, 2))
-
-sp1 = sp0.clone()
-
-sp1.data = sp_faint
-sp1.info()
-
-fig, ax = plt.subplots(figsize=(10, 4))
-sp1.subspec(6700.0, 6750.0).plot(ax=ax, linewidth=2)
-ax.set(
-    yscale="log",
-    title="[S II] red lines in faint region",
-)
-sns.despine()
-
-# +
-# cube.mask_selection?
-# -
-
-
 # ## Other lines
 
 fig, ax = plt.subplots(figsize=(10, 4))
 sp0.subspec(5720.0, 5820.0).plot(ax=ax, linewidth=2)
 ax.set(
-    yscale="log",
+    yscale="linear",
     title="[N II] 5755 Å",
 )
 sns.despine()
@@ -429,7 +429,7 @@ sns.despine()
 fig, ax = plt.subplots(figsize=(10, 4))
 sp0.subspec(6270.0, 6390.0).plot(ax=ax, linewidth=2)
 ax.set(
-    yscale="log",
+    yscale="linear",
     title="[O I] 6300,6363 Å and [S III] 6312 Å",
 )
 sns.despine()
@@ -437,18 +437,18 @@ sns.despine()
 fig, ax = plt.subplots(figsize=(10, 4))
 sp0.subspec(9050, 9100).plot(ax=ax, linewidth=2)
 ax.set(
-    yscale="log",
+    yscale="linear",
     title="[S III] 9069 Å",
 )
 sns.despine()
 
-im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
+#im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
 im_c2 = cube.select_lambda(9065.0, 9070.0).mean(axis=0)
 im_c3 = cube.select_lambda(9080.0, 9085.0).mean(axis=0)
-im_c9069 = (im_c3 + im_c2) / 2.0
+#im_c9069 = (im_c3 + im_c2) / 2.0
 
-im_siii6312_bgsub = (cube.select_lambda(6310.0, 6320.0) - im_c6312).sum(axis=0)
-im_siii9069_bgsub = (cube.select_lambda(9070.0, 9080.0) - im_c9069).sum(axis=0)
+im_siii6312_bgsub = (cube.select_lambda(6310.0, 6320.0)).sum(axis=0)
+im_siii9069_bgsub = (cube.select_lambda(9070.0, 9080.0)).sum(axis=0)
 
 # No need to correct these brightnesses
 

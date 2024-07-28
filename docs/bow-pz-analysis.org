@@ -4,6 +4,8 @@
 [[viewnb:01-01-more-line-ratios.py]]
 [[viewnb:01-02-yet-more-line-ratios.py]]
 
+This is a continuation of the work done in [[file:bow-pz-maps.org]], which made all the new maps from the PZ cube.
+
 * Calculate line ratios from the new "refined" emission maps and spectra
 - This is going to be a partial re-run of all that I did in the notebooks such as
   - [[file:../notebooks/ngc346-orig/01-00-line-ratios.py]]
@@ -16,7 +18,10 @@
 
     
 ** TODO Rerun of the PZ-01-*.ipynb as ZZ-01-*.ipynb
-
+:LOGBOOK:
+- Note taken on [2024-07-25 Thu 12:30] \\
+  Return to this after an absence. I cannot remember what it was that made me stop doing this.
+:END:
 - [X] Copy the .py files to the new folder [[file:../notebooks/ngc346-bow/]] and rename them with ZZ prefix
 - [X] Regenerate the notebook files with jupytext
   #+begin_src sh :dir ../notebooks/ngc346-bow/ :eval no
@@ -27,3 +32,5 @@
 *** Look at the [S II] line ratios
 - Going through the initial part of the first notebook
   - I loaded the median-subtracted cube and followed the same steps, except that I did not subtract the continuum, since that has already been done
+- These worked better with the full extraction of a wide window than they did with the 3 wave images, which is a bit annoying
+- Except, I suspect that this can be fixed by using the 

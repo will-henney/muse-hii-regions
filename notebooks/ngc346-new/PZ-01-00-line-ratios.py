@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -455,5 +455,7 @@ ax.set(
 )
 
 # This is much better than before too. The ratio gets high in the high-ionization places we expect it to get high, not just in random faint patches.
+#
+# Interestingly, the [S III] / [S II] ratio falls in the bow shock, indicating a relative lack of medium ionization gas there. 
 
 

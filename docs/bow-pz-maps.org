@@ -823,8 +823,7 @@ This could do with using the hyperlocal continuum, since the continuum is a bit 
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/figs-compare/P-007-E-007-ar-iv-7170-5.pdf]]
 
-This has a much better zero level, and is clearly the best of the [Ar
-IV] auroral lines
+This has a much better zero level, and is clearly the best of the [Ar IV] auroral lines
 #+begin_src sh :dir ../data/n346-bow-lines :results file
   python ../../scripts/compare-two-maps.py --line ar-iv-7170-5 --bcombo P-101 --smooth 9 --mask-out-stars --star-mask-threshold 2.0 --subtract-bg --trim-edges 20 --fix-continuum 
 #+end_src
@@ -1539,5 +1538,5 @@ python ../../scripts/compare-two-maps.py --line si-iii-5739-73 --bcombo P-101 --
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/figs-compare/P-007-P-101-si-iii-5739-73.pdf]]
 * Further analysis of the PZ maps
-This wlud be better in another file. 
+This would be better in another file: [[file:bow-pz-analysis.org]]
 
