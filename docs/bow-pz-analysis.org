@@ -30,7 +30,24 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
   Note that the ~-d~ option has changed to ~--show-changes~
   
 *** Look at the [S II] line ratios
+:LOGBOOK:
+- Note taken on [2025-10-17 Fri 08:59] \\
+  Trying to pick up this work where it was abandoned
+:END:
 - Going through the initial part of the first notebook
   - I loaded the median-subtracted cube and followed the same steps, except that I did not subtract the continuum, since that has already been done
 - These worked better with the full extraction of a wide window than they did with the 3 wave images, which is a bit annoying
-- Except, I suspect that this can be fixed by using the 
+- Except, I suspect that this can be fixed by using the ... what?
+  - [2025-10-17 Fri 09:01] This sentence was never finished, annoyingly
+    - Possibly I was going to say that it was using the flux correction from the 3-wave method
+    - However, we do not necessarily have time for that now
+
+*** The remaining notebooks
+- It looks like we have the following from July 2024
+  - [[file:../notebooks/ngc346-bow/ZZ-01-00-line-ratios.ipynb]]
+  - [[file:../notebooks/ngc346-bow/ZZ-01-01-more-line-ratios.ipynb]]
+- These are re-running the analysis of line ratios using the Peter cubes and (I think) the 3-wave results
+- The results for the [Ar IV] density and temperature seem worse than for the original ESO cubes, in the sense that the 4711/4740 ratio is outside the allowed range
+  - [ ] I do not know if this is due to the missing flux correction or what
+- We do not seem to have an equivalent of the [[viewnb:01-02-yet-more-line-ratios.py]] notebook in either the PZ or the ZZ series
+  - [ ] Is this important?

@@ -588,7 +588,7 @@ Fri May 10 13:45:43 CST 2024
   - Shows the 2d histogram of the sum, m1, and m2 values
 *** Summary of results from the PZ-ESO comparison
 - The key to success here was in subtracting the BG zone from both cubes
-  - For the ESO cube, this leads to positive pine brightnesses every where, which is good!
+  - For the ESO cube, this leads to positive line brightnesses every where, which is good!
   - For the PZ cube, this removes the garbage features around an intensity of 20, which effected the weak lines
 
 *** DONE Script to compare two maps
@@ -1515,7 +1515,7 @@ Seriously affected by [S III] 9069 line. Cannot be salvaged, unfortunately.
 This one is almost good, despite being weak. There is another line
 blended on the red side, though at 9213
 #+begin_src sh :dir ../data/n346-bow-lines :results file
-  python ../../scripts/compare-two-maps.py --line he-i-9210-28 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2 --subtract-bg --trim-edges 20 --fix-continuum --hyper-local-red 6
+  uv run ../../scripts/compare-two-maps.py --line he-i-9210-28 --bcombo P-101 --smooth 5 --mask-out-stars --star-mask-threshold 2 --subtract-bg --trim-edges 20 --fix-continuum --hyper-local-red 6
 #+end_src
 
 #+RESULTS:

@@ -1,8 +1,9 @@
 # Dependencies from github repos (not on PyPI)
-whispy git+https://github.com/will-henney/whispy.git
-tetrabloks git+https://github.com/will-henney/tetrabloks.git
-wcsfile git+https://github.com/will-henney/wcsfile.git
+whispy @ git+https://github.com/will-henney/whispy.git
+tetrabloks @ git+https://github.com/will-henney/tetrabloks.git
+wcsfile @ git+https://github.com/will-henney/wcsfile.git
 
+typer
 # Not found by pigar, but I know they are on PyPI
 regions
 astroquery

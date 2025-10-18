@@ -8,6 +8,7 @@ efficient
 Will Henney: 2022-10-04
 
 """
+
 import sys
 from pathlib import Path
 import numpy as np
@@ -16,7 +17,7 @@ import scipy.ndimage as ndi
 import typer
 
 
-def get_median_continuum(data: np.ndarray, window_size=11):
+def get_median_continuum(data: np.ndarray, window_size: int = 11) -> np.ndarray:
     """Take windowed median along first axis of data array"""
     ndim = len(data.shape)
     # Conform the window size parameter to the shape of the data
@@ -63,6 +64,7 @@ def main(
             f"{out_prefix}-{label}-{window_size:03d}.fits",
             overwrite=True,
         )
+        fits.open()
 
 
 if __name__ == "__main__":

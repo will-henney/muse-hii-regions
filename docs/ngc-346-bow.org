@@ -3,10 +3,12 @@
 :ATTACH_DIR: /Users/will/Dropbox/muse-hii-regions/docs/ngc-346_att
 :END:
 + Seen in He II 4686 and [Ar IV]
-+ Also visible in [O III]
++ Also visible in [O III] 
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [3/5] Return to bow project 2023 Summer
+** TODO [0/0] Return to bow project 2023 Summer and 2025 Winter
+- [2025-10-17 Fri] Third return 2025 October
+  - Need to wrap up and de-scope if necessary the paper finished!
 - [2024-01-18 Thu] Second return 2024 January
   - Inspired by the JWST images
     - which show lots of additional bow shocks 
@@ -16,8 +18,56 @@
     - Looks like best way is with nbconvert
     - See [[id:EB6FFF61-D26C-484F-8CDF-C680BAB9366F][Rerunning the notebooks [2023-06-01 Thu]​]]
   - [-] Maybe repeat for the Peter Zeidler cube
+    - This is mostly done now, see [[file:bow-pz-analysis.org]]
+    - This is based on the 3-wave line extraction done in [[file:bow-pz-maps.org]]
+    - What I am unsure of is whether I need to do the flux correction or not
   - 
   - [ ] Think what are the essentials for the paper
+
+
+*** Taking stock of the paper
+:LOGBOOK:
+- Note taken on [2025-10-17 Fri 11:09] \\
+  Re-read the paper
+:END:
+
+**** Organization [0/2]
+***** Currently the sections are as follows [2025-10-17 Fri 11:16]  
+  #+begin_example
+         1 Introduction
+         2 MUSE spectral mapping
+           2.1 Detection of a high-ionization bow shock
+           2.2 Brightness profiles along the bow shock axis
+         3 FORS1 longslit observations
+         4 Mid-infrared emission
+         5 Electron density and temperature
+           5.1 \ARIV{} diagnostics
+         6 Discussion
+         7 Conclusions
+  #+end_example
+***** TODO Possible re-organization [2025-10-17 Fri 11:29]
+  1. Introduction
+  2. Optical emission lines from the bow shock
+     - MUSE, FORS1, and HST observations
+  3. Mid-infrared emission from the bow shock
+     - Spitzer observations
+  4. Physical conditions
+     - Ionization state of bow shock and other nebular components
+     - Density, temperature diagnostics from line ratios
+     - Emission measure from Ha -> density
+     - He ionization, Zanstra analyisis
+     - Additional insights from infrared
+       - Emission lines
+       - Dust emission -> dust temperature, opacity?
+  5. Discussion
+     - Analysis in terms of our bow shock papers
+       - Determine mass loss rate from the star
+     - Possibility of runaway
+***** TODO Change to a different journal
+- Currently we are in ApJ style, but I have no money for that
+- Could be ...
+  - MNRAS?
+  - RevMex?
 *** DONE Issues in re-running some notebooks 2024
 CLOSED: [2024-04-11 Thu 18:30]
 - [2024-03-12 Tue] I wanted to check on what the limits of the [Cl III] densities were, so I was running the notebook 01-02-yet-more-line-ratios.ipynb
@@ -212,7 +262,7 @@ STEM=02-01-Raman-Wings-IR-Source-C
     - [X] Blue lines
     - [X] Green and red lines
   - Now we can carry on with the other line ratio notebooks
-    - [ ] ~01-01-more-line-ratios~
+    - [X] ~01-01-more-line-ratios~
 - Naming convention
   - I will just add ~PZ~ prefix to the notebook names from ~data/ngc346-orig/~
 - Do we want to be working with the median filtered cube?
@@ -2014,7 +2064,7 @@ Cl4: All collision strengths: Galavis, Mendoza & Zeippen, 1995, A&A Supp., 111, 
 + [O I] and [S II] are significantly redder: V = 172 more or less
 + The [Ar IV] is similar to others: +162
 + But He II is redder: +157 +/- 2
-  + But the difference may not be significant
+  + But the difference may not be significant [2025-10-17 Fri 11:20]
 ** Velocity patterns in the nebula
 - In low ionization lines, there is a clear N-S gradient
   - In the S, the foreground filaments are blueshifted: V = 150

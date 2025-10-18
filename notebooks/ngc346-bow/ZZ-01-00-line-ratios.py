@@ -16,7 +16,7 @@
 
 # # Look at different emission lines and calculate some ratios
 
-# First we load up the data as in the `01-extract-subregions` notebook, except that we now use the Peter Zeidler cube:
+# First we load up the data as in the `01-extract-subregions` notebook, except that we now use the Peter Zeidler cube (change to test emacs):
 
 from pathlib import Path
 import numpy as np
@@ -50,13 +50,9 @@ sns.despine()
 # No need to find continuum since it is already subtracted
 
 # +
-im_sii16_bgsub = (cube.select_lambda(6715.0, 6725.0)).sum(
-    axis=0
-)
+im_sii16_bgsub = (cube.select_lambda(6715.0, 6725.0)).sum(axis=0)
 
-im_sii31_bgsub = (cube.select_lambda(6730.0, 6740.0)).sum(
-    axis=0
-)
+im_sii31_bgsub = (cube.select_lambda(6730.0, 6740.0)).sum(axis=0)
 # -
 
 fig = plt.figure(figsize=(10, 10))
@@ -109,7 +105,7 @@ g.fig.suptitle("Correlation between 6716 and 6731 brightness")
 # I am plotting a corner plot with the histograms of the two brightnesses plus the joint correlation.  We can see that the relation is closely linear at low brightness, and seems headed for the origin, which is a good sign.
 
 max_bright = 3000.0
-m = np.hypot(im_sii31_bgsub.data, im_sii16_bgsub.data) <  max_bright
+m = np.hypot(im_sii31_bgsub.data, im_sii16_bgsub.data) < max_bright
 m = m & ~im_ha.mask
 df = pd.DataFrame(
     {
@@ -261,14 +257,14 @@ ax.set(
 
 # Finally, we calculate the cumulative distribution of the ratios for four different brightness classes.
 #
-# For the faintest partition (blue line), the noise is dominant, which is why the distribution is broad and encroaches slightly into the forbidden region ($R > 1.45$ – the low-density and high-density limits are shown by vertical dashed lines). Less than was the case for the ESO cube however, 
-# and the median value is a fair bit less than 1.45. 
+# For the faintest partition (blue line), the noise is dominant, which is why the distribution is broad and encroaches slightly into the forbidden region ($R > 1.45$ – the low-density and high-density limits are shown by vertical dashed lines). Less than was the case for the ESO cube however,
+# and the median value is a fair bit less than 1.45.
 #
-# As we pass to the brighter and brighter partitions (orange, green, red lines), then the CDF 
+# As we pass to the brighter and brighter partitions (orange, green, red lines), then the CDF
 # first becomes steeper, but without the median changing. This is a suign that the noise is decreasing, but the density not necessarily increasing. But then for > 8000, we do get the median point moving to the left, indicating higher densities.
 #
 # For the brightest partition (red line), the median value is about 1.2, which corresponds to a density of about 2
-# 300 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 50 pcc. 
+# 300 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 50 pcc.
 #
 # It will be interesting to compare the distribution of $n$ with the distribution of brightness.
 
@@ -276,7 +272,7 @@ import pyneb as pn
 
 s2 = pn.Atom("S", 2)
 
-s2.getTemDen([0.8, 1.2, 1.35, 1.4 ], tem=10000, wave1=6716, wave2=6731)
+s2.getTemDen([0.8, 1.2, 1.35, 1.4], tem=10000, wave1=6716, wave2=6731)
 
 # So brightest pixels have density more than 1000, but this is a small proportion of the total map (probably the mYSO)
 
@@ -327,7 +323,7 @@ fig.axes[0].set_title(
     fontsize="large",
 )
 
-# So these are unfortunately worse due to the background subtraction. The lines go negative in the faint parts, which is not good, especially if we want to take ratios. 
+# So these are unfortunately worse due to the background subtraction. The lines go negative in the faint parts, which is not good, especially if we want to take ratios.
 
 # +
 max_bright = 1e6
@@ -356,9 +352,6 @@ g.axes[1, 0].axhline(1.45, ls="--", color="r")
 g.axes[1, 0].axhline(0.45, ls=":", color="r")
 g.fig.suptitle("[S II] 6716/6731 ratio versus summed brightness from maps")
 # -
-
-
-
 
 
 # ## [N II] lines
@@ -442,10 +435,10 @@ ax.set(
 )
 sns.despine()
 
-#im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
+# im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
 im_c2 = cube.select_lambda(9065.0, 9070.0).mean(axis=0)
 im_c3 = cube.select_lambda(9080.0, 9085.0).mean(axis=0)
-#im_c9069 = (im_c3 + im_c2) / 2.0
+# im_c9069 = (im_c3 + im_c2) / 2.0
 
 im_siii6312_bgsub = (cube.select_lambda(6310.0, 6320.0)).sum(axis=0)
 im_siii9069_bgsub = (cube.select_lambda(9070.0, 9080.0)).sum(axis=0)
@@ -494,5 +487,3 @@ ax.set(
 )
 
 # This is much better than before too. The ratio gets high in the high-ionization places we expect it to get high, not just in random faint patches.
-
-
