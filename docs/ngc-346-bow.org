@@ -6,7 +6,7 @@
 + Also visible in [O III] 
 + Radius is about 4 arcsec = 1 pc
   [[file:ngc-346_att/screenshot-20210602-085328.png]]
-** TODO [0/0] Return to bow project 2023 Summer and 2025 Winter
+** TODO [3/7] Return to bow project 2023 Summer and 2025 Winter
 - [2025-10-17 Fri] Third return 2025 October
   - Need to wrap up and de-scope if necessary the paper finished!
 - [2024-01-18 Thu] Second return 2024 January
@@ -31,22 +31,28 @@
 - I had to pin some dependencies
   - mpdaf 3.6 seems very broken, so I have pinned to 3.5
   - And mpdaf 3.5 is incompatible with numpy 2.0, so I had to downgrade that
-*** Taking stock of the paper
+*** TODO Taking stock of the paper
 :LOGBOOK:
 - Note taken on [2025-10-17 Fri 11:09] \\
   Re-read the paper
 :END:
 
 
-**** TODO [/] Redoing figures
+**** TODO [1/2] Redoing figures
 
 ***** TODO Figure 3 - spatial cuts across bow
-- [-] First job: make the lettering bigger so that we can show it as a single column
+- [X] First job: make the lettering bigger so that we can show it as a single column
   - [X] Base figure in notebook
-  - [ ] Annotated figure
+  - [X] Annotated figure
 - [ ] Maybe also redo using the new data?
 
-**** Organization [1/2]
+***** DONE [3/3] Figure 5 - FORS1 profiles
+CLOSED: [2025-10-19 Sun 11:49]
+- [X] Make lettering bigger
+- [X] Add box showing range of Fig 3
+- [X] Indicate the supernova remnant
+
+**** TODO Organization [1/2]
 ***** Currently the sections are as follows [2025-10-17 Fri 11:16]  
   #+begin_example
          1 Introduction
@@ -88,6 +94,19 @@ CLOSED: [2025-10-18 Sat 19:30]
 - Could be ...
   - [X] MNRAS?
   - RevMex?
+*** TODO Remaining work to do for paper
+:LOGBOOK:
+- State "TODO"       from              [2025-10-19 Sun 11:51] \\
+  Adding a new list to the docs
+:END:
+This should just contain links to other places where I will do the actual work
+**** Derived physical parameters
+- Density from Ha brightness
+- The He II issue
+  - This has caused me grief in the past, but I need to revisit it
+  - Would it make sense to do a Zanstra analysis? I am going to do that in [[id:2D3875F5-0579-462A-8C6B-01B36A3C8599][Zanstra analysis of Walborn 3]]
+**** Physics of bow shock
+- We can estimate the stellar wind parameters once we have the thermal pressure of the bow shock
 *** DONE Issues in re-running some notebooks 2024
 CLOSED: [2024-04-11 Thu 18:30]
 - [2024-03-12 Tue] I wanted to check on what the limits of the [Cl III] densities were, so I was running the notebook 01-02-yet-more-line-ratios.ipynb
