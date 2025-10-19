@@ -10,8 +10,8 @@ dependencies = [
     "cmasher>=1.6.3",
     "corner>=2.2.1",
     "matplotlib>=3.5.1",
-    "mpdaf>=3.5",
-    "numpy>=1.22.3",
+    "mpdaf==3.5",		# pin: version 3.6 seems totally broken
+    "numpy>=1.22.3<2.0",	# pin: mpdaf 3.5 is incompatible with numpy 2.0
     "pandas>=1.4.2",
     "pyneb>=1.1.15",
     "regions>=0.10",

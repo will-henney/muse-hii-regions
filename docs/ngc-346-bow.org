@@ -23,15 +23,30 @@
     - What I am unsure of is whether I need to do the flux correction or not
   - 
   - [ ] Think what are the essentials for the paper
-
-
+  -
+*** Technical stuff
+- [2025-10-16 Thu 19:37] I have switched over to using uv
+  - This was pretty easy
+  - I am using python 3.14
+- I had to pin some dependencies
+  - mpdaf 3.6 seems very broken, so I have pinned to 3.5
+  - And mpdaf 3.5 is incompatible with numpy 2.0, so I had to downgrade that
 *** Taking stock of the paper
 :LOGBOOK:
 - Note taken on [2025-10-17 Fri 11:09] \\
   Re-read the paper
 :END:
 
-**** Organization [0/2]
+
+**** TODO [/] Redoing figures
+
+***** TODO Figure 3 - spatial cuts across bow
+- [-] First job: make the lettering bigger so that we can show it as a single column
+  - [X] Base figure in notebook
+  - [ ] Annotated figure
+- [ ] Maybe also redo using the new data?
+
+**** Organization [1/2]
 ***** Currently the sections are as follows [2025-10-17 Fri 11:16]  
   #+begin_example
          1 Introduction
@@ -63,10 +78,15 @@
      - Analysis in terms of our bow shock papers
        - Determine mass loss rate from the star
      - Possibility of runaway
-***** TODO Change to a different journal
+***** DONE Change to a different journal
+CLOSED: [2025-10-18 Sat 19:30]
+:LOGBOOK:
+- Note taken on [2025-10-18 Sat 19:30] \\
+  Changed to MNRAS
+:END:
 - Currently we are in ApJ style, but I have no money for that
 - Could be ...
-  - MNRAS?
+  - [X] MNRAS?
   - RevMex?
 *** DONE Issues in re-running some notebooks 2024
 CLOSED: [2024-04-11 Thu 18:30]
@@ -2607,7 +2627,7 @@ CLOSED: [2024-04-24 Wed 10:14]
 - So assuming radius of 20 pixels and a lateral extent of 25 +/- 5 pixels, the half-cone angle is
   - arctan((25 +/- 5) / 20) = 51 +/- 6
   - This is depressingly close to my previous estimate, so it will also give an uncomfortably large He++ ionizing luminosity and hence ionization fraction
-  - /Addendum/ [2024-04-19 Fri] I now find the high ionization fraction independent of the ionizing luminosity, so the pervious objection is probably moot
+  - /Addendum/ [2024-04-19 Fri] I now find the high ionization fraction independent of the ionizing luminosity, so the previous objection is probably moot
 
 ***** Previous calculation that may be too small
 :PROPERTIES:

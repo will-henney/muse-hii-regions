@@ -7,6 +7,10 @@
 This is a continuation of the work done in [[file:bow-pz-maps.org]], which made all the new maps from the PZ cube.
 
 * Calculate line ratios from the new "refined" emission maps and spectra
+:LOGBOOK:
+- Note taken on [2025-10-18 Sat 17:55] \\
+  Return to this
+:END:
 - This is going to be a partial re-run of all that I did in the notebooks such as
   - [[file:../notebooks/ngc346-orig/01-00-line-ratios.py]]
     Mainly [S II] ratios
@@ -14,9 +18,17 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
   - [[file:../notebooks/ngc346-orig/01-02-yet-more-line-ratios.py]]
 - Question is, do I want to do it in notebooks, or here in this org file with some scripts
   - Notebooks might be easier, but it might be better to split it up into smaller parts
-  - Although the easiest thing to do to start with is to just run them as is. 
+  - Although the easiest thing to do to start with is to just run them as is.
+- [2025-10-18 Sat 17:56] I now think that it would be easier to just work out what I need most and write dedicated python scripts for them
+  - Also, I will try and avoid using the mpdaf library if possible
 
-    
+
+
+** TODO Python scripts to make the figures I want
+- The profile across the bow shock
+  - Currently Fig 3 in the paper, which uses ~ngc346-profiles-3-panel.pdf~, which I cannot find where it is written
+  - 
+
 ** TODO Rerun of the PZ-01-*.ipynb as ZZ-01-*.ipynb
 :LOGBOOK:
 - Note taken on [2024-07-25 Thu 12:30] \\
