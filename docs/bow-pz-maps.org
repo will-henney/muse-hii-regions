@@ -652,7 +652,7 @@ python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007 --sub
 
 *** Usage documentation for the comparison script
 #+begin_src sh :dir ../data/n346-bow-lines :results verbatim
-python ../../scripts/compare-two-maps.py --help 
+uv run ../../scripts/compare-two-maps.py --help 
 #+end_src
 
 #+RESULTS:
@@ -678,12 +678,18 @@ python ../../scripts/compare-two-maps.py --help
 │                                                         no-subtract-bg]      │
 │ --trim-edges                                   INTEGER  [default: 0]         │
 │ --vsys                                         FLOAT    [default: 171.1]     │
+│ --fix-continuum         --no-fix-continuum              [default:            │
+│                                                         no-fix-continuum]    │
+│ --hyper-local-blue                             INTEGER  [default: 3]         │
+│ --hyper-local-red                              INTEGER  [default: 3]         │
+│ --continuum-zone                               TEXT     [default: I,III,IV]  │
 │ --mark-moments-bow-…    --no-mark-moments-…             [default:            │
-│                                                         no-mark-moments-bow… │
+│                                                         mark-moments-bow-sh… │
 │ --mark-moments-nebu…    --no-mark-moments-…             [default:            │
-│                                                         no-mark-moments-neb… │
+│                                                         mark-moments-nebula] │
 │ --mark-moments-fila…    --no-mark-moments-…             [default:            │
-│                                                         no-mark-moments-fil… │
+│                                                         mark-moments-filame… │
+│ --debug                 --no-debug                      [default: no-debug]  │
 │ --help                                                  Show this message    │
 │                                                         and exit.            │
 ╰──────────────────────────────────────────────────────────────────────────────╯

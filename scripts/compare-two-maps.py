@@ -151,12 +151,15 @@ def get_trim_mask(im, margin=5):
     mask[margin:-margin, margin:-margin] = True
     return mask
 
+
 def sanitize(x):
     """Make sure not to write numpy object types to the output file."""
     return float(np.round(x, 4))
 
+
 def sanitize_array(x: np.ndarray) -> list:
     return [sanitize(_) for _ in x.tolist()]
+
 
 def main(
     acombo: str = "P-007",
@@ -331,7 +334,9 @@ def main(
         yaml.dump(
             {
                 **info,
-                "hyper local continuum": sanitize(hyper_local_a) if fix_continuum else 0.0,
+                "hyper local continuum": (
+                    sanitize(hyper_local_a) if fix_continuum else 0.0
+                ),
                 **{zone: sanitize_array(spec_a[zone][wslice]) for zone in spec_a},
             },
             f,
@@ -343,8 +348,10 @@ def main(
         yaml.dump(
             {
                 **info,
-                "hyper local continuum": sanitize(hyper_local_a) if fix_continuum else 0.0,
-                **{zone: sanitize_array(spec_a[zone][wslice]) for zone in spec_b},
+                "hyper local continuum": (
+                    sanitize(hyper_local_b) if fix_continuum else 0.0
+                ),
+                **{zone: sanitize_array(spec_b[zone][wslice]) for zone in spec_b},
             },
             f,
             allow_unicode=True,
