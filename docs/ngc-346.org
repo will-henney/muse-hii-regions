@@ -789,6 +789,45 @@ CLOSED: [2021-05-29 Sat 00:16]
 - T = 51.7 kK
 - Mdot = -6.65, so 2.239e-07 Msun/yr, which is very low for a supergiant
 - This is more consistent with the hotter solution, whereas I was using the cooler one
+*** More new papers on the stars
+**** Hawcroft:2024a
+- Analysis of wind parameters in LMC and SMC
+- Finds very tight correlation of V_\infty with effective temperature
+- And slight variation with metallicity
+- W 3 (SSN 9, MPG 355) is not included in their high-quality sample
+  : The temperature coverage in the SMC can be extended by adding equally
+  : high-quality measurements from literature sam- ples compiled in Garcia
+  : et al. (2014), and additional measure- ments from Bouret et al.
+  : (2021). The high temperature coverage is provided by essentially one
+  : star (NGC346 MPG 355) that is included in the ULLYSES sample, but does
+  : not show satu- ration in the C IV λλ1548–1551 and so is not included
+  : in our highest-quality rank sub-sample. However, this star does show
+  : saturation in the N V λλ1239–1243 profile, which is fitted in Bouret
+  : et al. (2021), therefore we chose to include this literature
+  : measurement. Furthermore, the measured terminal wind speeds for this
+  : star in this work and Bouret et al. (2021) agree to within 150 km s−1.
+- So they defer to Bouret:2021h, but I think they must mean Bouret:2013m who measured V_\infty = 2800 km/s
+**** Mang-Roman:2025a
+- Br gamma lines from O stars from JWST NIRSPEC
+  - This should give a sensitive measure of the mass-loss rate
+  - Lower Mdot gives stronger line
+- Very light on analysis and says that all results are tentative
+  - Does not actually determine an Mdot fpr W 3
+- Finds that stellar luminosities from infrared are lower than UV-derived ones
+  - Obtains log L = 5.91 ± 0.05 for W 3, as opposed to 6.12 from Rickard
+**** Marcolino:2022a
+- use CMFGEN to analyze lots of stars and their winds across MW and SMC
+- For W 3 they get
+  - log L = 6.04 +/- 0.10
+  - T_eff = 51.7 kK
+  - R = 13.17 Rsun
+  - log Mdot = -5.89
+  - V_\infty = 2800 km/s
+  - log D = 28.92 +/- 0.05
+- Note that the Mdot is for no clumping, f = 1, otherwise it is rescaled by sqrt(f)
+- They also talk about the bow shock mass-loss rates
+  - But they only use Kobulnicky, not our recalculation
+  - We could probably do a much better job of this by using a sample of H II regions with bow shocks that are visible in gas emission
 *** What to call the stars?
 + My current plan is just to use the Sabbi ID numbers, which are in order of V brightness
   + SIMBAD says:
@@ -928,6 +967,9 @@ CLOSED: [2021-05-29 Sat 00:16]
 + Optically thick out past 100 \AA
   + Must have column of > 1e22 H^0 / cm^2
   + Suggests low dust cross section
++ Recent paper on this object with JWST spectroscopy is Habel:2025a
+  + They call it Y535 based on the catalog of Sewilo:2013a
+  + They claim to detect an outflow in this source, but they might just be seeing the external evaporation
 *** What we need for a paper
 + Spectrum of Raman wings
   + Obviously Ha
