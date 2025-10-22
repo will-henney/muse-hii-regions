@@ -590,6 +590,16 @@ Fri May 10 13:45:43 CST 2024
 - The key to success here was in subtracting the BG zone from both cubes
   - For the ESO cube, this leads to positive line brightnesses every where, which is good!
   - For the PZ cube, this removes the garbage features around an intensity of 20, which effected the weak lines
+- [2025-10-22 Wed 10:17] However, for the strong lines, this seems to give a problem with the stronger lines
+  - From the investigation in [[file:../notebooks/ngc346-bow/ZZ-01-00-line-ratios.py]] we get negative brightness of the [S II] lines
+  - See [[id:285B9452-B210-4D4C-A92B-3CF379B05B32][Look at the [S II] line ratios]]
+*** TODO Fix the BG problem
+:LOGBOOK:
+- State "TODO"       from              [2025-10-22 Wed 11:40] \\
+  This is what I need to work on next
+:END:
+- See [[id:285B9452-B210-4D4C-A92B-3CF379B05B32][Look at the [S II] line ratios]]
+- I need to make sure to eliminate regions with bright emission form the background
 
 *** DONE Script to compare two maps
 CLOSED: [2024-05-21 Tue 13:31]
@@ -652,47 +662,38 @@ python ../../scripts/compare-two-maps.py --line h-i-6562-79 --bcombo E-007 --sub
 
 *** Usage documentation for the comparison script
 #+begin_src sh :dir ../data/n346-bow-lines :results verbatim
-uv run ../../scripts/compare-two-maps.py --help 
+COLUMNS=150 uv run ../../scripts/compare-two-maps.py --help 
 #+end_src
 
 #+RESULTS:
 #+begin_example
-                                                                                
- Usage: compare-two-maps.py [OPTIONS]                                           
-                                                                                
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --acombo                                       TEXT     [default: P-007]     │
-│ --bcombo                                       TEXT     [default: E-007]     │
-│ --line                                         TEXT     [default:            │
-│                                                         h-i-6562-79]         │
-│ --histogram-gamma                              FLOAT    [default: 2.0]       │
-│ --smooth                                       FLOAT    [default: 0.0]       │
-│ --mask-out-stars        --no-mask-out-stars             [default:            │
-│                                                         no-mask-out-stars]   │
-│ --star-mask-thresho…                           FLOAT    [default: 10.0]      │
-│ --star-map-path                                PATH     [default:            │
-│                                                         /Users/will/Dropbox… │
-│ --zones-folder                                 PATH     [default:            │
-│                                                         /Users/will/Dropbox… │
-│ --subtract-bg           --no-subtract-bg                [default:            │
-│                                                         no-subtract-bg]      │
-│ --trim-edges                                   INTEGER  [default: 0]         │
-│ --vsys                                         FLOAT    [default: 171.1]     │
-│ --fix-continuum         --no-fix-continuum              [default:            │
-│                                                         no-fix-continuum]    │
-│ --hyper-local-blue                             INTEGER  [default: 3]         │
-│ --hyper-local-red                              INTEGER  [default: 3]         │
-│ --continuum-zone                               TEXT     [default: I,III,IV]  │
-│ --mark-moments-bow-…    --no-mark-moments-…             [default:            │
-│                                                         mark-moments-bow-sh… │
-│ --mark-moments-nebu…    --no-mark-moments-…             [default:            │
-│                                                         mark-moments-nebula] │
-│ --mark-moments-fila…    --no-mark-moments-…             [default:            │
-│                                                         mark-moments-filame… │
-│ --debug                 --no-debug                      [default: no-debug]  │
-│ --help                                                  Show this message    │
-│                                                         and exit.            │
-╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                                      
+ Usage: compare-two-maps.py [OPTIONS]                                                                                                                 
+                                                                                                                                                      
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --acombo                                                   TEXT     [default: P-007]                                                               │
+│ --bcombo                                                   TEXT     [default: E-007]                                                               │
+│ --line                                                     TEXT     [default: h-i-6562-79]                                                         │
+│ --histogram-gamma                                          FLOAT    [default: 2.0]                                                                 │
+│ --smooth                                                   FLOAT    [default: 0.0]                                                                 │
+│ --mask-out-stars            --no-mask-out-stars                     [default: no-mask-out-stars]                                                   │
+│ --star-mask-threshold                                      FLOAT    [default: 10.0]                                                                │
+│ --star-map-path                                            PATH     [default:                                                                      │
+│                                                                     /Users/will/Dropbox/muse-hii-regions/data/n346-lines/zone-S-bright-map.fits]   │
+│ --zones-folder                                             PATH     [default: /Users/will/Dropbox/muse-hii-regions/data/n346-lines]                │
+│ --subtract-bg               --no-subtract-bg                        [default: no-subtract-bg]                                                      │
+│ --trim-edges                                               INTEGER  [default: 0]                                                                   │
+│ --vsys                                                     FLOAT    [default: 171.1]                                                               │
+│ --fix-continuum             --no-fix-continuum                      [default: no-fix-continuum]                                                    │
+│ --hyper-local-blue                                         INTEGER  [default: 3]                                                                   │
+│ --hyper-local-red                                          INTEGER  [default: 3]                                                                   │
+│ --continuum-zone                                           TEXT     [default: I,III,IV]                                                            │
+│ --mark-moments-bow-shock    --no-mark-moments-bow-shock             [default: mark-moments-bow-shock]                                              │
+│ --mark-moments-nebula       --no-mark-moments-nebula                [default: mark-moments-nebula]                                                 │
+│ --mark-moments-filaments    --no-mark-moments-filaments             [default: mark-moments-filaments]                                              │
+│ --debug                     --no-debug                              [default: no-debug]                                                            │
+│ --help                                                              Show this message and exit.                                                    │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 #+end_example
 

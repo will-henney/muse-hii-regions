@@ -42,6 +42,9 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
   Note that the ~-d~ option has changed to ~--show-changes~
   
 *** Look at the [S II] line ratios
+:PROPERTIES:
+:ID:       285B9452-B210-4D4C-A92B-3CF379B05B32
+:END:
 :LOGBOOK:
 - Note taken on [2025-10-17 Fri 08:59] \\
   Trying to pick up this work where it was abandoned
@@ -49,10 +52,12 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
 - Going through the initial part of the first notebook
   - I loaded the median-subtracted cube and followed the same steps, except that I did not subtract the continuum, since that has already been done
 - These worked better with the full extraction of a wide window than they did with the 3 wave images, which is a bit annoying
-- Except, I suspect that this can be fixed by using the ... what?
+  - [2025-10-22 Wed 11:37] *Solution* I think that this is just a problem with the BG mask. I am including some parts in the S of the nebula that are much brighter in [S II] and this results in an oversubtraction
+    - I need to eliminate those regions somehow, or maybe use a median instead of a mean BG profile
   - [2025-10-17 Fri 09:01] This sentence was never finished, annoyingly
     - Possibly I was going to say that it was using the flux correction from the 3-wave method
     - However, we do not necessarily have time for that now
+- Except, I suspect that this can be fixed by using the ... what?
 
 *** The remaining notebooks
 - It looks like we have the following from July 2024
