@@ -15,3 +15,142 @@ in [[file:../../teresa-pn-ou5/docs/pn-ou5-physics.org]]
 - This should give an estimate of the stellar effective temperature
 - It does depend on the black-body assumption
 - But we can also do it from stellar atmosphere models
+- 
+*** Continuum flux
+- It looks like there is consistency between the Bouret and Sabbi measurements
+  - The SIMBAD values from Bonanos are consistently brighter, but they are probably contaminated by the nebula
+- So we can take V = 13.45, B = 13.20
+- In theory, we want something intermediate, so we can take 13.30
+- The reddening is E(B - V) = 0.040
+  - SMC has R_V = 2.74, so A_V = 0.1096 and E(B-V) = A_B - A_V, so A_B = 0.15
+  - We take the average of 0.13
+  - So de-reddened mag would then be 13.17
+  - *however* for the nebula we assumed A(He II) = 0.34, which is a lot higher
+    - This could be explained if that were to be characteristic of the background nebula, but the star and the bow shock are in the foreground and so suffer less extinction
+    - This comes from an estimate of E(B-V) = 0.097 for the bowshock region of the nebula, which gave A(H beta) = 0.33, so assuming E(B-V) = 0.04 instead would give A(Hb) = 0.136
+    - If we take the average and std of the star and nebula reddening estimates, we would have:
+      - E(B-V) = 0.0685 +/- 0.0285 = 0.0685 (1 +/- 0.4161)
+      - A(Hb) = 0.233 (1 +/- 0.4161)
+      - Reddening flux correction @ H beta = 10**(0.4 0.233 (1 +/- 0.4161)) = 1.24 +/- 0.11
+  - *Final de-reddened magnitude at H beta: 13.1*
+    - The reddening uncertainty does not matter so long as we use the same for the He II line
+- We use the AB magnitude definition from [[id:089874E1-67F5-455B-BC7C-CC0891434EEA][Absolute flux calibration of the stellar magnitudes]]
+  - log f_\nu (ergs s^-1 cm^-2 Hz^-1) = -0.4 AB_\nu - 19.44
+  - At 4686: log \nu = 14.8060184187
+  - log \nu f_\nu = = -0.4 AB_g - 4.6340
+- So our de-reddened log \nu f_\nu = -0.4 13.1 - 4.6340 = -9.874
+  - This is considerably brighter than the CSPN of Ou 5
+  - We can calculate the absolute magnitude as M_\lambda = 13.1 - 18.91 = -5.81
+**** Magnitudes
+- Apparent magnitudes
+  - Bouret:2013m Table 1
+    - V = 13.50
+    - B - V = -0.23
+    - E(B - V) = 0.040
+  - SIMBAD (seems to be from Bonanos:2010a)
+    - V = 12.80 +/- 0.04
+    - B = 12.61 +/- 0.06
+  - Sabbi:2007h (SSN)
+    - V (555w) = 13.454 +/- 0.002
+    - z (814w) = 13.679 +/- 0.003
+- SMC distance modulus
+  - DM = 18.91 ± 0.02
+**** Vizier table from Bonanos+ 2010
+
+| ID | Name |    RAJ2000 |   DEJ2000 |   Umag |   Bmag |   Vmag |   Imag |  VOmag |  IOmag |   Jmag |   Hmag |   Kmag | JImag | HImag | KImag |  [3.6] |  [4.5] | [5.8] | [8.0] | [24] | Ref | CC        |
+|----+------+------------+-----------+--------+--------+--------+--------+--------+--------+--------+--------+--------+-------+-------+-------+--------+--------+-------+-------+------+-----+-----------|
+|  1 | WB3  | 014.753140 | -72.17446 | 11.463 | 12.614 | 12.796 | 13.629 | 13.492 | 13.694 | 13.968 | 14.050 | 14.158 | 14.05 | 14.11 | 14.16 | 14.169 | 14.135 |       |       |      | E10 | O2III(f*) |
+
+**** SED from Bonanos+ 2010
+#+begin_example
+  #\*l [\*mm]	Flux [Jy]	(error)
+       4.49302     0.000399   3.1e-05
+       3.54998     0.000602   3.2e-05
+       2.16379      0.00146     3e-05
+       2.16379      0.00147     6e-05
+       1.64948      0.00238     2e-05
+       1.64948      0.00252     9e-05
+       1.23902      0.00378     3e-05
+       1.23902      0.00408   0.00015
+  # m=-1 put[-1r](0.97,0.03) Assumed relative error = 0.1
+      0.790009      8.32e-3  0.000832
+      0.790009      0.00883   0.00073
+      0.553705      14.6e-3   0.00146
+      0.553705       0.0277     0.001
+      0.444203       0.0384    0.0021
+        0.3531        0.047    0.0026
+#+end_example
+
+*** He II flux
++ We have this from the MUSE observations
++ From the 01-02 notebook we have 2.79e-15 erg/s/cm^2
+  + Although that is using the Balmer decrement extinction of A = 0.34, which is higher than the 0.23 we derive above as a compromise between the star and nebula value
+  + Correcting for that gives 2.79e-15 10**(0.4 (0.23 - 0.34)) = 2.52e-15 erg/s/cm^2
++ This is much less than in Ou 5, where it was 9e-13 erg/s/cm^2
++ Note that this is for only the bright portion of the shell, and it may be affected by underlying stellar absorption in the photosphere of W 3
+
+
+
+*** Covering fraction
+- Earlier calculations are in [[id:4055F9D2-DB08-454E-AB02-93DB439029BE][Covering fraction of the He II shell]]
+- This is the parameter \xi = \Omega / 4\pi in the Harman:1966a theory
+- Assume a spherical cap with opening half-angle \theta
+  - \Omega = 2\pi \int d\mu = 2\pi (1 - cos \theta)
+  - \xi = 0.5 (1 - cos \theta)
+  - I am going to say \theta = 59 +/- 6 deg (see [[id:2BEC10AA-976A-42CF-B18C-59DE9C07938A][Workings for cap geometry]])
+  - \xi = 0.24 +/- 0.04
+
+**** Workings for cap geometry
+:PROPERTIES:
+:ID:       2BEC10AA-976A-42CF-B18C-59DE9C07938A
+:END:
++ Peak in He II is displaced 4 arcsec = 20 pix from star
++ Vertical half-height of cap is about y = 25 +/- 5 pixels
++ And that is shifted in a bit by about 5 +/- 2 pixels
++ So we have (x, y) = 15 +/- 2, 25 +/- 5
++ \theta = arctan((25 +/- 5)/(15 +/- 2)) = 59 +/- 6
++ 
+
+*** Luminosity parameters \Lambda(4686) and \Lambda(star) from Harman:1966
+- Columns F_1 and F_4 are the dimensionless integrals over the BB spectrum given in Table VI of Harman & Seaton (1966)
+  - F_1 is for h\nu > 1 Rydberg
+  - F_4 is for h\nu > 4 Rydberg
+- \Lambda(4686) = 3.64e11 (F(4686) / \xi) (t / F_4(t))
+  - F(4686) = 2.52e-15
+  - \xi =  0.24 +/- 0.04
+    - \nu f_\nu = 10**-9.874
+- \Lambda(star) = 2.59e9 (\nu F_\nu) t^4 (e^{2.96/t} - 1)
+| t = T/1e4 K |       F_1 |       F_4 | \Lambda(4686)           | \Lambda(star)           | Ratio                   | \eta                   |
+|-------------+----------+----------+--------------------+--------------------+-------------------------+---------------------|
+|           3 | 2.088e-1 | 3.508e-7 | 32685.3 +/- 5447.5 | 47.2 +/- 5.4       | 1.4e-3 +/- 2.9e-4       | 3.83e-6 +/- 3.83e-8 |
+|           4 | 4.956e-1 | 3.931e-5 | 388.9 +/- 64.8     | 97.1 +/- 11.2      | 0.25 +/- 0.05           | 1.81e-4 +/- 1.81e-6 |
+|           5 | 7.902e-1 | 6.106e-4 | 31.3 +/- 5.2       | 174.7 +/- 20.1     | 5.58 +/- 1.13           | 0.002 +/- 1.76e-5   |
+|           6 |    1.048 | 3.591e-3 | 6.4 +/- 1.1        | 286.1 +/- 32.9     | 44.70 +/- 9.24          | 0.008 +/- 7.81e-5   |
+|           8 |    1.434 | 2.987e-2 | 1.0 +/- 0.2        | 634.9 +/- 73.1     | 634.90 +/- 146.52       | 0.047 +/- 4.75e-4   |
+|          10 |    1.688 | 9.864e-2 | 0.4 +/- 6e-2       | 1192.5 +/- 137.3   | 2981.25 +/- 563.74      | 0.133 +/- 0.001     |
+|          11 |    1.773 | 1.537e-1 | 0.3 +/- 5e-2       | 1565.0 +/- 180.2   | 5216.67 +/- 1056.76     | 0.198 +/- 0.002     |
+|          12 |    1.857 | 2.088e-1 | 0.2 +/- 4e-2       | 2008.2 +/- 231.2   | 10041.00 +/- 2317.15    | 0.256 +/- 0.003     |
+|          15 |    2.019 | 4.202e-1 | 0.1 +/- 2e-2       | 3823.1 +/- 440.2   | 38231.00 +/- 8822.81    | 0.474 +/- 0.005     |
+|          20 |    2.166 | 7.902e-1 | 1.0e-1 +/- 2e-2    | 8835.2 +/- 1017.2  | 88352.00 +/- 20389.03   | 0.831 +/- 0.008     |
+|          25 |    2.243 |    1.106 | 9e-2 +/- 1e-2      | 16997.1 +/- 1956.9 | 188856.67 +/- 30217.61  | 1.124 +/- 0.011     |
+|          30 |    2.288 |    1.353 | 8e-2 +/- 1e-2      | 29077.5 +/- 3347.7 | 363468.75 +/- 61768.28  | 1.348 +/- 0.013     |
+|          40 |    2.336 |    1.688 | 9e-2 +/- 2e-2      | 68067.4 +/- 7836.6 | 756304.44 +/- 189284.18 | 1.647 +/- 0.016     |
+#+TBLFM: $4=3.64e11 2.52e-15 $1 / (0.24 +/- 0.04) $3;f1::$5=2.590e9 10**(-9.874 +/- 0.05) $1**4 (exp(2.96/$1) - 1) ;f1::$6=$5/$4;f2::$7=(5.89/3.64 0.71) (1 +/- 0.01) $3/$2;f3::@8$2=vmean([@-1, @+1]);f3::@8$3=vmean([@-1, @+1]);s4
+
+*** Derived Zanstra temperature
+| t | log Ratio      | log \Lambda (star) |
+|---+----------------+---------------|
+| 4 | -0.60 +/- 0.09 | 1.99 +/- 0.05 |
+| 5 | 0.75 +/- 0.09  | 2.24 +/- 0.05 |
+|   |                |               |
+- We want the T where the two \Lambda are equal
+- This is clearly between t=4 and 5, but we need to do a finer grid to get more precision
+  - Linear interpolation on log ratio would give 4 + (0.6 / (0.6 + 0.75)) = 4.44 kK
+- But looks like about 45,000 K, which is significantly less than the 50,000 K derived from atmosphere models
+- 
+
+*** Derived luminosity
+
+- This is L / Lsun = (D/kpc)**2 \Lambda = 61.7**2 \Lambda = 3806.89 \Lambda
+- From the linear interpolation, this should be log \Lambda = 1.99 + 0.44 0.25 = 2.1
+- L = 3806.89 10**2.1 = 4.8e5 Lsun
