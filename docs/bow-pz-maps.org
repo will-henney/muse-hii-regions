@@ -277,6 +277,13 @@ python ../scripts/make-all-3wav-maps.py --help
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 #+end_example
+
+
+Repeat for the continua
+
+#+begin_src sh :dir ../data :results verbatim :eval no
+uv run ../scripts/make-all-3wav-maps.py --cube-file n346-PZ-2pass-cont-007.fits
+#+end_src
 ** DONE Spectra of each zone
 CLOSED: [2024-05-21 Tue 13:30]
 :LOGBOOK:
@@ -292,9 +299,16 @@ CLOSED: [2024-05-21 Tue 13:30]
 - It looks like I used a really space-inefficient method for doing the zones spectra: I first make an entire masked cube for each zone, then extract the spectra from that
   - Never mind, I will do the same - disk space is not a problem
   -
-*** DONE Define a background (BG) zone
-CLOSED: [2024-05-10 Fri 13:26]
+*** TODO Define a background (BG) zone
 :LOGBOOK:
+- State "TODO"       from              [2025-10-29 Wed 10:42] \\
+  That did not help much. One last try with an even more restrictive set of conditions
+- State "DONE"       from "TODO"       [2025-10-29 Wed 10:24] \\
+  Now I need to redo the other steps too
+- Note taken on [2025-10-29 Wed 10:04] \\
+  Wrote the new BG mask. Now to see if this improves the sii lines ...
+- State "TODO"       from              [2025-10-29 Wed 09:47] \\
+  Revisiting this since we want to avoid regions in the S where there is low ionization emission from the foreground filament
 - State "DONE"       from "TODO"       [2024-05-10 Fri 13:26] \\
   Decided to go for a border of 10 pixels to avoid the noise around the edges
 :END:
@@ -302,6 +316,8 @@ CLOSED: [2024-05-10 Fri 13:26]
 - Looking at the zone-*-bright-map.fits files, it looks like a combination of two criteria will work:
   - III < -0.1
   - S < 0.2
+  - II < 0.0
+    - [2025-10-29 Wed 09:59] This is the new criterion to avoid the south filament
 - This will select a couple of regions in the north where nothing is happening
 
 
@@ -321,7 +337,7 @@ CLOSED: [2024-05-10 Fri 13:26]
       # and just AND it with the original
       return mask & mask2
 
-  BG_THRESHOLDS = [("III", -0.1), ("S", 0.2)]
+  BG_THRESHOLDS = [("III", -0.1), ("S", 0.2), ("II", 0.0), ("IV", 0.1)]
 
 
   def main(
@@ -355,14 +371,16 @@ CLOSED: [2024-05-10 Fri 13:26]
   #+RESULTS:
 
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
-  python ../../scripts/make-bg-zone-mask.py --trim-border 10
+  uv run ../../scripts/make-bg-zone-mask.py --trim-border 10
 #+end_src
 
 #+RESULTS:
 : Saved mask to zone-BG-mask.fits
 *** DONE Generate the masked cube for the BG zone
-CLOSED: [2024-05-10 Fri 13:35]
+CLOSED: [2025-10-29 Wed 10:29]
 :LOGBOOK:
+- State "TODO"       from              [2025-10-29 Wed 10:25] \\
+  Redoing with the new BG
 - State "DONE"       from "TODO"       [2024-05-10 Fri 13:35] \\
   Done for 3 PZ windows and one ESO window
 :END:
@@ -370,7 +388,7 @@ CLOSED: [2024-05-10 Fri 13:35]
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
   z=BG
   time for w in 007 011 101; do
-      python ../../scripts/make-masked-cube.py \
+      uv run ../../scripts/make-masked-cube.py \
        ../../big-data/ngc346new/n346-PZ-2pass-csub-$w.fits \
        zone-$z-mask.fits \
        zone-$z
@@ -380,21 +398,32 @@ CLOSED: [2024-05-10 Fri 13:35]
 #+end_src
 
 #+RESULTS:
-: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
-: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
-: WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
-: 
-: real	1m6.621s
-: user	0m31.011s
-: sys	0m20.328s
-: Last run:
-: Fri May 10 13:30:22 CST 2024
+#+begin_example
+/Users/will/Dropbox/muse-hii-regions/.venv/lib/python3.14/site-packages/mpdaf/version.py:34: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import get_distribution, DistributionNotFound
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+/Users/will/Dropbox/muse-hii-regions/.venv/lib/python3.14/site-packages/mpdaf/version.py:34: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import get_distribution, DistributionNotFound
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+/Users/will/Dropbox/muse-hii-regions/.venv/lib/python3.14/site-packages/mpdaf/version.py:34: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import get_distribution, DistributionNotFound
+WARNING: UnitsWarning: '1e-20 erg/s/cm  2/Angstrom' contains multiple slashes, which is discouraged by the FITS standard [astropy.units.format.generic]
+WARNING: MpdafUnitsWarning: No physical unit in the FITS header: missing BUNIT keyword. [mpdaf.obj.data]
+
+real	0m17.357s
+user	0m6.354s
+sys	0m5.063s
+Last run:
+Wed Oct 29 10:50:38 CST 2025
+#+end_example
 
 Repeat for the ESO cube
 #+begin_src sh :results output verbatim :dir ../data/n346-lines
   z=BG
   time for w in 007; do
-      python ../../scripts/make-masked-cube.py \
+      uv run ../../scripts/make-masked-cube.py \
        ../../big-data/ngc346new/n346-muse-2pass-csub-$w.fits \
        zone-$z-mask.fits \
        zone-$z
@@ -405,7 +434,7 @@ Repeat for the ESO cube
 
 #+RESULTS:
 : Last run:
-: Fri May 10 13:44:59 CST 2024
+: Wed Oct 29 10:51:04 CST 2025
 
 *** DONE Generate the masked cubes for each zone
 CLOSED: [2024-05-09 Thu 11:39]
@@ -483,8 +512,10 @@ Somehow I forgot the Zone 0 case
 : Thu May  9 11:56:20 CST 2024
 
 *** DONE Extract the spectra from each zone
-CLOSED: [2024-05-09 Thu 13:06]
+CLOSED: [2025-10-29 Wed 10:33]
 :LOGBOOK:
+- State "TODO"       from              [2025-10-29 Wed 10:30] \\
+  Extract the BG spectrum again now that we have changed the mask
 - State "DONE"       from "TODO"       [2024-05-09 Thu 13:06] \\
   Finished the version with mean and without any chopping off for all the PZ windows and the 007 ESO window
 :END:
@@ -516,18 +547,18 @@ Also done for the 011 and 101 windows. And for the ESO cube with 007 window
 Repeat for the new BG zone
 
 #+header: :prologue "exec 2>&1" :epilogue ":"
-#+begin_src sh :results output verbatim :dir ../data/n346-bow-lines
+#+begin_src bash :results output verbatim :dir ../data/n346-bow-lines
   z=BG
-  time python ../../scripts/extract-zone-spectrum.py \
+  time uv run ../../scripts/extract-zone-spectrum.py \
          ../../big-data/ngc346new/n346-PZ-2pass-csub-007-zone-$z.fits \
          zone-$z-P-007-mean
-  time python ../../scripts/extract-zone-spectrum.py \
+  time uv run ../../scripts/extract-zone-spectrum.py \
          ../../big-data/ngc346new/n346-PZ-2pass-csub-011-zone-$z.fits \
          zone-$z-P-011-mean
-  time python ../../scripts/extract-zone-spectrum.py \
+  time uv run ../../scripts/extract-zone-spectrum.py \
          ../../big-data/ngc346new/n346-PZ-2pass-csub-101-zone-$z.fits \
          zone-$z-P-101-mean
-  time python ../../scripts/extract-zone-spectrum.py \
+  time uv run ../../scripts/extract-zone-spectrum.py \
          ../../big-data/ngc346new/n346-muse-2pass-csub-007-zone-$z.fits \
          zone-$z-E-007-mean
   echo "Last run:"
@@ -539,25 +570,27 @@ Repeat for the new BG zone
 /Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
   spec = reduction_method(
 
-real	0m4.090s
-user	0m3.313s
-sys	0m1.645s
+real	0m1.005s
+user	0m0.618s
+sys	0m0.377s
 /Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
-  spec = reduction_method
+  spec = reduction_method(
 
-real	0m4.043s
-user	0m3.340s
-sys	0m1.603s
+real	0m1.003s
+user	0m0.605s
+sys	0m0.381s
 
-real	0m4.047s
-user	0m3.318s
-sys	0m1.601s
+real	0m0.996s
+user	0m0.605s
+sys	0m0.382s
+/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/../../scripts/extract-zone-spectrum.py:14: RuntimeWarning: Mean of empty slice
+  spec = reduction_method(
 
-real	0m4.100s
-user	0m3.355s
-sys	0m1.612s
+real	0m1.010s
+user	0m0.613s
+sys	0m0.379s
 Last run:
-Fri May 10 13:45:43 CST 2024
+Wed Oct 29 10:51:37 CST 2025
 #+end_example
 
 ** Initial impressions of the PZ maps
@@ -593,13 +626,19 @@ Fri May 10 13:45:43 CST 2024
 - [2025-10-22 Wed 10:17] However, for the strong lines, this seems to give a problem with the stronger lines
   - From the investigation in [[file:../notebooks/ngc346-bow/ZZ-01-00-line-ratios.py]] we get negative brightness of the [S II] lines
   - See [[id:285B9452-B210-4D4C-A92B-3CF379B05B32][Look at the [S II] line ratios]]
-*** TODO Fix the BG problem
+*** TODO [2/3] Fix the BG problem
 :LOGBOOK:
 - State "TODO"       from              [2025-10-22 Wed 11:40] \\
   This is what I need to work on next
 :END:
 - See [[id:285B9452-B210-4D4C-A92B-3CF379B05B32][Look at the [S II] line ratios]]
 - I need to make sure to eliminate regions with bright emission form the background
+- [X] I have added a condition on the II zone brightness so we make sure to avoid the south filament
+- [X] I have regenerated the background zone spectra
+- [ ] Check that this makes a difference to the sii maps
+  - [ ] Re-run the compare script
+  - [ ] 
+  - [ ] 
 
 *** DONE Script to compare two maps
 CLOSED: [2024-05-21 Tue 13:31]
@@ -1002,7 +1041,11 @@ python ../../scripts/compare-two-maps.py --line uil-9029-20 --bcombo P-101 --smo
 #+RESULTS:
 [[file:/Users/will/Dropbox/muse-hii-regions/data/n346-bow-lines/figs-compare/P-007-P-101-o-iii-4958-91.pdf]]
 
-**** Low ionization forbidden lines
+**** TODO Low ionization forbidden lines
+:LOGBOOK:
+- Note taken on [2025-10-29 Wed 10:07] \\
+  Redoing these after changing the BG
+:END:
 - [X] For some reason [N II] 5755 is missing and so is [O I] 6363
   - /found them/ they are in the `n346-bow-lines` directory
 

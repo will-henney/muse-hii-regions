@@ -13,7 +13,7 @@ def trim_pixel_border_from_mask(mask: np.ndarray, border: int) -> np.ndarray:
     # and just AND it with the original
     return mask & mask2
 
-BG_THRESHOLDS = [("III", -0.1), ("S", 0.2)]
+BG_THRESHOLDS = [("III", -0.1), ("S", 0.2), ("II", 0.0), ("IV", 0.1)]
 
 
 def main(
