@@ -65,6 +65,25 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
   - [[file:../notebooks/ngc346-bow/ZZ-01-01-more-line-ratios.ipynb]]
 - These are re-running the analysis of line ratios using the Peter cubes and (I think) the 3-wave results
 - The results for the [Ar IV] density and temperature seem worse than for the original ESO cubes, in the sense that the 4711/4740 ratio is outside the allowed range
-  - [ ] I do not know if this is due to the missing flux correction or what
+  - [X] I do not know if this is due to the missing flux correction or what
 - We do not seem to have an equivalent of the [[viewnb:01-02-yet-more-line-ratios.py]] notebook in either the PZ or the ZZ series
-  - [ ] Is this important?
+  - [X] Is this important?
+  - [ ] We are now getting better results, but I have a few issues to iron out
+
+**** TODO Splitting up the ZZ-01-01-more-line-ratios notebook
+:LOGBOOK:
+- State "TODO"       from              [2025-10-31 Fri 19:54] \\
+  I have been working on this all day - things were going well to start with, up until I tried to rerun the notebook from the beginning!
+:END:
+- I am working on the ariv line ratios and it is sort of working
+- But I am having order of execution problems with the masks used by mpdaf
+- So I am ng to split up the notebook into smaller parts, to make it more manageable
+
+***** First convert to pure python versions
+
+
+***** Then do the splitting
+
+***** Then convert back to ipython notebooks
+
+***** And work on the smaller notebooks

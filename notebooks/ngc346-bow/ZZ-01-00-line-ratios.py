@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.18.1
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -16,7 +16,7 @@
 
 # # Look at different emission lines and calculate some ratios
 
-# First we load up the data as in the `01-extract-subregions` notebook, except that we now use the Peter Zeidler cube (change to test emacs):
+# First we load up the data as in the `01-extract-subregions` notebook, except that we now use the Peter Zeidler cube:
 
 from pathlib import Path
 import numpy as np
@@ -50,9 +50,13 @@ sns.despine()
 # No need to find continuum since it is already subtracted
 
 # +
-im_sii16_bgsub = (cube.select_lambda(6715.0, 6725.0)).sum(axis=0)
+im_sii16_bgsub = (cube.select_lambda(6715.0, 6725.0)).sum(
+    axis=0
+)
 
-im_sii31_bgsub = (cube.select_lambda(6730.0, 6740.0)).sum(axis=0)
+im_sii31_bgsub = (cube.select_lambda(6730.0, 6740.0)).sum(
+    axis=0
+)
 # -
 
 fig = plt.figure(figsize=(10, 10))
@@ -105,7 +109,7 @@ g.fig.suptitle("Correlation between 6716 and 6731 brightness")
 # I am plotting a corner plot with the histograms of the two brightnesses plus the joint correlation.  We can see that the relation is closely linear at low brightness, and seems headed for the origin, which is a good sign.
 
 max_bright = 3000.0
-m = np.hypot(im_sii31_bgsub.data, im_sii16_bgsub.data) < max_bright
+m = np.hypot(im_sii31_bgsub.data, im_sii16_bgsub.data) <  max_bright
 m = m & ~im_ha.mask
 df = pd.DataFrame(
     {
@@ -257,14 +261,14 @@ ax.set(
 
 # Finally, we calculate the cumulative distribution of the ratios for four different brightness classes.
 #
-# For the faintest partition (blue line), the noise is dominant, which is why the distribution is broad and encroaches slightly into the forbidden region ($R > 1.45$ – the low-density and high-density limits are shown by vertical dashed lines). Less than was the case for the ESO cube however,
-# and the median value is a fair bit less than 1.45.
+# For the faintest partition (blue line), the noise is dominant, which is why the distribution is broad and encroaches slightly into the forbidden region ($R > 1.45$ – the low-density and high-density limits are shown by vertical dashed lines). Less than was the case for the ESO cube however, 
+# and the median value is a fair bit less than 1.45. 
 #
-# As we pass to the brighter and brighter partitions (orange, green, red lines), then the CDF
+# As we pass to the brighter and brighter partitions (orange, green, red lines), then the CDF 
 # first becomes steeper, but without the median changing. This is a suign that the noise is decreasing, but the density not necessarily increasing. But then for > 8000, we do get the median point moving to the left, indicating higher densities.
 #
 # For the brightest partition (red line), the median value is about 1.2, which corresponds to a density of about 2
-# 300 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 50 pcc.
+# 300 pcc. The orange line, on the other hand has a median of about 1.4, which is a density of about 50 pcc. 
 #
 # It will be interesting to compare the distribution of $n$ with the distribution of brightness.
 
@@ -272,7 +276,7 @@ import pyneb as pn
 
 s2 = pn.Atom("S", 2)
 
-s2.getTemDen([0.8, 1.2, 1.35, 1.4], tem=10000, wave1=6716, wave2=6731)
+s2.getTemDen([0.8, 1.2, 1.35, 1.4 ], tem=10000, wave1=6716, wave2=6731)
 
 # So brightest pixels have density more than 1000, but this is a small proportion of the total map (probably the mYSO)
 
@@ -282,16 +286,32 @@ s2.getTemDen([0.8, 1.2, 1.35, 1.4], tem=10000, wave1=6716, wave2=6731)
 
 from astropy.io import fits
 
-mapspath = Path.cwd().parent.parent / "data/n346-bow-lines/refined"
+ROOT = Path.cwd().parent.parent
 
-hdulist_sii16 = fits.open(mapspath / "map-s-ii-6716-44-P-007.fits")
-hdulist_sii31 = fits.open(mapspath / "map-s-ii-6730-816-P-007.fits")
+mapspath = ROOT / "data/n346-bow-lines/refined"
 
 
-hdulist_sii16.info()
+# +
+def get_image(lineid, combo="P-007", ext="SUM"):
+    im = Image(str(mapspath / f"map-{lineid}-{combo}.fits"), ext=ext)
+    im.data = im.data.astype(float)
+    return im
 
-im_sii16_map = Image(str(mapspath / "map-s-ii-6716-44-P-007.fits"), ext="SUM")
-im_sii31_map = Image(str(mapspath / "map-s-ii-6730-816-P-007.fits"), ext="SUM")
+def get_image_raw(lineid, variant="csub"):
+    p = ROOT / "data" / "n346-bow-lines" / f"maps-n346-PZ-2pass-{variant}-007"
+    candidates = list(p.glob(f"**/*-{lineid}-ABC.fits"))
+    assert candidates
+    imfile = candidates[0]
+    im = Image(str(imfile))
+    im.data = im.data.astype(float)
+    return im
+   
+
+
+# -
+
+im_sii16_map = get_image_raw("s-ii-6716-44")
+im_sii31_map = get_image_raw("s-ii-6730-816")
 
 fig = plt.figure(figsize=(10, 10))
 (im_sii16_map / im_sii31_map).plot(
@@ -323,7 +343,7 @@ fig.axes[0].set_title(
     fontsize="large",
 )
 
-# So these are unfortunately worse due to the background subtraction. The lines go negative in the faint parts, which is not good, especially if we want to take ratios.
+# So these are unfortunately worse due to the background subtraction. The lines go negative in the faint parts, which is not good, especially if we want to take ratios. 
 
 # +
 max_bright = 1e6
@@ -353,6 +373,29 @@ g.axes[1, 0].axhline(0.45, ls=":", color="r")
 g.fig.suptitle("[S II] 6716/6731 ratio versus summed brightness from maps")
 # -
 
+max_bright = 3000.0
+m = np.hypot(im_sii31_map.data, im_sii16_map.data) <  max_bright
+m = m & ~im_ha.mask
+df = pd.DataFrame(
+    {
+        "6716": im_sii16_map.data[m] + 0,
+        "6731": im_sii31_map.data[m] + (0 / 1.45) + 0,
+    }
+)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, max_bright], [0, max_bright / 1.45], "--", color="r")
+g.fig.suptitle("Map-derived 6716 and 6731 brightnesses")
+
+
+
+
 
 # ## [N II] lines
 #
@@ -361,13 +404,14 @@ g.fig.suptitle("[S II] 6716/6731 ratio versus summed brightness from maps")
 #
 #
 
-im_6548_bgsub = (cube.select_lambda(6545.0, 6555.0)).sum(axis=0)
-im_6583_bgsub = (cube.select_lambda(6580.0, 6590.0)).sum(axis=0)
+im_6548_map = get_image_raw("n-ii-6548-05")
+im_6583_map = get_image_raw("n-ii-6583-45")
+im_5755_map = get_image_raw("n-ii-5755-08")
 
 # Simplify previous treatment: no need to subtract the background
 
 fig = plt.figure(figsize=(10, 10))
-(im_6583_bgsub + im_6548_bgsub).plot(
+(im_6583_map + im_6548_map).plot(
     vmin=0.0,
     vmax=10000.0,
     use_wcs=True,
@@ -383,15 +427,30 @@ fig.axes[0].set_title(
 
 # So, apart for some stars, the intensity stays positive, which is good
 
+fig = plt.figure(figsize=(10, 10))
+((im_5755_map - 15) / (im_6583_map + im_6548_map)).plot(
+    vmin=0.0,
+    vmax=0.1,
+    use_wcs=True,
+    cmap="magma",
+    scale="sqrt",
+    colorbar="v",
+)
+fig.axes[0].set_title(
+    label="[N II] 5755 / (6548 + 6583) ratio",
+    pad=25,
+    fontsize="large",
+)
+
 # +
 bright_max = 1500.0
-nii_sum = 3 * im_6548_bgsub.data + im_6583_bgsub.data
+nii_sum = 3 * im_6548_map.data + im_6583_map.data
 m = (nii_sum < 4 * bright_max) & (nii_sum > 0)
 m = m & ~im_ha.mask
 df = pd.DataFrame(
     {
-        "6548": im_6548_bgsub.data[m],
-        "6583": im_6583_bgsub.data[m],
+        "6548": im_6548_map.data[m],
+        "6583": im_6583_map.data[m],
     }
 )
 
@@ -405,6 +464,35 @@ g.axes[1, 0].axvline(0.0, color="r")
 g.axes[1, 0].axhline(0.0, color="r")
 g.axes[1, 0].plot([0, bright_max], [0, bright_max * 3], "--", color="r")
 g.fig.suptitle("Correlation between 6548 and 6583 brightness")
+
+# +
+bright_max = 3500.0
+r5755 = 0.02
+offset_5755 = 15
+
+nii_sum = 3 * im_6548_map.data + im_6583_map.data
+m = (nii_sum < 4 * bright_max) & (nii_sum > 0)
+# m = m & (im_5755_map.data > 0)
+m = m & ~im_ha.mask
+df = pd.DataFrame(
+    {
+        "6583": im_6583_map.data[m],
+        "5755": im_5755_map.data[m] - offset_5755,
+    }
+)
+
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+)
+g.axes[1, 0].axvline(0.0, color="r")
+g.axes[1, 0].axhline(0.0, color="r")
+g.axes[1, 0].plot([0, bright_max], [0, bright_max * r5755], "--", color="r")
+g.axes[1, 0].set(xlim=[0, bright_max], ylim=[-r5755 * bright_max, 4 * r5755 * bright_max])
+
+g.fig.suptitle("Correlation between 5755 and 6583 brightness")
 # -
 
 # So this is fine. No need to do the tedious corrrections that we did before.
@@ -435,10 +523,10 @@ ax.set(
 )
 sns.despine()
 
-# im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
+#im_c6312 = cube.select_lambda(6320.0, 6340.0).mean(axis=0)
 im_c2 = cube.select_lambda(9065.0, 9070.0).mean(axis=0)
 im_c3 = cube.select_lambda(9080.0, 9085.0).mean(axis=0)
-# im_c9069 = (im_c3 + im_c2) / 2.0
+#im_c9069 = (im_c3 + im_c2) / 2.0
 
 im_siii6312_bgsub = (cube.select_lambda(6310.0, 6320.0)).sum(axis=0)
 im_siii9069_bgsub = (cube.select_lambda(9070.0, 9080.0)).sum(axis=0)
@@ -487,3 +575,5 @@ ax.set(
 )
 
 # This is much better than before too. The ratio gets high in the high-ionization places we expect it to get high, not just in random faint patches.
+
+
