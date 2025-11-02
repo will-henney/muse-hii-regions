@@ -266,10 +266,10 @@ g = sns.pairplot(
 
 s3 = pn.Atom("S", 3)
 
-s3.getTemDen([0.1, 0.2], den=100.0, wave1=6300, wave2=9069)
+s3.getTemDen([0.1, 0.2], den=100.0, wave1=6312, wave2=9069)
 
 r_s3_grid = np.linspace(0.05, 0.25, 201)
-T_s3_grid = s3.getTemDen(r_s3_grid, den=100.0, wave1=6300, wave2=9069)
+T_s3_grid = s3.getTemDen(r_s3_grid, den=100.0, wave1=6312, wave2=9069)
 
 imT_siii = im6312c.clone(data_init=np.empty)
 imT_siii.data[~fixmask] = np.interp(
@@ -283,18 +283,48 @@ imT_siii.data[~fixmask] = np.interp(
 # imT_siii.data[imT_siii.mask] = np.nan
 
 fig, ax = plt.subplots(figsize=(12, 12))
-imT_siii.rebin(2).plot(colorbar="v", cmap="hot", vmin=12000, vmax=16000)
+imT_siii.rebin(4).plot(colorbar="v", cmap="hot", vmin=12000, vmax=16000)
 
 badpix = ~np.isfinite(imT_siii.data)
 imT_siii.mask = imT_siii.mask | badpix
 
 imT_siii.write(str(ROOT / "data/ngc346-ZZ-T-siii.fits"), savemask="nan")
 
-# The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there.
+# The rather disappointing conclusion of this is that the [S III] temperatures do vary from about 13 to 16 kK, but they don't show anything special at the bow shock, being about 13.7 +/- 0.4 kK there. **Now slightly lower: see below**
 #
 # If anything, the T is lower in the bow shock.
 #
 # Average over whole FOV is 14.2 +/- 0.8 kK after smoothing to eliminate the noise contribution.  This implies $t^2 = 0.003$ in plane of sky, which is small.
+
+# #### Average over the bow shock box
+
+xslice, yslice = slice(230, 300), slice(144, 245)
+def get_bow_T(n):
+    imT_siii_bow = imT_siii[yslice, xslice].rebin(n)
+    T_siii_bow = imT_siii_bow.data[~imT_siii_bow.mask]
+    return T_siii_bow
+xmin, xmax = 11500, 15000
+binnings = [1, 2, 4, 8]
+Tdict = {_n: get_bow_T(_n) for _n in binnings}
+g = sns.histplot(
+    Tdict, 
+    bins=40, 
+    binrange=[xmin, xmax], 
+    stat="proportion", 
+    common_norm=False, 
+    multiple="layer",
+    hue_order=binnings[::-1],
+    element="poly",
+).set_xlabel("$T$([S III])")
+sns.despine()
+
+[len(_) for _ in Tdict.values()]
+
+for _n, _T in Tdict.items():
+    print(f"{_n}: {np.mean(_T)/1000:.2f} +/- {np.std(_T)/1000:.2f}")
+
+
+# So it looks like the 1 and 2 binnings are dominated by noise, while the 4 binning is showing real structure.  So, we can take the $T = 13.19 \pm 0.19$ kK.
 
 # ## Calculate [O III]/[S III]
 

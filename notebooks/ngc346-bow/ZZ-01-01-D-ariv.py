@@ -659,7 +659,7 @@ ariv.getTemDen([1.1, 1.25, 1.35, 1.38], tem=15000, wave1=4711, wave2=4740)
 
 dens = [10, 50, 100, 200, 400]
 tems = [10000, 15000, 20000]
-ariv_lines = [4711, 4740, 4741, 7171, 7237, 7263]
+ariv_lines = [4711, 4740, 7171, 7237, 7263]
 e_ariv = {_wave: ariv.getEmissivity(tems, dens, wave=_wave) for _wave in ariv_lines}
 
 e_ariv[4711] / e_ariv[4740]
@@ -671,6 +671,28 @@ e_ariv[7263] / e_ariv[7171]
 e_ariv[7237] / e_ariv[7171]
 
 ariv.getSources()
+
+
+# +
+def ariv_R1(T, d):
+    top = ariv.getEmissivity(T, d, wave=4711)
+    bottom = ariv.getEmissivity(T, d, wave=4740)
+    return top / bottom
+
+def ariv_R234(T, d):
+    top = ariv.getEmissivity(T, d, wave=7171)
+    top += ariv.getEmissivity(T, d, wave=7237)
+    top += ariv.getEmissivity(T, d, wave=7263) 
+    bottom = ariv.getEmissivity(T, d, wave=4711)
+    bottom += ariv.getEmissivity(T, d, wave=4740)
+    return top / bottom
+
+
+# -
+
+ariv_R1(tems, dens)
+
+ariv_R234(tems, dens)
 
 # ### Now for the T diagnostics
 
@@ -799,6 +821,49 @@ for ax in g.axes.flat:
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and each 7XXX line")
 
 
+df.describe()
+
+df.corr()
+
+# #### Individual temperature estimates
+#
+# We use the mean values from the dataframe, assigning a fraction $(1 - r^2)$ of the total variance to the variance in the ratio, where $r$ is the correlation coefficient. 
+#
+# **Note that these do not have the weighting applied** But that is OK, since we decided to go with the unweighted stats in the next section on joint T-n stats too. The justification is the errors are mainly systematic.
+
+# First 7171
+
+sig = 2.3 * np.sqrt(1 - 0.81532**2)
+T_7171 = ariv.getTemDen(
+    (4.99 + np.array([-sig, 0.0, sig])) / 334.7, 
+    den=200, 
+    to_eval="L(7171) / (L(4711) + L(4740))"
+)
+T_7171 = np.round(T_7171 / 1000, 1)
+T_7171
+
+# Next 7237
+
+sig = 1.989 * np.sqrt(1 - 0.724**2)
+T_7237 = ariv.getTemDen(
+    (3.48 + np.array([-sig, 0.0, sig])) / 334.7, 
+    den=200, 
+    to_eval="L(7237) / (L(4711) + L(4740))",
+)
+T_7237 = np.round(T_7237 / 1000, 1)
+T_7237
+
+# Finally 7263
+
+sig = 1.545 * np.sqrt(1 - 0.825**2)
+T_7263 = ariv.getTemDen(
+    (4.64 + np.array([-sig, 0.0, sig])) / 334.7, 
+    den=200, 
+    to_eval="L(7263) / (L(4711) + L(4740))",
+)
+T_7263 = np.round(T_7263 / 1000, 1)
+T_7263
+
 # #### Individual lines with no mask
 
 n = 16
@@ -872,6 +937,10 @@ for ax in g.axes.flat:
         else:
             ax.set_ylim(ymin, ymax)
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and each 7XXX line")
+
+
+
+
 
 
 # ### Now make the joint density-temperature plot
@@ -1054,7 +1123,6 @@ g = sns.pairplot(
     height=4,
     corner=True,
     plot_kws=dict(
-        # weights=z[m],
         c=df["sum"],
         cmap="Blues",
         s=200,
@@ -1097,30 +1165,123 @@ g.fig.savefig(ROOT / "figs/ngc346-ZZ-bow-shock-ariv-diagnostics-R1-R3.pdf")
 text
 # -
 
-g = sns.displot(
-    df,
-    x=_vars[0],
-    y=_vars[1],
-    kind="hist",
-    height=4,
-    # corner=True,
-    # plot_kws=dict(
-    #     # weights=z[m],
-    #     c=df["sum"],
-    #     cmap="Blues",
-    #     s=200,
-    #     vmin=w_low_cutoff,
-    # ),
-    # diag_kws=dict(
-    #     weights=w[m],
-    #     bins=8,
-    #     #    bins=128//n,
-    # ),
-)
+df.columns
 
+# ### Single-panel version for the paper
 
 # +
-# sns.displot?
+n = 16
+xslice, yslice = slice(230, 300), slice(144, 245)
+
+xmin, xmax = 0, 0.1
+ymin, ymax = 1.15, 1.51
+
+_im = im_ariv_sum.copy()
+_im.data = np.where(
+    # narrow_mask,
+    # broad_mask,
+    False,
+    np.nan,
+    _im.data,
+)
+
+w = _im[yslice, xslice].rebin(n).data
+x = im7xxx[yslice, xslice].rebin(n).data / w
+y = im4711r[yslice, xslice].rebin(n).data / im4740r[yslice, xslice].rebin(n).data
+# m = w > w_mid_cutoff  #
+m = m & (x > xmin) & (x < xmax)
+m = m & (y > ymin) & (y < ymax)
+
+df = pd.DataFrame(
+    {
+        "(7171 + 7237 + 7263) / (4711 + 4740)": x[m],
+        "4711 / 4740": y[m],
+        "sum": w[m],
+    }
+).sort_values(by="sum")
+
+mean_R1 = np.average(y[m], weights=w[m])
+mean_R234 = np.average(x[m], weights=w[m])
+
+var_R1 = np.average((y[m] - mean_R1) ** 2, weights=w[m])
+var_R234 = np.average((x[m] - mean_R234) ** 2, weights=w[m])
+
+sig_R1 = np.sqrt(var_R1)
+sig_R234 = np.sqrt(var_R234)
+
+text = f"R1 = {mean_R1:.3f} +/- {sig_R1:.3f}"
+text += f", R2 + R3 + R4 = {mean_R234:.3f} +/- {sig_R234:.3f}"
+
+text += f"\nNumber of big pixels: {np.sum(m)}"
+text += f", each with {n**2} original pixels"
+
+g = sns.histplot(
+    df,
+    x=df.columns[0],
+    y=df.columns[1],
+    bins=9,
+    binrange=[[xmin, xmax], [ymin, ymax]],
+    # weights="sum",
+    cbar=True,
+    cbar_kws=dict(label="Proportion"),
+    stat="proportion",
+    cmap="Blues",
+    # thresh=0.15,
+)
+g.plot(rr234, rr1, color="k")
+g.plot(_rr234, _rr1, color="k")
+confidence_ellipse(
+    x[m],
+    y[m],
+    np.ones_like(w[m]), 
+    # w[m],
+    g,
+    n_std=1,
+    edgecolor="red",
+    linewidth=2,
+)
+g.scatter(
+    mean_R234,
+    mean_R1,
+    c="r",
+    marker="+",
+    s=400,
+    linewidth=3,
+)
+g.set_xticks(0.02 * np.arange(5))
+g.set_title("[Ar IV] diagnostic ratios")
+sns.despine()
+plt.gcf().savefig(
+    ROOT / "figs/ngc346-ZZ-bow-shock-ariv-diagnostics-R1-R234.pdf",
+    bbox_inches="tight",
+)
+print(text)
+# -
+
+5/18
+
+# #### Calculate the limits on density and temperature
+
+T_R234 = ariv.getTemDen(
+    (mean_R234 + np.array([-sig_R234, 0.0, sig_R234])), 
+    den=180, 
+    to_eval="(L(7171) + L(7237) + L(7263)) / (L(4711) + L(4740))",
+)
+T_R234 = np.round(T_R234 / 1000, 1)
+T_R234
+
+T_7171, T_7237, T_7263
+
+den_R1 = ariv.getTemDen(
+    (mean_R1 + np.array([-sig_R1, 0.0, sig_R1])), 
+    tem=13900,
+    to_eval="L(4711) / L(4740)",
+)
+den_R1
+
+# So we get $T = 13.9 \pm 1.0$ kK and $n = 190^{+400}_{-190}$ pcc
+
+
 
 # +
 n = 8
@@ -1141,7 +1302,7 @@ yy = im7171r[yslice, xslice].rebin(n) / ww
 # xx.mask?
 
 # +
-n = 8
+n = 16
 xslice, yslice = slice(230, 300), slice(144, 245)
 w_low_cutoff = 250
 w_mid_cutoff = 350  # 375
@@ -1154,7 +1315,7 @@ zz = im4711r[yslice, xslice].rebin(n) / im4740r[yslice, xslice].rebin(n)
 mm = ww.data > w_low_cutoff  # & (ww.data < wmax)
 # mm = mm & (xy.data > xymin) & (xy.data < xymax)
 # mm = mm & (zz.data > zzmin) & (zz.data < zzmax)
-ww.mask = ww.mask | ~mm | (ww.data < w_mid_cutoff)
+ww.mask = ww.mask #| ~mm | (ww.data < w_mid_cutoff)
 xx.mask = ww.mask
 zz.mask = ww.mask
 fig, axes = plt.subplots(1, 3, sharey=True, figsize=(12, 5))
@@ -1163,3 +1324,6 @@ zz.plot(ax=axes[1], colorbar="v", vmin=zzmin, vmax=zzmax, cmap=cmr.amber)
 xx.plot(ax=axes[2], colorbar="v", vmin=xxmin, vmax=xxmax, cmap=cmr.ember)
 fig.tight_layout()
 fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics-maps.pdf")
+# -
+
+        
