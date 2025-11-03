@@ -70,20 +70,33 @@ This is a continuation of the work done in [[file:bow-pz-maps.org]], which made 
   - [X] Is this important?
   - [ ] We are now getting better results, but I have a few issues to iron out
 
-**** TODO Splitting up the ZZ-01-01-more-line-ratios notebook
+**** DONE Splitting up the ZZ-01-01-more-line-ratios notebook
+CLOSED: [2025-11-01 Sat 22:04]
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-11-01 Sat 22:04] \\
+  This was very successful. Now I am going to apply it to the remaining notebook
 - State "TODO"       from              [2025-10-31 Fri 19:54] \\
   I have been working on this all day - things were going well to start with, up until I tried to rerun the notebook from the beginning!
 :END:
 - I am working on the ariv line ratios and it is sort of working
 - But I am having order of execution problems with the masks used by mpdaf
-- So I am ng to split up the notebook into smaller parts, to make it more manageable
+- So I am going to split up the notebook into smaller parts, to make it more manageable
+  - First convert to pure python versions
+  - Then do the splitting
+  - Then convert back to ipython notebooks
+  - And work on the smaller notebooks
+- So I now have four smaller notebooks
+  #+begin_src sh :dir ../notebooks/ngc346-bow :results verbatim
+    ls ZZ-01-01-[ABCD]*.py
+  #+end_src
 
-***** First convert to pure python versions
+  #+RESULTS:
+  : ZZ-01-01-A-Reddening.py
+  : ZZ-01-01-B-siii-te.py
+  : ZZ-01-01-C-he-i-he-ii.py
+  : ZZ-01-01-D-ariv.py
 
-
-***** Then do the splitting
-
-***** Then convert back to ipython notebooks
-
-***** And work on the smaller notebooks
+**** TODO Onto the next 01-02 notebook as the ZZ-01-02 series
+- Copy over the python version
+- Split it up in Emacs using the 01-01-ABCD notebooks as guides
+- Put the common functions in a utils library

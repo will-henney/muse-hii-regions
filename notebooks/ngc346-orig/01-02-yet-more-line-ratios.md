@@ -7,14 +7,14 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.15.2
+      jupytext_version: 1.18.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 # Further line analysis from saved moment images
 
 The previous notebook has grown too long, so I am starting a new one.  What I plan to do here is:
@@ -30,7 +30,7 @@ The previous notebook has grown too long, so I am starting a new one.  What I pl
 
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -45,7 +45,7 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -61,7 +61,7 @@ sns.set_context("talk")
 sns.set_color_codes()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 def trim_edges(im, m):
     """Trim m pixels of each edge of image in place by setting mask"""
     im.mask[:m, :] = True
@@ -71,20 +71,20 @@ def trim_edges(im, m):
     return None
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 datadir = Path.cwd().parent.parent / "data"
 figdir = Path.cwd().parent.parent / "figs"
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im6716 = Image(str(datadir / "ngc346-sii-6716-bin01-sum.fits"))
 im6731 = Image(str(datadir / "ngc346-sii-6731-bin01-sum.fits"))
 imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
 imcont = Image(str(datadir / "ngc346-cont-6312-mean.fits"))
-imha
+imha, imcont
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 s2 = pn.Atom("S", 2)
 e6716 = s2.getEmissivity(tem=13000, den=[3, 10, 30, 100, 300, 1000], wave=6716)
 e6731 = s2.getEmissivity(tem=13000, den=[3, 10, 30, 100, 300, 1000], wave=6731)
@@ -92,7 +92,7 @@ Rgrid = e6716 / e6731
 Rgrid
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 m = imcont.data > 5e3
 im6716.mask = im6716.mask | m
 im6731.mask = im6731.mask | m
@@ -101,7 +101,7 @@ trim_edges(im6731, 10)
 trim_edges(imcont, 10)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 fig, axes = plt.subplots(2, 2, figsize=(12, 12))
 im6716.rebin(n).plot(vmin=-10, vmax=12000, ax=axes[0, 0], colorbar="v")
@@ -117,7 +117,7 @@ imcont.rebin(n).plot(vmin=0, vmax=1e4, ax=axes[1, 0], colorbar="v")
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 
 imx = im6731.rebin(n)
@@ -148,7 +148,7 @@ g.axes[1, 0].plot([imin, imax], [imin, imax], "--", color="r")
 g.fig.suptitle("Correlation between [S II] 6731 and 6716 brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 imx = imha.rebin(n)
 imy = im6716.rebin(n) / im6731.rebin(n)
@@ -181,7 +181,7 @@ for R in Rgrid:
 g.fig.suptitle("Correlation between [S II] 6716 / 6731 sum and Ha brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 imx = imha.rebin(n)
 imy = im6716.rebin(n) / im6731.rebin(n)
@@ -214,7 +214,7 @@ for R in Rgrid:
 g.fig.suptitle("Correlation between [S II] 6716 / 6731 sum and Ha brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 xslice, yslice = slice(230, 300), slice(144, 245)
 
 n = 1
@@ -252,7 +252,7 @@ for R in Rgrid[:-1]:
 g.fig.suptitle("Correlation between [S II] 6716 / 6731 ratio and Ha brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 xslice, yslice = slice(230, 300), slice(144, 245)
 
 n = 1
@@ -290,41 +290,41 @@ for R in Rgrid[:-1]:
 g.fig.suptitle("Correlation between [S II] 6716 / 6731 ratio and Ha brightness")
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 So, in the bow shock region, we see ratios as low as 1.3 in the brightest parts, but these are globule surfaces.  The bulk of the emission has around 1.4
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 s2.getTemDen([1.4, 1.3, 0.8], tem=12000, wave1=6716, wave2=6731)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 So the density is about 50 +/- 30 pcc in the diffuse gas.  We get ten times higher density in the case of Source E, which has a ratio as low as 0.8
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ### Make a map of [S II] density
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 r_s2_grid = np.linspace(0.5, 1.44, 1001)
 n_s2_grid = s2.getTemDen(r_s2_grid, tem=12000.0, wave1=6716, wave2=6731)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n_s2_grid
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 iew6716 = imcont / (1.25 * im6716)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
 iew6716.plot(colorbar="v", cmap="gray_r", scale="linear", vmin=-1.0, vmax=10.0)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fixmask = im6716.mask | (iew6716.data > 10.0) | (iew6716.data < -0.2)
 fixmask[90:97, 147:152] = True
 fixmask[79:86, 191:197] = True
@@ -343,25 +343,25 @@ im_n_sii.data[~fixmask] = np.interp(
 im_n_sii.mask = im_n_sii.mask | ~np.isfinite(im_n_sii.data)
 ```
 
-```python jupyter={"source_hidden": true, "outputs_hidden": false} pycharm={"name": "#%%\n"}
+```python pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(12, 12))
 im_n_sii.rebin(2).plot(colorbar="v", cmap="gray_r", scale="sqrt", vmin=0.0, vmax=3000.0)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 This seems to be good enough in some of the diffuse regions. although it is way to noisy in the faint parts.
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im_n_sii.write(str(datadir) + "/ngc346-N-sii.fits", savemask="nan")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im_T_siii = Image(str(datadir / "ngc346-T-siii.fits"))
 imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 16
 imx = im_T_siii.rebin(n)
 imy = im_n_sii.rebin(n)
@@ -392,18 +392,18 @@ g = sns.pairplot(
 )
 g.fig.suptitle("Temperature vs Density")
 ```
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
     ## He II emission measure
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 he2 = pn.RecAtom("He", 2)
 he1 = pn.RecAtom("He", 1)
 h1 = pn.RecAtom("H", 1)
 ```
 
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 temperatures = [12500, 13800, 15500]
 e4686 = he2.getEmissivity(tem=temperatures, den=1, wave=4686)
 e4861 = h1.getEmissivity(tem=temperatures, den=1, wave=4861)
@@ -415,57 +415,57 @@ e4686, e4861, e5875
 np.mean(e4861[1])
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 From the other notebook, we measure 5875 / 4861 = 0.108 +/- 0.001
 
 Whereas the ratio of emissivities is
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e5875 / e4861
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 This implies a He abundance of
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 np.array([0.107, 0.108, 0.109])[None, :] / (e5875 / e4861)[:, None]
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 From Table 5 of Valerdi+ (2019), they have a He+ abundance of 10.915 or 10.917, with error of +/- 0.004 , so:
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 10 ** (np.array([10.915, 10.917]) - 12.0)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 They find a small He++ abundance of
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 f"He++/H+ = {10**(8.30 - 12.0):.3e}; He++/He+ = {10**(8.30 - 10.915):.3e}"
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 In the bow shock I measure 4686 / 4861 = 0.015 or so, which would be 1.5 on a scale of Hβ = 100.  Mabel's Table 2 gives 0.24, which is 6 times less. This is consistent with the general value we find away from the bow's inner edge.
 
 So, I can work out my own He++/H+ abundance:
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 y_heiii_hii = 0.015 / (e4686 / e4861)
 y_heiii_heii = y_heiii_hii / 0.08167471
 f"Bow shock He++/H+ = {np.round(y_heiii_hii, 4)}; He++/He+ = {np.round(y_heiii_heii, 4)}"
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 In other words, the He++ emission measure, $\int n(\mathrm{He^{++}})\, n_\mathrm{e}\, dz$, is ony 2.5% of the total $\int n(\mathrm{He^{+}})\, n_\mathrm{e}\, dz$.
 
 *This is totally consistent, with the observed small change in 5875/4861, which is also about 2%*
@@ -477,7 +477,7 @@ In other words, the He++ emission measure, $\int n(\mathrm{He^{++}})\, n_\mathrm
 - [ ] Ask Mabel to look at her slit A to see if she sees the He II and [Ar IV] signatures of the bow shock.  Also, maybe measure [O III] temperature to see if it goes up
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ### Conversion to a density
 
 We want the surface brightness of He++ in physical units.
@@ -485,16 +485,16 @@ We want the surface brightness of He++ in physical units.
 MUSE flux units are $10^{-20}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ Å^{-1}\ pix^{-1}}$ in the cube, but we have summed over wavelength pixels, which are 1.4 Å.  The spatial pixels are 0.2 arcsec.
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 import astropy.units as u
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 muse_bright_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2 / (0.2 * u.arcsec) ** 2
 muse_bright_unit.to(u.erg / u.s / u.cm ** 2 / u.sr)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im4686 = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
 im5875 = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
 imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
@@ -503,16 +503,16 @@ imariii = Image(str(datadir / "ngc346-ariii-7136-correct.fits"))
 imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum.fits"))
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
 (im4686 / imhb)[yslice, xslice].plot(vmin=0.0, vmax=0.016, colorbar="v")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 yslice
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 xxslice = slice(None, None)
 # yyslice = slice(164, 204) # original
 # yyslice = slice(160, 210) # broader
@@ -533,8 +533,8 @@ ariii_profile = make_profile(imariii)
 oiii_profile = make_profile(imoiii)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-fig, ax = plt.subplots(figsize=(15, 6))
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+fig, ax = plt.subplots(figsize=(10, 4))
 ix0 = 227.5
 nx = len(heii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
@@ -556,23 +556,23 @@ ax.axhline(0, color="k")
 
 ax.axvline(0, color="k", lw=1, ls="dashed")
 ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
-ax.legend(ncol=3, loc="upper left")
+ax.legend(ncol=3, loc="upper left", fontsize="x-small")
 
 ax.set(
     xlabel="Offset west from W 3, arcsec",
     ylabel="Surface brightness",
     xlim=[-12, 22],
-    ylim=[-199, 1400],
+    ylim=[-299, 1499],
 )
 sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-brightness-cuts.pdf")
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 peak_heii = muse_bright_unit * 400
 peak_heii
 ```
@@ -586,16 +586,16 @@ heii_profile[mshell]
 pos[mshell]
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 From the image, the chord length through the bow is about 60 pixels.  We can assume that the line-of-sight depth is similar:
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 depth_heii = 60 * 0.2 * 61700 * u.au
 depth_heii.to(u.pc)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 Surface brightness assuming optically thin emission with isotropic line emissivity, $e(\lambda)$, is given by
 $$
 I(\lambda) = \int \frac{e(\lambda)\, n_e\, n_i}{4 \pi} \, dz
@@ -627,11 +627,11 @@ n_e = \left[
 $$
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 We can take the helium abundance from above and get ...
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 pn_e_units = u.erg * u.cm ** 3 / u.s
 yHe = 0.0824
 ne = np.sqrt(
@@ -646,29 +646,29 @@ ne = np.sqrt(
 ne
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 **So electron density of 11 pcc!**
 
 Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is a lower limit (density would scale approximately as $x_{++}^{-1/2}$).
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 #### Find the He II flux and the He++ ionizing luminosity
 
 
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im4686[160:210, 235:255].plot(vmin=0, vmax=400)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 muse_flux_unit = 1e-20 * 1.4 * u.erg / u.s / u.cm ** 2
 ```
 
 Calculate the intrinsic flux of the He II line, taking into account the foreground extinction (calculated from the Balmer decrement in the previous notebook)
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 cutout = im4686[160:210, 235:255]
 m = (cutout.data > 0.0) & ~cutout.mask
 A_heii = 0.34
@@ -676,65 +676,65 @@ F_heii = muse_flux_unit * np.sum(cutout.data[m]) * 10**(0.4*A_heii)
 F_heii
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 D_lmc = 61700 * u.pc
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 L_heii = 4 * np.pi * D_lmc.cgs ** 2 * F_heii
 L_heii
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 L_heii.to(u.solLum)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 Effective recomb rate:
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 import astropy.constants as constants
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 hnu4686 = (constants.h * constants.c / (4686 * u.Angstrom)).cgs
 hnu4686
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 alpha_eff_4686 = e4686 * pn_e_units / hnu4686
 alpha_eff_4686
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 pn.atomicData.getAllAvailableFiles("He2")
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 It only works as follows:
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 pn.atomicData.setDataFile("he_ii_trc_SH95-caseB.dat")
 alphaB_He_plus = pn.RecAtom("He", 2).getTotRecombination(tem=temperatures, den=100)
 alphaB_He_plus *= u.cm ** 3 / u.s
 alphaB_He_plus
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 Solid angle: 
 
 Originally, I had assumed a +
 /- 75 degree end cap. But after doing some estimates in the org file, I find that 54 +/- 16 deg is a better estimate
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 Omega_over_4pi = (1 - np.cos(54 * u.deg)) / 2
 Omega_over_4pi
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 $$
 Q \frac{\Omega}{4\pi} = \int_{\mathcal{V}} n_e \, n_i \, \alpha_B\, d\mathcal{V}
 $$
@@ -748,7 +748,7 @@ Q = \frac{\alpha_B \, L(4686)} {e(4686)\, (\Omega/4\pi)}
 $$
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 Q2 = alphaB_He_plus * L_heii / (e4686 * pn_e_units) / Omega_over_4pi
 Q2
 ```
@@ -876,18 +876,18 @@ This would give a final value of $x(\mathrm{He^{++}}) \approx 0.1$
 
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ## Also do profiles of low ionization lines
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum.fits"))
 im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
 im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
 im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 oi_profile = make_profile(im6300)
 cliiis_profile = make_profile(im5518)
 cliiil_profile = make_profile(im5538)
@@ -900,7 +900,7 @@ cliii_profile = 0.5 * (cliiis_profile + cliiil_profile)
 ```
 
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(oi_profile)
@@ -936,12 +936,12 @@ ax.set(
 sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-lowion-cuts.pdf")
 ```
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 
 ```
 
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ## Ar ionization balance
 
 We will calculate the conditions at the very peak of the [Ar IV] emission.
@@ -949,7 +949,7 @@ We will calculate the conditions at the very peak of the [Ar IV] emission.
 We need a very careful slection of the background (BG) and bow shock (BS) samples, since we want to make sure we are in the little triangle window where the intermediate ionization lines are not too contaminated by globule i-fronts and unrelated filaments.
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 i0, j0, w, h = 234, 200, 12, 8
 bgbox = regions.RegionBoundingBox(
     iymin=j0 - h // 2,
@@ -966,7 +966,7 @@ bsbox = regions.RegionBoundingBox(
 )
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(1, 3, figsize=(12, 5), sharey=True)
 imariv.plot(ax=axes[0], vmin=0, vmax=700, colorbar="v")
 imariii.plot(ax=axes[1], vmin=0, vmax=2500, colorbar="v")
@@ -981,7 +981,7 @@ for ax in axes:
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 bs_slices, _ = bsbox.get_overlap_slices(imariv.shape)
 bg_slices, _ = bgbox.get_overlap_slices(imariv.shape)
 
@@ -998,15 +998,15 @@ sbs_ariii = imariii[bs_slices].data.std()
 sbg_ariii = imariii[bg_slices].data.std()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 f"[Ar IV]: BS = {bs_ariv:.2f} +/- {sbs_ariv:.2f}, BG = {bg_ariv:.2f} +/- {sbg_ariv:.2f}"
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 f"[Ar III]: BS = {bs_ariii:.2f} +/- {sbs_ariii:.2f}, BG = {bg_ariii:.2f} +/- {sbg_ariii:.2f}"
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 BS_ariv = bs_ariv - bg_ariv
 sBS_ariv = np.hypot(sbs_ariv, sbg_ariv)
 
@@ -1019,31 +1019,31 @@ sBS_ar_iv_iii = BS_ar_iv_iii * np.hypot(sBS_ariii / BS_ariii, sBS_ariv / BS_ariv
 f"BG-subtracted BS: [Ar IV] / [Ar III] = {BS_ar_iv_iii:.3f} +/- {sBS_ar_iv_iii:.3f}"
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 ar4 = pn.Atom("Ar", 4)
 ar3 = pn.Atom("Ar", 3)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 First T is for BG nebula. Second and third are lower and upper limits for bow shock.  See analysis of [Ar IV] temperature in `10-01` notebook
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 Ts = [12500, 14000, 16000]
 e4711 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4711)
 e4740 = ar4.getEmissivity(tem=Ts, den=10.0, wave=4740)
 e7136 = ar3.getEmissivity(tem=Ts, den=10.0, wave=7136)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e4711 + e4740
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e7136
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 So the emissivity is very similar, strangely.
 
 Anyway, we should have:
@@ -1055,31 +1055,31 @@ $$
 $$
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e7136 / (e4711 + e4740)
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 So the T uncertainty of +/- 1000 K would give +/- 10% uncertainty in the emissivity ratio. For the time being we take the middle value:
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 Ar3p_over_Ar2p = BS_ar_iv_iii * (e7136 / (e4711 + e4740))[1]
 Ar3p_over_Ar2p
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 Or, close enough to unity.  So, at the inner edge of the bow shock we have 50% Ar++ and 50% Ar+++. We can use this to constrain the stellar spectrum if we run some Cloudy models
 
 Now do the same, but for the BG nebula
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 Ar3p_over_Ar2p_BG = (bg_ariv / bg_ariii) * (e7136 / (e4711 + e4740))[0]
 Ar3p_over_Ar2p_BG
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 So this implies 20% Ar+++ in the BG region.
 
 However, these are both still integrals along the line of sight, so the actual variation in ionization might be larger.
@@ -1089,11 +1089,11 @@ For instance, the Ar+++ fraction might be higher than 50% at the inner edge.  We
 Likewise, the Ar+++ fraction in the BG might be lower than 0.2 since that could be due to contamination by the bow shock wing emission.
 <!-- #endregion -->
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ## Can we get a He I density?
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 dgrid = [1.0, 10.0, 100.0, 1000.0]
 T0 = [11000, 13000, 18000]
 he1.getEmissivity(tem=T0, den=dgrid, wave=5876) / he1.getEmissivity(
@@ -1101,24 +1101,24 @@ he1.getEmissivity(tem=T0, den=dgrid, wave=5876) / he1.getEmissivity(
 )
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 he1.getEmissivity(tem=T0, den=dgrid, wave=4922) / he1.getEmissivity(
     tem=T0, den=dgrid, wave=5876
 )
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 he1.getEmissivity(tem=T0, den=dgrid, wave=5048) / he1.getEmissivity(
     tem=T0, den=dgrid, wave=5876
 )
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum.fits"))
 im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum.fits"))
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 fig, axes = plt.subplots(2, 2, figsize=(12, 12))
 im5048.rebin(n).plot(vmin=-10, vmax=60, ax=axes[0, 0], colorbar="v")
@@ -1141,7 +1141,7 @@ for ax in axes.flat:
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 yyslice = slice(164, 204)  # original
 # yyslice = slice(160, 210) # broader
 # yyslice = slice(170, 200) # narrower
@@ -1150,7 +1150,7 @@ hei_5048_profile = make_profile(im5048)
 hei_5876_profile = make_profile(im5876)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(hei_profile)
@@ -1174,23 +1174,23 @@ ax.set(
 sns.despine()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 bs_5048 = im5048[bs_slices].data.mean()
 bs_5876 = im5876[bs_slices].data.mean()
 bs_5048 / bs_5876
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 bg_5048 = im5048[bg_slices].data.mean()
 bg_5876 = im5876[bg_slices].data.mean()
 bg_5048 / bg_5876
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 These are all way lower than the theoretical values for reasonable temperatures.  Maybe the 5048 line is affected by underlying stellar absorption.
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 # yyslice = slice(164, 204) # original
 # yyslice = slice(160, 210) # broader
 # yyslice = slice(170, 200) # narrower
@@ -1203,7 +1203,7 @@ siii_profile = make_profile(im9069)
 ```
 
 ```python pycharm={"name": "#%%\n"}
-fig, ax = plt.subplots(figsize=(15, 6))
+fig, ax = plt.subplots(figsize=(10, 4))
 ix0 = 227.5
 nx = len(sii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
@@ -1226,22 +1226,22 @@ ax.axhline(0, color="k")
 
 ax.axvline(0, color="k", lw=1, ls="dashed")
 ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
-ax.legend(ncol=2, loc="upper left")
+ax.legend(ncol=2, loc="upper left", fontsize="x-small")
 
 ax.set(
     xlabel="Offset west from W 3, arcsec",
     xlim=[-12, 22],
-    ylim=[0, 3.45],
+    ylim=[0, 3.95],
 )
 sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ne-te.pdf")
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} tags=["temperature"] jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} tags=["temperature"] -->
 So the [S III] temperature is significantly larger than the [O III] temperature from the nebula. It is around 14000 K and has a drop towards W 3 coming from the east side, and then a step and a very constant region.  But the step occurs before the bow shock, so is probably unrelated.
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(sii_profile)
@@ -1250,8 +1250,8 @@ pos2 = (np.arange(len(siii_profile)) - ix0) * 0.2
 
 ax.plot(pos, 0.01 * n_sii_profile, label="$n$([S II]) / 100 cm$^{-3}$", lw=4)
 ax.plot(pos2, 0.0001 * T_siii_profile, label="$T$([S III]) / 10,000 K", lw=3)
-ax.plot(pos2, 1.0 * sii_profile[1:] / siii_profile, label="[S II] / [S III]", lw=3)
-ax.plot(pos2, 4.0 * oi_profile / sii_profile[1:], label="[O I] / [S II]", lw=3)
+ax.plot(pos2, 1.0 * sii_profile / siii_profile, label="[S II] / [S III]", lw=3)
+ax.plot(pos2, 4.0 * oi_profile / sii_profile, label="[O I] / [S II]", lw=3)
 
 
 ax.axhline(0, color="k")
@@ -1269,7 +1269,7 @@ sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 imhei_c = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
 imhi_c = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
 imheii_c = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
@@ -1277,13 +1277,13 @@ imcont2 = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
 
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 m = imcont2.data > 500.0
 for im in imhei_c, imheii_c, imhi_c:
     im.mask = im.mask | m
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 # yyslice = slice(164, 204) # original
 yyslice = slice(160, 210)  # broader
 # yyslice = slice(170, 200) # narrower
@@ -1294,8 +1294,8 @@ heii_c_profile = make_profile(imheii_c)
 cont_profile = make_profile(imcont2)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
-fig, ax = plt.subplots(figsize=(15, 6))
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+fig, ax = plt.subplots(figsize=(10, 4))
 ix0 = 227.5
 nx = len(hei_profile)
 pos = (np.arange(nx) - ix0) * 0.2
@@ -1319,7 +1319,7 @@ ax.axhline(0, color="k")
 
 ax.axvline(0, color="k", lw=1, ls="dashed")
 ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
-ax.legend(ncol=1, loc="upper right")
+ax.legend(ncol=1, loc="upper right", fontsize="x-small")
 ax.set_yticks([0.0, 0.005, 0.010])
 ax.set(
     xlabel="Offset west from W 3, arcsec",
@@ -1330,7 +1330,7 @@ sns.despine()
 fig.savefig(figdir / "ngc346-bow-shock-he-ratios.pdf")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(15, 6))
 ix0 = 227.5
 nx = len(hei_profile)
@@ -1375,21 +1375,21 @@ sns.despine()
 
 These show the continuum as well, so we can see the PSF width of about 5 pixels, which is less thn the shell thickness of about 10 pixels.
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
 im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
 imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
 imcont = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 cl3 = pn.Atom("Cl", 3)
 Rlo = cl3.getLowDensRatio(wave1=5518, wave2=5538)
 Rhi = cl3.getHighDensRatio(wave1=5518, wave2=5538)
 Rlo, Rhi
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 m = imcont.data > 3e2
 im5518.mask = im5518.mask | m
 im5538.mask = im5538.mask | m
@@ -1398,14 +1398,14 @@ trim_edges(im5538, 20)
 trim_edges(imcont, 20)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 shift5538 = 15.0
 shift5518 = 23.0
 im5538.data += shift5538
 im5518.data += shift5518
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 16
 fig, axes = plt.subplots(2, 2, figsize=(12, 12))
 im5538.rebin(n).plot(vmin=-10, vmax=120, ax=axes[0, 0], colorbar="v")
@@ -1421,7 +1421,7 @@ imcont.rebin(n).plot(vmin=0, vmax=1e4, ax=axes[1, 0], colorbar="v")
 fig.tight_layout()
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 8
 
 imx = im5538.rebin(n)
@@ -1452,7 +1452,7 @@ g.axes[1, 0].plot([imin, imax], [imin, imax], "--", color="r")
 g.fig.suptitle("Correlation between [Cl III] 5538 and 5518 brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 32
 
 imx = imha.rebin(n)
@@ -1487,7 +1487,7 @@ g.axes[1, 0].axhline(1.5, color="r")
 g.fig.suptitle("Correlation between [Cl III] 5538, 5518 sum and ratio")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 xslice, yslice = slice(230, 300), slice(144, 245)
 
 n = 2
@@ -1526,7 +1526,7 @@ g.axes[1, 1].axvline(np.log10(1.5), color="r")
 g.fig.suptitle("Correlation between [Cl III] 5538 / 5518 ratio and Ha brightness")
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 m = ~im5518[yslice, xslice].mask
 npix = m.sum()
 y = im5518[yslice, xslice].data[m]
@@ -1553,37 +1553,37 @@ dR2 = np.sqrt(
 f"Unweighted R = {R1:.4f} +/- {dR1:.4f}; Weighted R = {R2:.4f} +/- {dR2:.4f}"
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 cl3.getTemDen(1.44, tem=12000, wave1=5518, wave2=5538)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e5518 = cl3.getEmissivity(tem=12000, den=[1, 10, 100, 1000], wave=5518)
 e5538 = cl3.getEmissivity(tem=12000, den=[1, 10, 100, 1000], wave=5538)
 e5518 / e5538
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e5518 = cl3.getEmissivity(tem=15000, den=[1, 10, 100, 1000], wave=5518)
 e5538 = cl3.getEmissivity(tem=15000, den=[1, 10, 100, 1000], wave=5538)
 e5518 / e5538
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 e5518 = cl3.getEmissivity(tem=8000, den=[1, 10, 100, 1000], wave=5518)
 e5538 = cl3.getEmissivity(tem=8000, den=[1, 10, 100, 1000], wave=5538)
 e5518 / e5538
 ```
 
-<!-- #region pycharm={"name": "#%% md\n"} jupyter={"outputs_hidden": false} -->
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 Check the 2 sigma lower limit
 <!-- #endregion -->
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 cl3.getTemDen(R2 - 5 * dR2, tem=15000, wave1=5518, wave2=5538)
 ```
 
-```python pycharm={"name": "#%%\n"} jupyter={"outputs_hidden": false}
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 cl3.getTemDen(R2 - 5 * dR2, tem=1000, wave1=5518, wave2=5538)
 ```
 
