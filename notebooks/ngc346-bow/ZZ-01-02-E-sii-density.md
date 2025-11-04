@@ -297,7 +297,7 @@ So, in the bow shock region, we see ratios as low as 1.3 in the brightest parts,
 <!-- #endregion -->
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-s2.getTemDen([1.4, 1.3, 0.8], tem=12000, wave1=6716, wave2=6731)
+s2.getTemDen([1.44, 1.4, 1.3, 0.8], tem=10200, wave1=6716, wave2=6731)
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
@@ -310,7 +310,7 @@ So the density is about 50 +/- 30 pcc in the diffuse gas.  We get ten times high
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 r_s2_grid = np.linspace(0.5, 1.44, 1001)
-n_s2_grid = s2.getTemDen(r_s2_grid, tem=12000.0, wave1=6716, wave2=6731)
+n_s2_grid = s2.getTemDen(r_s2_grid, tem=13200.0, wave1=6716, wave2=6731)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -565,25 +565,27 @@ centers = 0.5 * (edges[:-1] + edges[1:])
 norm = np.trapz(hist, 10**centers)
 ax.stairs(hist/norm, 10**edges, fill=True)
 
-dens_fit = lognormal(10**centers, x0=54, std=28)
-ax.plot(10**centers, 0.85 * dens_fit, color="r")
+dens_fit = lognormal(10**centers, x0=54, std=30)
+ax.plot(10**centers, 0.84 * dens_fit, color="r")
 ax.plot([100, 1000], [2.5e-3, 2.5e-5], color="k", ls="--")
 ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_ylim(3e-6, 3e-2)
 ax.set_xlabel(r"$n$([S II]), cm$^{-3}$")
 ax.set_ylabel("Density PDF")
+fig.savefig(figdir / "ngc346-ZZ-density-pdf")
 ```
 
 Plotting on a log scale shows that there is a power law tail.  I fit a log-normal to the low-density part, but with mean and width that I fixed by hand. And scaled it by 0.85
 
-So 15% of the area of the nebula is the high-density tail of the PDF. 
+So 15% of the area of the nebula is the high-density tail of the PDF. **This does not seem to be true, see below** Perhaps there is an excess to low density too, although it does not look so large in the PDF. Also, the density measurements are extremely unreliable on the low-density side, so are probably dominated by noise
 
 ```python
 n = 4
 m = ew6716.rebin(n).data > 1.0
 densities = im_n_sii.rebin(n).data[m]
 weights = imha.rebin(n).data[m]
+# weights = im6716.rebin(n).data[m]
 
 stats = SigmaClippedStats(densities)
  
@@ -611,11 +613,14 @@ ax.set_xlabel(r"$n$([S II]), cm$^{-3}$")
 ax.set_ylabel(r"H$\alpha$-weighted Density PDF")
 ```
 
+Look at the fractions of total flux and total are that come from the high-density pixels
+
 ```python
 n = 4
-m100 = im_n_sii.rebin(n).data > 100
-m400 = im_n_sii.rebin(n).data > 400
 m = im_n_sii.rebin(n).mask | imha.rebin(n).mask
+m |= ew6716.rebin(n).data < 1
+m100 = (im_n_sii.rebin(n).data > 100) & ~m
+m400 = (im_n_sii.rebin(n).data > 400) & ~m
 efrac100 = np.sum(imha.rebin(n).data[m100]) / np.sum(imha.rebin(n).data[~m])
 efrac400 = np.sum(imha.rebin(n).data[m400]) / np.sum(imha.rebin(n).data[~m])
 efrac100, efrac400
@@ -627,8 +632,14 @@ np.sum(m100) / total_pix, np.sum(m400) / total_pix
 ```
 
 ```python
-np.sum(m)
+[np.sum(_) for _ in (m, ~m, m100, m400)]
 ```
+
+So we do not have much difference between the area-weighted and flux-weighted fractions. Also, 
+we get a larger fraction with n=1, but that is because we have a lot of pixels that are masked out because they are in the low-density limit. 
+
+So, I think that 6 to 7% of the area is occupied by the high density filaments
+
 
 ### H alpha brightness histogram
 
