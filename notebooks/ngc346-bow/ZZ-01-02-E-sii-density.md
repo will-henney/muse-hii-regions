@@ -422,8 +422,8 @@ The temperature I had already done in ZZ-01-01-B notebook, but just for the bow 
 ```python
 for _n, _T in Tdict.items():
     print(f"{_n}: {np.mean(_T)/1000:.2f} +/- {np.std(_T)/1000:.2f}")
-
 ```
+
 
 So those statistics are very weird - the mean is way too low and the standard deviation is way too high. They must be affected by outliers.  So we will repeat it with sigma clipping:
 
@@ -432,8 +432,8 @@ from astropy.stats import SigmaClippedStats
 for _n, _T in Tdict.items():
     stats = SigmaClippedStats(_T/1000)
     print(f"{_n}: {stats.mean():.2f} +/- {stats.std():.2f}")
-
 ```
+
 
 This is much better. The mean temperature is nearly identical to in the bow shock region. The std is somewhat higher. We can work out the POS t-squared:
 
@@ -472,8 +472,8 @@ sns.despine()
 ```python
 for _n, _dens in ndict.items():
     print(f"{_n}: {np.mean(_dens):.2f} +/- {np.std(_dens):.2f}")
-
 ```
+
 
 Again, the raw statistics seem affected by outliers, so we do the sigma clipping. 
 
@@ -481,8 +481,8 @@ Again, the raw statistics seem affected by outliers, so we do the sigma clipping
 for _n, _dens in ndict.items():
     stats = SigmaClippedStats(_dens)
     print(f"{_n}: {stats.mean():.2f} +/- {stats.std():.2f}")
-
 ```
+
 
 This looks a lot more reasonable. The mean is stable at about 40 pcc and the std is dominated by noise for low binnings, but then stabilises for binning of 4 or more, getting a sigma of about 0.5 times the mean. 
 
@@ -573,7 +573,8 @@ ax.set_yscale("log")
 ax.set_ylim(3e-6, 3e-2)
 ax.set_xlabel(r"$n$([S II]), cm$^{-3}$")
 ax.set_ylabel("Density PDF")
-fig.savefig(figdir / "ngc346-ZZ-density-pdf")
+sns.despine()
+fig.savefig(figdir / "ngc346-ZZ-density.pdf", bbox_inches="tight")
 ```
 
 Plotting on a log scale shows that there is a power law tail.  I fit a log-normal to the low-density part, but with mean and width that I fixed by hand. And scaled it by 0.85
@@ -668,8 +669,8 @@ sns.despine()
 ```python
 for _n, _ha in hadict.items():
     print(f"{_n}: {np.mean(_ha):.2f} +/- {np.std(_ha):.2f}")
-
 ```
+
 
 Again, the raw statistics seem affected by outliers, so we do the sigma clipping. 
 
@@ -677,8 +678,8 @@ Again, the raw statistics seem affected by outliers, so we do the sigma clipping
 for _n, _ha in hadict.items():
     stats = SigmaClippedStats(_ha)
     print(f"{_n}: {stats.mean():.2f} +/- {stats.std():.2f}")
-
 ```
+
 
 So only 20% to 25% sigma, which is much less than I had determined before. But maybe I had weighted them somehow
 

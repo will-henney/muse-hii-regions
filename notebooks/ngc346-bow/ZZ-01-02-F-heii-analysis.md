@@ -143,22 +143,37 @@ muse_bright_unit.to(u.erg / u.s / u.cm**2 / u.sr)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-im4686 = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
-im5875 = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
-imhb = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
-imariv = Image(str(datadir / "ngc346-ariv-4711-plus-4740-correct.fits"))
-imariii = Image(str(datadir / "ngc346-ariii-7136-correct.fits"))
-imoiii = Image(str(datadir / "ngc346-oiii-5007-bin01-sum.fits"))
+datadir = ROOT / "data"
+figdir = ROOT / "figs"
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+im4686 = Image(str(datadir / "ngc346-ZZ-heii-4686-correct.fits"))
+im5875 = Image(str(datadir / "ngc346-ZZ-hei-5875-correct.fits"))
+imhb = Image(str(datadir / "ngc346-ZZ-hi-4861-correct.fits"))
+imariv = Image(str(datadir / "ngc346-ZZ-ariv-4711-plus-4740-correct.fits"))
+imariii = Image(str(datadir / "ngc346-ZZ-ariii-7136-correct.fits"))
+imoiii = Image(str(datadir / "ngc346-ZZ-oiii-5007-correct.fits"))
+```
+
+Use the same bow shock window as in the E notebook
+
+```python
+xslice, yslice = slice(230, 300), slice(144, 245)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
-(im4686 / imhb)[yslice, xslice].plot(vmin=0.0, vmax=0.016, colorbar="v")
+(im4686 / imhb)[yslice, xslice].plot(vmin=0.0, vmax=0.01, colorbar="v")
+ax_x = ax.secondary_xaxis(-0.06, functions=(lambda x: x + xslice.start, lambda x: x - xslice.start), color="r")
+ax_y = ax.secondary_yaxis(-0.12, functions=(lambda y: y + yslice.start, lambda y: y - yslice.start), color="r")
+
+                          
 ```
 
-```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+<!-- #raw jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"} -->
 yslice
-```
+<!-- #endraw -->
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 xxslice = slice(None, None)
@@ -186,18 +201,22 @@ fig, ax = plt.subplots(figsize=(10, 4))
 ix0 = 227.5
 nx = len(heii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
-pos2 = (np.arange(len(oiii_profile)) - ix0) * 0.2
 
-ax.plot(pos, heii_profile, label="He II", lw=4)
-ax.plot(pos, 1.00 * ariv_profile, label="[Ar IV]", lw=3)
+def _norm(y, x, x1=-12, x2=-7):
+    m = (x >= x1) & (x <= x2)
+    return y / np.mean(y[m])
+
+
+ax.plot(pos, _norm(heii_profile, pos, x1=2, x2=5) / 2, label="He II", lw=4)
+ax.plot(pos, _norm(ariv_profile, pos) / 4, label="[Ar IV]", lw=3)
 fac = 3 * 0.0014
-ax.plot(pos2, fac * oiii_profile, label=f"[O III] / {1 / fac:.1f}", lw=2.0)
+ax.plot(pos, _norm(oiii_profile, pos), label="[O III]", lw=2.0)
 fac = 3 * 0.145
-ax.plot(pos, fac * ariii_profile, label=f"[Ar III] / {1 / fac:.1f}", lw=1.5)
+ax.plot(pos, _norm(ariii_profile, pos), label="[Ar III]", lw=1.5)
 fac = 3 * 0.100
-ax.plot(pos, fac * hei_profile, label=f"He I / {1 / fac:.1f}", lw=1.0)
+ax.plot(pos, _norm(hei_profile, pos), label="He I", lw=1.0)
 fac = 3 * 0.0105
-ax.plot(pos, fac * hb_profile, label=f"Hβ / {1 / fac:.1f}", lw=0.5)
+ax.plot(pos, _norm(hb_profile, pos), label="Hβ", lw=0.5)
 
 
 ax.axhline(0, color="k")
@@ -210,23 +229,28 @@ ax.set(
     xlabel="Offset west from W 3, arcsec",
     ylabel="Surface brightness",
     xlim=[-12, 22],
-    ylim=[-299, 1499],
+    ylim=[-0.3, 2.5],
 )
 sns.despine()
-fig.savefig(figdir / "ngc346-bow-shock-brightness-cuts.pdf")
+fig.savefig(figdir / "ngc346-ZZ-bow-shock-brightness-cuts.pdf")
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 From the profile graph above, the peak He II brightness is about 400 MUSE brightness units
 <!-- #endregion -->
 
+```python
+peak_heii_muse = np.max(heii_profile[(pos > 0) & (pos < 10)])
+peak_heii_muse
+```
+
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-peak_heii = muse_bright_unit * 400
+peak_heii = muse_bright_unit * peak_heii_muse
 peak_heii
 ```
 
 ```python
-mshell = (abs(pos) < 10) & (heii_profile > 200)
+mshell = (abs(pos) < 10) & (heii_profile > 100)
 heii_profile[mshell]
 ```
 
@@ -257,7 +281,6 @@ $$
 implying that
 $$
 n(\mathrm{He^{++}}) \, n_e = n_e^2 \, \frac{y\, x_{++}}{1 + y\, (1 + x_{++})}
-\approx n_e^2 \, \frac{y}{1 + 2 y}
 $$
 
 So, with homogeneous conditions, we have
@@ -298,6 +321,8 @@ ne
 **So electron density of 11 pcc!**
 
 Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is a lower limit (density would scale approximately as $x_{++}^{-1/2}$).
+
+The He II / Hb ratio is so low that the the ion fraction must be small. 
 <!-- #endregion -->
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->

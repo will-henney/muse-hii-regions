@@ -525,7 +525,8 @@ ax.set_yscale("log")
 ax.set_ylim(3e-6, 3e-2)
 ax.set_xlabel(r"$n$([S II]), cm$^{-3}$")
 ax.set_ylabel("Density PDF")
-fig.savefig(figdir / "ngc346-ZZ-density-pdf")
+sns.despine()
+fig.savefig(figdir / "ngc346-ZZ-density.pdf", bbox_inches="tight")
 # -
 
 # Plotting on a log scale shows that there is a power law tail.  I fit a log-normal to the low-density part, but with mean and width that I fixed by hand. And scaled it by 0.85
