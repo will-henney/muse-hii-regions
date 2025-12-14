@@ -165,11 +165,14 @@ xslice, yslice = slice(230, 300), slice(144, 245)
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, ax = plt.subplots(figsize=(10, 10))
 (im4686 / imhb)[yslice, xslice].plot(vmin=0.0, vmax=0.01, colorbar="v")
-ax_x = ax.secondary_xaxis(-0.06, functions=(lambda x: x + xslice.start, lambda x: x - xslice.start), color="r")
-ax_y = ax.secondary_yaxis(-0.12, functions=(lambda y: y + yslice.start, lambda y: y - yslice.start), color="r")
-
-                          
+ax_x = ax.secondary_xaxis(
+    -0.06, functions=(lambda x: x + xslice.start, lambda x: x - xslice.start), color="r"
+)
+ax_y = ax.secondary_yaxis(
+    -0.12, functions=(lambda y: y + yslice.start, lambda y: y - yslice.start), color="r"
+)
 ```
+
 
 <!-- #raw jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"} -->
 yslice
@@ -201,6 +204,7 @@ fig, ax = plt.subplots(figsize=(10, 4))
 ix0 = 227.5
 nx = len(heii_profile)
 pos = (np.arange(nx) - ix0) * 0.2
+
 
 def _norm(y, x, x1=-12, x2=-7):
     m = (x >= x1) & (x <= x2)
@@ -322,7 +326,7 @@ ne
 
 Note, however that this assumes that the helium is 100% doubly ionized in the 4686 emitting region. If it is only partially ionized, then this is a lower limit (density would scale approximately as $x_{++}^{-1/2}$).
 
-The He II / Hb ratio is so low that the the ion fraction must be small. 
+The He II / Hb ratio is so low that the the ion fraction must be small.
 <!-- #endregion -->
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
@@ -427,3 +431,148 @@ Q2
 ```
 
 This is way higher than what we got last time, which is due to including the effects of foreground extinction plus a smaller esitimate of the covering fraction. The uncertainty is +/- 50%, which is dominated by the uncertainty in the covering fraction.
+
+
+## Alternative route to density from Balmer lines
+
+We can estimate the bow shock shell emission measure from the jump in the surface brightness of H beta, say. This has the advantage that we know that the hydrogen is fully ionized.
+
+```python
+fig, (ax1, ax2) = plt.subplots(2, 1)
+m = heii_profile > -300
+ax1.plot(pos, hb_profile, ds="steps-mid")
+ax2.plot(pos[m], ariv_profile[m], ds="steps-mid")
+ax2.plot(pos[m], heii_profile[m], ds="steps-mid")
+mm = m & (np.abs(pos) <= 2)
+base = np.mean(hb_profile[mm])
+ax1.axhline(base, lw=1, ls="dashed")
+mmm = m & (pos >= 4) & (pos <= 6)
+plateau = np.mean(hb_profile[mmm])
+ax1.axhline(plateau, lw=1, ls="dashed")
+(plateau - base)
+```
+
+```python
+A_hb = 0.33
+jump_hb = (plateau - base) * muse_bright_unit * 10 ** (0.4 * A_hb)
+f"{jump_hb=}"
+```
+
+This uses my estimate of the jumpfrom the above profile graph. It is a bit tricky, since we need to take into account the photospheric absorption line.
+
+Thhen we also correct for the dust extinction `A_hb`.
+
+So this should be the intrinsic surface brightness of Hb, which should be EM times emission coefficient / 4 pi
+
+
+```python
+EM = jump_hb * (4 * np.pi * u.sr).to(u.arcsec**2) / (e4861 * pn_e_units)
+EM
+```
+
+There are three answers, corrending to assumed temperature of 12,500, 13,800, or 15,500 K
+
+```python
+np.sqrt(EM / depth_heii).to(u.cm**-3)
+```
+
+So that gives a bigger density than I was getting before. On the other hand, it might be a slight over-estimate since the H+ path length may be larger by a factor of 2 (see next section). There is also a small correction for the ionized helium contribution to the electron density, but that is much smaller than the uncertainty in the path length.
+
+So, we would finally get
+
+
+```python
+np.sqrt(EM / (2 * depth_heii)).to(u.cm**-3)
+```
+
+So, taking into account the uncertainty in the path length would give us a hydrogen density of 35 +/- 10 pcc
+
+
+### Sanity check from He II / H I
+
+In principle, we can come to the same conclusion starting from the 4686/4861 ratio, so long as we account for the fraction of the H beta emission that comes from the bow shock.
+
+```python
+fig, ax = plt.subplots(figsize=(15, 6))
+ix0 = 227.5
+nx = len(heii_profile)
+pos = (np.arange(nx) - ix0) * 0.2
+imargin = 10
+ratio = heii_profile / hb_profile
+ax.plot(pos[imargin:], ratio[imargin:], label="He II / H beta", lw=4)
+
+ax.axhline(0, color="k")
+
+ax.axvline(0, color="k", lw=1, ls="dashed")
+ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
+ax.legend(ncol=3, loc="upper left")
+
+ax.set(
+    xlabel="Offset west from W 3, arcsec",
+    ylabel="Line ratio",
+    xlim=[-12, 22],
+    ylim=[-0.002, 0.009],
+    # ylim = [-0.1, 0.5],
+)
+sns.despine()
+fig.savefig(figdir / "ngc346-bow-shock-heii-hbeta-cuts.pdf")
+```
+
+So the peak ratio is about 0.015. Note that we already did this once above in the *He II emission measure* section. We got exactly the same value.
+
+We now have to divide this by the fraction of H beta that comes frm the bow shock.
+
+```python
+hb_bow_frac = (plateau - base) / base
+hb_bow_frac
+```
+
+```python
+heii_hb_bow_max = np.max(ratio[imargin:]) / hb_bow_frac
+heii_hb_bow_max
+```
+
+Then we should have
+$$
+\texttt{heii\_hb\_bow\_max} =
+\frac{I(4686)}{I(4681)} =
+\frac{
+\int e(4686)\, n(\mathrm{He^{++}})\, n_e\, dz
+}{
+\int e(4861)\, n(\mathrm{H^+})\, n_e\, dz
+}
+\approx
+\frac{e(4686)}{e(4861)}\,
+y(\mathrm{He})\,
+x(\mathrm{He}^{++})
+$$
+
+```python
+e4686, e4861, e4686 / e4861
+```
+
+So the He II emission coefficient is about 12 times larger than H beta, which almost exactly cancels out the He abundance factor. And the temperature dependence is very slight.
+
+```python
+yhe = 0.08325295
+xheiii = (heii_hb_bow_max * e4861) / (yhe * e4686)
+xheiii
+```
+
+Note that this assumes that the line-of-sight path length is the same for He++ and for H+. In reality it may be longer for H+ because the thickness of the emitting shell is greater. In the thin shell approximation, the ratio of path lengths is the sqrt of the ratio of thickness.
+
+The ratio of thicknesses is between 2 and 5, depending on just how we measure it. So this would give a ratio of path lengths of about (2 +/- 1), which is also what you would have guessed by looking at the chord lengths on the plane of the sky (for [Ar IV] and He II).
+
+This would give a final value of $x(\mathrm{He^{++}}) \approx 0.1$
+
+
+
+Note that this is the same answer as I got from the ESO cube
+
+<!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
+We can combine this with the derived ionizing luminosity to get another measure of the density, although I am not sure this is actually independent of the other measures
+<!-- #endregion -->
+```python
+
+```
+

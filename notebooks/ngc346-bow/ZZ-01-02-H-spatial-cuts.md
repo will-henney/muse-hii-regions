@@ -43,10 +43,34 @@ sns.set_color_codes()
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-im6300 = Image(str(datadir / "ngc346-oi-6300-bin01-sum.fits"))
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
+datadir = ROOT / "data"
+figdir = ROOT / "figs"
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+# im6300 = Image(str(datadir / "ngc346-ZZ-oi-6300-correct.fits"))
+# im5518 = Image(str(datadir / "ngc346-ZZ-cliii-5518-correct.fits"))
+# im5538 = Image(str(datadir / "ngc346-ZZ-cliii-5538-correct.fits"))
+im9069 = Image(str(datadir / "ngc346-ZZ-siii-9069-correct.fits"))
+im6716 = get_image_raw("s-ii-6716-44")
+im6731 = get_image_raw("s-ii-6730-816")
+im6300 = get_image_raw("o-i-6300-30")
+im5518 = get_image_raw("cl-iii-5517-71")
+im5538 = get_image_raw("cl-iii-5537-88")
+# im9069 = get_image_raw("s-iii-9068-90")
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+xxslice = slice(None, None)
+# yyslice = slice(164, 204) # original
+# yyslice = slice(160, 210) # broader
+# yyslice = slice(170, 200) # narrower
+yyslice = slice(180, 200)  # top half ultra narrow
+
+
+def make_profile(im):
+    # return np.make(im[yyslice, xxslice].data, axis=0)
+    return np.mean(im[yyslice, xxslice].data, axis=0)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -96,7 +120,7 @@ ax.set(
     ylim=[0, 3.9],
 )
 sns.despine()
-fig.savefig(figdir / "ngc346-bow-shock-lowion-cuts.pdf")
+fig.savefig(figdir / "ngc346-ZZ-bow-shock-lowion-cuts.pdf")
 ```
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 

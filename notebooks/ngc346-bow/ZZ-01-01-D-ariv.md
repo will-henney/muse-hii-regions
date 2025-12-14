@@ -1082,7 +1082,6 @@ for ax in g.axes.flat:
 g.fig.suptitle("Correlation between [Ar IV] 4711+40 and each 7XXX line")
 ```
 
-
 ```python
 
 ```
@@ -1090,6 +1089,7 @@ g.fig.suptitle("Correlation between [Ar IV] 4711+40 and each 7XXX line")
 ```python
 
 ```
+
 
 ### Now make the joint density-temperature plot
 
@@ -1488,7 +1488,7 @@ xx.plot(ax=axes[2], colorbar="v", vmin=xxmin, vmax=xxmax, cmap=cmr.ember)
 fig.tight_layout()
 fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics-maps.pdf")
 ```
-
 ```python
-        
+
 ```
+

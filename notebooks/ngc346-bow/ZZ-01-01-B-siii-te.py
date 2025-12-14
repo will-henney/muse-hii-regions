@@ -425,6 +425,13 @@ imR_oiii_siii.write(
     str(ROOT / "data/ngc346-ZZ-R-oiii-5007-siii-9069.fits"), savemask="nan"
 )
 
+im5007cc.write(
+    str(ROOT / "data/ngc346-ZZ-oiii-5007-correct.fits"), savemask="nan"
+)
+im9069cc.write(
+    str(ROOT / "data/ngc346-ZZ-siii-9069-correct.fits"), savemask="nan"
+)
+
 # ## Calculate [O III] / Hβ
 #
 # This might be better since at least it is not affected by reddening.

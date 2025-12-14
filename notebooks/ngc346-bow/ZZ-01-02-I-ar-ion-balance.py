@@ -27,8 +27,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
 from mpdaf.obj import Image
+import regions
+import pyneb as pn
 from zz_utils import get_image_raw, ROOT
-
+# -
 
 # ## Ar ionization balance
 #
@@ -53,9 +55,17 @@ bsbox = regions.RegionBoundingBox(
 )
 
 # + jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+datadir = ROOT / "data"
+figdir = ROOT / "figs"
+# -
+
+imariv = Image(str(datadir / "ngc346-ZZ-ariv-4711-plus-4740-correct.fits"))
+imariii = Image(str(datadir / "ngc346-ZZ-ariii-7136-correct.fits"))
+
+# + jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(1, 3, figsize=(12, 5), sharey=True)
 imariv.plot(ax=axes[0], vmin=0, vmax=700, colorbar="v")
-imariii.plot(ax=axes[1], vmin=0, vmax=2500, colorbar="v")
+imariii.plot(ax=axes[1], vmin=0, vmax=4500, colorbar="v")
 (imariv / imariii).plot(ax=axes[2], vmin=0, vmax=0.45, cmap="magma_r", colorbar="v")
 for ax in axes:
     bsbox.plot(ax=ax, color="w")

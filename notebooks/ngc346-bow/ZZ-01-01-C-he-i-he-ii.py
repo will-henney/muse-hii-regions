@@ -70,7 +70,6 @@ rc.law = "F99"
 # Let us see if this has a hole in it where the He II is coming from.
 # +
 
-# +
 im5875 = get_image_raw("he-i-5875-62")
 im4922 = get_image_raw("he-i-4921-93")
 im5048 = get_image_raw("he-i-5047-74")
@@ -78,12 +77,14 @@ im5016 = get_image_raw("he-i-5015-68")
 im6678 = get_image_raw("he-i-6678-15")
 im7065 = get_image_raw("he-i-7065-28")
 im7281 = get_image_raw("he-i-7281-35")
-
+imcont = get_image_raw("he-i-5875-62", variant="cont")
+ew5875 = 3 * 1.25 * im5875 / imcont
 imhb = get_image_raw("h-i-4861-32")
-# -
+imha = get_image_raw("h-i-656*")
 
 fig, axes = plt.subplots(3, 2, sharey=True, figsize=(12, 18))
 im5875.plot(ax=axes[0, 0], vmin=0, vmax=7500)
+axes[0, 0].contour(ew5875.data, levels=[3], colors="r", linewidths=1)
 im4922.plot(ax=axes[0, 1], vmin=0, vmax=550)
 (imhb).plot(ax=axes[1, 0], vmin=0, vmax=60000)
 im5016.plot(ax=axes[1, 1], vmin=0, vmax=700)
@@ -175,6 +176,15 @@ fig, ax = plt.subplots(figsize=(12, 12))
 
 # So if we correct it for reddening, then lots of spurious structure disappears.  But we are left with very little variation at all, except for at the mYSO and the top right corner, which both show low He I.
 
+fig, ax = plt.subplots(figsize=(12, 12))
+(im6678 / imha).plot(colorbar="v", cmap="gray", vmin=0.009, vmax=0.011)
+
+1/3.5
+
+fig, ax = plt.subplots(figsize=(12, 12))
+n = 4
+(im6678.rebin(n) / im5875.rebin(n)).plot(colorbar="v", cmap="gray", vmin=0.25, vmax=0.35)
+
 # ### He I emissivities
 
 # +
@@ -183,7 +193,7 @@ hei = pn.RecAtom("He", 1)
 dens = [10, 50, 100, 200, 400, 800]
 tems = [11000, 13000, 15000, 18000]
 e4713 = hei.getEmissivity(tems, dens, wave=4713)
-e4921 = hei.getEmissivity(tems, dens, wave=4921)
+e4921 = hei.getEmissivity(tems, dens, wave=4922)
 e5016 = hei.getEmissivity(tems, dens, wave=5016)
 e5047 = hei.getEmissivity(tems, dens, wave=5047)
 e5876 = hei.getEmissivity(tems, dens, wave=5876)
@@ -194,21 +204,127 @@ e7281 = hei.getEmissivity(tems, dens, wave=7281)
 
 np.round(e5016 / e5876, 3)
 
+# So 5016/5876 is a T indicator for low densities (becomes insensitive at high densities). 
+#
+# At 50 pcc it is +15% with T
+
 np.round(e5876 / e6678, 3)
+
+# 5876 / 6678 is flat with n (+0.3% at low-T, -1.4% at high-T) and flat with n (+0.5% at n=50)
 
 np.round((e7281 + e7065) / e6678, 3)
 
+# So (7281 + 7065) / 6678 has positive variation with T (30%) and n (20%)
+
+np.round(e7065 / e6678, 3)
+
+# Just 7065/6678 is positive with T (+37%) and n (+32%)
+
+np.round(e7065 / e7281, 3)
+
+# 7065 / 7281 is flattish with T (+5%) and positive with density (+24%)
+
+np.round(e7281 / e6678, 3)
+
+# 7281 / 6678 is flattish with n (+7%) and positive with temperature (+29%)
+
+100 * (253 - 196)/196
+
 np.round(e4713 / e5876, 3)
+
+# 4713 / 5876 is too weak
+
+np.round(e4921/ e5876, 3)
+
+# 4921/5876 is rather weak too and not very sensitive: +2% with T at 50pcc, -5% with n at 13,000 K
+
+# #### Conclusions on He I ratios
+#
+# * 5016/5876 is a reasonable T indicator (for densities < 500 pcc) *but it is much lower than predicted – maybe radiative transfer effects?*
+# * 7065/7281 is a possible density indicator
+# * 7281/6678 is a possible T indicator
+#
+# But we need to do reddening correction for all of them. 
+
+# +
+_ebv = imEBV.data[np.isfinite(imEBV.data)]
+
+np.mean(_ebv), np.std(_ebv), np.median(_ebv), np.median(np.abs(_ebv - np.median(_ebv)))
+# -
+
+10 ** (0.4 * 0.156 * (rc.X(7065) - rc.X(7281))), 10 ** (0.4 * 0.156 * (rc.X(7281) - rc.X(6678)))
+
+# ### He I n-sensitive ratio
+#
+#
+
+fig, ax = plt.subplots(figsize=(12, 12))
+n = 4
+(1.012 * im7065.rebin(4) / im7281.rebin(4)).plot(colorbar="v", cmap="magma", vmin=3, vmax=5)
+
+n = 4
+x = im6678.rebin(n).data
+y = 1.012 * im7065.rebin(n).data / im7281.rebin(n).data 
+z = im6678.rebin(n).data
+m = (x > 0) & (x < 2000)
+m = m & (y > 3) & (y < 5)
+m = m & ~im7065.rebin(n).mask & ~im7281.rebin(n).mask
+df = pd.DataFrame(
+    {
+        "He I 6678": x[m],
+        "7065/7281": y[m],
+    }
+)
+kws = dict(weights=z[m], bins=30)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=kws,
+    diag_kws=kws,
+)
+
+np.round(e7065 / e7281, 3)
 
 # ### He I T-sensitive ratio
 #
-# The (7065 + 7281)/6678 ratio depends on density and temperature
+#
+
+# The 7281/6678 ratio depends primarily on T
 
 fig, ax = plt.subplots(figsize=(12, 12))
-((im7065 + im7281) / im6678).plot(colorbar="v", cmap="magma", vmin=0.75, vmax=1.2)
+n = 4
+(0.96 * im7281.rebin(4) / im6678.rebin(4)).plot(colorbar="v", cmap="magma", vmin=0.17, vmax=0.22)
 
-fig, ax = plt.subplots(figsize=(12, 12))
-(im7281 / im7065).plot(colorbar="v", cmap="magma", vmin=0.25, vmax=0.35)
+
+
+n = 4
+x = im6678.rebin(n).data
+y = 0.96 * im7281.rebin(n).data / im6678.rebin(n).data
+z = im6678.rebin(n).data
+m = (x > 0) & (x < 2000)
+m = m & (y > 0.1) & (y < 0.25)
+m = m & ~im6678.rebin(n).mask & ~im7281.rebin(n).mask
+df = pd.DataFrame(
+    {
+        "He I 6678": x[m],
+        "7281/6678": y[m],
+    }
+)
+kws = dict(weights=z[m], bins=30)
+g = sns.pairplot(
+    df,
+    kind="hist",
+    height=4,
+    corner=True,
+    plot_kws=kws,
+    diag_kws=kws,
+)
+
+np.round(e7281 / e6678, 3)
+
+tems
 
 fig, ax = plt.subplots(figsize=(12, 12))
 (im5875 / im6678).plot(colorbar="v", cmap="viridis", vmin=3.4, vmax=3.8)

@@ -95,12 +95,31 @@ CLOSED: [2025-11-01 Sat 22:04]
   : ZZ-01-01-B-siii-te.py
   : ZZ-01-01-C-he-i-he-ii.py
   : ZZ-01-01-D-ariv.py
+- [2025-12-10 Wed 11:32] I now have some more
+  #+begin_src sh :dir ../notebooks/ngc346-bow :results verbatim
+    ls ZZ-01-02-[E-Z]*.py
+  #+end_src
 
-**** TODO [2/5] Onto the next 01-02 notebook as the ZZ-01-02 series
+  #+RESULTS:
+  : ZZ-01-02-E-sii-density.py
+  : ZZ-01-02-F-heii-analysis.py
+  : ZZ-01-02-G-halpha-density.py
+  : ZZ-01-02-H-spatial-cuts.py
+  : ZZ-01-02-I-ar-ion-balance.py
+  : ZZ-01-02-J-hei-and-cl-iii.py
+  -
+
+ 
+
+***** New results from the ABCD files
+- I did a lot of He I line ratios, but it was a bit inconclusive
+
+**** TODO [6/6] Onto the next 01-02 notebook as the ZZ-01-02 series
 - Copy over the python version
 - Split it up in Emacs using the 01-01-ABCD notebooks as guides
 - Put the common functions in a utils library
-
+- 
+  
 ***** DONE ZZ-01-02-E [S II] Density
 CLOSED: [2025-11-06 Thu 22:11]
 - I have extended this one to include the PDFs of temperature and density
@@ -108,8 +127,32 @@ CLOSED: [2025-11-06 Thu 22:11]
 ***** DONE ZZ-01-02-F Spatial profiles of brightness and He II estimate
 CLOSED: [2025-11-06 Thu 22:12]
 - I still need to compare this with my other calculations
-***** TODO 
+  - Not sure what I mean by this comparison [2025-12-10 Wed 11:29]
+- This has also incorporated what was originally in ZZ-01-02-G-halpha-density.py
+  - The best thing is just to remove it, so there is no ~G~ in the sequence. 
+***** DONE ZZ-01-02-G Intentionally left blank!
+CLOSED: [2025-12-12 Fri 17:50]
+***** DONE ZZ-01-02-H Spatial cuts
+CLOSED: [2025-12-12 Fri 14:16]
+- Things to do
+  - [X] Make sure we are loading the correct files
+  - [X] Make sure we have the functions available
+    - 
 
-***** TODO 
+***** DONE ZZ-01-02-I Ar ionization balance
+CLOSED: [2025-12-12 Fri 14:16]
++ This gives Ar^+3 / Ar^+2 ~ 1 in bow shock
+  + And ~ 0.14 in BG
 
-***** TODO 
+***** DONE ZZ-01-02-J He I and [Cl III]
+CLOSED: [2025-12-13 Sat 23:18]
+- Good news is that [Cl III] comes out much better than before
+  - Density is 70 +/- 25 across the whole field
+  - Dominated by noise
+  - Cannot really see any spatial variations
+  - This is very similar to the [S II] result of 50 +/- 30
+- Bad news is the He I dip is not very convincing
+  - I have done it with 6678/6563 as well as with 5875/4861
+  - Both have a tiny reduction
+
+

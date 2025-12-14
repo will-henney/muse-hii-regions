@@ -28,11 +28,28 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 from mpdaf.obj import Image
 from zz_utils import get_image_raw, ROOT
+import pyneb as pn
+import regions
+import pandas as pd
+```
+
+```python
+sns.set_context("talk")
+sns.set_color_codes()
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+datadir = ROOT / "data"
+figdir = ROOT / "figs"
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 ## Can we get a He I density?
 <!-- #endregion -->
+
+```python
+he1 = pn.RecAtom("He", 1)
+```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 dgrid = [1.0, 10.0, 100.0, 1000.0]
@@ -55,20 +72,40 @@ he1.getEmissivity(tem=T0, den=dgrid, wave=5048) / he1.getEmissivity(
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-im5048 = Image(str(datadir / "ngc346-hei-5048-bin01-sum.fits"))
-im5876 = Image(str(datadir / "ngc346-hei-5875-bin01-sum.fits"))
+im5048 = get_image_raw("he-i-5047-74")
+im4921 = get_image_raw("he-i-492*")
+im5016 = get_image_raw("he-i-501*")
+im5876 = get_image_raw("he-i-5875-62")
+imcont = get_image_raw("s-ii-671*", variant="cont")
+```
+
+```python
+i0, j0, w, h = 234, 200, 12, 8
+bgbox = regions.RegionBoundingBox(
+    iymin=j0 - h // 2,
+    iymax=j0 + h // 2,
+    ixmin=i0 - w // 2,
+    ixmax=i0 + w // 2,
+)
+i0, j0, w, h = 250, 193, 8, 8
+bsbox = regions.RegionBoundingBox(
+    iymin=j0 - h // 2,
+    iymax=j0 + h // 2,
+    ixmin=i0 - w // 2,
+    ixmax=i0 + w // 2,
+)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 1
 fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-im5048.rebin(n).plot(vmin=-10, vmax=60, ax=axes[0, 0], colorbar="v")
-im5876.rebin(n).plot(vmin=-10, vmax=3000, ax=axes[0, 1], colorbar="v")
-imcont.rebin(n).plot(vmin=0, vmax=1e4, ax=axes[1, 0], colorbar="v")
-(im5048.rebin(n) / im5876.rebin(n)).plot(
+im4921.rebin(n).plot(vmin=-10, vmax=600, ax=axes[0, 0], colorbar="v")
+im5876.rebin(n).plot(vmin=-10, vmax=5000, ax=axes[0, 1], colorbar="v")
+imcont.rebin(n).plot(vmin=0, vmax=1e3, ax=axes[1, 0], colorbar="v")
+(im4921.rebin(n) / im5876.rebin(n)).plot(
     ax=axes[1, 1],
     vmin=0.0,
-    vmax=0.03,
+    vmax=0.2,
     cmap="magma",
     colorbar="v",
 )
@@ -82,12 +119,20 @@ for ax in axes.flat:
 fig.tight_layout()
 ```
 
+```python
+def make_profile(im):
+    return np.mean(im[yyslice, xxslice].data, axis=0)
+```
+
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+xxslice = slice(None, None)
 yyslice = slice(164, 204)  # original
 # yyslice = slice(160, 210) # broader
 # yyslice = slice(170, 200) # narrower
 # yyslice = slice(180, 200) # top half ultra narrow
+hei_profile = make_profile(im5876)
 hei_5048_profile = make_profile(im5048)
+hei_4921_profile = make_profile(im4921)
 hei_5876_profile = make_profile(im5876)
 ```
 
@@ -97,8 +142,8 @@ ix0 = 227.5
 nx = len(hei_profile)
 pos = (np.arange(nx) - ix0) * 0.2
 
-ax.plot(pos, 0.01 * hei_5876_profile / np.median(hei_5876_profile), label="He I", lw=4)
-ax.plot(pos, hei_5048_profile / hei_5876_profile, label="5048 / 5875", lw=3)
+ax.plot(pos, 0.1 * hei_5876_profile / np.median(hei_5876_profile), label="He I", lw=4)
+ax.plot(pos, hei_4921_profile / hei_5876_profile, label="4921 / 5875", lw=3)
 
 ax.axhline(0, color="k")
 
@@ -110,26 +155,42 @@ ax.set(
     xlabel="Offset west from W 3, arcsec",
     ylabel="Surface brightness",
     xlim=[-12, 22],
-    ylim=[0, 0.03],
+    ylim=[0, 0.3],
 )
 sns.despine()
 ```
 
-```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-bs_5048 = im5048[bs_slices].data.mean()
-bs_5876 = im5876[bs_slices].data.mean()
-bs_5048 / bs_5876
+```python
+bs_slices, _ = bsbox.get_overlap_slices(im5876.shape)
+bg_slices, _ = bgbox.get_overlap_slices(im5876.shape)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-bg_5048 = im5048[bg_slices].data.mean()
+bs_4921 = im4921[bs_slices].data.mean()
+bs_5876 = im5876[bs_slices].data.mean()
+bs_4921 / bs_5876
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+bg_4921 = im4921[bg_slices].data.mean()
 bg_5876 = im5876[bg_slices].data.mean()
-bg_5048 / bg_5876
+bg_4921 / bg_5876
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
 These are all way lower than the theoretical values for reasonable temperatures.  Maybe the 5048 line is affected by underlying stellar absorption.
 <!-- #endregion -->
+
+```python
+im9069 = Image(str(datadir / "ngc346-ZZ-siii-9069-correct.fits"))
+im6731 = get_image_raw("s-ii-673*")
+im6300 = get_image_raw("o-i-6300-30")
+
+im_n_sii = Image(str(datadir / "ngc346-ZZ-N-sii.fits"))
+im_T_siii = Image(str(datadir / "ngc346-ZZ-T-siii.fits"))
+
+
+```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 # yyslice = slice(164, 204) # original
@@ -139,7 +200,7 @@ yyslice = slice(180, 200)  # top half ultra narrow
 n_sii_profile = make_profile(im_n_sii)
 T_siii_profile = make_profile(im_T_siii)
 sii_profile = make_profile(im6731)
-im9069 = Image(str(datadir / "ngc346-siii-9069-bin01-sum.fits"))
+oi_profile = make_profile(im6300)
 siii_profile = make_profile(im9069)
 ```
 
@@ -175,7 +236,7 @@ ax.set(
     ylim=[0, 3.95],
 )
 sns.despine()
-fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ne-te.pdf")
+fig.savefig(figdir / "ngc346-ZZ-bow-shock-sii-siii-ne-te.pdf")
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} tags=["temperature"] -->
@@ -207,20 +268,27 @@ ax.set(
     ylim=[0, 2.1],
 )
 sns.despine()
-fig.savefig(figdir / "ngc346-bow-shock-sii-siii-ratio-ne-te.pdf")
+fig.savefig(figdir / "ngc346-ZZ-bow-shock-sii-siii-ratio-ne-te.pdf")
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-imhei_c = Image(str(datadir / "ngc346-hei-5875-correct.fits"))
-imhi_c = Image(str(datadir / "ngc346-hi-4861-correct.fits"))
-imheii_c = Image(str(datadir / "ngc346-heii-4686-correct.fits"))
-imcont2 = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
+imhei_c = Image(str(datadir / "ngc346-ZZ-hei-5875-correct.fits"))
+imhi_c = Image(str(datadir / "ngc346-ZZ-hi-4861-correct.fits"))
+imheii_c = Image(str(datadir / "ngc346-ZZ-heii-4686-correct.fits"))
+imcont2 = get_image_raw("he-ii-46*", variant="cont")
+imhei_r = get_image_raw("he-i-667*")
+imhi_r = get_image_raw("h-i-656*")
+
 ```
 
 
+```python
+imcont2.plot(colorbar="v", vmax=10000)
+```
+
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-m = imcont2.data > 500.0
-for im in imhei_c, imheii_c, imhi_c:
+m = imcont2.data > 10000.0
+for im in imhei_c, imheii_c, imhi_c, imhei_r, imhi_r:
     im.mask = im.mask | m
 ```
 
@@ -233,6 +301,12 @@ hei_c_profile = make_profile(imhei_c)
 hi_c_profile = make_profile(imhi_c)
 heii_c_profile = make_profile(imheii_c)
 cont_profile = make_profile(imcont2)
+hei_r_profile = make_profile(imhei_r)
+hi_r_profile = make_profile(imhi_r)
+```
+
+```python
+hei_r_profile / hi_r_profile
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -268,7 +342,7 @@ ax.set(
     ylim=[-0.005, 0.015],
 )
 sns.despine()
-fig.savefig(figdir / "ngc346-bow-shock-he-ratios.pdf")
+fig.savefig(figdir / "ngc346-ZZ-bow-shock-he-ratios.pdf")
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -286,9 +360,17 @@ ax.plot(
 )
 ax.plot(
     pos,
-    hei_c_profile / hi_c_profile - 0.10,
+    0.1 * hei_c_profile / hi_c_profile,
     ds="steps-mid",
-    label="(He I λ5875 / H I λ4861) – 0.1",
+    label="0.1 (He I λ5875 / H I λ4861)",
+    lw=2,
+)
+ax.plot(
+    pos,
+    # 10 * hei_r_profile / hi_r_profile - 0.10,
+    hei_r_profile / hi_r_profile,
+    ds="steps-mid",
+    label="(He I λ6678 / H I λ6563)",
     lw=2,
 )
 ax.plot(
@@ -304,11 +386,11 @@ ax.axhline(0, color="k")
 
 ax.axvline(0, color="k", lw=1, ls="dashed")
 ax.axvspan(2.0, 9.0, 0.4, 0.8, color="k", alpha=0.1, linewidth=0, zorder=-100)
-ax.legend(ncol=1, loc="upper right")
+ax.legend(ncol=1, loc="lower left")
 ax.set_yticks([0.0, 0.005, 0.010])
 ax.set(
     xlabel="Offset west from W 3, arcsec",
-    xlim=[-12, 22],
+    xlim=[-32, 22],
     ylim=[-0.005, 0.015],
 )
 sns.despine()
@@ -317,10 +399,10 @@ sns.despine()
 These show the continuum as well, so we can see the PSF width of about 5 pixels, which is less thn the shell thickness of about 10 pixels.
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-im5518 = Image(str(datadir / "ngc346-cliii-5518-bin01-sum.fits"))
-im5538 = Image(str(datadir / "ngc346-cliii-5538-bin01-sum.fits"))
-imha = Image(str(datadir / "ngc346-hi-6563-bin01-sum.fits"))
-imcont = Image(str(datadir / "ngc346-cont-4686-mean.fits"))
+im5518 = get_image_raw("cl-iii-5517-71")
+im5538 = get_image_raw("cl-iii-5537-88")
+imha = get_image_raw("h-i-656*")
+imcont = get_image_raw("h-i-486*", variant="cont")
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -330,8 +412,23 @@ Rhi = cl3.getHighDensRatio(wave1=5518, wave2=5538)
 Rlo, Rhi
 ```
 
+```python
+imcont2.plot(colorbar="v", vmax=10000)
+```
+
+```python
+def trim_edges(im, m):
+    """Trim m pixels of each edge of image in place by setting mask"""
+    im.mask[:m, :] = True
+    im.mask[-m:, :] = True
+    im.mask[:, :m] = True
+    im.mask[:, -m:] = True
+    return None
+
+```
+
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-m = imcont.data > 3e2
+m = imcont.data > 10000
 im5518.mask = im5518.mask | m
 im5538.mask = im5538.mask | m
 trim_edges(im5518, 20)
@@ -340,22 +437,22 @@ trim_edges(imcont, 20)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-shift5538 = 15.0
-shift5518 = 23.0
-im5538.data += shift5538
-im5518.data += shift5518
+# shift5538 = 15.0
+# shift5518 = 23.0
+# im5538.data += shift5538
+# im5518.data += shift5518
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 n = 16
 fig, axes = plt.subplots(2, 2, figsize=(12, 12))
-im5538.rebin(n).plot(vmin=-10, vmax=120, ax=axes[0, 0], colorbar="v")
-im5518.rebin(n).plot(vmin=-10, vmax=120, ax=axes[0, 1], colorbar="v")
+im5538.rebin(n).plot(vmin=0, vmax=150, ax=axes[0, 0], colorbar="v")
+im5518.rebin(n).plot(vmin=0, vmax=150, ax=axes[0, 1], colorbar="v")
 imcont.rebin(n).plot(vmin=0, vmax=1e4, ax=axes[1, 0], colorbar="v")
 (im5518.rebin(n) / im5538.rebin(n)).plot(
     ax=axes[1, 1],
-    vmin=0.0,
-    vmax=2.0,
+    vmin=0.5,
+    vmax=2.5,
     cmap="gray",
     colorbar="v",
 )
@@ -394,7 +491,7 @@ g.fig.suptitle("Correlation between [Cl III] 5538 and 5518 brightness")
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-n = 32
+n = 16
 
 imx = imha.rebin(n)
 imy = im5518.rebin(n) / im5538.rebin(n)
@@ -494,8 +591,15 @@ dR2 = np.sqrt(
 f"Unweighted R = {R1:.4f} +/- {dR1:.4f}; Weighted R = {R2:.4f} +/- {dR2:.4f}"
 ```
 
+```python
+cl3 = pn.Atom("Cl", 3)
+Rlo = cl3.getLowDensRatio(wave1=5518, wave2=5538)
+Rhi = cl3.getHighDensRatio(wave1=5518, wave2=5538)
+Rlo, Rhi
+```
+
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-cl3.getTemDen(1.44, tem=12000, wave1=5518, wave2=5538)
+cl3.getTemDen([1.415, 1.42, 1.425], tem=12000, wave1=5518, wave2=5538)
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
@@ -517,13 +621,23 @@ e5518 / e5538
 ```
 
 <!-- #region jupyter={"outputs_hidden": false} pycharm={"name": "#%% md\n"} -->
-Check the 2 sigma lower limit
+We can only get an average density since the noise overwhelms any spatial variations
 <!-- #endregion -->
 
-```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-cl3.getTemDen(R2 - 5 * dR2, tem=15000, wave1=5518, wave2=5538)
+```python
+cliii_ratios = [R2 - dR2, R2, R2 + dR2]
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
-cl3.getTemDen(R2 - 5 * dR2, tem=1000, wave1=5518, wave2=5538)
+cl3.getTemDen(cliii_ratios, tem=13000, wave1=5518, wave2=5538)
+```
+
+```python
+cl3.getTemDen(cliii_ratios, tem=13400, wave1=5518, wave2=5538)
+```
+
+So [Cl III] density is 70 +/- 25
+
+```python
+
 ```

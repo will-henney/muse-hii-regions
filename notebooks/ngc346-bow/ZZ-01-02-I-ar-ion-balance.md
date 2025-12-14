@@ -28,15 +28,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
 from mpdaf.obj import Image
+import regions
+import pyneb as pn
 from zz_utils import get_image_raw, ROOT
-
-
-# ## Ar ionization balance
-#
-# We will calculate the conditions at the very peak of the [Ar IV] emission.
-#
-# We need a very careful slection of the background (BG) and bow shock (BS) samples, since we want to make sure we are in the little triangle window where the intermediate ionization lines are not too contaminated by globule i-fronts and unrelated filaments.
 ```
+
+## Ar ionization balance
+
+We will calculate the conditions at the very peak of the [Ar IV] emission.
+
+We need a very careful slection of the background (BG) and bow shock (BS) samples, since we want to make sure we are in the little triangle window where the intermediate ionization lines are not too contaminated by globule i-fronts and unrelated filaments.
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 i0, j0, w, h = 234, 200, 12, 8
@@ -56,9 +57,19 @@ bsbox = regions.RegionBoundingBox(
 ```
 
 ```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
+datadir = ROOT / "data"
+figdir = ROOT / "figs"
+```
+
+```python
+imariv = Image(str(datadir / "ngc346-ZZ-ariv-4711-plus-4740-correct.fits"))
+imariii = Image(str(datadir / "ngc346-ZZ-ariii-7136-correct.fits"))
+```
+
+```python jupyter={"outputs_hidden": false} pycharm={"name": "#%%\n"}
 fig, axes = plt.subplots(1, 3, figsize=(12, 5), sharey=True)
 imariv.plot(ax=axes[0], vmin=0, vmax=700, colorbar="v")
-imariii.plot(ax=axes[1], vmin=0, vmax=2500, colorbar="v")
+imariii.plot(ax=axes[1], vmin=0, vmax=4500, colorbar="v")
 (imariv / imariii).plot(ax=axes[2], vmin=0, vmax=0.45, cmap="magma_r", colorbar="v")
 for ax in axes:
     bsbox.plot(ax=ax, color="w")

@@ -1326,4 +1326,4 @@ fig.tight_layout()
 fig.savefig(ROOT / "figs/ngc346-PZ-bow-shock-ariv-diagnostics-maps.pdf")
 # -
 
-        
+

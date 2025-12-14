@@ -371,8 +371,8 @@ sns.despine()
 ```python
 for _n, _T in Tdict.items():
     print(f"{_n}: {np.mean(_T)/1000:.2f} +/- {np.std(_T)/1000:.2f}")
-
 ```
+
 
 So it looks like the 1 and 2 binnings are dominated by noise, while the 4 binning is showing real structure.  So, we can take the $T = 13.19 \pm 0.19$ kK.
 
@@ -492,6 +492,15 @@ g.fig.suptitle("Correlation between [S III] 9069 and [O III] / [S III] ratio")
 imR_oiii_siii = (im5007cc) / im9069cc
 imR_oiii_siii.write(
     str(ROOT / "data/ngc346-ZZ-R-oiii-5007-siii-9069.fits"), savemask="nan"
+)
+```
+
+```python
+im5007cc.write(
+    str(ROOT / "data/ngc346-ZZ-oiii-5007-correct.fits"), savemask="nan"
+)
+im9069cc.write(
+    str(ROOT / "data/ngc346-ZZ-siii-9069-correct.fits"), savemask="nan"
 )
 ```
 
